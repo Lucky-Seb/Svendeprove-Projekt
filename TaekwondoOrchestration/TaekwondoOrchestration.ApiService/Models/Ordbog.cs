@@ -1,10 +1,13 @@
-﻿public class Ordbog
+﻿namespace TaekwondoOrchestration.ApiService.Models
 {
-    public int Id { get; set; }
-    public string DanskOrd { get; set; }
-    public string KoranskOrd { get; set; }
-    public string Beskrivelse { get; set; }
-    public string BilledeLink { get; set; }
-    public string LydLink { get; set; }
-    public string VideoLink { get; set; }
+    public class Ordbog
+    {
+        public int Id { get; set; }
+        public string DanskOrd { get; set; }
+        public string KoranskOrd { get; set; }
+        public string Beskrivelse { get; set; }
+        public string BilledeLink { get; set; }
+        public string LydLink { get; set; }
+        public string VideoLink { get; set; }
+    }
 }
