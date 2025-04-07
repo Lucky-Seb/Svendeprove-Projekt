@@ -11,6 +11,7 @@
         public string ØvelseSværhed { get; set; }
 
         public int PensumID { get; set; }  // Foreign Key
+        public Pensum Pensum { get; set; }
 
         public ICollection<BrugerØvelse>? BrugerØvelses { get; set; }
         public ICollection<KlubØvelse>? KlubØvelses { get; set; }
