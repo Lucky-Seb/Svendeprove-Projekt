@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaekwondoOrchestration.ApiService.Models;
 
-namespace TaekwondoOrchestration.ApiService.Data_Context
+namespace TaekwondoOrchestration.ApiService.Data
 {
     public class ApiDbContext : DbContext
     {
