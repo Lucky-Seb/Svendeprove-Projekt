@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTO%27s\" />
     <Folder Include="Controllers\" />
     <Folder Include="Data Context\" />
     <Folder Include="Exception Handler\" />
