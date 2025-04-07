@@ -15,6 +15,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoApp.Web.Client", "TaekwondoApp\TaekwondoApp.Web.Client\TaekwondoApp.Web.Client.csproj", "{606933D2-8924-48CC-B434-A561C3A84A18}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.AppHost", "TaekwondoOrchestration\TaekwondoOrchestration.AppHost\TaekwondoOrchestration.AppHost.csproj", "{CA3F3CE5-1362-418B-98DE-C55D93D43635}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9E32CE23-7589-4B0A-A062-6E3433686FB1} = {9E32CE23-7589-4B0A-A062-6E3433686FB1}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.ServiceDefaults", "TaekwondoOrchestration\TaekwondoOrchestration.ServiceDefaults\TaekwondoOrchestration.ServiceDefaults.csproj", "{37AEBB78-F3A7-5BD0-ECF7-A70D38CE4DB4}"
 EndProject
