@@ -3,9 +3,9 @@ using TaekwondoOrchestration.ApiService.Models;
 
 namespace TaekwondoOrchestration.ApiService.Data_Context
 {
-    public class AppDbContext : DbContext
+    public class ApiDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)
+        public ApiDbContext(DbContextOptions<ApiDbContext> options)
             : base(options)
         { }
 
