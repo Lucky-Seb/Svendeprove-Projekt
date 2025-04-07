@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\TaekwondoApp\TaekwondoApp.Web\TaekwondoApp.Web.csproj" />
     <ProjectReference Include="..\TaekwondoOrchestration.ApiService\TaekwondoOrchestration.ApiService.csproj" />
     <ProjectReference Include="..\TaekwondoOrchestration.Web\TaekwondoOrchestration.Web.csproj" />
   </ItemGroup>
