@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35919.96 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoApp", "TaekwondoApp\TaekwondoApp\TaekwondoApp.csproj", "{430E7709-18F8-43F2-A344-F3655652A30E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoApp.Shared", "TaekwondoApp\TaekwondoApp.Shared\TaekwondoApp.Shared.csproj", "{D622FACF-8E95-4989-84E9-5BAAF3ADD266}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoApp.Web", "TaekwondoApp\TaekwondoApp.Web\TaekwondoApp.Web.csproj", "{9E32CE23-7589-4B0A-A062-6E3433686FB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoApp.Web.Client", "TaekwondoApp\TaekwondoApp.Web.Client\TaekwondoApp.Web.Client.csproj", "{606933D2-8924-48CC-B434-A561C3A84A18}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{430E7709-18F8-43F2-A344-F3655652A30E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{430E7709-18F8-43F2-A344-F3655652A30E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{430E7709-18F8-43F2-A344-F3655652A30E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{430E7709-18F8-43F2-A344-F3655652A30E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D622FACF-8E95-4989-84E9-5BAAF3ADD266}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D622FACF-8E95-4989-84E9-5BAAF3ADD266}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D622FACF-8E95-4989-84E9-5BAAF3ADD266}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D622FACF-8E95-4989-84E9-5BAAF3ADD266}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E32CE23-7589-4B0A-A062-6E3433686FB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E32CE23-7589-4B0A-A062-6E3433686FB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E32CE23-7589-4B0A-A062-6E3433686FB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E32CE23-7589-4B0A-A062-6E3433686FB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{606933D2-8924-48CC-B434-A561C3A84A18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{606933D2-8924-48CC-B434-A561C3A84A18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{606933D2-8924-48CC-B434-A561C3A84A18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{606933D2-8924-48CC-B434-A561C3A84A18}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0027510B-B97E-4743-BB2B-F7F1592452CA}
+	EndGlobalSection
+EndGlobal
