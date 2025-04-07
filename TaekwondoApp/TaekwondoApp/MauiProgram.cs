@@ -25,6 +25,7 @@ namespace TaekwondoApp
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
 #endif
+            builder.Services.AddHttpClient();
 
             return builder.Build();
         }
