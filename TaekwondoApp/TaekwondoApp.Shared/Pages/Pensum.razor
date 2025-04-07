@@ -1,6 +1,8 @@
 ﻿@page "/pensum"
 @inject NavigationManager Navigation
 @inject IHttpClientFactory HttpClientFactory
+@inject HttpClient Http
+
 
 <h1>Pensum Management</h1>
 <p>This component demonstrates full CRUD operations on the Pensum API.</p>
@@ -62,15 +64,15 @@ else
     private string? errorMessage;
     private string apiUrl = "https://10.0.2.2:7478/api/Pensum"; // Replace with your API URL
 
-    private HttpClient HttpClient;
+    // private HttpClient HttpClient;
 
     protected override async Task OnInitializedAsync()
     {
         // Use HttpClient with custom handler for bypassing SSL validation
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true; // Disable SSL validation for testing
-        HttpClient = new HttpClient(handler);
-        HttpClient.BaseAddress = new Uri(apiUrl);
+        // var handler = new HttpClientHandler();
+        // handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true; // Disable SSL validation for testing
+        // HttpClient = new HttpClient(handler);
+        // HttpClient.BaseAddress = new Uri(apiUrl);
 
         await LoadPensums();
     }
@@ -79,7 +81,7 @@ else
     {
         try
         {
-            pensums = await HttpClient.GetFromJsonAsync<PensumData[]>(apiUrl);
+            pensums = await Http.GetFromJsonAsync<PensumData[]>(apiUrl);
         }
         catch (Exception ex)
         {
@@ -94,11 +96,11 @@ else
             HttpResponseMessage response;
             if (editingPensum.PensumID == 0)
             {
-                response = await HttpClient.PostAsJsonAsync(apiUrl, editingPensum);
+                response = await Http.PostAsJsonAsync(apiUrl, editingPensum);
             }
             else
             {
-                response = await HttpClient.PutAsJsonAsync($"{apiUrl}/{editingPensum.PensumID}", editingPensum);
+                response = await Http.PutAsJsonAsync($"{apiUrl}/{editingPensum.PensumID}", editingPensum);
             }
 
             ResetForm();
@@ -114,7 +116,7 @@ else
     {
         try
         {
-            await HttpClient.DeleteAsync($"{apiUrl}/{id}");
+            await Http.DeleteAsync($"{apiUrl}/{id}");
             await LoadPensums();
         }
         catch (Exception ex)
@@ -139,3 +141,4 @@ else
         public string PensumGrad { get; set; }
     }
 }
+ htt
