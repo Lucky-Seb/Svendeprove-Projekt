@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96 d17.13
+VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoApp", "TaekwondoApp\TaekwondoApp\TaekwondoApp.csproj", "{430E7709-18F8-43F2-A344-F3655652A30E}"
 EndProject
@@ -10,6 +10,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoApp.Web", "TaekwondoApp\TaekwondoApp.Web\TaekwondoApp.Web.csproj", "{9E32CE23-7589-4B0A-A062-6E3433686FB1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoApp.Web.Client", "TaekwondoApp\TaekwondoApp.Web.Client\TaekwondoApp.Web.Client.csproj", "{606933D2-8924-48CC-B434-A561C3A84A18}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.AppHost", "TaekwondoOrchestration\TaekwondoOrchestration.AppHost\TaekwondoOrchestration.AppHost.csproj", "{CA3F3CE5-1362-418B-98DE-C55D93D43635}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.ServiceDefaults", "TaekwondoOrchestration\TaekwondoOrchestration.ServiceDefaults\TaekwondoOrchestration.ServiceDefaults.csproj", "{37AEBB78-F3A7-5BD0-ECF7-A70D38CE4DB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.ApiService", "TaekwondoOrchestration\TaekwondoOrchestration.ApiService\TaekwondoOrchestration.ApiService.csproj", "{4453D7C9-DF0A-CA6A-3C4E-59F9B8E9F168}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.Web", "TaekwondoOrchestration\TaekwondoOrchestration.Web\TaekwondoOrchestration.Web.csproj", "{C015CE13-2D9F-8281-D728-3674E7A04CF6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.Tests", "TaekwondoOrchestration\TaekwondoOrchestration.Tests\TaekwondoOrchestration.Tests.csproj", "{1D0A9EC7-3732-36CD-BCB6-09A858855DC8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +43,26 @@ Global
 		{606933D2-8924-48CC-B434-A561C3A84A18}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{606933D2-8924-48CC-B434-A561C3A84A18}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{606933D2-8924-48CC-B434-A561C3A84A18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA3F3CE5-1362-418B-98DE-C55D93D43635}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA3F3CE5-1362-418B-98DE-C55D93D43635}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA3F3CE5-1362-418B-98DE-C55D93D43635}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA3F3CE5-1362-418B-98DE-C55D93D43635}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37AEBB78-F3A7-5BD0-ECF7-A70D38CE4DB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37AEBB78-F3A7-5BD0-ECF7-A70D38CE4DB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37AEBB78-F3A7-5BD0-ECF7-A70D38CE4DB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37AEBB78-F3A7-5BD0-ECF7-A70D38CE4DB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4453D7C9-DF0A-CA6A-3C4E-59F9B8E9F168}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4453D7C9-DF0A-CA6A-3C4E-59F9B8E9F168}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4453D7C9-DF0A-CA6A-3C4E-59F9B8E9F168}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4453D7C9-DF0A-CA6A-3C4E-59F9B8E9F168}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C015CE13-2D9F-8281-D728-3674E7A04CF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C015CE13-2D9F-8281-D728-3674E7A04CF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C015CE13-2D9F-8281-D728-3674E7A04CF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C015CE13-2D9F-8281-D728-3674E7A04CF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D0A9EC7-3732-36CD-BCB6-09A858855DC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D0A9EC7-3732-36CD-BCB6-09A858855DC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D0A9EC7-3732-36CD-BCB6-09A858855DC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D0A9EC7-3732-36CD-BCB6-09A858855DC8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
