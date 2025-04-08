@@ -1,0 +1,144 @@
+﻿@page "/pensum"
+@inject NavigationManager Navigation
+@inject IHttpClientFactory HttpClientFactory
+@inject HttpClient Http
+
+
+<h1>Pensum Management</h1>
+<p>This component demonstrates full CRUD operations on the Pensum API.</p>
+
+@if (pensums == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (pensums.Length == 0)
+{
+    <p><em>No pensum data available.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Pensum ID</th>
+                <th>Pensum Grad</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pensum in pensums)
+            {
+                <tr>
+                    <td>@pensum.PensumID</td>
+                    <td>@pensum.PensumGrad</td>
+                    <td>
+                        <button class="btn btn-warning" @onclick="() => EditPensum(pensum)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeletePensum(pensum.PensumID)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h3>@(editingPensum.PensumID == 0 ? "Add New Pensum" : "Edit Pensum")</h3>
+<form @onsubmit="HandleSubmit">
+    <div class="mb-3">
+        <label for="pensumGrad" class="form-label">Pensum Grad</label>
+        <input id="pensumGrad" class="form-control" @bind="editingPensum.PensumGrad" required />
+    </div>
+    <button type="submit" class="btn btn-primary">@(editingPensum.PensumID == 0 ? "Create" : "Update")</button>
+    <button type="button" class="btn btn-secondary" @onclick="ResetForm">Cancel</button>
+</form>
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">
+        <strong>Error:</strong> @errorMessage
+    </div>
+}
+
+@code {
+    private PensumData[]? pensums;
+    private PensumData editingPensum = new PensumData();
+    private string? errorMessage;
+    private string apiUrl = "https://localhost:7174/api/Pensum"; // Replace with your API URL
+
+    // private HttpClient HttpClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Use HttpClient with custom handler for bypassing SSL validation
+        // var handler = new HttpClientHandler();
+        // handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true; // Disable SSL validation for testing
+        // HttpClient = new HttpClient(handler);
+        // HttpClient.BaseAddress = new Uri(apiUrl);
+
+        await LoadPensums();
+    }
+
+    private async Task LoadPensums()
+    {
+        try
+        {
+            pensums = await Http.GetFromJsonAsync<PensumData[]>(apiUrl);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An error occurred while fetching data: " + ex.Message;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            HttpResponseMessage response;
+            if (editingPensum.PensumID == 0)
+            {
+                response = await Http.PostAsJsonAsync(apiUrl, editingPensum);
+            }
+            else
+            {
+                response = await Http.PutAsJsonAsync($"{apiUrl}/{editingPensum.PensumID}", editingPensum);
+            }
+
+            ResetForm();
+            await LoadPensums();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An error occurred while saving: " + ex.Message;
+        }
+    }
+
+    private async Task DeletePensum(int id)
+    {
+        try
+        {
+            await Http.DeleteAsync($"{apiUrl}/{id}");
+            await LoadPensums();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An error occurred while deleting: " + ex.Message;
+        }
+    }
+
+    private void EditPensum(PensumData pensum)
+    {
+        editingPensum = new PensumData { PensumID = pensum.PensumID, PensumGrad = pensum.PensumGrad };
+    }
+
+    private void ResetForm()
+    {
+        editingPensum = new PensumData();
+    }
+
+    private class PensumData
+    {
+        public int PensumID { get; set; }
+        public string PensumGrad { get; set; }
+    }
+}
+ htt

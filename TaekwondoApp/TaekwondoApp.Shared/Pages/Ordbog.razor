@@ -1,0 +1,264 @@
+﻿@page "/ordbog"
+@inject HttpClient Http
+
+<h1>Ordbog</h1>
+
+<!-- Search -->
+<div class="mb-3 row">
+    <div class="col-md-4">
+        <label>Search (Dansk/Koransk):</label>
+        <InputText class="form-control" @bind-Value="searchTerm" />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-primary me-2" @onclick="ApplyFilter">Search</button>
+        <button class="btn btn-secondary" @onclick="ClearSearch">Clear</button>
+    </div>
+</div>
+
+<!-- List -->
+@if (filteredWords == null)
+{
+    <p><em>Loading entries...</em></p>
+}
+else if (!filteredWords.Any())
+{
+    <p><em>No matching entries found.</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Dansk</th>
+                <th>Koransk</th>
+                <th>Beskrivelse</th>
+                <th>Billede</th>
+                <th>Lyd</th>
+                <th>Video</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var word in filteredWords)
+            {
+                <tr>
+                    <td>@word.DanskOrd</td>
+                    <td>@word.KoranskOrd</td>
+                    <td>@word.Beskrivelse</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(word.BilledeLink))
+                        {
+                            <img src="@word.BilledeLink" width="50" />
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(word.LydLink))
+                        {
+                            <audio controls src="@word.LydLink" />
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(word.VideoLink))
+                        {
+                            <a href="@word.VideoLink" target="_blank">Video</a>
+                        }
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" @onclick="() => EditEntry(word)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteEntry(word.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+
+<h3>@(isEditing ? "Edit Entry" : "Add New Entry")</h3>
+
+<EditForm Model="entryModel" OnValidSubmit="@(isEditing ? UpdateEntry : CreateEntry)">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group mb-2">
+        <label>Dansk Ord:</label>
+        <InputText class="form-control" @bind-Value="entryModel.DanskOrd" required />
+    </div>
+
+    <div class="form-group mb-2">
+        <label>Koransk Ord:</label>
+        <InputText class="form-control" @bind-Value="entryModel.KoranskOrd" required />
+    </div>
+
+    <div class="form-group mb-2">
+        <label>Beskrivelse:</label>
+        <InputTextArea class="form-control" @bind-Value="entryModel.Beskrivelse" />
+    </div>
+
+    <div class="form-group mb-2">
+        <label>Billede Link:</label>
+        <InputText class="form-control" @bind-Value="entryModel.BilledeLink" />
+    </div>
+
+    <div class="form-group mb-2">
+        <label>Lyd Link:</label>
+        <InputText class="form-control" @bind-Value="entryModel.LydLink" />
+    </div>
+
+    <div class="form-group mb-2">
+        <label>Video Link:</label>
+        <InputText class="form-control" @bind-Value="entryModel.VideoLink" />
+    </div>
+
+    <button type="submit" class="btn btn-success">@((isEditing ? "Update" : "Create"))</button>
+    <button type="button" class="btn btn-secondary ms-2" @onclick="CancelEdit">Cancel</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    private List<OrdbogDTO> entries = new();
+    private List<OrdbogDTO> filteredWords = new();
+    private OrdbogDTO entryModel = new();
+    private bool isEditing = false;
+    private string searchTerm = "";
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEntries();
+    }
+
+    private async Task LoadEntries()
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7174/api/ordbog");
+            if (response != null)
+            {
+                entries = response;
+                ApplyFilter();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading ordbog: {ex.Message}";
+        }
+    }
+
+    private void ApplyFilter()
+    {
+        filteredWords = entries
+            .Where(e =>
+                string.IsNullOrEmpty(searchTerm) ||
+                e.DanskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                e.KoranskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = "";
+        ApplyFilter();
+    }
+
+    private async Task CreateEntry()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("https://localhost:7174/api/ordbog", entryModel);
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadEntries();
+                entryModel = new OrdbogDTO();
+            }
+            else
+            {
+                errorMessage = "Failed to create entry.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Create error: {ex.Message}";
+        }
+    }
+
+    private void EditEntry(OrdbogDTO entry)
+    {
+        entryModel = new OrdbogDTO
+            {
+                Id = entry.Id,
+                DanskOrd = entry.DanskOrd,
+                KoranskOrd = entry.KoranskOrd,
+                Beskrivelse = entry.Beskrivelse,
+                BilledeLink = entry.BilledeLink,
+                LydLink = entry.LydLink,
+                VideoLink = entry.VideoLink
+            };
+        isEditing = true;
+    }
+
+    private async Task UpdateEntry()
+    {
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"https://localhost:7174/api/ordbog/{entryModel.Id}", entryModel);
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadEntries();
+                entryModel = new OrdbogDTO();
+                isEditing = false;
+            }
+            else
+            {
+                errorMessage = "Failed to update entry.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Update error: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteEntry(int id)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"https://localhost:7174/api/ordbog/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadEntries();
+            }
+            else
+            {
+                errorMessage = "Failed to delete entry.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Delete error: {ex.Message}";
+        }
+    }
+
+    private void CancelEdit()
+    {
+        entryModel = new OrdbogDTO();
+        isEditing = false;
+        errorMessage = null;
+    }
+
+    public class OrdbogDTO
+    {
+        public int Id { get; set; }
+        public string DanskOrd { get; set; } = string.Empty;
+        public string KoranskOrd { get; set; } = string.Empty;
+        public string Beskrivelse { get; set; } = string.Empty;
+        public string BilledeLink { get; set; } = string.Empty;
+        public string LydLink { get; set; } = string.Empty;
+        public string VideoLink { get; set; } = string.Empty;
+    }
+}
