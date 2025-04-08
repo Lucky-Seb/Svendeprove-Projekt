@@ -335,7 +335,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ProgramNavn = "Intro Program",
                     Beskrivelse = "2 ugers intro",
                     Længde = 14,
-                    OprettelseDato = DateTime.UtcNow
+                    OprettelseDato = new DateTime(2025, 4, 8)  // Fixed date instead of DateTime.UtcNow
                 }
             );
 
