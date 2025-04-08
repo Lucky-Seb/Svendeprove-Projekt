@@ -1,11 +1,11 @@
-﻿using Api.DTOs;
-using Api.Models;
-using Api.Repositories;
+﻿using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoOrchestration.ApiService.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Api.Services
+namespace TaekwondoOrchestration.ApiService.Services
 {
     public class KlubØvelseService
     {

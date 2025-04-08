@@ -1,6 +1,6 @@
-﻿using Api.DTOs;
-using Api.Models;
-using Api.Repositories;
+﻿using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoOrchestration.ApiService.Repositories;
 
 public class TeknikService
 {
@@ -11,7 +11,7 @@ public class TeknikService
         _teknikRepository = teknikRepository;
     }
 
-    // Get all Tekniks as DTOs
+    // Get all Tekniks as DTO
     public async Task<List<TeknikDTO>> GetAllTekniksAsync()
     {
         var teknikList = await _teknikRepository.GetAllTekniksAsync();

@@ -1,11 +1,11 @@
-﻿using Api.Models;
-using Api.DTOs;
-using Api.Repositories;
+﻿using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoOrchestration.ApiService.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace Api.Services
+namespace TaekwondoOrchestration.ApiService.Services
 {
     public class TeoriService
     {
@@ -31,7 +31,7 @@ namespace Api.Services
             };
         }
 
-        // Get all Teori as DTOs
+        // Get all Teori as DTO
         public async Task<List<TeoriDTO>> GetAllTeoriAsync()
         {
             var teoriList = await _teoriRepository.GetAllTeoriAsync();

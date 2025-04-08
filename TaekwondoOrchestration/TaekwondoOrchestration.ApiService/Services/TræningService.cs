@@ -1,11 +1,11 @@
-﻿using Api.Models;
-using Api.DTOs;
-using Api.Repositories;
+﻿using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoOrchestration.ApiService.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace Api.Services
+namespace TaekwondoOrchestration.ApiService.Services
 {
     public class TræningService
     {
@@ -16,7 +16,7 @@ namespace Api.Services
             _træningRepository = træningRepository;
         }
 
-        // Get all Træning as DTOs
+        // Get all Træning as DTO
         public async Task<List<TræningDTO>> GetAllTræningAsync()
         {
             var træningList = await _træningRepository.GetAllTræningAsync();

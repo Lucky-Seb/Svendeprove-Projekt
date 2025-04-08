@@ -1,13 +1,13 @@
-﻿using Api.DTOs;
-using Api.Models;
-using Api.Repositories;
+﻿using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoOrchestration.ApiService.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Protocol.Core.Types;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Api.Services
+namespace TaekwondoOrchestration.ApiService.Services
 {
     public class ProgramPlanService
     {
@@ -27,7 +27,7 @@ namespace Api.Services
             _klubProgramRepository = klubProgramRepository ?? throw new ArgumentNullException(nameof(klubProgramRepository));
             _brugerProgramRepository = brugerProgramRepository ?? throw new ArgumentNullException(nameof(brugerProgramRepository));
         }
-        // Get all ProgramPlans as DTOs
+        // Get all ProgramPlans as DTO
         public async Task<List<ProgramPlanDTO>> GetAllProgramPlansAsync()
         {
             var programPlans = await _programPlanRepository.GetAllAsync();

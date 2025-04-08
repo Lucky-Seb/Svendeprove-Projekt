@@ -1,8 +1,8 @@
-﻿using Api.DTOs;
-using Api.Models;
-using Api.Repositories;
+﻿using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoOrchestration.ApiService.Repositories;
 
-namespace Api.Services
+namespace TaekwondoOrchestration.ApiService.Services
 {
     public class OrdbogService
     {
