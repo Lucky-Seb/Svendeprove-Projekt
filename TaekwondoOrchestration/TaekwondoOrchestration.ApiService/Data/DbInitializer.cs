@@ -1,4 +1,6 @@
-﻿public static class DbInitializer
+﻿using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoOrchestration.ApiService.Data;
+public static class DbInitializer
 {
     public static void Seed(ApiDbContext context)
     {
@@ -130,7 +132,7 @@
             Længde = 14,
             OprettelseDato = DateTime.UtcNow
         };
-        context.ProgramPlaner.Add(plan);
+        context.ProgramPlans.Add(plan);
 
         // --- KlubProgram ---
         context.KlubProgrammer.Add(new KlubProgram
@@ -161,7 +163,7 @@
         context.Træninger.Add(træning);
 
         // --- Ordbog ---
-        context.Ordbog.Add(new Ordbog
+        context.Ordboger.Add(new Ordbog
         {
             DanskOrd = "Hilsen",
             KoranskOrd = "Annyeonghaseyo",

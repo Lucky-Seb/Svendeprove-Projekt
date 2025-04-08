@@ -207,6 +207,177 @@ namespace TaekwondoOrchestration.ApiService.Data
                 .HasOne(t => t.Øvelse)
                 .WithMany()
                 .HasForeignKey(t => t.ØvelseID);
+
+            // --- Seed Pensum ---
+            modelBuilder.Entity<Pensum>().HasData(
+                new Pensum { PensumID = 1, PensumGrad = "Hvidt Bælte" },
+                new Pensum { PensumID = 2, PensumGrad = "Gult Bælte" }
+            );
+
+            // --- Seed Klub ---
+            modelBuilder.Entity<Klub>().HasData(
+                new Klub { KlubID = 1, KlubNavn = "København Taekwondo Klub" },
+                new Klub { KlubID = 2, KlubNavn = "Aarhus Kampkunstcenter" }
+            );
+
+            // --- Seed Bruger ---
+            modelBuilder.Entity<Bruger>().HasData(
+                new Bruger
+                {
+                    BrugerID = 1,
+                    Email = "emma@dojo.dk",
+                    Brugernavn = "emma123",
+                    Fornavn = "Emma",
+                    Efternavn = "Jensen",
+                    Brugerkode = "123456", // hash in real app
+                    Address = "Nørrebrogade 42",
+                    Bæltegrad = "Gult Bælte",
+                    Role = "Bruger"
+                }
+            );
+
+            // --- BrugerKlub ---
+            modelBuilder.Entity<BrugerKlub>().HasData(
+                new BrugerKlub { BrugerID = 1, KlubID = 1 }
+            );
+
+            // --- Øvelse ---
+            modelBuilder.Entity<Øvelse>().HasData(
+                new Øvelse
+                {
+                    ØvelseID = 1,
+                    ØvelseNavn = "Front Spark",
+                    ØvelseBeskrivelse = "En simpel frontspark teknik.",
+                    ØvelseBillede = "",
+                    ØvelseVideo = "",
+                    ØvelseTid = 30,
+                    ØvelseSværhed = "Begynder",
+                    PensumID = 1
+                }
+            );
+
+            // --- BrugerØvelse ---
+            modelBuilder.Entity<BrugerØvelse>().HasData(
+                new BrugerØvelse { BrugerID = 1, ØvelseID = 1 }
+            );
+
+            // --- KlubØvelse ---
+            modelBuilder.Entity<KlubØvelse>().HasData(
+                new KlubØvelse { KlubID = 1, ØvelseID = 1 }
+            );
+
+            // --- Teori ---
+            modelBuilder.Entity<Teori>().HasData(
+                new Teori
+                {
+                    TeoriID = 1,
+                    TeoriNavn = "Respect",
+                    TeoriBeskrivelse = "Respekt for dojo og lærere.",
+                    TeoriBillede = "",
+                    TeoriVideo = "",
+                    TeoriLyd = "",
+                    PensumID = 1
+                }
+            );
+
+            // --- Teknik ---
+            modelBuilder.Entity<Teknik>().HasData(
+                new Teknik
+                {
+                    TeknikID = 1,
+                    TeknikNavn = "Blokering",
+                    TeknikBeskrivelse = "Forsvar mod angreb.",
+                    TeknikBillede = "",
+                    TeknikVideo = "",
+                    TeknikLyd = "",
+                    PensumID = 1
+                }
+            );
+
+            // --- Quiz ---
+            modelBuilder.Entity<Quiz>().HasData(
+                new Quiz
+                {
+                    QuizID = 1,
+                    QuizNavn = "Begynder Quiz",
+                    QuizBeskrivelse = "Spørgsmål for begyndere",
+                    PensumID = 1
+                }
+            );
+
+            // --- Spørgsmål ---
+            modelBuilder.Entity<Spørgsmål>().HasData(
+                new Spørgsmål
+                {
+                    SpørgsmålID = 1,
+                    SpørgsmålRækkefølge = 1,
+                    SpørgsmålTid = 30,
+                    QuizID = 1,
+                    TeoriID = 1
+                }
+            );
+
+            // --- BrugerQuiz ---
+            modelBuilder.Entity<BrugerQuiz>().HasData(
+                new BrugerQuiz { BrugerID = 1, QuizID = 1 }
+            );
+
+            // --- KlubQuiz ---
+            modelBuilder.Entity<KlubQuiz>().HasData(
+                new KlubQuiz { KlubID = 1, QuizID = 1 }
+            );
+
+            // --- ProgramPlan ---
+            modelBuilder.Entity<ProgramPlan>().HasData(
+                new ProgramPlan
+                {
+                    ProgramID = 1,
+                    ProgramNavn = "Intro Program",
+                    Beskrivelse = "2 ugers intro",
+                    Længde = 14,
+                    OprettelseDato = DateTime.UtcNow
+                }
+            );
+
+            // --- KlubProgram ---
+            modelBuilder.Entity<KlubProgram>().HasData(
+                new KlubProgram { KlubID = 1, ProgramID = 1 }
+            );
+
+            // --- BrugerProgram ---
+            modelBuilder.Entity<BrugerProgram>().HasData(
+                new BrugerProgram { BrugerID = 1, ProgramID = 1 }
+            );
+
+            // --- Træning ---
+            modelBuilder.Entity<Træning>().HasData(
+                new Træning
+                {
+                    TræningID = 1,
+                    TræningRækkefølge = 1,
+                    Tid = 45,
+                    ProgramID = 1,
+                    QuizID = 1,
+                    TeoriID = 1,
+                    TeknikID = 1,
+                    ØvelseID = 1,
+                    PensumID = 1
+                }
+            );
+
+            // --- Ordbog ---
+            modelBuilder.Entity<Ordbog>().HasData(
+                new Ordbog
+                {
+                    Id = 1,
+                    DanskOrd = "Hilsen",
+                    KoranskOrd = "Annyeonghaseyo",
+                    Beskrivelse = "En typisk hilsen i kampkunst",
+                    BilledeLink = "",
+                    LydLink = "",
+                    VideoLink = ""
+                }
+            );
         }
     }
 }
