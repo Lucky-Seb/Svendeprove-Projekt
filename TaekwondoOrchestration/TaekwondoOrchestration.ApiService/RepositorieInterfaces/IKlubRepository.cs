@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace TaekwondoOrchestration.ApiService.Repositories
+namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
 {
     public interface IKlubRepository
     {

@@ -1,11 +1,7 @@
 ﻿using TaekwondoOrchestration.ApiService.DTO;
 using TaekwondoOrchestration.ApiService.Models;
-using TaekwondoOrchestration.ApiService.Repositories;
-using Microsoft.AspNetCore.Mvc;
-using NuGet.Protocol.Core.Types;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+
 
 namespace TaekwondoOrchestration.ApiService.Services
 {

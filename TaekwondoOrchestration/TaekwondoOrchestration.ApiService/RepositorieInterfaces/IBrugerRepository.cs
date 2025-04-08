@@ -1,9 +1,9 @@
-﻿using TaekwondoOrchestration.ApiService.DTOs;
+﻿using TaekwondoOrchestration.ApiService.DTO;
 using TaekwondoOrchestration.ApiService.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace TaekwondoOrchestration.ApiService.Repositories
+namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
 {
     public interface IBrugerRepository
     {

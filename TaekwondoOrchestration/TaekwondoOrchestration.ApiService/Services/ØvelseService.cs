@@ -1,7 +1,7 @@
 ﻿using TaekwondoOrchestration.ApiService.DTO;
 using TaekwondoOrchestration.ApiService.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
-using Humanizer;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
