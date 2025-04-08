@@ -69,7 +69,6 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
 var app = builder.Build();
 
 // Configure database context and seed data
-
 //using (var scope = app.Services.CreateScope())
 //{
 //    var context = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
@@ -90,6 +89,9 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Map controllers
+app.MapControllers(); // This line maps your controllers to their respective routes
+
 string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
 
 app.MapGet("/weatherforecast", () =>
@@ -105,8 +107,6 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
-
-app.MapDefaultEndpoints();
 
 app.Run();
 
