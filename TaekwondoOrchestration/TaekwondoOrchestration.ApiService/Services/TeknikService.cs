@@ -1,6 +1,8 @@
 ﻿using TaekwondoOrchestration.ApiService.DTO;
 using TaekwondoOrchestration.ApiService.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+
 
 public class TeknikService
 {

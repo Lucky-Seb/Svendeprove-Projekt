@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace TaekwondoOrchestration.ApiService.ApiService.RepositorieInterfaces
+namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
 {
     public interface IQuizRepository
     {

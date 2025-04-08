@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoOrchestration.ApiService.Services;
-using TaekwondoOrchestration.Repositories;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

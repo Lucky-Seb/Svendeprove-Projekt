@@ -3,6 +3,7 @@ using TaekwondoOrchestration.ApiService.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
 namespace TaekwondoOrchestration.ApiService.Repositories
 {

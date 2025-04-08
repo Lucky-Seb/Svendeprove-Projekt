@@ -1,6 +1,6 @@
 ﻿using TaekwondoOrchestration.ApiService.Models;
 
-namespace TaekwondoOrchestration.ApiService.RepositorieInterfaceInterfaces
+namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
 {
     public interface ITeknikRepository
     {

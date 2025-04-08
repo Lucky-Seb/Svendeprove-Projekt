@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+
 
 namespace TaekwondoOrchestration.ApiService.Repositories
 {
