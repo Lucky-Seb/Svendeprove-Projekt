@@ -185,7 +185,7 @@ else
     {
         try
         {
-            øvelser = await Http.GetFromJsonAsync<List<ØvelseDTO>>("https://localhost:7174/api/øvelse");
+            øvelser = await Http.GetFromJsonAsync<List<ØvelseDTO>>("https://localhost:7478/api/øvelse");
             ApplyFilters();
         }
         catch (Exception ex)
@@ -198,7 +198,7 @@ else
     {
         try
         {
-            pensumList = await Http.GetFromJsonAsync<List<PensumDTO>>("https://localhost:7174/api/pensum");
+            pensumList = await Http.GetFromJsonAsync<List<PensumDTO>>("https://localhost:7478/api/pensum");
         }
         catch (Exception ex)
         {
@@ -210,7 +210,7 @@ else
     {
         try
         {
-            brugerList = await Http.GetFromJsonAsync<List<BrugerDTO>>("https://localhost:7174/api/bruger");
+            brugerList = await Http.GetFromJsonAsync<List<BrugerDTO>>("https://localhost:7478/api/bruger");
         }
         catch (Exception ex)
         {
@@ -222,7 +222,7 @@ else
     {
         try
         {
-            klubList = await Http.GetFromJsonAsync<List<KlubDTO>>("https://localhost:7174/api/klub");
+            klubList = await Http.GetFromJsonAsync<List<KlubDTO>>("https://localhost:7478/api/klub");
         }
         catch (Exception ex)
         {
@@ -234,7 +234,7 @@ else
     {
         try
         {
-            brugerØvelseList = await Http.GetFromJsonAsync<List<BrugerØvelseDTO>>("https://localhost:7174/api/brugerøvelse");
+            brugerØvelseList = await Http.GetFromJsonAsync<List<BrugerØvelseDTO>>("https://localhost:7478/api/brugerøvelse");
         }
         catch (Exception ex)
         {
@@ -246,7 +246,7 @@ else
     {
         try
         {
-            klubØvelseList = await Http.GetFromJsonAsync<List<KlubØvelseDTO>>("https://localhost:7174/api/klubøvelse");
+            klubØvelseList = await Http.GetFromJsonAsync<List<KlubØvelseDTO>>("https://localhost:7478/api/klubøvelse");
         }
         catch (Exception ex)
         {
@@ -289,7 +289,7 @@ else
         try
         {
             // Send POST request to create a new Øvelse
-            var response = await Http.PostAsJsonAsync("https://localhost:7174/api/øvelse", øvelse);
+            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/øvelse", øvelse);
 
             if (response.IsSuccessStatusCode)
             {
@@ -323,7 +323,7 @@ else
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7174/api/øvelse/{øvelse.ØvelseID}", øvelse);
+            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/øvelse/{øvelse.ØvelseID}", øvelse);
             if (response.IsSuccessStatusCode)
             {
                 await LoadØvelser();
@@ -350,7 +350,7 @@ else
 
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7174/api/øvelse/{id}");
+            var response = await Http.DeleteAsync($"https://localhost:7478/api/øvelse/{id}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadØvelser();

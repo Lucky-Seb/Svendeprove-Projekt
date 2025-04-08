@@ -119,7 +119,7 @@ else
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<List<QuizDTO>>("https://localhost:7174/api/quiz");
+            var response = await Http.GetFromJsonAsync<List<QuizDTO>>("https://localhost:7478/api/quiz");
             if (response != null)
             {
                 quizList = response;
@@ -150,7 +150,7 @@ else
     {
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:7174/api/quiz", quizModel);
+            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/quiz", quizModel);
             if (response.IsSuccessStatusCode)
             {
                 await LoadQuizzes();
@@ -186,7 +186,7 @@ else
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7174/api/quiz/{quizModel.QuizID}", quizModel);
+            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/quiz/{quizModel.QuizID}", quizModel);
             if (response.IsSuccessStatusCode)
             {
                 await LoadQuizzes();
@@ -210,7 +210,7 @@ else
 
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7174/api/quiz/{quizId}");
+            var response = await Http.DeleteAsync($"https://localhost:7478/api/quiz/{quizId}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadQuizzes();

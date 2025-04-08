@@ -139,7 +139,7 @@ else
     {
         try
         {
-            teorier = await Http.GetFromJsonAsync<List<TeoriDTO>>("https://localhost:7174/api/teori");
+            teorier = await Http.GetFromJsonAsync<List<TeoriDTO>>("https://localhost:7478/api/teori");
             ApplyFilters();
         }
         catch (Exception ex)
@@ -152,7 +152,7 @@ else
     {
         try
         {
-            pensumList = await Http.GetFromJsonAsync<List<PensumDTO>>("https://localhost:7174/api/pensum");
+            pensumList = await Http.GetFromJsonAsync<List<PensumDTO>>("https://localhost:7478/api/pensum");
         }
         catch (Exception ex)
         {
@@ -182,7 +182,7 @@ else
     {
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:7174/api/teori", teori);
+            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/teori", teori);
             if (response.IsSuccessStatusCode)
             {
                 await LoadTeorier();
@@ -209,7 +209,7 @@ else
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7174/api/teori/{teori.TeoriID}", teori);
+            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/teori/{teori.TeoriID}", teori);
             if (response.IsSuccessStatusCode)
             {
                 await LoadTeorier();
@@ -236,7 +236,7 @@ else
 
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7174/api/teori/{id}");
+            var response = await Http.DeleteAsync($"https://localhost:7478/api/teori/{id}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadTeorier();

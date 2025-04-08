@@ -89,7 +89,7 @@ else
     {
         try
         {
-            var url = "https://localhost:7174/api/klub";
+            var url = "https://localhost:7478/api/klub";
             var response = await Http.GetFromJsonAsync<List<KlubDTO>>(url);
             if (response != null)
             {
@@ -120,7 +120,7 @@ else
     {
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:7174/api/klub", klub);
+            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/klub", klub);
             if (response.IsSuccessStatusCode)
             {
                 await LoadKlubber();
@@ -147,7 +147,7 @@ else
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7174/api/klub/{klub.KlubID}", klub);
+            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/klub/{klub.KlubID}", klub);
             if (response.IsSuccessStatusCode)
             {
                 await LoadKlubber();
@@ -174,7 +174,7 @@ else
 
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7174/api/klub/{id}");
+            var response = await Http.DeleteAsync($"https://localhost:7478/api/klub/{id}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadKlubber();

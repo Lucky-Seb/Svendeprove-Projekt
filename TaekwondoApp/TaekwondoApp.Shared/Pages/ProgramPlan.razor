@@ -132,7 +132,7 @@ else
     {
         try
         {
-            programPlans = await Http.GetFromJsonAsync<List<ProgramPlanDTO>>("https://localhost:7174/api/programplan/all");
+            programPlans = await Http.GetFromJsonAsync<List<ProgramPlanDTO>>("https://localhost:7478/api/programplan/all");
         }
         catch (Exception ex)
         {
@@ -144,7 +144,7 @@ else
     {
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:7174/api/programplan", programPlan);
+            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/programplan", programPlan);
             if (response.IsSuccessStatusCode)
             {
                 await LoadProgramPlans();
@@ -171,7 +171,7 @@ else
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7174/api/programplan/{programPlan.ProgramID}", programPlan);
+            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/programplan/{programPlan.ProgramID}", programPlan);
             if (response.IsSuccessStatusCode)
             {
                 await LoadProgramPlans();
@@ -198,7 +198,7 @@ else
 
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7174/api/programplan/{id}");
+            var response = await Http.DeleteAsync($"https://localhost:7478/api/programplan/{id}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadProgramPlans();

@@ -140,7 +140,7 @@ else
     {
         try
         {
-            tekniks = await Http.GetFromJsonAsync<List<TeknikDTO>>("https://localhost:7174/api/teknik");
+            tekniks = await Http.GetFromJsonAsync<List<TeknikDTO>>("https://localhost:7478/api/teknik");
             ApplyFilters();
         }
         catch (Exception ex)
@@ -153,7 +153,7 @@ else
     {
         try
         {
-            pensumList = await Http.GetFromJsonAsync<List<PensumDTO>>("https://localhost:7174/api/pensum");
+            pensumList = await Http.GetFromJsonAsync<List<PensumDTO>>("https://localhost:7478/api/pensum");
         }
         catch (Exception ex)
         {
@@ -183,7 +183,7 @@ else
     {
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:7174/api/teknik", teknik);
+            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/teknik", teknik);
             if (response.IsSuccessStatusCode)
             {
                 await LoadTekniks();
@@ -210,7 +210,7 @@ else
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7174/api/teknik/{teknik.TeknikID}", teknik);
+            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/teknik/{teknik.TeknikID}", teknik);
             if (response.IsSuccessStatusCode)
             {
                 await LoadTekniks();
@@ -237,7 +237,7 @@ else
 
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7174/api/teknik/{id}");
+            var response = await Http.DeleteAsync($"https://localhost:7478/api/teknik/{id}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadTekniks();

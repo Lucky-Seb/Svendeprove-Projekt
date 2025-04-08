@@ -163,7 +163,7 @@ else
     {
         try
         {
-            brugers = await Http.GetFromJsonAsync<List<BrugerDTO>>("https://localhost:7174/api/bruger");
+            brugers = await Http.GetFromJsonAsync<List<BrugerDTO>>("https://localhost:7478/api/bruger");
             ApplyFilters();
         }
         catch (Exception ex)
@@ -176,7 +176,7 @@ else
     {
         try
         {
-            klubList = await Http.GetFromJsonAsync<List<KlubDTO>>("https://localhost:7174/api/klub");
+            klubList = await Http.GetFromJsonAsync<List<KlubDTO>>("https://localhost:7478/api/klub");
         }
         catch (Exception ex)
         {
@@ -221,7 +221,7 @@ else
             // Log the data being sent for debugging
             errorDetails = JsonConvert.SerializeObject(bruger, Formatting.Indented);
 
-            var response = await Http.PostAsJsonAsync("https://localhost:7174/api/bruger", bruger);
+            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/bruger", bruger);
             if (response.IsSuccessStatusCode)
             {
                 await LoadBrugers();
@@ -267,7 +267,7 @@ else
             // Log the data being sent for debugging
             errorDetails = JsonConvert.SerializeObject(bruger, Formatting.Indented);
 
-            var response = await Http.PutAsJsonAsync($"https://localhost:7174/api/bruger/{bruger.BrugerID}", bruger);
+            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/bruger/{bruger.BrugerID}", bruger);
             if (response.IsSuccessStatusCode)
             {
                 await LoadBrugers();
@@ -295,7 +295,7 @@ else
 
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7174/api/bruger/{id}");
+            var response = await Http.DeleteAsync($"https://localhost:7478/api/bruger/{id}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadBrugers();

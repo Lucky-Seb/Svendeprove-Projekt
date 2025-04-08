@@ -137,7 +137,7 @@ else
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7174/api/ordbog");
+            var response = await Http.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog");
             if (response != null)
             {
                 entries = response;
@@ -170,7 +170,7 @@ else
     {
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:7174/api/ordbog", entryModel);
+            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModel);
             if (response.IsSuccessStatusCode)
             {
                 await LoadEntries();
@@ -206,7 +206,7 @@ else
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7174/api/ordbog/{entryModel.Id}", entryModel);
+            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entryModel.Id}", entryModel);
             if (response.IsSuccessStatusCode)
             {
                 await LoadEntries();
@@ -228,7 +228,7 @@ else
     {
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7174/api/ordbog/{id}");
+            var response = await Http.DeleteAsync($"https://localhost:7478/api/ordbog/{id}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadEntries();
