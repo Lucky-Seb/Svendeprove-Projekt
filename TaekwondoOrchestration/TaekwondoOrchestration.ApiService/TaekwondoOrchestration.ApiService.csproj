@@ -32,7 +32,6 @@
     <Folder Include="Security\" />
     <Folder Include="Validator\" />
     <Folder Include="Repositories\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
