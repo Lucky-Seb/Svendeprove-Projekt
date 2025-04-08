@@ -1,0 +1,208 @@
+﻿@page "/klub"
+@inject HttpClient Http
+
+<h1>Klub Management</h1>
+
+<!-- Search Filters -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Search by Klub Name:</label>
+        <input class="form-control" @bind="searchKlubName" placeholder="Enter Klub name..." />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+    </div>
+</div>
+
+<!-- Display Table -->
+@if (filteredKlubber == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (filteredKlubber.Count == 0)
+{
+    <p><em>No Klub records match your search.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Klub ID</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var klub in filteredKlubber)
+            {
+                <tr>
+                    <td>@klub.KlubID</td>
+                    <td>@klub.KlubNavn</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditKlub(klub)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteKlub(klub.KlubID)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+
+<h3>@(isEditing ? "Edit Klub" : "Add New Klub")</h3>
+
+<EditForm Model="@klub" OnValidSubmit="@(isEditing ? UpdateKlub : CreateKlub)">
+    <DataAnnotationsValidator />
+
+    <div class="form-group">
+        <label>Klub Name:</label>
+        <InputText class="form-control" @bind-Value="klub.KlubNavn" required />
+    </div>
+
+    <button type="submit" class="btn btn-success">@(isEditing ? "Update" : "Create")</button>
+    <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+</EditForm>
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@code {
+    private List<KlubDTO> klubber = new();
+    private List<KlubDTO> filteredKlubber = new();
+    private KlubDTO klub = new();
+    private bool isEditing = false;
+    private string? errorMessage;
+
+    private string searchKlubName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadKlubber();
+    }
+
+    private async Task LoadKlubber()
+    {
+        try
+        {
+            var url = "https://localhost:7174/api/klub";
+            var response = await Http.GetFromJsonAsync<List<KlubDTO>>(url);
+            if (response != null)
+            {
+                klubber = response;
+                ApplyFilters();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading Klubber: {ex.Message}";
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        filteredKlubber = klubber
+            .Where(k => string.IsNullOrEmpty(searchKlubName) || k.KlubNavn.Contains(searchKlubName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchKlubName = "";
+        ApplyFilters();
+    }
+
+    private async Task CreateKlub()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("https://localhost:7174/api/klub", klub);
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadKlubber();
+                klub = new KlubDTO();
+            }
+            else
+            {
+                errorMessage = "Failed to create Klub.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating Klub: {ex.Message}";
+        }
+    }
+
+    private void EditKlub(KlubDTO selectedKlub)
+    {
+        klub = selectedKlub;
+        isEditing = true;
+    }
+
+    private async Task UpdateKlub()
+    {
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"https://localhost:7174/api/klub/{klub.KlubID}", klub);
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadKlubber();
+                klub = new KlubDTO();
+                isEditing = false;
+            }
+            else
+            {
+                errorMessage = "Failed to update Klub.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating Klub: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteKlub(int id)
+    {
+        if (!await ConfirmDelete())
+        {
+            return;
+        }
+
+        try
+        {
+            var response = await Http.DeleteAsync($"https://localhost:7174/api/klub/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadKlubber();
+            }
+            else
+            {
+                errorMessage = "Failed to delete Klub.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting Klub: {ex.Message}";
+        }
+    }
+
+    private void CancelEdit()
+    {
+        klub = new KlubDTO();
+        isEditing = false;
+    }
+
+    private async Task<bool> ConfirmDelete()
+    {
+        return await Task.FromResult(true);
+    }
+    public class KlubDTO
+    {
+        public int KlubID { get; set; }
+        public string KlubNavn { get; set; }
+    }
+}
