@@ -1,9 +1,48 @@
 using Microsoft.EntityFrameworkCore;
-
+using System.Text.Json;
 using TaekwondoOrchestration.ApiService.Data;
-
+using TaekwondoOrchestration.ApiService.Services;
+using TaekwondoOrchestration.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register services using reflection
+var serviceTypes = new[]
+{
+    typeof(BrugerKlubService), typeof(BrugerØvelseService), typeof(BrugerProgramService),
+    typeof(BrugerQuizService), typeof(BrugerService), typeof(KlubService),
+    typeof(KlubProgramService), typeof(KlubQuizService), typeof(KlubØvelseService),
+    typeof(OrdbogService), typeof(ØvelseService), typeof(PensumService),
+    typeof(ProgramPlanService), typeof(QuizService), typeof(SpørgsmålService),
+    typeof(TeknikService), typeof(TeoriService), typeof(TræningService)
+};
+
+foreach (var serviceType in serviceTypes)
+{
+    builder.Services.AddScoped(serviceType);
+}
+
+// Register repositories using reflection
+var repositoryTypes = typeof(IBrugerKlubRepository).Assembly
+    .GetTypes()
+    .Where(t => t.Name.EndsWith("Repository") && !t.IsInterface)
+    .ToList();
+
+foreach (var repo in repositoryTypes)
+{
+    var interfaceType = repo.GetInterfaces().FirstOrDefault(i => i.Name == "I" + repo.Name);
+    if (interfaceType != null)
+    {
+        builder.Services.AddScoped(interfaceType, repo);
+    }
+}
+
+// Add services to the container.
+builder.Services.AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        });
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
