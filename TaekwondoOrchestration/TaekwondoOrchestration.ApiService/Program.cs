@@ -70,11 +70,11 @@ var app = builder.Build();
 
 // Configure database context and seed data
 
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
-    DbInitializer.Seed(context);
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var context = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
+//    DbInitializer.Seed(context);
+//}
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
