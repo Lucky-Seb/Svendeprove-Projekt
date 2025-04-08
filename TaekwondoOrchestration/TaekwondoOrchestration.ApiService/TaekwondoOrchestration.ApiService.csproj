@@ -27,10 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
     <Folder Include="Exception Handler\" />
     <Folder Include="Security\" />
     <Folder Include="Validator\" />
+    <Folder Include="Repositories\" />
   </ItemGroup>
 
 </Project>
