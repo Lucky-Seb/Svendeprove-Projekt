@@ -135,5 +135,33 @@ namespace TaekwondoApp.Services
                 throw;
             }
         }
+        public async Task<int> UpdateEntryWithServerIdAsync(OrdbogDTO entry)
+        {
+            try
+            {
+                var existingEntry = _database.Table<OrdbogDTO>().FirstOrDefault(e => e.Id == entry.Id);
+                if (existingEntry != null)
+                {
+                    // Update the entry with the server-assigned ID and sync status
+                    existingEntry.DanskOrd = entry.DanskOrd;
+                    existingEntry.KoranskOrd = entry.KoranskOrd;
+                    existingEntry.Beskrivelse = entry.Beskrivelse;
+                    existingEntry.BilledeLink = entry.BilledeLink;
+                    existingEntry.LydLink = entry.LydLink;
+                    existingEntry.VideoLink = entry.VideoLink;
+                    existingEntry.IsSync = true; // Mark as synced with server
+
+                    return await Task.Run(() => _database.Update(existingEntry));
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating entry with server ID: {ex.Message}");
+                throw;
+            }
+        }
+
     }
 }

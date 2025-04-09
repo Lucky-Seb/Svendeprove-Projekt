@@ -249,13 +249,13 @@ else
 
             try
             {
-                // First, sync the deleted entries with the server
+                // Sync the deleted entries with the server (using the correct IDs)
                 foreach (var deletedId in deletedEntries)
                 {
                     var response = await Http.DeleteAsync($"https://localhost:7478/api/ordbog/{deletedId}");
                     if (response.IsSuccessStatusCode)
                     {
-                        // If the deletion was successful on the server, remove from local list
+                        // If the deletion was successful on the server, remove from the local list
                         deletedEntries.Remove(deletedId);
                         AddLog($"Synced deleted entry (Online): ID {deletedId}");
                     }
@@ -265,7 +265,7 @@ else
                     }
                 }
 
-                // Sync any other changes as needed (e.g., updates, creates)
+                // Sync any other changes (e.g., creates, updates)
                 await SyncService.SyncLocalChangesToServerAsync();
                 syncFailed = false;
             }
@@ -328,30 +328,31 @@ else
     {
         try
         {
-            // Check if we are offline or online
             if (!internet)
             {
-                // When offline, set IsSync to false (because it's not synced yet)
-                entryModel.IsSync = false;
+                entryModel.IsSync = false; // Mark as not synced yet
                 await SQLiteService.AddEntryAsync(entryModel);
-                AddLog($"Created entry (Offline): ID {entryModel.Id}");
             }
             else
             {
-                // When online, set IsSync to true (because we are syncing to the server)
-                entryModel.IsSync = true;
                 var response = await Http.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModel);
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    var serverEntry = await response.Content.ReadFromJsonAsync<OrdbogDTO>();
+                    if (serverEntry != null)
+                    {
+                        // Update local database with server-assigned ID
+                        await SQLiteService.UpdateEntryWithServerIdAsync(serverEntry);
+                        entryModel = new(); // Reset the entry after successful creation
+                    }
+                }
+                else
                 {
                     errorMessage = "Failed to create entry on server.";
-                    return;
                 }
-                AddLog($"Created entry (Online): ID {entryModel.Id}");
             }
 
-            // Reload the entries to refresh the list after adding the new entry
-            await LoadEntries();
-            entryModel = new();  // Clear the form
+            await LoadEntries(); // Reload entries after creation
         }
         catch (Exception ex)
         {
@@ -359,8 +360,6 @@ else
             Console.WriteLine(ex);
         }
     }
-
-
 
     private async Task UpdateEntry()
     {
@@ -414,7 +413,7 @@ else
             }
             else
             {
-                // Online: Attempt to delete the entry on the server first
+                // Online: Attempt to delete the entry on the server
                 var response = await Http.DeleteAsync($"https://localhost:7478/api/ordbog/{id}");
                 if (!response.IsSuccessStatusCode)
                 {
@@ -422,7 +421,7 @@ else
                     return;
                 }
 
-                // If online delete is successful, remove from the local database too
+                // If online delete is successful, remove from the local database
                 await SQLiteService.DeleteEntryAsync(id);
                 AddLog($"Deleted entry (Online): ID {id}");
             }
@@ -436,6 +435,7 @@ else
             Console.WriteLine(ex);
         }
     }
+
 
 
 

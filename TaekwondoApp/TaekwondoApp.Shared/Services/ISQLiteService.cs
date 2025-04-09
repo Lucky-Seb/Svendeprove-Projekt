@@ -13,7 +13,7 @@ namespace TaekwondoApp.Shared.Services
         Task<int> UpdateEntryAsync(OrdbogDTO entry);
         Task<OrdbogDTO> GetEntryByIdAsync(int id);
         void InitializeDatabase();
-
+        Task<int> UpdateEntryWithServerIdAsync(OrdbogDTO entry);
         // NEW: Only get entries that need to be synced
         Task<List<OrdbogDTO>> GetUnsyncedEntriesAsync();
 
