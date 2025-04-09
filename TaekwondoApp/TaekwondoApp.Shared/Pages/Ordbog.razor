@@ -21,6 +21,13 @@
         <button class="btn btn-secondary" @onclick="ClearSearch">Clear</button>
     </div>
 </div>
+<div class="log-box" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-top: 20px;">
+    <h4>App Logs</h4>
+    @foreach (var log in logs.Reverse<string>())
+    {
+        <div>@log</div>
+    }
+</div>
 
 <button class="btn btn-primary me-2" @onclick="ChangeInternet">Internet</button>
 
@@ -138,6 +145,13 @@ else
     private string? errorMessage;
     private HubConnection? _hubConnection;
     private bool internet = true;
+    private List<string> logs = new();
+    private void AddLog(string message)
+    {
+        logs.Add($"[{DateTime.Now:T}] {message}");
+        if (logs.Count > 100) logs.RemoveAt(0); // Optional: keep log size manageable
+        StateHasChanged(); // Refresh UI
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -174,42 +188,40 @@ else
     private async void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
     {
         var access = e.NetworkAccess;
-        Console.WriteLine($"[ConnectivityChanged] New network access: {access}");
+        AddLog($"Connectivity changed: {access}");
 
         if (access == NetworkAccess.Internet && internet == true)
         {
-            Console.WriteLine("[ConnectivityChanged] Internet is available and app internet toggle is ON. Starting sync...");
-
+            AddLog("Internet available. Attempting to sync...");
             await InvokeAsync(async () =>
             {
                 try
                 {
                     await SyncService.SyncLocalChangesToServerAsync();
-                    Console.WriteLine("[ConnectivityChanged] Sync completed successfully.");
+                    AddLog("Sync completed.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[ConnectivityChanged] Sync failed: {ex.Message}");
+                    AddLog($"Sync failed: {ex.Message}");
                 }
 
-                await LoadEntries(); // Optionally refresh UI
-                Console.WriteLine("[ConnectivityChanged] Entries reloaded after sync.");
+                await LoadEntries();
+                AddLog("Entries reloaded.");
             });
         }
         else if (access == NetworkAccess.None)
         {
-            Console.WriteLine("[ConnectivityChanged] No internet connection detected.");
             internet = false;
-
+            AddLog("No internet connection.");
             await InvokeAsync(async () =>
             {
-                await LoadEntries(); // Optionally refresh UI
-                Console.WriteLine("[ConnectivityChanged] Entries loaded in offline mode.");
+                await LoadEntries();
+                AddLog("Entries loaded in offline mode.");
             });
         }
         else
         {
-            Console.WriteLine("[ConnectivityChanged] Network access changed but sync not triggered (maybe toggle is off?).");
+            AddLog("Connectivity changed, but sync not triggered.");
         }
     }
 
