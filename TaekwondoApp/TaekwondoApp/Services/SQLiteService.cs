@@ -12,44 +12,68 @@ namespace TaekwondoApp.Services
     {
         private readonly SQLiteConnection _database;
 
-        public SQLiteService()
+        public SQLiteService(string dbPath)
         {
-            // Database path
-            var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ordbog.db3");
             _database = new SQLiteConnection(dbPath);
+            InitializeDatabase(); // Ensure the database is initialized
+        }
 
-            // Create table if it doesn't exist
+        public void InitializeDatabase()
+        {
+            // Create the table if it doesn't exist
             _database.CreateTable<OrdbogDTO>();
         }
 
-        // Add a new entry to the database
-        public async Task<int> AddEntryAsync(OrdbogDTO entry)
-        {
-            return await Task.FromResult(_database.Insert(entry));  // Insert entry asynchronously
-        }
-
-        // Get all entries from the database
         public async Task<List<OrdbogDTO>> GetAllEntriesAsync()
         {
-            return await Task.FromResult(_database.Table<OrdbogDTO>().ToList());  // Fetch all entries asynchronously
+            try
+            {
+                return await Task.FromResult(_database.Table<OrdbogDTO>().ToList());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching entries: {ex.Message}");
+                throw;
+            }
         }
 
-        // Delete an entry by ID
-        public async Task<int> DeleteEntryAsync(int id)
+        public async Task<int> AddEntryAsync(OrdbogDTO entry)
         {
-            return await Task.FromResult(_database.Table<OrdbogDTO>().Delete(entry => entry.Id == id));  // Delete by ID
+            try
+            {
+                return await Task.Run(() => _database.Insert(entry));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding entry: {ex.Message}");
+                throw;
+            }
         }
 
-        // Update an existing entry
         public async Task<int> UpdateEntryAsync(OrdbogDTO entry)
         {
-            return await Task.FromResult(_database.Update(entry));  // Update entry asynchronously
+            try
+            {
+                return await Task.Run(() => _database.Update(entry));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating entry: {ex.Message}");
+                throw;
+            }
         }
 
-        // Initialize the database by creating tables (if not already created)
-        public void InitializeDatabase()
+        public async Task<int> DeleteEntryAsync(int id)
         {
-            _database.CreateTable<OrdbogDTO>();  // Create table for OrdbogDTO
+            try
+            {
+                return await Task.Run(() => _database.Delete<OrdbogDTO>(id));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting entry: {ex.Message}");
+                throw;
+            }
         }
     }
 }

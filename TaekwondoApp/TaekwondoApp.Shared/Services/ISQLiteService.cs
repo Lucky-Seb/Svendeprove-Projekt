@@ -13,6 +13,6 @@ namespace TaekwondoApp.Shared.Services
         Task<List<OrdbogDTO>> GetAllEntriesAsync();
         Task<int> DeleteEntryAsync(int id); // Add this line to the interface
         Task<int> UpdateEntryAsync(OrdbogDTO entry);
-        void InitializeDatabase();
+        void InitializeDatabase(); // Add this line to the interface
     }
 }
