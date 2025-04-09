@@ -126,9 +126,9 @@ else
 }
 
 @code {
-    private List<OrdbogDTO> entries = new();
-    private List<OrdbogDTO> filteredWords = new();
-    private OrdbogDTO entryModel = new();
+    private List<TaekwondoApp.Shared.DTO.OrdbogDTO> entries = new();
+    private List<TaekwondoApp.Shared.DTO.OrdbogDTO> filteredWords = new();
+    private TaekwondoApp.Shared.DTO.OrdbogDTO entryModel = new();
     private bool isEditing = false;
     private string searchTerm = "";
     private string? errorMessage;
@@ -136,24 +136,32 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // Setup SignalR connection
-        _hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7478/ordbogHub") // Use your actual hub URL
-            .WithAutomaticReconnect()
-            .Build();
-
-        // Handle the signal
-        _hubConnection.On("OrdbogUpdated", async () =>
+        try
         {
-            await InvokeAsync(async () =>
-            {
-                await LoadEntries();
-                StateHasChanged();
-            });
-        });
+            // Setup SignalR connection
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl("https://localhost:7478/ordbogHub") // Use your actual hub URL
+                .WithAutomaticReconnect()
+                .Build();
 
-        await _hubConnection.StartAsync();
-        await LoadEntries();
+            // Handle the signal
+            _hubConnection.On("OrdbogUpdated", async () =>
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadEntries();
+                    StateHasChanged();
+                });
+            });
+
+            await _hubConnection.StartAsync();
+            await LoadEntries();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error initializing SignalR: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
+        }
     }
 
     private async Task LoadEntries()
@@ -164,7 +172,7 @@ else
             if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
                 // Fetch from server if online
-                var response = await Http.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog");
+                var response = await Http.GetFromJsonAsync<List<TaekwondoApp.Shared.DTO.OrdbogDTO>>("https://localhost:7478/api/ordbog");
                 if (response != null)
                 {
                     entries = response;
@@ -180,24 +188,41 @@ else
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading ordbog: {ex.Message}";
+            errorMessage = $"Error loading entries: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
         }
     }
 
     private void ApplyFilter()
     {
-        filteredWords = entries
-            .Where(e =>
-                string.IsNullOrEmpty(searchTerm) ||
-                e.DanskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                e.KoranskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        try
+        {
+            filteredWords = entries
+                .Where(e =>
+                    string.IsNullOrEmpty(searchTerm) ||
+                    e.DanskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    e.KoranskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error applying filter: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
+        }
     }
 
     private void ClearSearch()
     {
-        searchTerm = "";
-        ApplyFilter();
+        try
+        {
+            searchTerm = "";
+            ApplyFilter();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error clearing search: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
+        }
     }
 
     private async Task CreateEntry()
@@ -210,7 +235,7 @@ else
                 if (response.IsSuccessStatusCode)
                 {
                     await LoadEntries();
-                    entryModel = new OrdbogDTO();
+                    entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
                 }
                 else
                 {
@@ -222,28 +247,37 @@ else
                 // Save locally if offline
                 await SQLiteService.AddEntryAsync(entryModel);  // Async call for adding entry
                 await LoadEntries();
-                entryModel = new OrdbogDTO();
+                entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Create error: {ex.Message}";
+            errorMessage = $"Create entry error: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
         }
     }
 
-    private void EditEntry(OrdbogDTO entry)
+    private void EditEntry(TaekwondoApp.Shared.DTO.OrdbogDTO entry)
     {
-        entryModel = new OrdbogDTO
-            {
-                Id = entry.Id,
-                DanskOrd = entry.DanskOrd,
-                KoranskOrd = entry.KoranskOrd,
-                Beskrivelse = entry.Beskrivelse,
-                BilledeLink = entry.BilledeLink,
-                LydLink = entry.LydLink,
-                VideoLink = entry.VideoLink
-            };
-        isEditing = true;
+        try
+        {
+            entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO
+                {
+                    Id = entry.Id,
+                    DanskOrd = entry.DanskOrd,
+                    KoranskOrd = entry.KoranskOrd,
+                    Beskrivelse = entry.Beskrivelse,
+                    BilledeLink = entry.BilledeLink,
+                    LydLink = entry.LydLink,
+                    VideoLink = entry.VideoLink
+                };
+            isEditing = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error editing entry: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
+        }
     }
 
     private async Task UpdateEntry()
@@ -256,7 +290,7 @@ else
                 if (response.IsSuccessStatusCode)
                 {
                     await LoadEntries();
-                    entryModel = new OrdbogDTO();
+                    entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
                     isEditing = false;
                 }
                 else
@@ -269,13 +303,14 @@ else
                 // Update locally if offline
                 await SQLiteService.UpdateEntryAsync(entryModel);  // Async update
                 await LoadEntries();
-                entryModel = new OrdbogDTO();
+                entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
                 isEditing = false;
             }
         }
         catch (Exception ex)
         {
             errorMessage = $"Update error: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
         }
     }
 
@@ -305,21 +340,39 @@ else
         catch (Exception ex)
         {
             errorMessage = $"Delete error: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
         }
     }
 
     private void CancelEdit()
     {
-        entryModel = new OrdbogDTO();
-        isEditing = false;
-        errorMessage = null;
+        try
+        {
+            entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
+            isEditing = false;
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Cancel edit error: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_hubConnection is not null)
+        try
         {
-            await _hubConnection.DisposeAsync();
+            if (_hubConnection is not null)
+            {
+                await _hubConnection.DisposeAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error disposing SignalR connection: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
         }
     }
 }
+
