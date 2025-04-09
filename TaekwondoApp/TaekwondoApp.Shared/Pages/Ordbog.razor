@@ -22,6 +22,8 @@
     </div>
 </div>
 
+<button class="btn btn-primary me-2" @onclick="ChangeInternet">Internet</button>
+
 <!-- List -->
 @if (filteredWords == null)
 {
@@ -135,7 +137,7 @@ else
     private string searchTerm = "";
     private string? errorMessage;
     private HubConnection? _hubConnection;
-    int i = 0;
+    private bool internet = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -169,13 +171,25 @@ else
             Console.WriteLine(ex); // Log to console for debugging
         }
     }
+    private async void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
+    {
+        var access = e.NetworkAccess;
 
+        if (access == NetworkAccess.Internet && internet == true)
+        {
+            await InvokeAsync(async () =>
+            {
+                await SyncService.SyncLocalChangesToServerAsync();
+                await LoadEntries(); // Optionally refresh UI
+            });
+        }
+    }
     private async Task LoadEntries()
     {
         try
         {
             // Check if there's internet connection
-            if (Connectivity.NetworkAccess == NetworkAccess.Internet & i >= 5)
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet & internet == true)
             {
                 // Fetch from server if online
                 var response = await Http.GetFromJsonAsync<List<TaekwondoApp.Shared.DTO.OrdbogDTO>>("https://localhost:7478/api/ordbog");
@@ -190,7 +204,6 @@ else
                 // Fetch from SQLite if offline
                 entries = await SQLiteService.GetAllEntriesAsync();  // Async call to get entries
                 ApplyFilter();
-                i++;
             }
         }
         catch (Exception ex)
@@ -199,7 +212,6 @@ else
             Console.WriteLine(ex); // Log to console for debugging
         }
     }
-
     private void ApplyFilter()
     {
         try
@@ -217,7 +229,12 @@ else
             Console.WriteLine(ex); // Log to console for debugging
         }
     }
+    private void ChangeInternet()
+    {
+        internet = false;
+        LoadEntries();
 
+    }
     private void ClearSearch()
     {
         try
@@ -231,12 +248,11 @@ else
             Console.WriteLine(ex); // Log to console for debugging
         }
     }
-
     private async Task CreateEntry()
     {
         try
         {
-            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet && internet == true)
             {
                 var response = await Http.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModel);
                 if (response.IsSuccessStatusCode)
@@ -255,10 +271,6 @@ else
                 await SQLiteService.AddEntryAsync(entryModel);  // Async call for adding entry
                 await LoadEntries();
                 entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
-                i++;
-
-                // Sync local changes to the server when back online
-                await SyncService.SyncLocalChangesToServerAsync();
             }
         }
         catch (Exception ex)
@@ -268,6 +280,69 @@ else
         }
     }
 
+    private async Task UpdateEntry()
+    {
+        try
+        {
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet && internet == true)
+            {
+                var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entryModel.Id}", entryModel);
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadEntries();
+                    entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
+                    isEditing = false;
+                }
+                else
+                {
+                    errorMessage = "Failed to update entry.";
+                }
+            }
+            else
+            {
+                // Update locally if offline
+                await SQLiteService.UpdateEntryAsync(entryModel);  // Async update
+                await LoadEntries();
+                entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
+                isEditing = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Update entry error: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
+        }
+    }
+
+    private async Task DeleteEntry(int id)
+    {
+        try
+        {
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet && internet == true)
+            {
+                var response = await Http.DeleteAsync($"https://localhost:7478/api/ordbog/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadEntries();
+                }
+                else
+                {
+                    errorMessage = "Failed to delete entry.";
+                }
+            }
+            else
+            {
+                // Delete locally if offline
+                await SQLiteService.DeleteEntryAsync(id);  // Async delete
+                await LoadEntries();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Delete entry error: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
+        }
+    }
 
     private void EditEntry(TaekwondoApp.Shared.DTO.OrdbogDTO entry)
     {
@@ -292,75 +367,6 @@ else
         }
     }
 
-    private async Task UpdateEntry()
-    {
-        try
-        {
-            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
-            {
-                var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entryModel.Id}", entryModel);
-                if (response.IsSuccessStatusCode)
-                {
-                    await LoadEntries();
-                    entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
-                    isEditing = false;
-                }
-                else
-                {
-                    errorMessage = "Failed to update entry.";
-                }
-            }
-            else
-            {
-                // Update locally if offline
-                await SQLiteService.UpdateEntryAsync(entryModel);  // Async update
-                await LoadEntries();
-                entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
-                isEditing = false;
-
-                // Sync local changes to the server when back online
-                await SyncService.SyncLocalChangesToServerAsync();
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Update error: {ex.Message}";
-            Console.WriteLine(ex); // Log to console for debugging
-        }
-    }
-
-    private async Task DeleteEntry(int id)
-    {
-        try
-        {
-            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
-            {
-                var response = await Http.DeleteAsync($"https://localhost:7478/api/ordbog/{id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    await LoadEntries();
-                }
-                else
-                {
-                    errorMessage = "Failed to delete entry.";
-                }
-            }
-            else
-            {
-                // Delete locally if offline
-                await SQLiteService.DeleteEntryAsync(id);  // Async delete
-                await LoadEntries();
-
-                // Sync local changes to the server when back online
-                await SyncService.SyncLocalChangesToServerAsync();
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Delete error: {ex.Message}";
-            Console.WriteLine(ex); // Log to console for debugging
-        }
-    }
 
     private void CancelEdit()
     {
@@ -376,7 +382,7 @@ else
             Console.WriteLine(ex); // Log to console for debugging
         }
     }
-
+    li
     public async ValueTask DisposeAsync()
     {
         try
@@ -390,6 +396,47 @@ else
         {
             errorMessage = $"Error disposing SignalR connection: {ex.Message}";
             Console.WriteLine(ex); // Log to console for debugging
+        }
+        Connectivity.ConnectivityChanged -= OnConnectivityChanged;
+    }
+    public async Task SyncLocalChangesToServerAsync()
+    {
+        try
+        {
+            // Get all locally stored entries
+            var localEntries = await SQLiteService.GetAllEntriesAsync();
+
+            // Iterate over local entries and attempt to upload them
+            foreach (var entry in localEntries)
+            {
+                var response = await Http.PostAsJsonAsync("https://localhost:7478/api/ordbog", entry);
+                if (response.IsSuccessStatusCode)
+                {
+                    // Successfully synced, delete from local SQLite
+                    await SQLiteService.DeleteEntryAsync(entry.Id);
+                }
+                else
+                {
+                    // If failed to sync, keep the entry locally and try later
+                    Console.WriteLine($"Failed to sync entry with ID {entry.Id}");
+                }
+            }
+
+            // Optionally reload the entries after syncing
+            await LoadEntries();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error syncing local changes: {ex.Message}";
+            Console.WriteLine(ex); // Log to console for debugging
+        }
+    }
+    public void CheckNetworkConnectivity()
+    {
+        if (Connectivity.NetworkAccess == NetworkAccess.Internet && internet == true)
+        {
+            // Sync when the device is back online
+            SyncService.SyncLocalChangesToServerAsync();
         }
     }
 }
