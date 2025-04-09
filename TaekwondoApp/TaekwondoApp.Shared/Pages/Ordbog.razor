@@ -31,7 +31,12 @@
         <span>Syncing local changes...</span>
     </div>
 }
-
+<!-- Simulated Internet Toggle -->
+<div class="mb-3">
+    <button class="btn @(internet ? "btn-outline-danger" : "btn-outline-success")" @onclick="ToggleInternet">
+        @(internet ? "Go Offline (Simulated)" : "Go Online (Simulated)")
+    </button>
+</div>
 <!-- Search -->
 <div class="mb-3 row">
     <div class="col-md-4">
@@ -67,6 +72,7 @@ else
     <table class="table table-striped">
         <thead>
             <tr>
+                <th>ID</th> <!-- Add ID column -->
                 <th>Dansk</th>
                 <th>Koransk</th>
                 <th>Beskrivelse</th>
@@ -81,6 +87,7 @@ else
             @foreach (var word in filteredWords)
             {
                 <tr>
+                    <td>@word.Id</td> <!-- Display ID value here -->
                     <td>@word.DanskOrd</td>
                     <td>@word.KoranskOrd</td>
                     <td>@word.Beskrivelse</td>
@@ -257,22 +264,24 @@ else
         }
     }
 
-
     private async Task LoadEntries()
     {
         try
         {
             if (internet)
             {
+                // When online, fetch entries from the server
                 var response = await Http.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog");
                 entries = response ?? new();
             }
             else
             {
+                // When offline, fetch entries from SQLite
                 entries = await SQLiteService.GetAllEntriesAsync();
             }
 
-            ApplyFilter();
+            ApplyFilter(); // Reapply any search filters after loading the data
+            StateHasChanged(); // Trigger re-render to update the UI
         }
         catch (Exception ex)
         {
@@ -305,6 +314,7 @@ else
             {
                 entryModel.IsSync = true; // Mark as needing sync
                 await SQLiteService.AddEntryAsync(entryModel);
+                AddLog($"Created new entry (Offline): {entryModel.DanskOrd} - {entryModel.KoranskOrd}");
             }
             else
             {
@@ -314,8 +324,10 @@ else
                     errorMessage = "Failed to create entry on server.";
                     return;
                 }
+                AddLog($"Created new entry (Online): {entryModel.DanskOrd} - {entryModel.KoranskOrd}");
             }
 
+            // Reload entries to ensure UI is refreshed
             await LoadEntries();
             entryModel = new();
         }
@@ -326,6 +338,7 @@ else
         }
     }
 
+
     private async Task UpdateEntry()
     {
         try
@@ -334,6 +347,7 @@ else
             {
                 entryModel.IsSync = true;
                 await SQLiteService.UpdateEntryAsync(entryModel);
+                AddLog($"Updated entry (Offline): {entryModel.DanskOrd} - {entryModel.KoranskOrd}");
             }
             else
             {
@@ -343,8 +357,10 @@ else
                     errorMessage = "Failed to update entry on server.";
                     return;
                 }
+                AddLog($"Updated entry (Online): {entryModel.DanskOrd} - {entryModel.KoranskOrd}");
             }
 
+            // Reload entries to ensure UI is refreshed
             await LoadEntries();
             entryModel = new();
             isEditing = false;
@@ -356,13 +372,19 @@ else
         }
     }
 
+
     private async Task DeleteEntry(int id)
     {
         try
         {
+            // Log the ID before deletion for troubleshooting
+            AddLog($"Deleting entry with ID {id}");
+
+            // Delete the entry based on internet status
             if (!internet)
             {
-                await SQLiteService.DeleteEntryAsync(id);
+                await SQLiteService.DeleteEntryAsync(id); // This will delete the entry from SQLite
+                AddLog($"Deleted entry (Offline): ID {id}");
             }
             else
             {
@@ -372,8 +394,10 @@ else
                     errorMessage = "Failed to delete entry on server.";
                     return;
                 }
+                AddLog($"Deleted entry (Online): ID {id}");
             }
 
+            // Reload the entries to update the table
             await LoadEntries();
         }
         catch (Exception ex)
@@ -382,6 +406,8 @@ else
             Console.WriteLine(ex);
         }
     }
+
+
 
     private void EditEntry(OrdbogDTO entry)
     {
@@ -404,6 +430,17 @@ else
         entryModel = new();
         isEditing = false;
         errorMessage = null;
+    }
+
+    private void ToggleInternet()
+    {
+        internet = !internet;
+
+        // Optional: log the internet status change
+        logs.Add($"Internet status changed: {(internet ? "Online" : "Offline")}");
+
+        // Reload entries to reflect the status change
+        LoadEntries().ConfigureAwait(false); // Ensure async call doesn't block UI
     }
 
     public async ValueTask DisposeAsync()

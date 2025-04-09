@@ -67,7 +67,11 @@ namespace TaekwondoApp.Services
         {
             try
             {
-                return await Task.Run(() => _database.Delete<OrdbogDTO>(id));
+                // Log the ID being passed for deletion
+                Console.WriteLine($"Attempting to delete entry with ID: {id}");
+                var deletedCount = await Task.Run(() => _database.Delete<OrdbogDTO>(id));
+                Console.WriteLine($"Deleted {deletedCount} entries with ID: {id}");
+                return deletedCount;
             }
             catch (Exception ex)
             {
@@ -75,6 +79,7 @@ namespace TaekwondoApp.Services
                 throw;
             }
         }
+
 
         public async Task<OrdbogDTO> GetEntryByIdAsync(int id)
         {
