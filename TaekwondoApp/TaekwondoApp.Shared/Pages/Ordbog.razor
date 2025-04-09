@@ -140,11 +140,14 @@ else
             .WithAutomaticReconnect()
             .Build();
 
-        // Handle the signal
+        // Handle the signal p
         _hubConnection.On("OrdbogUpdated", async () =>
         {
-            await LoadEntries();
-            StateHasChanged();
+            await InvokeAsync(async () =>
+            {
+                await LoadEntries();
+                StateHasChanged();
+            });
         });
 
         await _hubConnection.StartAsync();
