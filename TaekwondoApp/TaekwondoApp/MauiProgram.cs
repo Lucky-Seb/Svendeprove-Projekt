@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using TaekwondoApp.Services;
 using TaekwondoApp.Shared.Services;
-using SQLite;
-using SQLitePCL;
+
 
 namespace TaekwondoApp
 {

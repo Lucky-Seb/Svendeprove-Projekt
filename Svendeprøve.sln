@@ -22,6 +22,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.ServiceDefaults", "TaekwondoOrchestration\TaekwondoOrchestration.ServiceDefaults\TaekwondoOrchestration.ServiceDefaults.csproj", "{37AEBB78-F3A7-5BD0-ECF7-A70D38CE4DB4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.ApiService", "TaekwondoOrchestration\TaekwondoOrchestration.ApiService\TaekwondoOrchestration.ApiService.csproj", "{4453D7C9-DF0A-CA6A-3C4E-59F9B8E9F168}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D622FACF-8E95-4989-84E9-5BAAF3ADD266} = {D622FACF-8E95-4989-84E9-5BAAF3ADD266}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.Web", "TaekwondoOrchestration\TaekwondoOrchestration.Web\TaekwondoOrchestration.Web.csproj", "{C015CE13-2D9F-8281-D728-3674E7A04CF6}"
 EndProject

@@ -4,7 +4,7 @@ using TaekwondoOrchestration.ApiService.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoApp.Shared.DTO;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
 

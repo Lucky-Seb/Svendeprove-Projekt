@@ -1,5 +1,5 @@
 ﻿// In KlubController.cs
-using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoApp.Shared.DTO;
 using TaekwondoOrchestration.ApiService.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
