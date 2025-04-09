@@ -1,5 +1,6 @@
 ﻿@page "/ordbog"
 @inject HttpClient Http
+@inject SQLiteService SQLiteService
 @using Microsoft.AspNetCore.SignalR.Client
 @implements IAsyncDisposable
 
@@ -131,7 +132,6 @@ else
     private string? errorMessage;
     private HubConnection? _hubConnection;
 
-
     protected override async Task OnInitializedAsync()
     {
         // Setup SignalR connection
@@ -158,10 +158,21 @@ else
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog");
-            if (response != null)
+            // Check if there's internet connection
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                entries = response;
+                // Fetch from server if online
+                var response = await Http.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog");
+                if (response != null)
+                {
+                    entries = response;
+                    ApplyFilter();
+                }
+            }
+            else
+            {
+                // Fetch from SQLite if offline
+                entries = SQLiteService.GetAllEntries();
                 ApplyFilter();
             }
         }
@@ -191,15 +202,25 @@ else
     {
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModel);
-            if (response.IsSuccessStatusCode)
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                await LoadEntries();
-                entryModel = new OrdbogDTO();
+                var response = await Http.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModel);
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadEntries();
+                    entryModel = new OrdbogDTO();
+                }
+                else
+                {
+                    errorMessage = "Failed to create entry.";
+                }
             }
             else
             {
-                errorMessage = "Failed to create entry.";
+                // Save locally if offline
+                SQLiteService.AddOrdbogEntry(entryModel);
+                await LoadEntries();
+                entryModel = new OrdbogDTO();
             }
         }
         catch (Exception ex)
@@ -227,16 +248,27 @@ else
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entryModel.Id}", entryModel);
-            if (response.IsSuccessStatusCode)
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                await LoadEntries();
-                entryModel = new OrdbogDTO();
-                isEditing = false;
+                var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entryModel.Id}", entryModel);
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadEntries();
+                    entryModel = new OrdbogDTO();
+                    isEditing = false;
+                }
+                else
+                {
+                    errorMessage = "Failed to update entry.";
+                }
             }
             else
             {
-                errorMessage = "Failed to update entry.";
+                // Update locally if offline
+                SQLiteService.UpdateEntry(entryModel);
+                await LoadEntries();
+                entryModel = new OrdbogDTO();
+                isEditing = false;
             }
         }
         catch (Exception ex)
@@ -249,14 +281,23 @@ else
     {
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7478/api/ordbog/{id}");
-            if (response.IsSuccessStatusCode)
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                await LoadEntries();
+                var response = await Http.DeleteAsync($"https://localhost:7478/api/ordbog/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadEntries();
+                }
+                else
+                {
+                    errorMessage = "Failed to delete entry.";
+                }
             }
             else
             {
-                errorMessage = "Failed to delete entry.";
+                // Delete locally if offline
+                SQLiteService.DeleteEntry(id);
+                await LoadEntries();
             }
         }
         catch (Exception ex)
@@ -282,6 +323,7 @@ else
         public string LydLink { get; set; } = string.Empty;
         public string VideoLink { get; set; } = string.Empty;
     }
+
     public async ValueTask DisposeAsync()
     {
         if (_hubConnection is not null)
