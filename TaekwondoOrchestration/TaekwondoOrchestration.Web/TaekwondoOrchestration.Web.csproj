@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" Version="9.1.0" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.10.196-beta" />
   </ItemGroup>
 
 </Project>
