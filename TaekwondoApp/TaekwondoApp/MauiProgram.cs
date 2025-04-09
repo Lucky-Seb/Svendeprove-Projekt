@@ -22,7 +22,6 @@ namespace TaekwondoApp
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<SQLiteService>();
 
-
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
