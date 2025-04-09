@@ -187,7 +187,7 @@ else
     private List<string> logs = new();
     private bool isSyncing = false;
     private bool syncFailed = false;
-
+    private List<int> deletedEntries = new(); // Track deleted entry IDs locally
     private bool internet = true;
 
     private void AddLog(string message)
@@ -249,6 +249,23 @@ else
 
             try
             {
+                // First, sync the deleted entries with the server
+                foreach (var deletedId in deletedEntries)
+                {
+                    var response = await Http.DeleteAsync($"https://localhost:7478/api/ordbog/{deletedId}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // If the deletion was successful on the server, remove from local list
+                        deletedEntries.Remove(deletedId);
+                        AddLog($"Synced deleted entry (Online): ID {deletedId}");
+                    }
+                    else
+                    {
+                        AddLog($"Failed to sync deleted entry (Online): ID {deletedId}");
+                    }
+                }
+
+                // Sync any other changes as needed (e.g., updates, creates)
                 await SyncService.SyncLocalChangesToServerAsync();
                 syncFailed = false;
             }
@@ -263,6 +280,7 @@ else
             }
         }
     }
+
 
     private async Task LoadEntries()
     {
@@ -310,26 +328,30 @@ else
     {
         try
         {
+            // Check if we are offline or online
             if (!internet)
             {
-                entryModel.IsSync = true; // Mark as needing sync
+                // When offline, set IsSync to false (because it's not synced yet)
+                entryModel.IsSync = false;
                 await SQLiteService.AddEntryAsync(entryModel);
-                AddLog($"Created new entry (Offline): {entryModel.DanskOrd} - {entryModel.KoranskOrd}");
+                AddLog($"Created entry (Offline): ID {entryModel.Id}");
             }
             else
             {
+                // When online, set IsSync to true (because we are syncing to the server)
+                entryModel.IsSync = true;
                 var response = await Http.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModel);
                 if (!response.IsSuccessStatusCode)
                 {
                     errorMessage = "Failed to create entry on server.";
                     return;
                 }
-                AddLog($"Created new entry (Online): {entryModel.DanskOrd} - {entryModel.KoranskOrd}");
+                AddLog($"Created entry (Online): ID {entryModel.Id}");
             }
 
-            // Reload entries to ensure UI is refreshed
+            // Reload the entries to refresh the list after adding the new entry
             await LoadEntries();
-            entryModel = new();
+            entryModel = new();  // Clear the form
         }
         catch (Exception ex)
         {
@@ -339,30 +361,35 @@ else
     }
 
 
+
     private async Task UpdateEntry()
     {
         try
         {
+            // Check if we are offline or online
             if (!internet)
             {
-                entryModel.IsSync = true;
+                // When offline, set IsSync to false (because it hasn't been synced yet)
+                entryModel.IsSync = false;
                 await SQLiteService.UpdateEntryAsync(entryModel);
-                AddLog($"Updated entry (Offline): {entryModel.DanskOrd} - {entryModel.KoranskOrd}");
+                AddLog($"Updated entry (Offline): ID {entryModel.Id}");
             }
             else
             {
+                // When online, set IsSync to true (because we are syncing to the server)
+                entryModel.IsSync = true;
                 var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entryModel.Id}", entryModel);
                 if (!response.IsSuccessStatusCode)
                 {
                     errorMessage = "Failed to update entry on server.";
                     return;
                 }
-                AddLog($"Updated entry (Online): {entryModel.DanskOrd} - {entryModel.KoranskOrd}");
+                AddLog($"Updated entry (Online): ID {entryModel.Id}");
             }
 
-            // Reload entries to ensure UI is refreshed
+            // Reload the entries to refresh the list after updating the entry
             await LoadEntries();
-            entryModel = new();
+            entryModel = new();  // Clear the form
             isEditing = false;
         }
         catch (Exception ex)
@@ -373,31 +400,34 @@ else
     }
 
 
+
     private async Task DeleteEntry(int id)
     {
         try
         {
-            // Log the ID before deletion for troubleshooting
-            AddLog($"Deleting entry with ID {id}");
-
-            // Delete the entry based on internet status
             if (!internet)
             {
-                await SQLiteService.DeleteEntryAsync(id); // This will delete the entry from SQLite
+                // Offline: Mark the entry as deleted in the local database
+                await SQLiteService.DeleteEntryAsync(id);
+                deletedEntries.Add(id); // Track the ID of the deleted entry
                 AddLog($"Deleted entry (Offline): ID {id}");
             }
             else
             {
+                // Online: Attempt to delete the entry on the server first
                 var response = await Http.DeleteAsync($"https://localhost:7478/api/ordbog/{id}");
                 if (!response.IsSuccessStatusCode)
                 {
                     errorMessage = "Failed to delete entry on server.";
                     return;
                 }
+
+                // If online delete is successful, remove from the local database too
+                await SQLiteService.DeleteEntryAsync(id);
                 AddLog($"Deleted entry (Online): ID {id}");
             }
 
-            // Reload the entries to update the table
+            // Reload the entries after deletion
             await LoadEntries();
         }
         catch (Exception ex)
@@ -406,6 +436,8 @@ else
             Console.WriteLine(ex);
         }
     }
+
+
 
 
 

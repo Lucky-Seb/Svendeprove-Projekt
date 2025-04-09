@@ -41,6 +41,12 @@ namespace TaekwondoApp.Services
         {
             try
             {
+                // Make sure the entry's IsSync is correctly set (if it's not set from the Blazor component)
+                if (entry.IsSync == null)
+                {
+                    entry.IsSync = false; // Default to false if it's not set
+                }
+
                 return await Task.Run(() => _database.Insert(entry));
             }
             catch (Exception ex)
@@ -49,6 +55,7 @@ namespace TaekwondoApp.Services
                 throw;
             }
         }
+
 
         public async Task<int> UpdateEntryAsync(OrdbogDTO entry)
         {
