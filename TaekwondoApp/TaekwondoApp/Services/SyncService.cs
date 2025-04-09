@@ -12,7 +12,7 @@ namespace TaekwondoApp.Services
 {
     public class SyncService : ISyncService
     {
-        private readonly ISQLiteService _sqliteService;  // Updated interface for SQLiteService
+        private readonly ISQLiteService _sqliteService;
         private readonly HttpClient _httpClient;
 
         public SyncService(ISQLiteService sqliteService, HttpClient httpClient)
@@ -21,36 +21,50 @@ namespace TaekwondoApp.Services
             _httpClient = httpClient;
         }
 
-        // Sync local changes to the server
+        // Sync local unsynced changes to the server
         public async Task SyncLocalChangesToServerAsync()
         {
-            var localEntries = await _sqliteService.GetAllEntriesAsync(); // Use async method to get entries
+            var unsyncedEntries = await _sqliteService.GetUnsyncedEntriesAsync();
 
-            foreach (var entry in localEntries)
+            foreach (var entry in unsyncedEntries)
             {
                 var response = await _httpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entry);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    await _sqliteService.DeleteEntryAsync(entry.Id);  // Use async delete method
+                    // Mark as synced
+                    await _sqliteService.MarkAsSyncedAsync(entry.Id);
                 }
             }
         }
 
-        // Sync data from the server to local SQLite
+        // Sync new data from the server into local DB
         public async Task SyncDataFromServerAsync()
         {
             var response = await _httpClient.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog");
 
             if (response != null)
             {
-                foreach (var entry in response)
+                foreach (var serverEntry in response)
                 {
-                    var localEntry = (await _sqliteService.GetAllEntriesAsync()).FirstOrDefault(e => e.Id == entry.Id);
+                    var localEntry = await _sqliteService.GetEntryByIdAsync(serverEntry.Id);
 
                     if (localEntry == null)
                     {
-                        await _sqliteService.AddEntryAsync(entry); // Use async add method
+                        // Entry doesn't exist locally, add it as synced
+                        serverEntry.IsSync = true;
+                        await _sqliteService.AddEntryAsync(serverEntry);
+                    }
+                    else if (!localEntry.IsSync)
+                    {
+                        // Local entry exists but is not synced — skip updating to avoid overwriting local changes
+                        continue;
+                    }
+                    else
+                    {
+                        // If entry exists and is synced, update it from server
+                        serverEntry.IsSync = true;
+                        await _sqliteService.UpdateEntryAsync(serverEntry);
                     }
                 }
             }

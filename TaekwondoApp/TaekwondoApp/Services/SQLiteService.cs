@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using TaekwondoApp.Shared.DTO;
 
 namespace TaekwondoApp.Services
@@ -20,7 +21,6 @@ namespace TaekwondoApp.Services
 
         public void InitializeDatabase()
         {
-            // Create the table if it doesn't exist
             _database.CreateTable<OrdbogDTO>();
         }
 
@@ -72,6 +72,54 @@ namespace TaekwondoApp.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error deleting entry: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<OrdbogDTO> GetEntryByIdAsync(int id)
+        {
+            try
+            {
+                return await Task.FromResult(_database.Table<OrdbogDTO>().FirstOrDefault(e => e.Id == id));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching entry by id: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<List<OrdbogDTO>> GetUnsyncedEntriesAsync()
+        {
+            try
+            {
+                return await Task.FromResult(
+                    _database.Table<OrdbogDTO>().Where(e => !e.IsSync).ToList()
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching unsynced entries: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<int> MarkAsSyncedAsync(int id)
+        {
+            try
+            {
+                var entry = _database.Table<OrdbogDTO>().FirstOrDefault(e => e.Id == id);
+                if (entry != null)
+                {
+                    entry.IsSync = true;
+                    return await Task.Run(() => _database.Update(entry));
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error marking entry as synced: {ex.Message}");
                 throw;
             }
         }
