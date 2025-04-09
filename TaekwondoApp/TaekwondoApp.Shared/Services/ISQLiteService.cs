@@ -9,8 +9,10 @@ namespace TaekwondoApp.Shared.Services
 {
     public interface ISQLiteService
     {
-        void InitializeDatabase();
         Task<int> AddEntryAsync(OrdbogDTO entry);
         Task<List<OrdbogDTO>> GetAllEntriesAsync();
+        Task<int> DeleteEntryAsync(int id); // Add this line to the interface
+        Task<int> UpdateEntryAsync(OrdbogDTO entry);
+        void InitializeDatabase();
     }
 }

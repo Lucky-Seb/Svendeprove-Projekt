@@ -19,7 +19,8 @@ namespace TaekwondoApp
 
             // Add device-specific services used by the TaekwondoApp.Shared project
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
-            builder.Services.AddSingleton<SQLiteService>();  // Register SQLiteService here
+            builder.Services.AddSingleton<ISyncService, SyncService>();
+            builder.Services.AddSingleton<SQLiteService>();
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
