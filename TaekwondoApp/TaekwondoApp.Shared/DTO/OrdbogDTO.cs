@@ -9,5 +9,6 @@
         public string BilledeLink { get; set; }
         public string LydLink { get; set; }
         public string VideoLink { get; set; }
+
     }
 }

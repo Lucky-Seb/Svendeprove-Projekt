@@ -174,16 +174,45 @@ else
     private async void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
     {
         var access = e.NetworkAccess;
+        Console.WriteLine($"[ConnectivityChanged] New network access: {access}");
 
         if (access == NetworkAccess.Internet && internet == true)
         {
+            Console.WriteLine("[ConnectivityChanged] Internet is available and app internet toggle is ON. Starting sync...");
+
             await InvokeAsync(async () =>
             {
-                await SyncService.SyncLocalChangesToServerAsync();
+                try
+                {
+                    await SyncService.SyncLocalChangesToServerAsync();
+                    Console.WriteLine("[ConnectivityChanged] Sync completed successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ConnectivityChanged] Sync failed: {ex.Message}");
+                }
+
                 await LoadEntries(); // Optionally refresh UI
+                Console.WriteLine("[ConnectivityChanged] Entries reloaded after sync.");
             });
         }
+        else if (access == NetworkAccess.None)
+        {
+            Console.WriteLine("[ConnectivityChanged] No internet connection detected.");
+            internet = false;
+
+            await InvokeAsync(async () =>
+            {
+                await LoadEntries(); // Optionally refresh UI
+                Console.WriteLine("[ConnectivityChanged] Entries loaded in offline mode.");
+            });
+        }
+        else
+        {
+            Console.WriteLine("[ConnectivityChanged] Network access changed but sync not triggered (maybe toggle is off?).");
+        }
     }
+
     private async Task LoadEntries()
     {
         try
@@ -397,38 +426,6 @@ else
             Console.WriteLine(ex); // Log to console for debugging
         }
         Connectivity.ConnectivityChanged -= OnConnectivityChanged;
-    }
-    public async Task SyncLocalChangesToServerAsync()
-    {
-        try
-        {
-            // Get all locally stored entries
-            var localEntries = await SQLiteService.GetAllEntriesAsync();
-
-            // Iterate over local entries and attempt to upload them
-            foreach (var entry in localEntries)
-            {
-                var response = await Http.PostAsJsonAsync("https://localhost:7478/api/ordbog", entry);
-                if (response.IsSuccessStatusCode)
-                {
-                    // Successfully synced, delete from local SQLite
-                    await SQLiteService.DeleteEntryAsync(entry.Id);
-                }
-                else
-                {
-                    // If failed to sync, keep the entry locally and try later
-                    Console.WriteLine($"Failed to sync entry with ID {entry.Id}");
-                }
-            }
-
-            // Optionally reload the entries after syncing
-            await LoadEntries();
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error syncing local changes: {ex.Message}";
-            Console.WriteLine(ex); // Log to console for debugging
-        }
     }
     public void CheckNetworkConnectivity()
     {
