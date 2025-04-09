@@ -5,6 +5,8 @@
 @inject ISQLiteService SQLiteService
 @using TaekwondoApp.Shared.Services;
 @using TaekwondoApp.Shared.DTO;
+@inject ISyncService SyncService
+@using Microsoft.Maui.Networking;
 
 <h1>Ordbog</h1>
 
@@ -133,6 +135,7 @@ else
     private string searchTerm = "";
     private string? errorMessage;
     private HubConnection? _hubConnection;
+    int i = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -155,6 +158,9 @@ else
             });
 
             await _hubConnection.StartAsync();
+
+            // Sync data from server to local SQLite (offline support)
+            await SyncService.SyncDataFromServerAsync();
             await LoadEntries();
         }
         catch (Exception ex)
@@ -169,7 +175,7 @@ else
         try
         {
             // Check if there's internet connection
-            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet & i >= 5)
             {
                 // Fetch from server if online
                 var response = await Http.GetFromJsonAsync<List<TaekwondoApp.Shared.DTO.OrdbogDTO>>("https://localhost:7478/api/ordbog");
@@ -184,6 +190,7 @@ else
                 // Fetch from SQLite if offline
                 entries = await SQLiteService.GetAllEntriesAsync();  // Async call to get entries
                 ApplyFilter();
+                i++;
             }
         }
         catch (Exception ex)
@@ -248,6 +255,10 @@ else
                 await SQLiteService.AddEntryAsync(entryModel);  // Async call for adding entry
                 await LoadEntries();
                 entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
+                i++;
+
+                // Sync local changes to the server when back online
+                await SyncService.SyncLocalChangesToServerAsync();
             }
         }
         catch (Exception ex)
@@ -256,6 +267,7 @@ else
             Console.WriteLine(ex); // Log to console for debugging
         }
     }
+
 
     private void EditEntry(TaekwondoApp.Shared.DTO.OrdbogDTO entry)
     {
@@ -305,6 +317,9 @@ else
                 await LoadEntries();
                 entryModel = new TaekwondoApp.Shared.DTO.OrdbogDTO();  // Reset entryModel
                 isEditing = false;
+
+                // Sync local changes to the server when back online
+                await SyncService.SyncLocalChangesToServerAsync();
             }
         }
         catch (Exception ex)
@@ -335,6 +350,9 @@ else
                 // Delete locally if offline
                 await SQLiteService.DeleteEntryAsync(id);  // Async delete
                 await LoadEntries();
+
+                // Sync local changes to the server when back online
+                await SyncService.SyncLocalChangesToServerAsync();
             }
         }
         catch (Exception ex)
