@@ -1,5 +1,5 @@
 ﻿// In KlubService.cs
-using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoApp.Library.DTO;
 using TaekwondoOrchestration.ApiService.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using System.Collections.Generic;

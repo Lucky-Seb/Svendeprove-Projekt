@@ -140,7 +140,7 @@ else
             .WithAutomaticReconnect()
             .Build();
 
-        // Handle the signal p
+        // Handle the signal
         _hubConnection.On("OrdbogUpdated", async () =>
         {
             await InvokeAsync(async () =>

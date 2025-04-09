@@ -20,6 +20,8 @@ namespace TaekwondoApp
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddSingleton<SQLiteService>();
+
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

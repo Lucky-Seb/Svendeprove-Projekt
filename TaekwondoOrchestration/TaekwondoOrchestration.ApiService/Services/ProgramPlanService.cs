@@ -1,4 +1,4 @@
-﻿using TaekwondoOrchestration.ApiService.DTO;
+﻿using TaekwondoApp.Library.DTO;
 using TaekwondoOrchestration.ApiService.Models;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 

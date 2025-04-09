@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaekwondoOrchestration.ApiService.Services;
-using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoApp.Library.DTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

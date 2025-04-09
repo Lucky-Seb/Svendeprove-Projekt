@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.Web"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoOrchestration.Tests", "TaekwondoOrchestration\TaekwondoOrchestration.Tests\TaekwondoOrchestration.Tests.csproj", "{1D0A9EC7-3732-36CD-BCB6-09A858855DC8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaekwondoApp.Library", "TaekwondoApp.Library\TaekwondoApp.Library.csproj", "{61B3E553-7654-4BE6-B9A9-5F7F09815581}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{1D0A9EC7-3732-36CD-BCB6-09A858855DC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D0A9EC7-3732-36CD-BCB6-09A858855DC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D0A9EC7-3732-36CD-BCB6-09A858855DC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61B3E553-7654-4BE6-B9A9-5F7F09815581}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61B3E553-7654-4BE6-B9A9-5F7F09815581}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61B3E553-7654-4BE6-B9A9-5F7F09815581}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61B3E553-7654-4BE6-B9A9-5F7F09815581}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

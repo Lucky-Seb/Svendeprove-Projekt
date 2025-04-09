@@ -1,4 +1,4 @@
-﻿namespace TaekwondoOrchestration.ApiService.DTO
+﻿namespace TaekwondoApp.Library.DTO
 {
     public class TræningDTO
     {

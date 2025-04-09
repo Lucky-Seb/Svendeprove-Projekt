@@ -65,9 +65,11 @@
     <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.50" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.50" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.4" />
+    <PackageReference Include="SQLite-net-pcl" Version="1.9.172" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\TaekwondoApp.Library\TaekwondoApp.Library.csproj" />
     <ProjectReference Include="..\TaekwondoApp.Shared\TaekwondoApp.Shared.csproj" />
   </ItemGroup>
 

@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\TaekwondoApp.Library\TaekwondoApp.Library.csproj" />
     <ProjectReference Include="..\TaekwondoOrchestration.ServiceDefaults\TaekwondoOrchestration.ServiceDefaults.csproj" />
   </ItemGroup>
 
