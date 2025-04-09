@@ -1,7 +1,10 @@
-﻿namespace TaekwondoApp.Shared.DTO
+﻿using SQLite;
+
+namespace TaekwondoApp.Shared.DTO
 {
     public class OrdbogDTO
     {
+        [PrimaryKey] // This will only be used by SQLite
         public int Id { get; set; }
         public string DanskOrd { get; set; }
         public string KoranskOrd { get; set; }

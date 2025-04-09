@@ -144,7 +144,6 @@ else
     private string searchTerm = "";
     private string? errorMessage;
     private HubConnection? _hubConnection;
-    private bool internet = true;
     private List<string> logs = new();
     private void AddLog(string message)
     {
@@ -152,7 +151,28 @@ else
         if (logs.Count > 100) logs.RemoveAt(0); // Optional: keep log size manageable
         StateHasChanged(); // Refresh UI
     }
+    private bool _internet = true;
 
+    private bool internet
+    {
+        get => _internet;
+        set
+        {
+            _internet = value;
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet && _internet)
+            {
+                _ = TrySyncIfOnline(); // trigger sync on toggle if network is present
+            }
+        }
+    }
+    private async Task TrySyncIfOnline()
+    {
+        if (Connectivity.NetworkAccess == NetworkAccess.Internet && internet == true)
+        {
+            await SyncService.SyncLocalChangesToServerAsync();
+            await LoadEntries(); // Reload updated list from server
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
         try
@@ -172,11 +192,15 @@ else
                     StateHasChanged();
                 });
             });
+            AddLog("OnInitializedAsync called.");
 
             await _hubConnection.StartAsync();
+            Connectivity.ConnectivityChanged += OnConnectivityChanged;
 
             // Sync data from server to local SQLite (offline support)
             await SyncService.SyncDataFromServerAsync();
+            await SyncService.SyncLocalChangesToServerAsync();
+
             await LoadEntries();
         }
         catch (Exception ex)
