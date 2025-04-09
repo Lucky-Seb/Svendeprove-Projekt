@@ -3,6 +3,7 @@ using System.Text.Json;
 using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoOrchestration.ApiService.Services;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,7 @@ foreach (var repo in repositoryTypes)
         builder.Services.AddScoped(interfaceType, repo);
     }
 }
+builder.Services.AddSignalR();
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -87,6 +89,8 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Taekwondo Orchestration API V1");
         c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
     });
+    app.MapHub<OrdbogHub>("/ordbogHub");
+
 }
 
 // Map controllers

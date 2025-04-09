@@ -1,5 +1,7 @@
 ﻿@page "/ordbog"
 @inject HttpClient Http
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
 
 <h1>Ordbog</h1>
 
@@ -127,9 +129,25 @@ else
     private bool isEditing = false;
     private string searchTerm = "";
     private string? errorMessage;
+    private HubConnection? _hubConnection;
+
 
     protected override async Task OnInitializedAsync()
     {
+        // Setup SignalR connection
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7478/ordbogHub") // Use your actual hub URL
+            .WithAutomaticReconnect()
+            .Build();
+
+        // Handle the signal
+        _hubConnection.On("OrdbogUpdated", async () =>
+        {
+            await LoadEntries();
+            StateHasChanged();
+        });
+
+        await _hubConnection.StartAsync();
         await LoadEntries();
     }
 
@@ -260,5 +278,12 @@ else
         public string BilledeLink { get; set; } = string.Empty;
         public string LydLink { get; set; } = string.Empty;
         public string VideoLink { get; set; } = string.Empty;
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
     }
 }

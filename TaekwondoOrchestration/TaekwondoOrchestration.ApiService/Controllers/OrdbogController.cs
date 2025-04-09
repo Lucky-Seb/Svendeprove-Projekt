@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaekwondoOrchestration.ApiService.Services;
 using TaekwondoOrchestration.ApiService.DTO;
+using Microsoft.AspNetCore.SignalR;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -9,10 +11,12 @@ namespace TaekwondoOrchestration.ApiService.Controllers
     public class OrdbogController : ControllerBase
     {
         private readonly OrdbogService _ordbogService;
+        private readonly IHubContext<OrdbogHub> _hubContext;
 
-        public OrdbogController(OrdbogService ordbogService)
+        public OrdbogController(OrdbogService ordbogService, IHubContext<OrdbogHub> hubContext)
         {
             _ordbogService = ordbogService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -34,6 +38,10 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         public async Task<ActionResult<OrdbogDTO>> PostOrdbog(OrdbogDTO ordbogDto)
         {
             var createdOrdbog = await _ordbogService.CreateOrdbogAsync(ordbogDto);
+
+            // Notify all connected clients
+            await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
+
             return CreatedAtAction(nameof(GetOrdbog), new { id = createdOrdbog.Id }, createdOrdbog);
         }
 
@@ -43,6 +51,10 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             var success = await _ordbogService.DeleteOrdbogAsync(id);
             if (!success)
                 return NotFound();
+
+            // Notify all connected clients
+            await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
+
             return NoContent();
         }
         // GET: api/Ordbog/by-danskord/{danskOrd}
