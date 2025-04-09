@@ -10,7 +10,6 @@ builder.AddRedisOutputCache("cache");
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddSingleton<SQLiteService>();  // Register SQLiteService here
 
 builder.Services.AddHttpClient<WeatherApiClient>(client =>
     {
