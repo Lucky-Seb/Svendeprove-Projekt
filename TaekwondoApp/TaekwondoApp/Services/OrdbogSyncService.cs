@@ -37,7 +37,7 @@ namespace TaekwondoApp.Services
         public async Task SyncOrdbogLocalChangesToServerAsync()
         {
             await _syncService.SyncLocalChangesToServerAsync<OrdbogDTO>(
-                getUnsyncedEntries: async () => await _sqliteService.GetUnsyncedEntriesAsync<OrdbogDTO>(),
+                getUnsyncedEntries: async () => await _sqliteService.GetUnsyncedEntriesAsync(),
                 postToServer: async (entry) => await _httpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entry),
                 markAsSynced: async (entry) => await _sqliteService.MarkAsSyncedAsync(entry.OrdbogId)
             );

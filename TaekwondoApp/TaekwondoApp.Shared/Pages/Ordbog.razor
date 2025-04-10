@@ -7,6 +7,8 @@
 @using TaekwondoApp.Shared.DTO;
 @inject IOrdbogSyncService SyncService
 @using Microsoft.Maui.Networking;
+@page "/ordbog"
+
 <h1>Ordbog</h1>
 
 <!-- Online/Offline Indicator -->
@@ -31,12 +33,14 @@
         <span>Syncing local changes...</span>
     </div>
 }
+
 <!-- Simulated Internet Toggle -->
 <div class="mb-3">
     <button class="btn @(internet ? "btn-outline-danger" : "btn-outline-success")" @onclick="ToggleInternet">
         @(internet ? "Go Offline (Simulated)" : "Go Online (Simulated)")
     </button>
 </div>
+
 <!-- Search -->
 <div class="mb-3 row">
     <div class="col-md-4">
@@ -72,7 +76,7 @@ else
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>ID</th> <!-- Add ID column -->
+                <th>ID</th>
                 <th>Dansk</th>
                 <th>Koransk</th>
                 <th>Beskrivelse</th>
@@ -87,7 +91,7 @@ else
             @foreach (var word in filteredWords)
             {
                 <tr>
-                    <td>@word.OrdbogId</td> <!-- Display ID value here -->
+                    <td>@word.OrdbogId</td>
                     <td>@word.DanskOrd</td>
                     <td>@word.KoranskOrd</td>
                     <td>@word.Beskrivelse</td>
@@ -110,13 +114,17 @@ else
                         }
                     </td>
                     <td>
-                        @if (word.IsSync)
+                        @if (word.Status == SyncStatus.Synced)
                         {
                             <span class="badge bg-success">Synced</span>
                         }
-                        else
+                        else if (word.Status == SyncStatus.Pending)
                         {
                             <span class="badge bg-warning text-dark">Pending</span>
+                        }
+                        else if (word.Status == SyncStatus.Failed)
+                        {
+                            <span class="badge bg-danger">Failed</span>
                         }
                     </td>
                     <td>
