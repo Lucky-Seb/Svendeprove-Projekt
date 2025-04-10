@@ -345,7 +345,8 @@ else
                         await SQLiteService.UpdateEntryWithServerIdAsync(serverEntry);
                         entryModel = new(); // Reset the entry after successful creation
                     }
-                    await TrySyncIfOnline();
+                    await SyncService.SyncDataFromServerAsync();
+
                 }
                 else
                 {
@@ -384,7 +385,10 @@ else
                     errorMessage = "Failed to update entry on server.";
                     return;
                 }
+                await SyncService.SyncDataFromServerAsync();
+
                 AddLog($"Updated entry (Online): ID {entryModel.Id}");
+
             }
 
             // Reload the entries to refresh the list after updating the entry
@@ -424,6 +428,7 @@ else
 
                 // If online delete is successful, remove from the local database
                 await SQLiteService.DeleteEntryAsync(id);
+                await SyncService.SyncDataFromServerAsync();
                 AddLog($"Deleted entry (Online): ID {id}");
             }
 
