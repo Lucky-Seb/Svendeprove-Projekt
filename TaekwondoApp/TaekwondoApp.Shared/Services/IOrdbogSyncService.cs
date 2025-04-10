@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace TaekwondoApp.Shared.Services
 {
-    public interface ISyncService
+    public interface IOrdbogSyncService
     {
-        Task SyncLocalChangesToServerAsync();
-        Task SyncDataFromServerAsync();
+        Task SyncOrdbogDataFromServerAsync();
+        Task SyncOrdbogLocalChangesToServerAsync();
     }
 
 }

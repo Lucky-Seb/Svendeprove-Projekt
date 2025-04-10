@@ -20,7 +20,9 @@ namespace TaekwondoApp
 
             // Add device-specific services used by the TaekwondoApp.Shared project
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
-            builder.Services.AddSingleton<ISyncService, SyncService>();
+
+            // Register OrdbogSyncService and pass IHttpClientFactory to it
+            builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
 
             // Configure SQLite service with the database path
             string dbPath = Path.Combine(FileSystem.AppDataDirectory, "ordbog.db");
@@ -28,13 +30,15 @@ namespace TaekwondoApp
             // Register SQLiteService as a singleton with the database path
             builder.Services.AddSingleton<ISQLiteService>(new SQLiteService(dbPath));
 
+            // Register HttpClientFactory to handle HttpClient instances
+            builder.Services.AddHttpClient();
+
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
 #endif
-            builder.Services.AddHttpClient();
 
             return builder.Build();
         }
