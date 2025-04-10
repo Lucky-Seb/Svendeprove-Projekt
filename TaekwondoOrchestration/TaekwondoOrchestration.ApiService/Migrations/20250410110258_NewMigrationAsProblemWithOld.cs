@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TaekwondoOrchestration.ApiService.Migrations
 {
     /// <inheritdoc />
-    public partial class initdatabase : Migration
+    public partial class NewMigrationAsProblemWithOld : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,8 +15,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "Brugere",
                 columns: table => new
                 {
-                    BrugerID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BrugerID = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Brugernavn = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Fornavn = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -35,8 +34,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "Klubber",
                 columns: table => new
                 {
-                    KlubID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    KlubID = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     KlubNavn = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -48,8 +46,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "Ordboger",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrdbogId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     DanskOrd = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     KoranskOrd = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Beskrivelse = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -59,15 +56,14 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Ordboger", x => x.Id);
+                    table.PrimaryKey("PK_Ordboger", x => x.OrdbogId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Pensum",
                 columns: table => new
                 {
-                    PensumID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PensumID = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     PensumGrad = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -79,8 +75,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "ProgramPlans",
                 columns: table => new
                 {
-                    ProgramID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProgramID = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     ProgramNavn = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OprettelseDato = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Længde = table.Column<int>(type: "int", nullable: false),
@@ -95,8 +90,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "BrugerKlubber",
                 columns: table => new
                 {
-                    BrugerID = table.Column<int>(type: "int", nullable: false),
-                    KlubID = table.Column<int>(type: "int", nullable: false)
+                    BrugerID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    KlubID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -119,15 +114,14 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "Øvelser",
                 columns: table => new
                 {
-                    ØvelseID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ØvelseID = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     ØvelseNavn = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ØvelseBeskrivelse = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ØvelseBillede = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ØvelseVideo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ØvelseTid = table.Column<int>(type: "int", nullable: false),
                     ØvelseSværhed = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PensumID = table.Column<int>(type: "int", nullable: false)
+                    PensumID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -144,11 +138,10 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "Quizzer",
                 columns: table => new
                 {
-                    QuizID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    QuizID = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     QuizNavn = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     QuizBeskrivelse = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PensumID = table.Column<int>(type: "int", nullable: false)
+                    PensumID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -165,14 +158,13 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "Teknikker",
                 columns: table => new
                 {
-                    TeknikID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TeknikID = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     TeknikNavn = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TeknikBeskrivelse = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TeknikBillede = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TeknikVideo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TeknikLyd = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PensumID = table.Column<int>(type: "int", nullable: false)
+                    PensumID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -189,14 +181,13 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "Teorier",
                 columns: table => new
                 {
-                    TeoriID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TeoriID = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     TeoriNavn = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TeoriBeskrivelse = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TeoriBillede = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TeoriVideo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TeoriLyd = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PensumID = table.Column<int>(type: "int", nullable: false)
+                    PensumID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -213,8 +204,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "BrugerProgrammer",
                 columns: table => new
                 {
-                    BrugerID = table.Column<int>(type: "int", nullable: false),
-                    ProgramID = table.Column<int>(type: "int", nullable: false)
+                    BrugerID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProgramID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -237,8 +228,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "KlubProgrammer",
                 columns: table => new
                 {
-                    KlubID = table.Column<int>(type: "int", nullable: false),
-                    ProgramID = table.Column<int>(type: "int", nullable: false)
+                    KlubID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProgramID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -261,8 +252,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "BrugerØvelser",
                 columns: table => new
                 {
-                    BrugerID = table.Column<int>(type: "int", nullable: false),
-                    ØvelseID = table.Column<int>(type: "int", nullable: false)
+                    BrugerID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ØvelseID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -285,8 +276,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "KlubØvelser",
                 columns: table => new
                 {
-                    KlubID = table.Column<int>(type: "int", nullable: false),
-                    ØvelseID = table.Column<int>(type: "int", nullable: false)
+                    KlubID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ØvelseID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -309,8 +300,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "BrugerQuizzer",
                 columns: table => new
                 {
-                    BrugerID = table.Column<int>(type: "int", nullable: false),
-                    QuizID = table.Column<int>(type: "int", nullable: false)
+                    BrugerID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    QuizID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -333,8 +324,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "KlubQuizzer",
                 columns: table => new
                 {
-                    KlubID = table.Column<int>(type: "int", nullable: false),
-                    QuizID = table.Column<int>(type: "int", nullable: false)
+                    KlubID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    QuizID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -357,14 +348,13 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "Spørgsmål",
                 columns: table => new
                 {
-                    SpørgsmålID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SpørgsmålID = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     SpørgsmålRækkefølge = table.Column<int>(type: "int", nullable: false),
                     SpørgsmålTid = table.Column<int>(type: "int", nullable: false),
-                    TeoriID = table.Column<int>(type: "int", nullable: true),
-                    TeknikID = table.Column<int>(type: "int", nullable: true),
-                    ØvelseID = table.Column<int>(type: "int", nullable: true),
-                    QuizID = table.Column<int>(type: "int", nullable: false)
+                    TeoriID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    TeknikID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ØvelseID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    QuizID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -396,16 +386,15 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 name: "Træninger",
                 columns: table => new
                 {
-                    TræningID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TræningID = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     TræningRækkefølge = table.Column<int>(type: "int", nullable: false),
                     Tid = table.Column<int>(type: "int", nullable: false),
-                    ProgramID = table.Column<int>(type: "int", nullable: false),
-                    QuizID = table.Column<int>(type: "int", nullable: true),
-                    TeoriID = table.Column<int>(type: "int", nullable: true),
-                    TeknikID = table.Column<int>(type: "int", nullable: true),
-                    ØvelseID = table.Column<int>(type: "int", nullable: true),
-                    PensumID = table.Column<int>(type: "int", nullable: true)
+                    ProgramID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    QuizID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    TeoriID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    TeknikID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ØvelseID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    PensumID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -442,6 +431,81 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         principalTable: "Øvelser",
                         principalColumn: "ØvelseID");
                 });
+
+            migrationBuilder.InsertData(
+                table: "Brugere",
+                columns: new[] { "BrugerID", "Address", "Brugerkode", "Brugernavn", "Bæltegrad", "Efternavn", "Email", "Fornavn", "Role" },
+                values: new object[] { new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), "Nørrebrogade 42", "123456", "emma123", "Gult Bælte", "Jensen", "emma@dojo.dk", "Emma", "Bruger" });
+
+            migrationBuilder.InsertData(
+                table: "ProgramPlans",
+                columns: new[] { "ProgramID", "Beskrivelse", "Længde", "OprettelseDato", "ProgramNavn" },
+                values: new object[] { new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe"), "2 ugers intro", 14, new DateTime(2025, 4, 8, 0, 0, 0, 0, DateTimeKind.Unspecified), "Intro Program" });
+
+            migrationBuilder.InsertData(
+                table: "Quizzer",
+                columns: new[] { "QuizID", "PensumID", "QuizBeskrivelse", "QuizNavn" },
+                values: new object[] { new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730"), new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"), "Spørgsmål for begyndere", "Begynder Quiz" });
+
+            migrationBuilder.InsertData(
+                table: "Teknikker",
+                columns: new[] { "TeknikID", "PensumID", "TeknikBeskrivelse", "TeknikBillede", "TeknikLyd", "TeknikNavn", "TeknikVideo" },
+                values: new object[] { new Guid("81c54d38-cb85-420b-b697-13f1f2a8c1cd"), new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"), "Forsvar mod angreb.", "", "", "Blokering", "" });
+
+            migrationBuilder.InsertData(
+                table: "Teorier",
+                columns: new[] { "TeoriID", "PensumID", "TeoriBeskrivelse", "TeoriBillede", "TeoriLyd", "TeoriNavn", "TeoriVideo" },
+                values: new object[] { new Guid("cd428c33-d8d7-46f3-8e8a-3a82e8b5f547"), new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"), "Respekt for dojo og lærere.", "", "", "Respect", "" });
+
+            migrationBuilder.InsertData(
+                table: "Øvelser",
+                columns: new[] { "ØvelseID", "PensumID", "ØvelseBeskrivelse", "ØvelseBillede", "ØvelseNavn", "ØvelseSværhed", "ØvelseTid", "ØvelseVideo" },
+                values: new object[] { new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2"), new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"), "En simpel frontspark teknik.", "", "Front Spark", "Begynder", 30, "" });
+
+            migrationBuilder.InsertData(
+                table: "BrugerKlubber",
+                columns: new[] { "BrugerID", "KlubID" },
+                values: new object[] { new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d") });
+
+            migrationBuilder.InsertData(
+                table: "BrugerProgrammer",
+                columns: new[] { "BrugerID", "ProgramID" },
+                values: new object[] { new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe") });
+
+            migrationBuilder.InsertData(
+                table: "BrugerQuizzer",
+                columns: new[] { "BrugerID", "QuizID" },
+                values: new object[] { new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730") });
+
+            migrationBuilder.InsertData(
+                table: "BrugerØvelser",
+                columns: new[] { "BrugerID", "ØvelseID" },
+                values: new object[] { new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2") });
+
+            migrationBuilder.InsertData(
+                table: "KlubProgrammer",
+                columns: new[] { "KlubID", "ProgramID" },
+                values: new object[] { new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d"), new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe") });
+
+            migrationBuilder.InsertData(
+                table: "KlubQuizzer",
+                columns: new[] { "KlubID", "QuizID" },
+                values: new object[] { new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d"), new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730") });
+
+            migrationBuilder.InsertData(
+                table: "KlubØvelser",
+                columns: new[] { "KlubID", "ØvelseID" },
+                values: new object[] { new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d"), new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2") });
+
+            migrationBuilder.InsertData(
+                table: "Spørgsmål",
+                columns: new[] { "SpørgsmålID", "QuizID", "SpørgsmålRækkefølge", "SpørgsmålTid", "TeknikID", "TeoriID", "ØvelseID" },
+                values: new object[] { new Guid("f2563f57-92c7-4388-b920-bf38e47e9d12"), new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730"), 1, 30, null, new Guid("cd428c33-d8d7-46f3-8e8a-3a82e8b5f547"), null });
+
+            migrationBuilder.InsertData(
+                table: "Træninger",
+                columns: new[] { "TræningID", "PensumID", "ProgramID", "QuizID", "TeknikID", "TeoriID", "Tid", "TræningRækkefølge", "ØvelseID" },
+                values: new object[] { new Guid("a3e2121b-b256-4564-bff1-2f2c94ed00de"), new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"), new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe"), new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730"), new Guid("81c54d38-cb85-420b-b697-13f1f2a8c1cd"), new Guid("cd428c33-d8d7-46f3-8e8a-3a82e8b5f547"), 45, 1, new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2") });
 
             migrationBuilder.CreateIndex(
                 name: "IX_BrugerKlubber_KlubID",

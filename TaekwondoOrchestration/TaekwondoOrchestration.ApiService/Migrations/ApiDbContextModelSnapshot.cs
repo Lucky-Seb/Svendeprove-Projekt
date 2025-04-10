@@ -68,7 +68,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            BrugerID = new Guid("3634af44-883b-4392-b155-a6538059b6f7"),
+                            BrugerID = new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"),
                             Address = "Nørrebrogade 42",
                             Brugerkode = "123456",
                             Brugernavn = "emma123",
@@ -97,8 +97,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            BrugerID = new Guid("c022a2da-a6c0-433c-9221-d1e72a9702e0"),
-                            KlubID = new Guid("ab8af1d4-df2b-4be1-b1ae-2f111230d016")
+                            BrugerID = new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"),
+                            KlubID = new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d")
                         });
                 });
 
@@ -119,8 +119,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            BrugerID = new Guid("a7d6ff24-d9cc-46b4-9d48-3f80b21ba7f7"),
-                            ProgramID = new Guid("605b7306-724e-4f71-a3a0-a958907971bd")
+                            BrugerID = new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"),
+                            ProgramID = new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe")
                         });
                 });
 
@@ -141,8 +141,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            BrugerID = new Guid("5a75a4f2-3ce1-41eb-9ce9-81b21df7eca2"),
-                            QuizID = new Guid("5d13d035-a873-4dcd-a5bb-e5fe782a5252")
+                            BrugerID = new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"),
+                            QuizID = new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730")
                         });
                 });
 
@@ -163,8 +163,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            BrugerID = new Guid("e4afc319-9111-491b-abb6-3be8c5ba0dd3"),
-                            ØvelseID = new Guid("16bd0ccb-3711-4a4c-9d4e-123fe73ef501")
+                            BrugerID = new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"),
+                            ØvelseID = new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2")
                         });
                 });
 
@@ -201,8 +201,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            KlubID = new Guid("3fc700ae-f930-4241-bdb3-f2c145c7c625"),
-                            ProgramID = new Guid("605b7306-724e-4f71-a3a0-a958907971bd")
+                            KlubID = new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d"),
+                            ProgramID = new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe")
                         });
                 });
 
@@ -223,8 +223,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            KlubID = new Guid("693f1474-8c6c-411a-923e-03b4b28b448f"),
-                            QuizID = new Guid("5d13d035-a873-4dcd-a5bb-e5fe782a5252")
+                            KlubID = new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d"),
+                            QuizID = new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730")
                         });
                 });
 
@@ -245,8 +245,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            KlubID = new Guid("02f809d3-8400-4c52-bdd3-32f6455802bf"),
-                            ØvelseID = new Guid("16bd0ccb-3711-4a4c-9d4e-123fe73ef501")
+                            KlubID = new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d"),
+                            ØvelseID = new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2")
                         });
                 });
 
@@ -330,7 +330,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            ProgramID = new Guid("605b7306-724e-4f71-a3a0-a958907971bd"),
+                            ProgramID = new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe"),
                             Beskrivelse = "2 ugers intro",
                             Længde = 14,
                             OprettelseDato = new DateTime(2025, 4, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -365,8 +365,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            QuizID = new Guid("5d13d035-a873-4dcd-a5bb-e5fe782a5252"),
-                            PensumID = new Guid("322a94f0-288e-4b61-841b-12eacac43d5a"),
+                            QuizID = new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730"),
+                            PensumID = new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"),
                             QuizBeskrivelse = "Spørgsmål for begyndere",
                             QuizNavn = "Begynder Quiz"
                         });
@@ -412,11 +412,11 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            SpørgsmålID = new Guid("a757ba97-b0c0-4f73-8bca-bc195e919b7f"),
-                            QuizID = new Guid("5d13d035-a873-4dcd-a5bb-e5fe782a5252"),
+                            SpørgsmålID = new Guid("f2563f57-92c7-4388-b920-bf38e47e9d12"),
+                            QuizID = new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730"),
                             SpørgsmålRækkefølge = 1,
                             SpørgsmålTid = 30,
-                            TeoriID = new Guid("b9276019-f574-460c-87a3-f5aa46e0fbdc")
+                            TeoriID = new Guid("cd428c33-d8d7-46f3-8e8a-3a82e8b5f547")
                         });
                 });
 
@@ -459,8 +459,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            TeknikID = new Guid("b29366af-4152-431a-9592-e54361d11e85"),
-                            PensumID = new Guid("322a94f0-288e-4b61-841b-12eacac43d5a"),
+                            TeknikID = new Guid("81c54d38-cb85-420b-b697-13f1f2a8c1cd"),
+                            PensumID = new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"),
                             TeknikBeskrivelse = "Forsvar mod angreb.",
                             TeknikBillede = "",
                             TeknikLyd = "",
@@ -508,8 +508,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            TeoriID = new Guid("b9276019-f574-460c-87a3-f5aa46e0fbdc"),
-                            PensumID = new Guid("322a94f0-288e-4b61-841b-12eacac43d5a"),
+                            TeoriID = new Guid("cd428c33-d8d7-46f3-8e8a-3a82e8b5f547"),
+                            PensumID = new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"),
                             TeoriBeskrivelse = "Respekt for dojo og lærere.",
                             TeoriBillede = "",
                             TeoriLyd = "",
@@ -568,15 +568,15 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            TræningID = new Guid("f21e3298-a556-41ab-b9b1-94327bc5c51d"),
-                            PensumID = new Guid("322a94f0-288e-4b61-841b-12eacac43d5a"),
-                            ProgramID = new Guid("605b7306-724e-4f71-a3a0-a958907971bd"),
-                            QuizID = new Guid("5d13d035-a873-4dcd-a5bb-e5fe782a5252"),
-                            TeknikID = new Guid("b29366af-4152-431a-9592-e54361d11e85"),
-                            TeoriID = new Guid("b9276019-f574-460c-87a3-f5aa46e0fbdc"),
+                            TræningID = new Guid("a3e2121b-b256-4564-bff1-2f2c94ed00de"),
+                            PensumID = new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"),
+                            ProgramID = new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe"),
+                            QuizID = new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730"),
+                            TeknikID = new Guid("81c54d38-cb85-420b-b697-13f1f2a8c1cd"),
+                            TeoriID = new Guid("cd428c33-d8d7-46f3-8e8a-3a82e8b5f547"),
                             Tid = 45,
                             TræningRækkefølge = 1,
-                            ØvelseID = new Guid("16bd0ccb-3711-4a4c-9d4e-123fe73ef501")
+                            ØvelseID = new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2")
                         });
                 });
 
@@ -622,8 +622,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            ØvelseID = new Guid("16bd0ccb-3711-4a4c-9d4e-123fe73ef501"),
-                            PensumID = new Guid("322a94f0-288e-4b61-841b-12eacac43d5a"),
+                            ØvelseID = new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2"),
+                            PensumID = new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"),
                             ØvelseBeskrivelse = "En simpel frontspark teknik.",
                             ØvelseBillede = "",
                             ØvelseNavn = "Front Spark",

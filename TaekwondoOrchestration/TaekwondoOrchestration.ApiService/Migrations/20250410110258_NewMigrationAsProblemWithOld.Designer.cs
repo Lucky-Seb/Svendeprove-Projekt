@@ -12,26 +12,25 @@ using TaekwondoOrchestration.ApiService.Data;
 namespace TaekwondoOrchestration.ApiService.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20250408133339_initdatabase")]
-    partial class initdatabase
+    [Migration("20250410110258_NewMigrationAsProblemWithOld")]
+    partial class NewMigrationAsProblemWithOld
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Bruger", b =>
                 {
-                    b.Property<int>("BrugerID")
+                    b.Property<Guid>("BrugerID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BrugerID"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -68,75 +67,116 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasKey("BrugerID");
 
                     b.ToTable("Brugere");
+
+                    b.HasData(
+                        new
+                        {
+                            BrugerID = new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"),
+                            Address = "Nørrebrogade 42",
+                            Brugerkode = "123456",
+                            Brugernavn = "emma123",
+                            Bæltegrad = "Gult Bælte",
+                            Efternavn = "Jensen",
+                            Email = "emma@dojo.dk",
+                            Fornavn = "Emma",
+                            Role = "Bruger"
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerKlub", b =>
                 {
-                    b.Property<int>("BrugerID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BrugerID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("KlubID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("KlubID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("BrugerID", "KlubID");
 
                     b.HasIndex("KlubID");
 
                     b.ToTable("BrugerKlubber");
+
+                    b.HasData(
+                        new
+                        {
+                            BrugerID = new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"),
+                            KlubID = new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d")
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerProgram", b =>
                 {
-                    b.Property<int>("BrugerID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BrugerID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ProgramID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ProgramID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("BrugerID", "ProgramID");
 
                     b.HasIndex("ProgramID");
 
                     b.ToTable("BrugerProgrammer");
+
+                    b.HasData(
+                        new
+                        {
+                            BrugerID = new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"),
+                            ProgramID = new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe")
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerQuiz", b =>
                 {
-                    b.Property<int>("BrugerID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BrugerID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("QuizID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("QuizID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("BrugerID", "QuizID");
 
                     b.HasIndex("QuizID");
 
                     b.ToTable("BrugerQuizzer");
+
+                    b.HasData(
+                        new
+                        {
+                            BrugerID = new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"),
+                            QuizID = new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730")
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerØvelse", b =>
                 {
-                    b.Property<int>("BrugerID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BrugerID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ØvelseID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ØvelseID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("BrugerID", "ØvelseID");
 
                     b.HasIndex("ØvelseID");
 
                     b.ToTable("BrugerØvelser");
+
+                    b.HasData(
+                        new
+                        {
+                            BrugerID = new Guid("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"),
+                            ØvelseID = new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2")
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Klub", b =>
                 {
-                    b.Property<int>("KlubID")
+                    b.Property<Guid>("KlubID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("KlubID"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("KlubNavn")
                         .IsRequired()
@@ -149,56 +189,76 @@ namespace TaekwondoOrchestration.ApiService.Migrations
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.KlubProgram", b =>
                 {
-                    b.Property<int>("KlubID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("KlubID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ProgramID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ProgramID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("KlubID", "ProgramID");
 
                     b.HasIndex("ProgramID");
 
                     b.ToTable("KlubProgrammer");
+
+                    b.HasData(
+                        new
+                        {
+                            KlubID = new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d"),
+                            ProgramID = new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe")
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.KlubQuiz", b =>
                 {
-                    b.Property<int>("KlubID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("KlubID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("QuizID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("QuizID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("KlubID", "QuizID");
 
                     b.HasIndex("QuizID");
 
                     b.ToTable("KlubQuizzer");
+
+                    b.HasData(
+                        new
+                        {
+                            KlubID = new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d"),
+                            QuizID = new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730")
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.KlubØvelse", b =>
                 {
-                    b.Property<int>("KlubID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("KlubID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ØvelseID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ØvelseID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("KlubID", "ØvelseID");
 
                     b.HasIndex("ØvelseID");
 
                     b.ToTable("KlubØvelser");
+
+                    b.HasData(
+                        new
+                        {
+                            KlubID = new Guid("c2b62e9a-38da-43ab-9731-f3641cd3121d"),
+                            ØvelseID = new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2")
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Ordbog", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("OrdbogId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("Beskrivelse")
                         .IsRequired()
@@ -224,18 +284,17 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("OrdbogId");
 
                     b.ToTable("Ordboger");
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Pensum", b =>
                 {
-                    b.Property<int>("PensumID")
+                    b.Property<Guid>("PensumID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PensumID"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("PensumGrad")
                         .IsRequired()
@@ -248,11 +307,10 @@ namespace TaekwondoOrchestration.ApiService.Migrations
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.ProgramPlan", b =>
                 {
-                    b.Property<int>("ProgramID")
+                    b.Property<Guid>("ProgramID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProgramID"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("Beskrivelse")
                         .IsRequired()
@@ -271,18 +329,27 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasKey("ProgramID");
 
                     b.ToTable("ProgramPlans");
+
+                    b.HasData(
+                        new
+                        {
+                            ProgramID = new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe"),
+                            Beskrivelse = "2 ugers intro",
+                            Længde = 14,
+                            OprettelseDato = new DateTime(2025, 4, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ProgramNavn = "Intro Program"
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Quiz", b =>
                 {
-                    b.Property<int>("QuizID")
+                    b.Property<Guid>("QuizID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuizID"));
-
-                    b.Property<int>("PensumID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("PensumID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("QuizBeskrivelse")
                         .IsRequired()
@@ -297,18 +364,26 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasIndex("PensumID");
 
                     b.ToTable("Quizzer");
+
+                    b.HasData(
+                        new
+                        {
+                            QuizID = new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730"),
+                            PensumID = new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"),
+                            QuizBeskrivelse = "Spørgsmål for begyndere",
+                            QuizNavn = "Begynder Quiz"
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Spørgsmål", b =>
                 {
-                    b.Property<int>("SpørgsmålID")
+                    b.Property<Guid>("SpørgsmålID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SpørgsmålID"));
-
-                    b.Property<int>("QuizID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("QuizID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("SpørgsmålRækkefølge")
                         .HasColumnType("int");
@@ -316,14 +391,14 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Property<int>("SpørgsmålTid")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TeknikID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("TeknikID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("TeoriID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("TeoriID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ØvelseID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ØvelseID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("SpørgsmålID");
 
@@ -336,18 +411,27 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasIndex("ØvelseID");
 
                     b.ToTable("Spørgsmål");
+
+                    b.HasData(
+                        new
+                        {
+                            SpørgsmålID = new Guid("f2563f57-92c7-4388-b920-bf38e47e9d12"),
+                            QuizID = new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730"),
+                            SpørgsmålRækkefølge = 1,
+                            SpørgsmålTid = 30,
+                            TeoriID = new Guid("cd428c33-d8d7-46f3-8e8a-3a82e8b5f547")
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Teknik", b =>
                 {
-                    b.Property<int>("TeknikID")
+                    b.Property<Guid>("TeknikID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TeknikID"));
-
-                    b.Property<int>("PensumID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("PensumID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TeknikBeskrivelse")
                         .IsRequired()
@@ -374,18 +458,29 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasIndex("PensumID");
 
                     b.ToTable("Teknikker");
+
+                    b.HasData(
+                        new
+                        {
+                            TeknikID = new Guid("81c54d38-cb85-420b-b697-13f1f2a8c1cd"),
+                            PensumID = new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"),
+                            TeknikBeskrivelse = "Forsvar mod angreb.",
+                            TeknikBillede = "",
+                            TeknikLyd = "",
+                            TeknikNavn = "Blokering",
+                            TeknikVideo = ""
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Teori", b =>
                 {
-                    b.Property<int>("TeoriID")
+                    b.Property<Guid>("TeoriID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TeoriID"));
-
-                    b.Property<int>("PensumID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("PensumID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TeoriBeskrivelse")
                         .IsRequired()
@@ -412,30 +507,41 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasIndex("PensumID");
 
                     b.ToTable("Teorier");
+
+                    b.HasData(
+                        new
+                        {
+                            TeoriID = new Guid("cd428c33-d8d7-46f3-8e8a-3a82e8b5f547"),
+                            PensumID = new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"),
+                            TeoriBeskrivelse = "Respekt for dojo og lærere.",
+                            TeoriBillede = "",
+                            TeoriLyd = "",
+                            TeoriNavn = "Respect",
+                            TeoriVideo = ""
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Træning", b =>
                 {
-                    b.Property<int>("TræningID")
+                    b.Property<Guid>("TræningID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TræningID"));
+                    b.Property<Guid?>("PensumID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("PensumID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ProgramID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ProgramID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("QuizID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("QuizID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("TeknikID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("TeknikID")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TeoriID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("TeoriID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Tid")
                         .HasColumnType("int");
@@ -443,8 +549,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Property<int>("TræningRækkefølge")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ØvelseID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ØvelseID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("TræningID");
 
@@ -461,18 +567,31 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasIndex("ØvelseID");
 
                     b.ToTable("Træninger");
+
+                    b.HasData(
+                        new
+                        {
+                            TræningID = new Guid("a3e2121b-b256-4564-bff1-2f2c94ed00de"),
+                            PensumID = new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"),
+                            ProgramID = new Guid("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe"),
+                            QuizID = new Guid("29f8a1b3-62f0-4d92-b7ad-4079239a9730"),
+                            TeknikID = new Guid("81c54d38-cb85-420b-b697-13f1f2a8c1cd"),
+                            TeoriID = new Guid("cd428c33-d8d7-46f3-8e8a-3a82e8b5f547"),
+                            Tid = 45,
+                            TræningRækkefølge = 1,
+                            ØvelseID = new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2")
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Øvelse", b =>
                 {
-                    b.Property<int>("ØvelseID")
+                    b.Property<Guid>("ØvelseID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ØvelseID"));
-
-                    b.Property<int>("PensumID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("PensumID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ØvelseBeskrivelse")
                         .IsRequired()
@@ -502,6 +621,19 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasIndex("PensumID");
 
                     b.ToTable("Øvelser");
+
+                    b.HasData(
+                        new
+                        {
+                            ØvelseID = new Guid("431e1b6b-3b4f-442b-b97f-11b238f660b2"),
+                            PensumID = new Guid("08ff7a3e-0627-493b-92c9-36c26f6ad7fa"),
+                            ØvelseBeskrivelse = "En simpel frontspark teknik.",
+                            ØvelseBillede = "",
+                            ØvelseNavn = "Front Spark",
+                            ØvelseSværhed = "Begynder",
+                            ØvelseTid = 30,
+                            ØvelseVideo = ""
+                        });
                 });
 
             modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerKlub", b =>
