@@ -1,5 +1,4 @@
-﻿@page "/ordbog"
-@using TaekwondoApp.Shared.DTO
+﻿@using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Model
 @using TaekwondoApp.Shared.Services
 @inject IOrdbogSyncService OrdbogSyncService
@@ -62,7 +61,7 @@
 </div>
 
 <!-- List -->
-@if (filteredWords == null)
+@if (filteredWords == null || !filteredWords.Any())
 {
     <p><em>Loading entries...</em></p>
 }
@@ -204,13 +203,16 @@ else
     private async Task LoadEntries()
     {
         LogAction("Loading all entries from local storage...");
-
-        // Load all entries initially
-        filteredWords = await SQLiteService.GetAllEntriesAsync();
-
-        LogAction($"{filteredWords.Length} entries loaded.");
+        try
+        {
+            filteredWords = await SQLiteService.GetAllEntriesAsync();
+            LogAction($"{filteredWords.Length} entries loaded.");
+        }
+        catch (Exception ex)
+        {
+            LogAction($"Error loading entries: {ex.Message}");
+        }
     }
-
 
     private void ToggleInternet()
     {
