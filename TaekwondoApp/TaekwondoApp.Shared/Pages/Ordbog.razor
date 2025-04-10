@@ -231,6 +231,8 @@ else
     {
         internet = e.NetworkAccess == NetworkAccess.Internet;
         AddLog($"Connectivity changed: {e.NetworkAccess}");
+        AddLog($"¨Subscribe work");
+
 
         if (internet)
         {
@@ -267,6 +269,7 @@ else
 
                 // Sync any other changes (e.g., creates, updates)
                 await SyncService.SyncLocalChangesToServerAsync();
+                AddLog($"Synced Local Changes");
                 syncFailed = false;
             }
             catch
@@ -280,7 +283,6 @@ else
             }
         }
     }
-
 
     private async Task LoadEntries()
     {
@@ -403,8 +405,6 @@ else
         }
     }
 
-
-
     private async Task DeleteEntry(int id)
     {
         try
@@ -441,11 +441,6 @@ else
             Console.WriteLine(ex);
         }
     }
-
-
-
-
-
 
     private void EditEntry(OrdbogDTO entry)
     {
