@@ -45,6 +45,23 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return CreatedAtAction(nameof(GetOrdbog), new { id = createdOrdbog.OrdbogId }, createdOrdbog);
         }
 
+        [HttpPut("{id}")]
+        public async Task<ActionResult<OrdbogDTO>> UpdateOrdbog(Guid id, OrdbogDTO ordbogDto)
+        {
+            // Check if the Ordbog exists
+            var existingOrdbog = await _ordbogService.GetOrdbogByIdAsync(id);
+            if (existingOrdbog == null)
+                return NotFound();
+
+            // Update the Ordbog
+            var updatedOrdbog = await _ordbogService.UpdateOrdbogAsync(id, ordbogDto);
+
+            // Notify all connected clients about the update
+            await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
+
+            return Ok(updatedOrdbog);
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrdbog(Guid id)
         {
@@ -57,6 +74,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
             return NoContent();
         }
+
         // GET: api/Ordbog/by-danskord/{danskOrd}
         [HttpGet("by-danskord/{danskOrd}")]
         public async Task<ActionResult<OrdbogDTO>> GetOrdbogByDanskOrd(string danskOrd)
