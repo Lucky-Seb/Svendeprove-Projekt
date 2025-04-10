@@ -187,7 +187,7 @@ else
     private List<string> logs = new();
     private bool isSyncing = false;
     private bool syncFailed = false;
-    private List<int> deletedEntries = new(); // Track deleted entry IDs locally
+    private List<Guid> deletedEntries = new(); // Track deleted entry IDs locally
     private bool internet = true;
 
     private void AddLog(string message)
@@ -405,21 +405,21 @@ else
         }
     }
 
-    private async Task DeleteEntry(int id)
+    private async Task DeleteEntry(Guid OrdbogId)
     {
         try
         {
             if (!internet)
             {
                 // Offline: Mark the entry as deleted in the local database
-                await SQLiteService.DeleteEntryAsync(id);
-                deletedEntries.Add(id); // Track the ID of the deleted entry
-                AddLog($"Deleted entry (Offline): ID {id}");
+                await SQLiteService.DeleteEntryAsync(OrdbogId);
+                deletedEntries.Add(OrdbogId); // Track the ID of the deleted entry
+                AddLog($"Deleted entry (Offline): ID {OrdbogId}");
             }
             else
             {
                 // Online: Attempt to delete the entry on the server
-                var response = await Http.DeleteAsync($"https://localhost:7478/api/ordbog/{id}");
+                var response = await Http.DeleteAsync($"https://localhost:7478/api/ordbog/{OrdbogId}");
                 if (!response.IsSuccessStatusCode)
                 {
                     errorMessage = "Failed to delete entry on server.";
@@ -427,9 +427,9 @@ else
                 }
 
                 // If online delete is successful, remove from the local database
-                await SQLiteService.DeleteEntryAsync(id);
+                await SQLiteService.DeleteEntryAsync(OrdbogId);
                 await SyncService.SyncDataFromServerAsync();
-                AddLog($"Deleted entry (Online): ID {id}");
+                AddLog($"Deleted entry (Online): ID {OrdbogId}");
             }
 
             // Reload the entries after deletion

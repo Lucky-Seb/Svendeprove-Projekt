@@ -70,14 +70,14 @@ namespace TaekwondoApp.Services
             }
         }
 
-        public async Task<int> DeleteEntryAsync(int id)
+        public async Task<int> DeleteEntryAsync(Guid OrdbogId)
         {
             try
             {
                 // Log the ID being passed for deletion
-                Console.WriteLine($"Attempting to delete entry with ID: {id}");
-                var deletedCount = await Task.Run(() => _database.Delete<OrdbogDTO>(id));
-                Console.WriteLine($"Deleted {deletedCount} entries with ID: {id}");
+                Console.WriteLine($"Attempting to delete entry with ID: {OrdbogId}");
+                var deletedCount = await Task.Run(() => _database.Delete<OrdbogDTO>(OrdbogId));
+                Console.WriteLine($"Deleted {deletedCount} entries with ID: {OrdbogId}");
                 return deletedCount;
             }
             catch (Exception ex)
@@ -88,15 +88,15 @@ namespace TaekwondoApp.Services
         }
 
 
-        public async Task<OrdbogDTO> GetEntryByIdAsync(int id)
+        public async Task<OrdbogDTO> GetEntryByIdAsync(Guid OrdbogId)
         {
             try
             {
-                return await Task.FromResult(_database.Table<OrdbogDTO>().FirstOrDefault(e => e.Id == id));
+                return await Task.FromResult(_database.Table<OrdbogDTO>().FirstOrDefault(e => e.OrdbogId == OrdbogId));
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error fetching entry by id: {ex.Message}");
+                Console.WriteLine($"Error fetching entry by OrdbogId: {ex.Message}");
                 throw;
             }
         }
@@ -116,11 +116,11 @@ namespace TaekwondoApp.Services
             }
         }
 
-        public async Task<int> MarkAsSyncedAsync(int id)
+        public async Task<int> MarkAsSyncedAsync(Guid OrdbogId)
         {
             try
             {
-                var entry = _database.Table<OrdbogDTO>().FirstOrDefault(e => e.Id == id);
+                var entry = _database.Table<OrdbogDTO>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
                 if (entry != null)
                 {
                     entry.IsSync = true;
@@ -139,7 +139,7 @@ namespace TaekwondoApp.Services
         {
             try
             {
-                var existingEntry = _database.Table<OrdbogDTO>().FirstOrDefault(e => e.Id == entry.Id);
+                var existingEntry = _database.Table<OrdbogDTO>().FirstOrDefault(e => e.OrdbogId == entry.OrdbogId);
                 if (existingEntry != null)
                 {
                     // Update the entry with the server-assigned ID and sync status

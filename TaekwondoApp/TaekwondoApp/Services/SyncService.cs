@@ -33,7 +33,7 @@ namespace TaekwondoApp.Services
                 if (response.IsSuccessStatusCode)
                 {
                     // Mark as synced
-                    await _sqliteService.MarkAsSyncedAsync(entry.Id);
+                    await _sqliteService.MarkAsSyncedAsync(entry.OrdbogId);
                 }
             }
         }
@@ -47,7 +47,7 @@ namespace TaekwondoApp.Services
             {
                 foreach (var serverEntry in response)
                 {
-                    var localEntry = await _sqliteService.GetEntryByIdAsync(serverEntry.Id);
+                    var localEntry = await _sqliteService.GetEntryByIdAsync(serverEntry.OrdbogId);
 
                     if (localEntry == null)
                     {
