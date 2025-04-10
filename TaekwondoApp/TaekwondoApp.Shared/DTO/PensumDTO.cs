@@ -2,7 +2,7 @@
 {
     public class PensumDTO
     {
-        public int PensumID { get; set; }
+        public Guid PensumID { get; set; }
         public string PensumGrad { get; set; }
 
         // List of TeknikDTO because one Pensum can have multiple Tekniks
