@@ -161,6 +161,183 @@ namespace TaekwondoOrchestration.ApiService.Data
                 .HasForeignKey(ko => ko.ØvelseID)
                 .OnDelete(DeleteBehavior.Cascade);  // Cascade delete for KlubØvelse
 
+
+
+            // Define relationships for entities that belong to Pensum
+
+
+            modelBuilder.Entity<Quiz>()
+
+
+                .HasOne(q => q.Pensum)
+
+
+                .WithMany(p => p.Quizzer)
+
+
+                .HasForeignKey(q => q.PensumID);
+
+
+
+
+
+            modelBuilder.Entity<Teori>()
+
+
+                .HasOne(t => t.Pensum)
+
+
+                .WithMany(p => p.Teorier)
+
+
+                .HasForeignKey(t => t.PensumID);
+
+
+
+
+
+            modelBuilder.Entity<Teknik>()
+
+
+                .HasOne(t => t.Pensum)
+
+
+                .WithMany(p => p.Teknikker)
+
+
+                .HasForeignKey(t => t.PensumID);
+
+
+
+
+
+            // Define relationships for Træning
+
+
+            modelBuilder.Entity<Træning>()
+
+
+                .HasOne(t => t.ProgramPlan)
+
+
+                .WithMany(p => p.Træninger)
+
+
+                .HasForeignKey(t => t.ProgramID);
+
+
+
+
+
+            modelBuilder.Entity<Træning>()
+
+
+                .HasOne(t => t.Quiz)
+
+
+                .WithMany()
+
+
+                .HasForeignKey(t => t.QuizID);
+
+
+
+
+
+            modelBuilder.Entity<Træning>()
+
+
+                .HasOne(t => t.Teori)
+
+
+                .WithMany()
+
+
+                .HasForeignKey(t => t.TeoriID);
+
+
+
+
+
+            modelBuilder.Entity<Træning>()
+
+
+                .HasOne(t => t.Teknik)
+
+
+                .WithMany()
+
+
+                .HasForeignKey(t => t.TeknikID);
+
+
+
+
+
+            modelBuilder.Entity<Træning>()
+
+
+                .HasOne(t => t.Øvelse)
+
+
+                .WithMany()
+
+
+                .HasForeignKey(t => t.ØvelseID);
+
+
+
+
+
+            // Define relationships for Spørgsmål
+
+
+            modelBuilder.Entity<Spørgsmål>()
+
+
+                .HasOne(s => s.Quiz)
+
+
+                .WithMany(q => q.Spørgsmåls)
+
+
+                .HasForeignKey(s => s.QuizID);  // Explicitly specify the foreign key
+
+
+            //.OnDelete(DeleteBehavior.Cascade);  // Add the delete behavior if needed
+
+
+
+
+
+
+
+
+            modelBuilder.Entity<Spørgsmål>()
+
+
+                .HasOne(t => t.Teori)
+
+
+                .WithMany()
+
+
+                .HasForeignKey(t => t.TeoriID);
+
+
+
+
+
+            modelBuilder.Entity<Spørgsmål>()
+                .HasOne(t => t.Teknik)
+                .WithMany()
+                .HasForeignKey(t => t.TeknikID);
+
+            modelBuilder.Entity<Spørgsmål>()
+                .HasOne(t => t.Øvelse)
+                .WithMany()
+                .HasForeignKey(t => t.ØvelseID);
+
             // Generate GUIDs for the entities first
             var programId = Guid.NewGuid(); // Generate GUID for ProgramPlan
             var quizId = Guid.NewGuid(); // Generate GUID for Quiz
