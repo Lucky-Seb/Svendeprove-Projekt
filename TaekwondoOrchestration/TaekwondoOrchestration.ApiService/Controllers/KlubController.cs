@@ -25,7 +25,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<KlubDTO>> GetKlubById(int id)
+        public async Task<ActionResult<KlubDTO>> GetKlubById(Guid id)
         {
             var klub = await _klubService.GetKlubByIdAsync(id);
             if (klub == null)
@@ -56,7 +56,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateKlub(int id, KlubDTO klubDto)
+        public async Task<ActionResult> UpdateKlub(Guid id, KlubDTO klubDto)
         {
             var (success, message) = await _klubService.UpdateKlubAsync(id, klubDto);
             if (!success)
@@ -66,7 +66,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteKlub(int id)
+        public async Task<ActionResult> DeleteKlub(Guid id)
         {
             var success = await _klubService.DeleteKlubAsync(id);
             if (!success)

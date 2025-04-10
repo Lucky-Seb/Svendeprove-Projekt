@@ -22,7 +22,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("{brugerId}/{øvelseId}")]
-        public async Task<ActionResult<BrugerØvelseDTO>> GetBrugerØvelse(int brugerId, int øvelseId)
+        public async Task<ActionResult<BrugerØvelseDTO>> GetBrugerØvelse(Guid brugerId, Guid øvelseId)
         {
             var brugerØvelse = await _brugerØvelseService.GetBrugerØvelseByIdAsync(brugerId, øvelseId);
             if (brugerØvelse == null)
@@ -38,7 +38,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpDelete("{brugerId}/{øvelseId}")]
-        public async Task<IActionResult> DeleteBrugerØvelse(int brugerId, int øvelseId)
+        public async Task<IActionResult> DeleteBrugerØvelse(Guid brugerId, Guid øvelseId)
         {
             var success = await _brugerØvelseService.DeleteBrugerØvelseAsync(brugerId, øvelseId);
             if (!success)

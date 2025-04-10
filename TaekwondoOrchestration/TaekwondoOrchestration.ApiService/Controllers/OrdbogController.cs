@@ -26,7 +26,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrdbogDTO>> GetOrdbog(int id)
+        public async Task<ActionResult<OrdbogDTO>> GetOrdbog(Guid id)
         {
             var ordbog = await _ordbogService.GetOrdbogByIdAsync(id);
             if (ordbog == null)
@@ -42,11 +42,11 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             // Notify all connected clients
             await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
 
-            return CreatedAtAction(nameof(GetOrdbog), new { id = createdOrdbog.Id }, createdOrdbog);
+            return CreatedAtAction(nameof(GetOrdbog), new { id = createdOrdbog.OrdbogId }, createdOrdbog);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteOrdbog(int id)
+        public async Task<IActionResult> DeleteOrdbog(Guid id)
         {
             var success = await _ordbogService.DeleteOrdbogAsync(id);
             if (!success)

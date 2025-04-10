@@ -21,7 +21,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<SpørgsmålDTO>> GetSpørgsmål(int id)
+        public async Task<ActionResult<SpørgsmålDTO>> GetSpørgsmål(Guid id)
         {
             var spørgsmål = await _spørgsmålService.GetSpørgsmålByIdAsync(id);
             if (spørgsmål == null)
@@ -37,7 +37,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSpørgsmål(int id)
+        public async Task<IActionResult> DeleteSpørgsmål(Guid id)
         {
             var success = await _spørgsmålService.DeleteSpørgsmålAsync(id);
             if (!success)

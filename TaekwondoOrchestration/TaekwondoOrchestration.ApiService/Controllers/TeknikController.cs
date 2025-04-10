@@ -26,7 +26,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Get Teknik by ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<TeknikDTO>> GetTeknik(int id)
+        public async Task<ActionResult<TeknikDTO>> GetTeknik(Guid id)
         {
             var teknik = await _teknikService.GetTeknikByIdAsync(id);
             if (teknik == null)
@@ -36,7 +36,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Get all Tekniks by Pensum ID
         [HttpGet("pensum/{pensumId}")]
-        public async Task<ActionResult<IEnumerable<TeknikDTO>>> GetTekniksByPensum(int pensumId)
+        public async Task<ActionResult<IEnumerable<TeknikDTO>>> GetTekniksByPensum(Guid pensumId)
         {
             var tekniks = await _teknikService.GetAllTeknikByPensumAsync(pensumId);
             if (tekniks == null || tekniks.Count == 0)
@@ -64,7 +64,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Delete Teknik
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTeknik(int id)
+        public async Task<IActionResult> DeleteTeknik(Guid id)
         {
             var success = await _teknikService.DeleteTeknikAsync(id);
             if (!success)

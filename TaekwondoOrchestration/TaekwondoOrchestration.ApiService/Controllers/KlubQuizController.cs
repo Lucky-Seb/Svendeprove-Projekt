@@ -23,7 +23,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("{klubId}/{quizId}")]
-        public async Task<ActionResult<KlubQuizDTO>> GetKlubQuiz(int klubId, int quizId)
+        public async Task<ActionResult<KlubQuizDTO>> GetKlubQuiz(Guid klubId, Guid quizId)
         {
             var klubQuiz = await _klubQuizService.GetKlubQuizByIdAsync(klubId, quizId);
             if (klubQuiz == null)
@@ -39,7 +39,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpDelete("{klubId}/{quizId}")]
-        public async Task<IActionResult> DeleteKlubQuiz(int klubId, int quizId)
+        public async Task<IActionResult> DeleteKlubQuiz(Guid klubId, Guid quizId)
         {
             var success = await _klubQuizService.DeleteKlubQuizAsync(klubId, quizId);
             if (!success)

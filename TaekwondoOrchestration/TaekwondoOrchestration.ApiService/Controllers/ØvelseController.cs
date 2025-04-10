@@ -27,7 +27,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // GET: api/Øvelse/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ØvelseDTO>> GetØvelse(int id)
+        public async Task<ActionResult<ØvelseDTO>> GetØvelse(Guid id)
         {
             var øvelse = await _øvelseService.GetØvelseByIdAsync(id);
             if (øvelse == null)
@@ -45,7 +45,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // GET: api/Øvelse/bruger/{brugerId}
         [HttpGet("bruger/{brugerId}")]
-        public async Task<ActionResult<IEnumerable<ØvelseDTO>>> GetØvelserByBruger(int brugerId)
+        public async Task<ActionResult<IEnumerable<ØvelseDTO>>> GetØvelserByBruger(Guid brugerId)
         {
             var øvelser = await _øvelseService.GetØvelserByBrugerAsync(brugerId);
             return Ok(øvelser);
@@ -53,7 +53,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // GET: api/Øvelse/klub/{klubId}
         [HttpGet("klub/{klubId}")]
-        public async Task<ActionResult<IEnumerable<ØvelseDTO>>> GetØvelserByKlub(int klubId)
+        public async Task<ActionResult<IEnumerable<ØvelseDTO>>> GetØvelserByKlub(Guid klubId)
         {
             var øvelser = await _øvelseService.GetØvelserByKlubAsync(klubId);
             return Ok(øvelser);
@@ -77,7 +77,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // DELETE: api/Øvelse/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteØvelse(int id)
+        public async Task<IActionResult> DeleteØvelse(Guid id)
         {
             var success = await _øvelseService.DeleteØvelseAsync(id);
             if (!success)

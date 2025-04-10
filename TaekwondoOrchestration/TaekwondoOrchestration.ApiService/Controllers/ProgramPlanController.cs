@@ -27,7 +27,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // GET: api/programplan/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProgramPlanDTO>> GetProgramPlan(int id)
+        public async Task<ActionResult<ProgramPlanDTO>> GetProgramPlan(Guid id)
         {
             var programPlan = await _programPlanService.GetProgramPlanByIdAsync(id);
             if (programPlan == null)
@@ -55,7 +55,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // PUT: api/programplan/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProgramPlan(int id, ProgramPlanDTO programPlanDto)
+        public async Task<IActionResult> PutProgramPlan(Guid id, ProgramPlanDTO programPlanDto)
         {
             var success = await _programPlanService.UpdateProgramPlanAsync(id, programPlanDto);
             if (!success)
@@ -65,7 +65,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // DELETE: api/programplan/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProgramPlan(int id)
+        public async Task<IActionResult> DeleteProgramPlan(Guid id)
         {
             var success = await _programPlanService.DeleteProgramPlanAsync(id);
             if (!success)
@@ -73,7 +73,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return NoContent();
         }
         [HttpPut("træning/{id}")]
-        public async Task<IActionResult> PutProgramPlanwithtræning(int id, ProgramPlanDTO programPlanDto)
+        public async Task<IActionResult> PutProgramPlanwithtræning(Guid id, ProgramPlanDTO programPlanDto)
         {
             var updatedProgramPlan = await _programPlanService.UpdateProgramPlanWithBrugerAndKlubAsync(id, programPlanDto);
             if (updatedProgramPlan == null)
@@ -83,13 +83,13 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return Ok(updatedProgramPlan);
         }
         [HttpGet("by-bruger/{brugerId}")]
-        public async Task<ActionResult<List<ProgramPlanDTO>>> GetAllProgrammmerByBruger(int brugerId)
+        public async Task<ActionResult<List<ProgramPlanDTO>>> GetAllProgrammmerByBruger(Guid brugerId)
         {
             var programs = await _programPlanService.GetProgramsByBrugerAsync(brugerId);
             return Ok(programs);
         }
         [HttpGet("by-klub/{klubId}")]
-        public async Task<ActionResult<List<ProgramPlanDTO>>> GetAllProgrammerByKlub(int klubId)
+        public async Task<ActionResult<List<ProgramPlanDTO>>> GetAllProgrammerByKlub(Guid klubId)
         {
             var programs = await _programPlanService.GetProgramsByBrugerAsync(klubId);
             return Ok(programs);
@@ -104,7 +104,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Get program by ID
         [HttpGet("/{id}")]
-        public async Task<ActionResult<ProgramPlanDTO>> GetProgramById(int id)
+        public async Task<ActionResult<ProgramPlanDTO>> GetProgramById(Guid id)
         {
             var program = await _programPlanService.GetProgramByIdAsync(id);
             if (program == null)
