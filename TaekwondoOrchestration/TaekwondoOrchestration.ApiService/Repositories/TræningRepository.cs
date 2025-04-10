@@ -18,10 +18,10 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         {
             _context = context;
         }
-        public async Task<IEnumerable<Træning>> GetByProgramIdAsync(int id)
+        public async Task<IEnumerable<Træning>> GetByProgramIdAsync(Guid træningId)
         {
             return await _context.Træninger
-                .Where(t => t.ProgramID == id)
+                .Where(t => t.ProgramID == træningId)
                 .ToListAsync();
         }
         public async Task<List<Træning>> GetAllTræningAsync()
@@ -29,9 +29,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.Træninger.ToListAsync();
         }
 
-        public async Task<Træning> GetTræningByIdAsync(int id)
+        public async Task<Træning> GetTræningByIdAsync(Guid træningId)
         {
-            return await _context.Træninger.FindAsync(id);
+            return await _context.Træninger.FindAsync(træningId);
         }
         public async Task<Træning> CreateTræningAsync(Træning træning)
         {
@@ -41,9 +41,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return new Træning{};
         }
 
-        public async Task<bool> DeleteTræningAsync(int id)
+        public async Task<bool> DeleteTræningAsync(Guid træningId)
         {
-            var træning = await _context.Træninger.FindAsync(id);
+            var træning = await _context.Træninger.FindAsync(træningId);
             if (træning == null)
                 return false;
 

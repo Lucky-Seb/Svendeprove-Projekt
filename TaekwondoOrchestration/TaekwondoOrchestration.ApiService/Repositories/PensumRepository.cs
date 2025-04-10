@@ -21,12 +21,12 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.Pensum.ToListAsync();
         }
 
-        public async Task<Pensum?> GetByIdAsync(int id)
+        public async Task<Pensum?> GetByIdAsync(Guid pensumId)
         {
             return await _context.Pensum
                 .Include(p => p.Teknikker)   // Eagerly load the Teknik related to Pensum
                 .Include(p => p.Teorier)    // Eagerly load the Teori related to Pensum
-                .FirstOrDefaultAsync(p => p.PensumID == id);
+                .FirstOrDefaultAsync(p => p.PensumID == pensumId);
         }
 
         public async Task<Pensum> CreateAsync(Pensum pensum)
@@ -43,9 +43,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return true;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(Guid pensumId)
         {
-            var pensum = await _context.Pensum.FindAsync(id);
+            var pensum = await _context.Pensum.FindAsync(pensumId);
             if (pensum == null) return false;
 
             _context.Pensum.Remove(pensum);

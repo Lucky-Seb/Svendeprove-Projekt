@@ -28,7 +28,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Quiz?> GetByIdAsync(int id)
+        public async Task<Quiz?> GetByIdAsync(Guid quizID)
         {
             return await _context.Quizzer
             .Include(q => q.Spørgsmåls)
@@ -37,7 +37,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                 .ThenInclude(s => s.Teori)
             .Include(q => q.Spørgsmåls)
                 .ThenInclude(s => s.Øvelse)
-            .FirstOrDefaultAsync(q => q.QuizID == id);
+            .FirstOrDefaultAsync(q => q.QuizID == quizID);
         }
 
         public async Task<Quiz> CreateAsync(Quiz quiz)
@@ -54,9 +54,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return true;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(Guid quizID)
         {
-            var quiz = await _context.Quizzer.FindAsync(id);
+            var quiz = await _context.Quizzer.FindAsync(quizID);
             if (quiz == null) return false;
 
             _context.Quizzer.Remove(quiz);
@@ -64,7 +64,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return true;
         }
         // Get all quizzes for a specific bruger (user)
-        public async Task<List<Quiz>> GetAllByBrugerAsync(int brugerId)
+        public async Task<List<Quiz>> GetAllByBrugerAsync(Guid brugerId)
         {
             return await _context.Quizzer
                 .Where(q => q.BrugerQuizzer.Any(bq => bq.BrugerID == brugerId))
@@ -78,7 +78,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         }
 
         // Get all quizzes for a specific klub (club)
-        public async Task<List<Quiz>> GetAllByKlubAsync(int klubId)
+        public async Task<List<Quiz>> GetAllByKlubAsync(Guid klubId)
         {
             return await _context.Quizzer
                 .Where(q => q.KlubQuizzer.Any(kq => kq.KlubID == klubId))
@@ -92,7 +92,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         }
 
         // Get all quizzes for a specific pensum (curriculum)
-        public async Task<List<Quiz>> GetAllByPensumAsync(int pensumId)
+        public async Task<List<Quiz>> GetAllByPensumAsync(Guid pensumId)
         {
             return await _context.Quizzer
                 .Where(q => q.PensumID == pensumId)

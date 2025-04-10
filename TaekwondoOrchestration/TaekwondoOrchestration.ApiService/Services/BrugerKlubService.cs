@@ -27,7 +27,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             }).ToList();
         }
 
-        public async Task<BrugerKlubDTO?> GetBrugerKlubByIdAsync(int brugerId, int klubId)
+        public async Task<BrugerKlubDTO?> GetBrugerKlubByIdAsync(Guid brugerId, Guid klubId)
         {
             var brugerKlub = await _brugerKlubRepository.GetBrugerKlubByIdAsync(brugerId, klubId);
             if (brugerKlub == null)
@@ -69,7 +69,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
 
-        public async Task<bool> DeleteBrugerKlubAsync(int brugerId, int klubId)
+        public async Task<bool> DeleteBrugerKlubAsync(Guid brugerId, Guid klubId)
         {
             return await _brugerKlubRepository.DeleteBrugerKlubAsync(brugerId, klubId);
         }

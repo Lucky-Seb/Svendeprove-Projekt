@@ -21,7 +21,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.KlubQuizzer.ToListAsync();
         }
 
-        public async Task<KlubQuiz?> GetKlubQuizByIdAsync(int klubId, int quizId)
+        public async Task<KlubQuiz?> GetKlubQuizByIdAsync(Guid klubId, Guid quizId)
         {
             return await _context.KlubQuizzer
                 .FirstOrDefaultAsync(k => k.KlubID == klubId && k.QuizID == quizId);
@@ -34,7 +34,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return klubQuiz;
         }
 
-        public async Task<bool> DeleteKlubQuizAsync(int klubId, int quizId)
+        public async Task<bool> DeleteKlubQuizAsync(Guid klubId, Guid quizId)
         {
             var klubQuiz = await _context.KlubQuizzer
                 .FirstOrDefaultAsync(k => k.KlubID == klubId && k.QuizID == quizId);

@@ -21,7 +21,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.BrugerØvelser.ToListAsync();
         }
 
-        public async Task<BrugerØvelse?> GetBrugerØvelseByIdAsync(int brugerId, int øvelseId)
+        public async Task<BrugerØvelse?> GetBrugerØvelseByIdAsync(Guid brugerId, Guid øvelseId)
         {
             return await _context.BrugerØvelser
                 .FirstOrDefaultAsync(bo => bo.BrugerID == brugerId && bo.ØvelseID == øvelseId);
@@ -34,7 +34,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return brugerØvelse;
         }
 
-        public async Task<bool> DeleteBrugerØvelseAsync(int brugerId, int øvelseId)
+        public async Task<bool> DeleteBrugerØvelseAsync(Guid brugerId, Guid øvelseId)
         {
             var brugerØvelse = await _context.BrugerØvelser
                 .FirstOrDefaultAsync(bo => bo.BrugerID == brugerId && bo.ØvelseID == øvelseId);

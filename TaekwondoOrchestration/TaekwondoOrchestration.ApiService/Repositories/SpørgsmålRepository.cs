@@ -21,9 +21,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.Spørgsmål.ToListAsync();
         }
 
-        public async Task<Spørgsmål?> GetByIdAsync(int id)
+        public async Task<Spørgsmål?> GetByIdAsync(Guid spørgsmålId)
         {
-            return await _context.Spørgsmål.FindAsync(id);
+            return await _context.Spørgsmål.FindAsync(spørgsmålId);
         }
 
         public async Task<Spørgsmål> CreateAsync(Spørgsmål spørgsmål)
@@ -33,9 +33,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return spørgsmål;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(Guid spørgsmålId)
         {
-            var spørgsmål = await _context.Spørgsmål.FindAsync(id);
+            var spørgsmål = await _context.Spørgsmål.FindAsync(spørgsmålId);
             if (spørgsmål == null)
                 return false;
 
@@ -50,7 +50,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<IEnumerable<Spørgsmål>> GetByQuizIdAsync(int quizId)
+        public async Task<IEnumerable<Spørgsmål>> GetByQuizIdAsync(Guid quizId)
         {
             // Ensure that the context includes the necessary relationships (e.g., QuizID).
             return await _context.Spørgsmål

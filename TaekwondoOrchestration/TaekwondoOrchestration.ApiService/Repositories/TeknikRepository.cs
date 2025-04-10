@@ -21,9 +21,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.Teknikker.ToListAsync();
         }
 
-        public async Task<Teknik?> GetTeknikByIdAsync(int id)
+        public async Task<Teknik?> GetTeknikByIdAsync(Guid teknikId)
         {
-            return await _context.Teknikker.FindAsync(id);
+            return await _context.Teknikker.FindAsync(teknikId);
         }
 
         public async Task<Teknik> CreateTeknikAsync(Teknik teknik)
@@ -33,9 +33,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return teknik;
         }
 
-        public async Task<bool> DeleteTeknikAsync(int id)
+        public async Task<bool> DeleteTeknikAsync(Guid teknikId)
         {
-            var teknik = await _context.Teknikker.FindAsync(id);
+            var teknik = await _context.Teknikker.FindAsync(teknikId);
             if (teknik == null)
                 return false;
 
@@ -50,7 +50,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<List<Teknik>> GetTekniksByPensumAsync(int pensumId)
+        public async Task<List<Teknik>> GetTekniksByPensumAsync(Guid pensumId)
         {
             return await _context.Teknikker
                                  .Where(t => t.PensumID == pensumId)

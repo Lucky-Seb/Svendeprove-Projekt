@@ -21,9 +21,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.ProgramPlans.ToListAsync();
         }
 
-        public async Task<ProgramPlan?> GetByIdAsync(int id)
+        public async Task<ProgramPlan?> GetByIdAsync(Guid programId)
         {
-            return await _context.ProgramPlans.FindAsync(id);
+            return await _context.ProgramPlans.FindAsync(programId);
         }
 
         public async Task<ProgramPlan> CreateAsync(ProgramPlan programPlan)
@@ -39,9 +39,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return true;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(Guid programId)
         {
-            var programPlan = await _context.ProgramPlans.FindAsync(id);
+            var programPlan = await _context.ProgramPlans.FindAsync(programId);
             if (programPlan == null) return false;
 
             _context.ProgramPlans.Remove(programPlan);
@@ -49,7 +49,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return true;
         }
         // Get all training sessions by KlubID
-        public async Task<List<ProgramPlan>> GetAllByKlubIdAsync(int klubId)
+        public async Task<List<ProgramPlan>> GetAllByKlubIdAsync(Guid klubId)
         {
             // Get the Program IDs associated with the Klub
             var programIds = await _context.KlubProgrammer
@@ -74,7 +74,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         }
 
         // Get all training sessions by BrugerID
-        public async Task<List<ProgramPlan>> GetAllByBrugerIdAsync(int brugerId)
+        public async Task<List<ProgramPlan>> GetAllByBrugerIdAsync(Guid brugerId)
         {
             // Get the Program IDs associated with the Bruger (user)
             var programIds = await _context.BrugerProgrammer

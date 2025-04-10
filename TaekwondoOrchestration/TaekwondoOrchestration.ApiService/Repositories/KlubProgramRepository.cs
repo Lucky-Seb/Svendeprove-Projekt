@@ -21,7 +21,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.KlubProgrammer.ToListAsync();
         }
 
-        public async Task<KlubProgram?> GetKlubProgramByIdAsync(int klubId, int programId)
+        public async Task<KlubProgram?> GetKlubProgramByIdAsync(Guid klubId, Guid programId)
         {
             return await _context.KlubProgrammer
                 .FirstOrDefaultAsync(k => k.KlubID == klubId && k.ProgramID == programId);
@@ -34,7 +34,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return klubProgram;
         }
 
-        public async Task<bool> DeleteKlubProgramAsync(int klubId, int programId)
+        public async Task<bool> DeleteKlubProgramAsync(Guid klubId, Guid programId)
         {
             var klubProgram = await _context.KlubProgrammer
                 .FirstOrDefaultAsync(k => k.KlubID == klubId && k.ProgramID == programId);

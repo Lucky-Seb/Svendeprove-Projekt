@@ -7,7 +7,7 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
     public interface IProgramPlanRepository
     {
         Task<List<ProgramPlan>> GetAllAsync();
-        Task<ProgramPlan?> GetByIdAsync(Guid progrmaPlanId);
+        Task<ProgramPlan?> GetByIdAsync(Guid progrmaId);
         Task<ProgramPlan> CreateAsync(ProgramPlan programPlan);
         Task<bool> UpdateAsync(ProgramPlan programPlan);
         Task<bool> DeleteAsync(Guid progrmaPlanId);
