@@ -41,7 +41,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return øvelser.Select(MapToDTO).ToList();
         }
 
-        public async Task<ØvelseDTO?> GetØvelseByIdAsync(int id)
+        public async Task<ØvelseDTO?> GetØvelseByIdAsync(Guid id)
         {
             var øvelse = await _øvelseRepository.GetØvelseByIdAsync(id);
             return øvelse == null ? null : MapToDTO(øvelse);
@@ -96,13 +96,13 @@ namespace TaekwondoOrchestration.ApiService.Services
             return MapToDTO(createdØvelse);
         }
 
-        public async Task<bool> DeleteØvelseAsync(int id)
+        public async Task<bool> DeleteØvelseAsync(Guid id)
         {
             var result = await _øvelseRepository.DeleteØvelseAsync(id);
             return result;
         }
 
-        public async Task<bool> UpdateØvelseAsync(int id, ØvelseDTO øvelseDto)
+        public async Task<bool> UpdateØvelseAsync(Guid id, ØvelseDTO øvelseDto)
         {
             var existingØvelse = await _øvelseRepository.GetØvelseByIdAsync(id);
             if (existingØvelse == null)
@@ -125,7 +125,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return øvelser.Select(MapToDTO).ToList();
         }
 
-        public async Task<List<ØvelseDTO>> GetØvelserByBrugerAsync(int brugerId)
+        public async Task<List<ØvelseDTO>> GetØvelserByBrugerAsync(Guid brugerId)
         {
             var øvelser = await _øvelseRepository.GetØvelserByBrugerAsync(brugerId);
 
@@ -142,7 +142,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             }).ToList();
         }
 
-        public async Task<List<ØvelseDTO>> GetØvelserByKlubAsync(int klubId)
+        public async Task<List<ØvelseDTO>> GetØvelserByKlubAsync(Guid klubId)
         {
             var øvelser = await _øvelseRepository.GetØvelserByKlubAsync(klubId);
 

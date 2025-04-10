@@ -27,7 +27,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             }).ToList();
         }
 
-        public async Task<BrugerØvelseDTO?> GetBrugerØvelseByIdAsync(int brugerId, int øvelseId)
+        public async Task<BrugerØvelseDTO?> GetBrugerØvelseByIdAsync(Guid brugerId, Guid øvelseId)
         {
             var brugerØvelse = await _brugerØvelseRepository.GetBrugerØvelseByIdAsync(brugerId, øvelseId);
             if (brugerØvelse == null)
@@ -68,7 +68,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             };
         }
 
-        public async Task<bool> DeleteBrugerØvelseAsync(int brugerId, int øvelseId)
+        public async Task<bool> DeleteBrugerØvelseAsync(Guid brugerId, Guid øvelseId)
         {
             return await _brugerØvelseRepository.DeleteBrugerØvelseAsync(brugerId, øvelseId);
         }

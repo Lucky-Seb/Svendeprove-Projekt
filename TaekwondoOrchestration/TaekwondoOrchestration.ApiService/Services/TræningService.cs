@@ -39,9 +39,9 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Get Træning by ID
-        public async Task<TræningDTO?> GetTræningByIdAsync(int id)
+        public async Task<TræningDTO?> GetTræningByIdAsync(Guid id)
         {
-            if (id <= 0) return null;
+            if (id <= null) return null;
 
             var træning = await _træningRepository.GetTræningByIdAsync(id);
             if (træning == null) return null;
@@ -64,7 +64,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         public async Task<TræningDTO?> CreateTræningAsync(TræningDTO træningDto)
         {
             if (træningDto == null) return null;
-            if (træningDto.ProgramID <= 0 || træningDto.Tid <= 0) return null;
+            if (træningDto.ProgramID <= null || træningDto.Tid <= 0) return null;
 
             var newTræning = new Træning
             {
@@ -95,17 +95,17 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Delete Træning by ID
-        public async Task<bool> DeleteTræningAsync(int id)
+        public async Task<bool> DeleteTræningAsync(Guid id)
         {
-            if (id <= 0) return false;
+            if (id <= null) return false;
             return await _træningRepository.DeleteTræningAsync(id);
         }
 
         // Update Træning by ID and DTO
-        public async Task<bool> UpdateTræningAsync(int id, TræningDTO træningDto)
+        public async Task<bool> UpdateTræningAsync(Guid id, TræningDTO træningDto)
         {
-            if (id <= 0 || træningDto == null || id != træningDto.TræningID) return false;
-            if (træningDto.ProgramID <= 0 || træningDto.Tid <= 0) return false;
+            if (id <= null || træningDto == null || id != træningDto.TræningID) return false;
+            if (træningDto.ProgramID <= null || træningDto.Tid <= 0) return false;
 
             var existingTræning = await _træningRepository.GetTræningByIdAsync(id);
             if (existingTræning == null) return false;

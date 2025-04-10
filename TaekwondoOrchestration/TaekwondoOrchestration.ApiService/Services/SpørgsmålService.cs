@@ -32,7 +32,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             }).ToList();
         }
 
-        public async Task<SpørgsmålDTO?> GetSpørgsmålByIdAsync(int id)
+        public async Task<SpørgsmålDTO?> GetSpørgsmålByIdAsync(Guid id)
         {
             var spørgsmål = await _spørgsmålRepository.GetByIdAsync(id);
             if (spørgsmål == null) return null;
@@ -75,12 +75,12 @@ namespace TaekwondoOrchestration.ApiService.Services
             };
         }
 
-        public async Task<bool> DeleteSpørgsmålAsync(int id)
+        public async Task<bool> DeleteSpørgsmålAsync(Guid id)
         {
             return await _spørgsmålRepository.DeleteAsync(id);
         }
 
-        public async Task<bool> UpdateSpørgsmålAsync(int id, SpørgsmålDTO spørgsmålDto)
+        public async Task<bool> UpdateSpørgsmålAsync(Guid id, SpørgsmålDTO spørgsmålDto)
         {
             if (spørgsmålDto == null || id != spørgsmålDto.SpørgsmålID)
                 return false;

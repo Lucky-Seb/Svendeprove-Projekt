@@ -39,7 +39,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return brugere.Select(MapToDTO).ToList();
         }
 
-        public async Task<BrugerDTO?> GetBrugerByIdAsync(int id)
+        public async Task<BrugerDTO?> GetBrugerByIdAsync(Guid id)
         {
             var bruger = await _brugerRepository.GetBrugerByIdAsync(id);
             return bruger == null ? null : MapToDTO(bruger);
@@ -57,7 +57,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return brugere.Select(MapToDTO).ToList();
         }
 
-        public async Task<List<BrugerDTO>> GetBrugereByKlubAsync(int klubId)
+        public async Task<List<BrugerDTO>> GetBrugereByKlubAsync(Guid klubId)
         {
             // Get the list of BrugerDTOs from the repository
             var brugere = await _brugerRepository.GetBrugereByKlubAsync(klubId);
@@ -66,7 +66,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return brugere;
         }
 
-        public async Task<List<BrugerDTO>> GetBrugereByKlubAndBæltegradAsync(int klubId, string bæltegrad)
+        public async Task<List<BrugerDTO>> GetBrugereByKlubAndBæltegradAsync(Guid klubId, string bæltegrad)
         {
             // Get the list of BrugerDTOs from the repository
             var brugere = await _brugerRepository.GetBrugereByKlubAndBæltegradAsync(klubId, bæltegrad);
@@ -109,7 +109,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return brugerDto;
         }
 
-        public async Task<bool> UpdateBrugerAsync(int id, BrugerDTO brugerDto)
+        public async Task<bool> UpdateBrugerAsync(Guid id, BrugerDTO brugerDto)
         {
             var bruger = await _brugerRepository.GetBrugerByIdAsync(id);
             if (bruger == null) return false;
@@ -127,7 +127,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return await _brugerRepository.UpdateBrugerAsync(bruger);
         }
 
-        public async Task<bool> DeleteBrugerAsync(int id)
+        public async Task<bool> DeleteBrugerAsync(Guid id)
         {
             return await _brugerRepository.DeleteBrugerAsync(id);
         }

@@ -29,7 +29,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             }).ToList();
         }
 
-        public async Task<OrdbogDTO?> GetOrdbogByIdAsync(int id)
+        public async Task<OrdbogDTO?> GetOrdbogByIdAsync(Guid id)
         {
             var ordbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
             if (ordbog == null)
@@ -73,7 +73,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             };
         }
 
-        public async Task<bool> UpdateOrdbogAsync(int id, OrdbogDTO ordbogDto)
+        public async Task<bool> UpdateOrdbogAsync(Guid id, OrdbogDTO ordbogDto)
         {
             //if (id <= 0 || ordbogDto == null || id != ordbogDto.OrdbogId) return false;
 
@@ -95,7 +95,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
         }
 
-        public async Task<bool> DeleteOrdbogAsync(int id)
+        public async Task<bool> DeleteOrdbogAsync(Guid id)
         {
             return await _ordbogRepository.DeleteOrdbogAsync(id);
         }
