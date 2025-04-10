@@ -45,9 +45,9 @@ namespace TaekwondoOrchestration.ApiService.Services
             // Check if the DTO is null
             if (brugerKlubDto == null) return null;
 
-            // Validate required fields
-            if (brugerKlubDto.BrugerID <= 0) return null;  // BrugerID must be a positive integer
-            if (brugerKlubDto.KlubID <= 0) return null;    // KlubID must be a positive integer
+            //// Validate required fields
+            //if (brugerKlubDto.BrugerID <= 0) return null;  // BrugerID must be a positive integer
+            //if (brugerKlubDto.KlubID <= 0) return null;    // KlubID must be a positive integer
 
             // Create new BrugerKlub entity
             var newBrugerKlub = new BrugerKlub

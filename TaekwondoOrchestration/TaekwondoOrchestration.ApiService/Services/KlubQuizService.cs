@@ -46,8 +46,8 @@ namespace TaekwondoOrchestration.ApiService.Services
             if (klubQuizDto == null) return null;
 
             // Validate required fields
-            if (klubQuizDto.KlubID <= 0) return null;  // KlubID must be a positive integer
-            if (klubQuizDto.QuizID <= 0) return null;  // QuizID must be a positive integer
+            //if (klubQuizDto.KlubID <= 0) return null;  // KlubID must be a positive integer
+            //if (klubQuizDto.QuizID <= 0) return null;  // QuizID must be a positive integer
 
             // Create new KlubQuiz entity
             var newKlubQuiz = new KlubQuiz

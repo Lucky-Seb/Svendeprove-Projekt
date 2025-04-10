@@ -5,10 +5,10 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
     public interface IOrdbogRepository
     {
         Task<List<Ordbog>> GetAllOrdbogAsync();
-        Task<Ordbog?> GetOrdbogByIdAsync(int id);
+        Task<Ordbog?> GetOrdbogByIdAsync(Guid ordbogId);
         Task<Ordbog> CreateOrdbogAsync(Ordbog ordbog);
         Task<bool> UpdateOrdbogAsync(Ordbog ordbog);
-        Task<bool> DeleteOrdbogAsync(int id);
+        Task<bool> DeleteOrdbogAsync(Guid ordbogId);
 
         // Add methods for searching by DanskOrd or KoranOrd
         Task<Ordbog?> GetOrdbogByDanskOrdAsync(string danskOrd);

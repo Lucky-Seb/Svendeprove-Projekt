@@ -118,7 +118,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             
 
-            if (dto.BrugerID != null && dto.BrugerID != 0)
+            if (dto.BrugerID != null && dto.BrugerID != null)
             {
                 var brugerProgram = new BrugerProgram
                 {
@@ -132,7 +132,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             //var klub = await _klubService.GetKlubByIdAsync(dto.KlubID);
 
             // Validate KlubID (Club ID)
-            if (dto.KlubID != null && dto.KlubID != 0)
+            if (dto.KlubID != null && dto.KlubID != null)
             {
                 var klubprogram = new KlubProgram
                 {
@@ -255,7 +255,7 @@ namespace TaekwondoOrchestration.ApiService.Services
                     // Insert new træning
                     await _træningRepository.CreateTræningAsync(new Træning
                     {
-                        ProgramID = id,
+                        ProgramID = træningDTO.ProgramID,
                         TeoriID = træningDTO.TeoriID,
                         TeknikID = træningDTO.TeknikID,
                         ØvelseID = træningDTO.ØvelseID,
@@ -280,7 +280,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Update ProgramPlan based on DTO
-        public async Task<bool> UpdateProgramPlanAsync(int id, ProgramPlanDTO programPlanDto)
+        public async Task<bool> UpdateProgramPlanAsync(Guid id, ProgramPlanDTO programPlanDto)
         {
             if (id != programPlanDto.ProgramID) return false;
 

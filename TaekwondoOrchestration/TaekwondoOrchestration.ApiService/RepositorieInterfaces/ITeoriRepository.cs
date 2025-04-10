@@ -10,10 +10,10 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
         Task<List<Teori>> GetAllTeoriAsync();
 
         // Get a Teori by its ID
-        Task<Teori?> GetTeoriByIdAsync(int id);
+        Task<Teori?> GetTeoriByIdAsync(Guid teoriId);
 
         // Get all Teori records by Pensum ID
-        Task<List<Teori>> GetTeoriByPensumAsync(int pensumId);
+        Task<List<Teori>> GetTeoriByPensumAsync(Guid pensumId);
 
         // Get a Teori by its name
         Task<Teori?> GetTeoriByTeoriNavnAsync(string teoriNavn);
@@ -22,7 +22,7 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
         Task CreateTeoriAsync(Teori teori);
 
         // Delete a Teori record by its ID
-        Task<bool> DeleteTeoriAsync(int id);
+        Task<bool> DeleteTeoriAsync(Guid teoriId);
 
         // Update an existing Teori record
         Task<bool> UpdateTeoriAsync(Teori teori);

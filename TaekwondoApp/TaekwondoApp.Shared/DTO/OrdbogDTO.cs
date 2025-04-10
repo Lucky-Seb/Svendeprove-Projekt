@@ -5,7 +5,7 @@ namespace TaekwondoApp.Shared.DTO
 
     public class OrdbogDTO
     {
-        [PrimaryKey] public Guid Id { get; set; }
+        [PrimaryKey] public Guid OrdbogId { get; set; }
         public string DanskOrd { get; set; }
         public string KoranskOrd { get; set; }
         public string Beskrivelse { get; set; }

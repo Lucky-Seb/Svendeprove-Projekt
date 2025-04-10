@@ -7,8 +7,8 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
     public interface IBrugerProgramRepository
     {
         Task<List<BrugerProgram>> GetAllBrugerProgramsAsync();
-        Task<BrugerProgram?> GetBrugerProgramByIdAsync(int brugerId, int programId);
+        Task<BrugerProgram?> GetBrugerProgramByIdAsync(Guid brugerId, Guid programId);
         Task<BrugerProgram> CreateBrugerProgramAsync(BrugerProgram brugerProgram);
-        Task<bool> DeleteBrugerProgramAsync(int brugerId, int programId);
+        Task<bool> DeleteBrugerProgramAsync(Guid brugerId, Guid programId);
     }
 }

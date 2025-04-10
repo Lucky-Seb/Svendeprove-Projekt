@@ -7,9 +7,9 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
     public interface IBrugerQuizRepository
     {
         Task<List<BrugerQuiz>> GetAllBrugerQuizzesAsync();
-        Task<BrugerQuiz?> GetBrugerQuizByIdAsync(int brugerId, int quizId);
+        Task<BrugerQuiz?> GetBrugerQuizByIdAsync(Guid brugerId, Guid quizId);
         Task<BrugerQuiz> CreateBrugerQuizAsync(BrugerQuiz brugerQuiz);
-        Task<bool> DeleteBrugerQuizAsync(int brugerId, int quizId);
+        Task<bool> DeleteBrugerQuizAsync(Guid brugerId, Guid quizId);
     }
 }
 

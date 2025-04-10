@@ -46,8 +46,8 @@ namespace TaekwondoOrchestration.ApiService.Services
             if (brugerØvelseDto == null) return null;
 
             // Validate required fields
-            if (brugerØvelseDto.BrugerID <= 0) return null;  // BrugerID must be a positive integer
-            if (brugerØvelseDto.ØvelseID <= 0) return null;  // ØvelseID must be a positive integer
+            //if (brugerØvelseDto.BrugerID <= 0) return null;  // BrugerID must be a positive integer
+            //if (brugerØvelseDto.ØvelseID <= 0) return null;  // ØvelseID must be a positive integer
 
             // Create new BrugerØvelse entity
             var newBrugerØvelse = new BrugerØvelse

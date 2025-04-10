@@ -87,7 +87,7 @@ else
             @foreach (var word in filteredWords)
             {
                 <tr>
-                    <td>@word.Id</td> <!-- Display ID value here -->
+                    <td>@word.OrdbogId</td> <!-- Display ID value here -->
                     <td>@word.DanskOrd</td>
                     <td>@word.KoranskOrd</td>
                     <td>@word.Beskrivelse</td>
@@ -121,7 +121,7 @@ else
                     </td>
                     <td>
                         <button class="btn btn-sm btn-primary" @onclick="() => EditEntry(word)">Edit</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteEntry(word.Id)">Delete</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteEntry(word.OrdbogId)">Delete</button>
                     </td>
                 </tr>
             }
@@ -375,13 +375,13 @@ else
                 // When offline, set IsSync to false (because it hasn't been synced yet)
                 entryModel.IsSync = false;
                 await SQLiteService.UpdateEntryAsync(entryModel);
-                AddLog($"Updated entry (Offline): ID {entryModel.Id}");
+                AddLog($"Updated entry (Offline): ID {entryModel.OrdbogId}");
             }
             else
             {
                 // When online, set IsSync to true (because we are syncing to the server)
                 entryModel.IsSync = true;
-                var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entryModel.Id}", entryModel);
+                var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entryModel.OrdbogId}", entryModel);
                 if (!response.IsSuccessStatusCode)
                 {
                     errorMessage = "Failed to update entry on server.";
@@ -389,7 +389,7 @@ else
                 }
                 await SyncService.SyncDataFromServerAsync();
 
-                AddLog($"Updated entry (Online): ID {entryModel.Id}");
+                AddLog($"Updated entry (Online): ID {entryModel.OrdbogId}");
 
             }
 
@@ -446,7 +446,7 @@ else
     {
         entryModel = new OrdbogDTO
             {
-                Id = entry.Id,
+                OrdbogId = entry.OrdbogId,
                 DanskOrd = entry.DanskOrd,
                 KoranskOrd = entry.KoranskOrd,
                 Beskrivelse = entry.Beskrivelse,

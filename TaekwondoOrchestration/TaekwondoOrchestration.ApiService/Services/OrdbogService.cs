@@ -19,7 +19,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             var ordboger = await _ordbogRepository.GetAllOrdbogAsync();
             return ordboger.Select(o => new OrdbogDTO
             {
-                Id = o.Id,
+                OrdbogId = o.OrdbogId,
                 DanskOrd = o.DanskOrd,
                 KoranskOrd = o.KoranskOrd,
                 Beskrivelse = o.Beskrivelse,
@@ -37,7 +37,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return new OrdbogDTO
             {
-                Id = ordbog.Id,
+                OrdbogId = ordbog.OrdbogId,
                 DanskOrd = ordbog.DanskOrd,
                 KoranskOrd = ordbog.KoranskOrd,
                 Beskrivelse = ordbog.Beskrivelse,
@@ -63,7 +63,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return new OrdbogDTO
             {
-                Id = createdOrdbog.Id,
+                OrdbogId = createdOrdbog.OrdbogId,
                 DanskOrd = createdOrdbog.DanskOrd,
                 KoranskOrd = createdOrdbog.KoranskOrd,
                 Beskrivelse = createdOrdbog.Beskrivelse,
@@ -75,7 +75,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<bool> UpdateOrdbogAsync(int id, OrdbogDTO ordbogDto)
         {
-            if (id <= 0 || ordbogDto == null || id != ordbogDto.Id) return false;
+            //if (id <= 0 || ordbogDto == null || id != ordbogDto.OrdbogId) return false;
 
             // Validate required fields
             if (string.IsNullOrEmpty(ordbogDto.DanskOrd)) return false;  // Ord cannot be null or empty
@@ -109,7 +109,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return new OrdbogDTO
             {
-                Id = ordbog.Id,
+                OrdbogId = ordbog.OrdbogId,
                 DanskOrd = ordbog.DanskOrd,
                 KoranskOrd = ordbog.KoranskOrd,
                 Beskrivelse = ordbog.Beskrivelse,
@@ -128,7 +128,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return new OrdbogDTO
             {
-                Id = ordbog.Id,
+                OrdbogId = ordbog.OrdbogId,
                 DanskOrd = ordbog.DanskOrd,
                 KoranskOrd = ordbog.KoranskOrd,
                 Beskrivelse = ordbog.Beskrivelse,
