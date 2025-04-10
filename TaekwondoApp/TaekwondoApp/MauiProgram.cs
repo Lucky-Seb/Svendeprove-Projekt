@@ -3,6 +3,7 @@ using TaekwondoApp.Services;
 using TaekwondoApp.Shared.Services;
 using Microsoft.Maui.Storage;
 using System.IO;
+using Microsoft.AspNetCore.Components;
 
 namespace TaekwondoApp
 {
@@ -20,8 +21,9 @@ namespace TaekwondoApp
 
             // Add device-specific services used by the TaekwondoApp.Shared project
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
-
+            builder.Services.AddHttpClient();  // Register IHttpClientFactory
             // Register OrdbogSyncService and pass IHttpClientFactory to it
+            builder.Services.AddSingleton<IGenericSyncService, GenericSyncService>();
             builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
 
             // Configure SQLite service with the database path

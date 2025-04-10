@@ -1,11 +1,10 @@
-﻿@using TaekwondoApp.Shared.DTO
+﻿@page "/ordbog"
+@using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Model
 @using TaekwondoApp.Shared.Services
 @inject IOrdbogSyncService OrdbogSyncService
 @inject ISQLiteService SQLiteService
 @inject NavigationManager NavigationManager
-
-@page "/ordbog"
 
 <h1>Ordbog</h1>
 
@@ -186,7 +185,7 @@ else
 @code {
     private OrdbogDTO[] filteredWords = Array.Empty<OrdbogDTO>();
     private List<string> logs = new List<string>();
-    private OrdbogDTO entryModel = new OrdbogDTO();
+    private OrdbogDTO entryModel = new OrdbogDTO();  // Already initialized
     private bool isEditing = false;
     private bool isSyncing = false;
     private bool syncFailed = false;
@@ -196,8 +195,18 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadEntries();
-        LogAction("App Initialized: Entries loaded.");
+        try
+        {
+            await LoadEntries();
+            LogAction("App Initialized: Entries loaded.");
+        }
+        catch (Exception ex)
+        {
+            // Log the error message with more details
+            Console.WriteLine($"Error during initialization: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+            errorMessage = $"Error during initialization: {ex.Message}\n{ex.StackTrace}";
+        }
     }
 
     private async Task LoadEntries()
@@ -211,6 +220,7 @@ else
         catch (Exception ex)
         {
             LogAction($"Error loading entries: {ex.Message}");
+            errorMessage = $"Error loading entries: {ex.Message}";  // Display the error in the UI
         }
     }
 
@@ -222,53 +232,77 @@ else
 
     private async Task CreateEntry()
     {
-        if (internet)
+        try
         {
-            LogAction("Creating entry (online) and syncing to server...");
-            await OrdbogSyncService.SyncOrdbogLocalChangesToServerAsync();
-        }
-        else
-        {
-            LogAction("Creating entry (offline) and saving locally...");
-            await SQLiteService.AddEntryAsync(entryModel);
-        }
+            if (internet)
+            {
+                LogAction("Creating entry (online) and syncing to server...");
+                await OrdbogSyncService.SyncOrdbogLocalChangesToServerAsync();
+            }
+            else
+            {
+                LogAction("Creating entry (offline) and saving locally...");
+                await SQLiteService.AddEntryAsync(entryModel);
+            }
 
-        LogAction("Entry created successfully.");
-        await LoadEntries();
+            LogAction("Entry created successfully.");
+            await LoadEntries();
+        }
+        catch (Exception ex)
+        {
+            LogAction($"Error creating entry: {ex.Message}");
+            errorMessage = $"Error creating entry: {ex.Message}"; // Display in UI
+        }
     }
 
     private async Task UpdateEntry()
     {
-        if (internet)
+        try
         {
-            LogAction("Updating entry (online) and syncing to server...");
-            await OrdbogSyncService.SyncOrdbogLocalChangesToServerAsync();
-        }
-        else
-        {
-            LogAction("Updating entry (offline) and saving locally...");
-            await SQLiteService.UpdateEntryAsync(entryModel);
-        }
+            if (internet)
+            {
+                LogAction("Updating entry (online) and syncing to server...");
+                await OrdbogSyncService.SyncOrdbogLocalChangesToServerAsync();
+            }
+            else
+            {
+                LogAction("Updating entry (offline) and saving locally...");
+                await SQLiteService.UpdateEntryAsync(entryModel);
+            }
 
-        LogAction("Entry updated successfully.");
-        await LoadEntries();
+            LogAction("Entry updated successfully.");
+            await LoadEntries();
+        }
+        catch (Exception ex)
+        {
+            LogAction($"Error updating entry: {ex.Message}");
+            errorMessage = $"Error updating entry: {ex.Message}";  // Display in UI
+        }
     }
 
     private async Task DeleteEntry(Guid OrdbogId)
     {
-        if (internet)
+        try
         {
-            LogAction("Deleting entry (online) and syncing to server...");
-            await OrdbogSyncService.SyncOrdbogLocalChangesToServerAsync();
-        }
-        else
-        {
-            LogAction($"Deleting entry {OrdbogId} (offline) from local storage...");
-            await SQLiteService.DeleteEntryAsync(OrdbogId);
-        }
+            if (internet)
+            {
+                LogAction("Deleting entry (online) and syncing to server...");
+                await OrdbogSyncService.SyncOrdbogLocalChangesToServerAsync();
+            }
+            else
+            {
+                LogAction($"Deleting entry {OrdbogId} (offline) from local storage...");
+                await SQLiteService.DeleteEntryAsync(OrdbogId);
+            }
 
-        LogAction("Entry deleted successfully.");
-        await LoadEntries();
+            LogAction("Entry deleted successfully.");
+            await LoadEntries();
+        }
+        catch (Exception ex)
+        {
+            LogAction($"Error deleting entry: {ex.Message}");
+            errorMessage = $"Error deleting entry: {ex.Message}";  // Display in UI
+        }
     }
 
     private async Task TrySyncIfOnline()
@@ -344,6 +378,10 @@ else
 
     private void LogAction(string message)
     {
-        logs.Insert(0, $"{DateTime.Now}: {message}");  // Insert log at the top of the list
+        if (logs.Count > 50)  // Limit logs to 50 entries
+        {
+            logs.RemoveAt(logs.Count - 1);  // Remove the oldest entry
+        }
+        logs.Insert(0, $"{DateTime.Now}: {message}");
     }
 }
