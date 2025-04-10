@@ -185,14 +185,14 @@ else
 
 
 @code {
-    private List<OrdbogDTO> filteredWords;
+    private OrdbogDTO[] filteredWords = Array.Empty<OrdbogDTO>();
     private List<string> logs = new List<string>();
     private OrdbogDTO entryModel = new OrdbogDTO();
     private bool isEditing = false;
     private bool isSyncing = false;
     private bool syncFailed = false;
     private bool internet = true; // Simulate the internet status for the app
-    private string errorMessage;
+    private string errorMessage = string.Empty;
     private string searchTerm = string.Empty;
 
     protected override async Task OnInitializedAsync()
@@ -204,10 +204,13 @@ else
     private async Task LoadEntries()
     {
         LogAction("Loading all entries from local storage...");
+
         // Load all entries initially
         filteredWords = await SQLiteService.GetAllEntriesAsync();
-        LogAction($"{filteredWords.Count} entries loaded.");
+
+        LogAction($"{filteredWords.Length} entries loaded.");
     }
+
 
     private void ToggleInternet()
     {
@@ -314,25 +317,26 @@ else
 
             // Filter the words based on search term (matching in Dansk or Koransk)
             filteredWords = filteredWords
-                .Where(w => w.DanskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || w.KoranskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+                .Where(w =>
+                    (!string.IsNullOrEmpty(w.DanskOrd) && w.DanskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(w.KoranskOrd) && w.KoranskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                )
+                .ToArray();
 
-            LogAction($"{filteredWords.Count} entries matched the search term.");
+            LogAction($"{filteredWords.Length} entries matched the search term.");
         }
         else
         {
             LogAction("Search term is empty. Showing all entries.");
-            // If search term is empty, show all entries
             await LoadEntries();
         }
     }
 
-    private void ClearSearch()
+    private async void ClearSearch()
     {
         LogAction("Clearing search filter...");
         searchTerm = string.Empty;
-        filteredWords.Clear();
-        LoadEntries();
+        await LoadEntries();
     }
 
     private void LogAction(string message)

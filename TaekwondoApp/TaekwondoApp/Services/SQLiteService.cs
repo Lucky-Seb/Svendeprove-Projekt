@@ -24,11 +24,12 @@ namespace TaekwondoApp.Services
             _database.CreateTable<OrdbogDTO>();
         }
 
-        public async Task<List<OrdbogDTO>> GetAllEntriesAsync()
+        public async Task<OrdbogDTO[]> GetAllEntriesAsync()
         {
             try
             {
-                return await Task.FromResult(_database.Table<OrdbogDTO>().ToList());
+                var list = _database.Table<OrdbogDTO>().ToList();
+                return await Task.FromResult(list.ToArray()); // Safe for AOT/WinRT
             }
             catch (Exception ex)
             {
@@ -102,13 +103,16 @@ namespace TaekwondoApp.Services
         }
 
         // Get only entries that are unsynced (Pending or Failed)
-        public async Task<List<OrdbogDTO>> GetUnsyncedEntriesAsync()
+        public async Task<OrdbogDTO[]> GetUnsyncedEntriesAsync()
         {
             try
             {
-                return await Task.FromResult(
-                    _database.Table<OrdbogDTO>().Where(e => e.Status == SyncStatus.Pending || e.Status == SyncStatus.Failed).ToList()
-                );
+                var unsynced = _database
+                    .Table<OrdbogDTO>()
+                    .Where(e => e.Status == SyncStatus.Pending || e.Status == SyncStatus.Failed)
+                    .ToList();
+
+                return await Task.FromResult(unsynced.ToArray());
             }
             catch (Exception ex)
             {

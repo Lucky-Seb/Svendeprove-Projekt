@@ -8,7 +8,7 @@ namespace TaekwondoApp.Shared.Services
     public interface ISQLiteService
     {
         Task<int> AddEntryAsync(OrdbogDTO entry);
-        Task<List<OrdbogDTO>> GetAllEntriesAsync();
+        Task<OrdbogDTO[]> GetAllEntriesAsync();
         Task<int> DeleteEntryAsync(Guid OrdbogId); // Mark as deleted instead of actually deleting from DB
         Task<int> UpdateEntryAsync(OrdbogDTO entry);
         Task<OrdbogDTO> GetEntryByIdAsync(Guid OrdbogId);
@@ -16,7 +16,7 @@ namespace TaekwondoApp.Shared.Services
         Task<int> UpdateEntryWithServerIdAsync(OrdbogDTO entry);
 
         // Get entries that need to be synced (Pending or Failed)
-        Task<List<OrdbogDTO>> GetUnsyncedEntriesAsync();
+        Task<OrdbogDTO[]> GetUnsyncedEntriesAsync(); // instead of List<OrdbogDTO>
 
         // Mark an entry as synced after pushing to the server
         Task<int> MarkAsSyncedAsync(Guid OrdbogId);
