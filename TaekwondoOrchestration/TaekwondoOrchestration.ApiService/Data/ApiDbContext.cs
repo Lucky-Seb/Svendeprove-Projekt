@@ -164,169 +164,57 @@ namespace TaekwondoOrchestration.ApiService.Data
 
 
             // Define relationships for entities that belong to Pensum
-
-
             modelBuilder.Entity<Quiz>()
-
-
                 .HasOne(q => q.Pensum)
-
-
                 .WithMany(p => p.Quizzer)
-
-
                 .HasForeignKey(q => q.PensumID);
 
-
-
-
-
             modelBuilder.Entity<Teori>()
-
-
                 .HasOne(t => t.Pensum)
-
-
                 .WithMany(p => p.Teorier)
-
-
                 .HasForeignKey(t => t.PensumID);
-
-
-
-
 
             modelBuilder.Entity<Teknik>()
-
-
                 .HasOne(t => t.Pensum)
-
-
                 .WithMany(p => p.Teknikker)
-
-
                 .HasForeignKey(t => t.PensumID);
 
-
-
-
-
             // Define relationships for Træning
-
-
             modelBuilder.Entity<Træning>()
-
-
                 .HasOne(t => t.ProgramPlan)
-
-
                 .WithMany(p => p.Træninger)
-
-
                 .HasForeignKey(t => t.ProgramID);
 
-
-
-
-
             modelBuilder.Entity<Træning>()
-
-
                 .HasOne(t => t.Quiz)
-
-
                 .WithMany()
-
-
                 .HasForeignKey(t => t.QuizID);
 
-
-
-
-
             modelBuilder.Entity<Træning>()
-
-
                 .HasOne(t => t.Teori)
-
-
                 .WithMany()
-
-
                 .HasForeignKey(t => t.TeoriID);
 
-
-
-
-
             modelBuilder.Entity<Træning>()
-
-
                 .HasOne(t => t.Teknik)
-
-
                 .WithMany()
-
-
                 .HasForeignKey(t => t.TeknikID);
 
-
-
-
-
             modelBuilder.Entity<Træning>()
-
-
                 .HasOne(t => t.Øvelse)
-
-
                 .WithMany()
-
-
                 .HasForeignKey(t => t.ØvelseID);
-
-
-
-
 
             // Define relationships for Spørgsmål
-
-
             modelBuilder.Entity<Spørgsmål>()
-
-
                 .HasOne(s => s.Quiz)
-
-
                 .WithMany(q => q.Spørgsmåls)
-
-
                 .HasForeignKey(s => s.QuizID);  // Explicitly specify the foreign key
 
-
-            //.OnDelete(DeleteBehavior.Cascade);  // Add the delete behavior if needed
-
-
-
-
-
-
-
-
             modelBuilder.Entity<Spørgsmål>()
-
-
                 .HasOne(t => t.Teori)
-
-
                 .WithMany()
-
-
                 .HasForeignKey(t => t.TeoriID);
-
-
-
-
 
             modelBuilder.Entity<Spørgsmål>()
                 .HasOne(t => t.Teknik)
@@ -338,20 +226,19 @@ namespace TaekwondoOrchestration.ApiService.Data
                 .WithMany()
                 .HasForeignKey(t => t.ØvelseID);
 
-            // Generate GUIDs for the entities first
-            var programId = Guid.NewGuid(); // Generate GUID for ProgramPlan
-            var quizId = Guid.NewGuid(); // Generate GUID for Quiz
-            var teoriId = Guid.NewGuid(); // Generate GUID for Teori
-            var teknikId = Guid.NewGuid(); // Generate GUID for Teknik
-            var øvelseId = Guid.NewGuid(); // Generate GUID for Øvelse
-            var pensumId = Guid.NewGuid(); // Generate GUID for Pensum
+            // Generate static GUIDs for the entities
+            var programId = Guid.Parse("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe");  // Replace with your fixed GUID
+            var quizId = Guid.Parse("29f8a1b3-62f0-4d92-b7ad-4079239a9730");      // Replace with your fixed GUID
+            var teoriId = Guid.Parse("cd428c33-d8d7-46f3-8e8a-3a82e8b5f547");    // Replace with your fixed GUID
+            var teknikId = Guid.Parse("81c54d38-cb85-420b-b697-13f1f2a8c1cd");   // Replace with your fixed GUID
+            var øvelseId = Guid.Parse("431e1b6b-3b4f-442b-b97f-11b238f660b2");  // Replace with your fixed GUID
+            var pensumId = Guid.Parse("08ff7a3e-0627-493b-92c9-36c26f6ad7fa");  // Replace with your fixed GUID
 
             // Seed data for entities
-
             modelBuilder.Entity<Bruger>().HasData(
                 new Bruger
                 {
-                    BrugerID = Guid.NewGuid(),
+                    BrugerID = Guid.Parse("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), // Replace with your fixed GUID
                     Email = "emma@dojo.dk",
                     Brugernavn = "emma123",
                     Fornavn = "Emma",
@@ -364,12 +251,12 @@ namespace TaekwondoOrchestration.ApiService.Data
             );
 
             modelBuilder.Entity<BrugerKlub>().HasData(
-                new BrugerKlub { BrugerID = Guid.NewGuid(), KlubID = Guid.NewGuid() }
+                new BrugerKlub { BrugerID = Guid.Parse("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), KlubID = Guid.Parse("c2b62e9a-38da-43ab-9731-f3641cd3121d") } // Replace with your fixed GUIDs
             );
 
             modelBuilder.Entity<Øvelse>().HasData(
-            new Øvelse
-            {
+                new Øvelse
+                {
                     ØvelseID = øvelseId,
                     ØvelseNavn = "Front Spark",
                     ØvelseBeskrivelse = "En simpel frontspark teknik.",
@@ -382,11 +269,11 @@ namespace TaekwondoOrchestration.ApiService.Data
             );
 
             modelBuilder.Entity<BrugerØvelse>().HasData(
-                new BrugerØvelse { BrugerID = Guid.NewGuid(), ØvelseID = øvelseId }
+                new BrugerØvelse { BrugerID = Guid.Parse("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), ØvelseID = øvelseId }
             );
 
             modelBuilder.Entity<KlubØvelse>().HasData(
-                new KlubØvelse { KlubID = Guid.NewGuid(), ØvelseID = øvelseId }
+                new KlubØvelse { KlubID = Guid.Parse("c2b62e9a-38da-43ab-9731-f3641cd3121d"), ØvelseID = øvelseId }
             );
 
             modelBuilder.Entity<Teori>().HasData(
@@ -428,7 +315,7 @@ namespace TaekwondoOrchestration.ApiService.Data
             modelBuilder.Entity<Spørgsmål>().HasData(
                 new Spørgsmål
                 {
-                    SpørgsmålID = Guid.NewGuid(),
+                    SpørgsmålID = Guid.Parse("f2563f57-92c7-4388-b920-bf38e47e9d12"), // Replace with your fixed GUID
                     SpørgsmålRækkefølge = 1,
                     SpørgsmålTid = 30,
                     QuizID = quizId,
@@ -437,11 +324,11 @@ namespace TaekwondoOrchestration.ApiService.Data
             );
 
             modelBuilder.Entity<BrugerQuiz>().HasData(
-                new BrugerQuiz { BrugerID = Guid.NewGuid(), QuizID = quizId }
+                new BrugerQuiz { BrugerID = Guid.Parse("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), QuizID = quizId }
             );
 
             modelBuilder.Entity<KlubQuiz>().HasData(
-                new KlubQuiz { KlubID = Guid.NewGuid(), QuizID = quizId }
+                new KlubQuiz { KlubID = Guid.Parse("c2b62e9a-38da-43ab-9731-f3641cd3121d"), QuizID = quizId }
             );
 
             // Seed data for ProgramPlan
@@ -456,23 +343,23 @@ namespace TaekwondoOrchestration.ApiService.Data
                 }
             );
 
-            // Link ProgramPlan to KlubProgram and BrugerProgram using their GUIDs
+            // Link ProgramPlan to KlubProgram and BrugerProgram using their fixed GUIDs
             modelBuilder.Entity<KlubProgram>().HasData(
-                new KlubProgram { KlubID = Guid.NewGuid(), ProgramID = programId }
+                new KlubProgram { KlubID = Guid.Parse("c2b62e9a-38da-43ab-9731-f3641cd3121d"), ProgramID = programId }
             );
 
             modelBuilder.Entity<BrugerProgram>().HasData(
-                new BrugerProgram { BrugerID = Guid.NewGuid(), ProgramID = programId }
+                new BrugerProgram { BrugerID = Guid.Parse("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), ProgramID = programId }
             );
 
-            // Seed data for Træning and link it to ProgramPlan using the GUID
+            // Seed data for Træning and link it to ProgramPlan using the fixed GUID
             modelBuilder.Entity<Træning>().HasData(
                 new Træning
                 {
-                    TræningID = Guid.NewGuid(),
+                    TræningID = Guid.Parse("a3e2121b-b256-4564-bff1-2f2c94ed00de"), // Replace with your fixed GUID
                     TræningRækkefølge = 1,
                     Tid = 45,
-                    ProgramID = programId, // Assign the seeded ProgramPlan's ID to ProgramID
+                    ProgramID = programId, // Using the fixed ProgramPlan GUID
                     QuizID = quizId,
                     TeoriID = teoriId,
                     TeknikID = teknikId,
