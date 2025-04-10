@@ -1125,7 +1125,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                 },
                 new Træning
                 {
-                    TræningID = træningID5,
+                    TræningID = træningID6,
                     TræningRækkefølge = 2,
                     Tid = 80,
                     ProgramID = programID3,  // Reference the second program
