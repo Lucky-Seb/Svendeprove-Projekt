@@ -227,106 +227,109 @@ namespace TaekwondoOrchestration.ApiService.Data
                 .HasForeignKey(t => t.ØvelseID);
 
             // Define fixed GUIDs for seeding relationships
-            var brugerID1 = Guid.Parse("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe");
-            var brugerID2 = Guid.Parse("b2e7d72e-2d56-4c64-b536-ff2b742bfcdc");
-            var brugerID3 = Guid.Parse("c3e7d72e-2d56-4c64-b536-ff2b742bfcdc");
-            var brugerID4 = Guid.Parse("d4e7d72e-2d56-4c64-b536-ff2b742bfcdc");
-            var brugerID5 = Guid.Parse("e5e7d72e-2d56-4c64-b536-ff2b742bfcdc");
+            var brugerID1 = Guid.Parse("8bb14e0c-04a3-4679-aa0b-48b9978eb220");
+            var brugerID2 = Guid.Parse("446a5a83-a0bd-4633-b28f-a6526245eed7");
+            var brugerID3 = Guid.Parse("98e78576-6bc4-408d-b4af-2ad9051f905b");
+            var brugerID4 = Guid.Parse("e4ef6612-011c-453a-894f-858dff3937d4");
+            var brugerID5 = Guid.Parse("4153884f-a1ce-44d0-970b-8898a11fdb81");
 
-            var klubID1 = Guid.Parse("f1a4f9c9-6d77-4a8d-a3f3-b0f5095df9fe");
-            var klubID2 = Guid.Parse("a2e7d72e-2d56-4c64-b536-ff2b742bfcdc");
-            var klubID3 = Guid.Parse("b3e7d72e-2d56-4c64-b536-ff2b742bfcdc");
-            var klubID4 = Guid.Parse("c4e7d72e-2d56-4c64-b536-ff2b742bfcdc");
-            var klubID5 = Guid.Parse("d5e7d72e-2d56-4c64-b536-ff2b742bfcdc");
+            var klubID1 = Guid.Parse("afa9ebbf-49bb-4737-9ab0-7d9d3153c993");
+            var klubID2 = Guid.Parse("fed25ea9-7695-4945-a109-2900a24ff1ce");
+            var klubID3 = Guid.Parse("6b25c814-a97b-41dc-9597-0864f08cb779");
+            var klubID4 = Guid.Parse("2bed2d1b-b96e-427a-8451-3c43ea48ea5c");
+            var klubID5 = Guid.Parse("9c3e5c16-5bb2-4076-a871-b2414bd782c2");
 
-            var programID1 = Guid.Parse("e1a4f9c9-6d77-4a8d-a3f3-b0f5095df9fe");
-            var programID2 = Guid.Parse("f2b7d72e-2d56-4c64-b536-ff2b742bfcdc");
-            var programID3 = Guid.Parse("g3c8d72e-2d56-4c64-b536-ff2b742bfcdc");
+            var programID1 = Guid.Parse("11741c42-315e-42fe-a0a8-337afd6d511f");
+            var programID2 = Guid.Parse("8c98eb00-1efb-4361-99b7-974c1aed66e8");
+            var programID3 = Guid.Parse("3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47");
 
             // Define fixed GUIDs for seeding Øvelse
-            var øvelseID1 = Guid.Parse("f1a7f9c9-6d77-4a8d-a3f3-b0f5095df9fe");
-            var øvelseID2 = Guid.Parse("c2b8f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var øvelseID3 = Guid.Parse("d3c9e72e-2d56-4c64-b536-ff2b742bfcdc");
-            var øvelseID4 = Guid.Parse("e4d0f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var øvelseID5 = Guid.Parse("f5e1f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var øvelseID6 = Guid.Parse("f7e2f82e-3d56-5c64-c637-gg3b743bfcdc");
-            var øvelseID7 = Guid.Parse("a8e3f92e-4e67-5d75-b548-hh4c824bfcdc");
-            var øvelseID8 = Guid.Parse("b9e4f02e-5f78-6e86-c659-ii5d935bfcdc");
-            var øvelseID9 = Guid.Parse("c0f5f12e-6g89-7f97-d760-jj6e046bfcdc");
-            var øvelseID10 = Guid.Parse("d1f6f22e-7h90-8g08-e871-kk7f157bfcdc");
+            var øvelseID1 = Guid.Parse("0335fde9-e05e-4a72-b08c-0c076803b395");
+            var øvelseID2 = Guid.Parse("1ab7a999-d644-418a-b3ba-c3cd27a5dfd6");
+            var øvelseID3 = Guid.Parse("1e86d0c9-1d34-4b46-a939-1326f7f9df42");
+            var øvelseID4 = Guid.Parse("dcbcc571-4377-4fcc-91a8-fb83f07165f6");
+            var øvelseID5 = Guid.Parse("d5a762e1-b401-4118-955d-bbb3d26f370e");
+            var øvelseID6 = Guid.Parse("a36f91d7-c05b-48c8-97a3-11f86a2eae69");
+            var øvelseID7 = Guid.Parse("29433916-f5aa-4d34-9bf3-6e0eb09aa010");
+            var øvelseID8 = Guid.Parse("d9f50fe9-11d5-46ee-8836-a57727dc424b");
+            var øvelseID9 = Guid.Parse("f1c414cb-8ce7-4583-b65e-510bc0f2fd8b");
+            var øvelseID10 = Guid.Parse("bdb87fa8-e777-42e6-ad08-7187707fe1c3");
 
-            var teknikID1 = Guid.Parse("a1d6f9c9-6d77-4a8d-a3f3-b0f5095df9fe");
-            var teknikID2 = Guid.Parse("b2e7d72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teknikID3 = Guid.Parse("c3f8d72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teknikID4 = Guid.Parse("d4g9e72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teknikID5 = Guid.Parse("e5h0f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teknikID6 = Guid.Parse("f6i1g72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teknikID7 = Guid.Parse("g7j2h72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teknikID8 = Guid.Parse("h8k3i72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teknikID9 = Guid.Parse("i9l4j72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teknikID10 = Guid.Parse("j0m5k72e-2d56-4c64-b536-ff2b742bfcdc");
-
-            var teoriID1 = Guid.Parse("b1a7f9c9-6d77-4a8d-a3f3-b0f5095df9fe");
-            var teoriID2 = Guid.Parse("c2b8f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teoriID3 = Guid.Parse("d3c9e72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teoriID4 = Guid.Parse("e4d0f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teoriID5 = Guid.Parse("f5e1f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var teoriID6 = Guid.Parse("f7e2f82e-3d56-5c64-c637-gg3b743bfcdc");
-            var teoriID7 = Guid.Parse("a8e3f92e-4e67-5d75-b548-hh4c824bfcdc");
-            var teoriID8 = Guid.Parse("b9e4f02e-5f78-6e86-c659-ii5d935bfcdc");
-            var teoriID9 = Guid.Parse("c0f5f12e-6g89-7f97-d760-jj6e046bfcdc");
-            var teoriID10 = Guid.Parse("d1f6f22e-7h90-8g08-e871-kk7f157bfcdc");
+            // Fixed GUID values for Teknik
+            var teknikID1 = Guid.Parse("4d608ca7-227c-4dc5-b7b9-f8f2315233ec");
+            var teknikID2 = Guid.Parse("f4a14256-bf7c-4910-a4c4-13fc063a455a");
+            var teknikID3 = Guid.Parse("72385206-876c-4f9d-bfc6-dc8aa02ef587");
+            var teknikID4 = Guid.Parse("49425f68-4bcf-412e-8ac3-0f87b3b117ca");
+            var teknikID5 = Guid.Parse("fe2b1123-5434-4c83-ab16-e8372bd99fef");
+            var teknikID6 = Guid.Parse("49e7612b-36ff-4f40-9224-5d126945e3e2");
+            var teknikID7 = Guid.Parse("ca16ac6c-3697-49b2-891b-dd9e632790c1");
+            var teknikID8 = Guid.Parse("42e75d1b-d44e-416c-8a6a-0dd9b2803d9c");
+            var teknikID9 = Guid.Parse("ff1f1f02-2a9f-4281-9569-7bf33ec6f457");
+            var teknikID10 = Guid.Parse("13eeede6-81ae-4c79-a25e-9226d7a20316");
+            // Fixed GUID values for Teori
+            var teoriID1 = Guid.Parse("bf4135c9-db91-4354-956f-f1606bddccd8");
+            var teoriID2 = Guid.Parse("aae05942-0586-4000-aca2-b02525c0f1ea");
+            var teoriID3 = Guid.Parse("a845c529-8362-4fac-b7d0-df079db04860");
+            var teoriID4 = Guid.Parse("ecac9146-b9b2-492c-9561-032c39b1436b");
+            var teoriID5 = Guid.Parse("26abad43-d433-416e-ba59-6ddb20a64093");
+            var teoriID6 = Guid.Parse("9e4df6a6-af38-445f-a4d5-2f2f5e01b029");
+            var teoriID7 = Guid.Parse("d93a6ee0-f753-4f04-ac35-7fbb1cd09803");
+            var teoriID8 = Guid.Parse("340c59b4-9f76-46af-8abb-49a200eb4671");
+            var teoriID9 = Guid.Parse("e10b50fa-9224-4469-9f4c-7553db8328b6");
+            var teoriID10 = Guid.Parse("3ed65b45-89f7-4209-bc51-9de0b3c6b6d3");
 
             // Fixed GUID values for Quiz and Pensum
-            var quizID1 = Guid.Parse("a743a0b1-75b6-49ad-9f8f-1bfbf2107fd3");
-            var quizID2 = Guid.Parse("0b413fea-992d-4c3f-b072-c5294f4c2646");
-            var quizID3 = Guid.Parse("4f71a72d-d94a-46d0-b917-bf7b17fd2191");
+            var quizID1 = Guid.Parse("69cde397-c39c-4172-8d95-56c9a5cdc099");
+            var quizID2 = Guid.Parse("3b89bd9d-dd30-4ea4-8563-984dbfccb644");
+            var quizID3 = Guid.Parse("f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2");
 
-            var pensumID1 = Guid.Parse("b2a7f9c9-6d77-4a8d-a3f3-b0f5095df9fe");
-            var pensumID2 = Guid.Parse("c3b8f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var pensumID3 = Guid.Parse("d4c9e72e-2d56-4c64-b536-ff2b742bfcdc");
-            var pensumID4 = Guid.Parse("e5d0f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var pensumID5 = Guid.Parse("f6e1g72e-2d56-4c64-b536-ff2b742bfcdc");
+
+            var pensumID1 = Guid.Parse("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973");
+            var pensumID2 = Guid.Parse("dcd90332-5e1b-4352-bf88-fb40e75932bd");
+            var pensumID3 = Guid.Parse("67db5817-3c5a-4604-ba74-8076578528c3");
+            var pensumID4 = Guid.Parse("9c3cabef-0731-4243-a5e8-d837c77ee523");
+            var pensumID5 = Guid.Parse("362385ac-7c43-41b1-989c-b8d9ba6fce67");
 
             // Static GUIDs for Spørgsmål (Question IDs) - fixed GUIDs
-            var spørgsmålID1 = Guid.Parse("a93d7c1a-933f-44a7-b6c7-5f03a05214a7");
-            var spørgsmålID2 = Guid.Parse("5a7633c4-b45b-4fbb-8d8b-59c5aeb1703e");
-            var spørgsmålID3 = Guid.Parse("82e42e23-8f83-44b7-bd72-99c82e1c36ad");
-            var spørgsmålID4 = Guid.Parse("6fd5a2f4-b970-4bb7-b870-dcf1b10c16be");
-            var spørgsmålID5 = Guid.Parse("4a836fc1-8005-4a9d-b3a2-230d47ff2978");
+            var spørgsmålID1 = Guid.Parse("4ba89cd8-b931-4071-a057-1c9740dac086");  // Generated GUID 51
+            var spørgsmålID2 = Guid.Parse("8fe43b9a-f64d-4701-911a-764204b423ad");  // Generated GUID 52
+            var spørgsmålID3 = Guid.Parse("94dac4ff-3ef1-41dd-8593-de3736627b98");  // Generated GUID 53
+            var spørgsmålID4 = Guid.Parse("464d80b9-28b4-4e16-949a-bddbafc4c6f1");  // Generated GUID 54
+            var spørgsmålID5 = Guid.Parse("85c9d413-5148-488c-a667-f971171d2d78");  // Generated GUID 55
 
-            var spørgsmålID6 = Guid.Parse("89b0d93c-970e-4558-92e7-f6cb4090105e");
-            var spørgsmålID7 = Guid.Parse("5fe63557-8ca8-47d9-954b-6f804ed404fe");
-            var spørgsmålID8 = Guid.Parse("0dff6ed4-3ec7-4b61-b540-baa7c9ca92a4");
-            var spørgsmålID9 = Guid.Parse("6f6d9a4d-722d-4594-b41c-758f27785a5d");
-            var spørgsmålID10 = Guid.Parse("7fa5f8f9-cf02-4a0f-bc2f-5729c3d3f5a5");
+            var spørgsmålID6 = Guid.Parse("d1797c4a-4378-49a9-84d5-375efcff0d88");  // Generated GUID 56
+            var spørgsmålID7 = Guid.Parse("0a4b9bd3-1fc3-498c-9574-51d1db67cce4");  // Generated GUID 57
+            var spørgsmålID8 = Guid.Parse("3e5a25d1-a1a2-411d-b5ab-db0aead404c3");  // Generated GUID 58
+            var spørgsmålID9 = Guid.Parse("a79c2d74-bccf-4a9f-ba03-ac02c906f6c7");  // Generated GUID 59
+            var spørgsmålID10 = Guid.Parse("49da5e18-a087-40aa-8ea8-0a67e13d249b");  // Generated GUID 60
 
-            var spørgsmålID11 = Guid.Parse("55bc4a82-3cf6-4fbd-bd9c-4e9b6fe245bb");
-            var spørgsmålID12 = Guid.Parse("ccdf344a-4fbc-46f6-b9c6-b906d73c0a4e");
-            var spørgsmålID13 = Guid.Parse("9e8d3e8d-4ff9-4e74-a840-69ac02212b1f");
-            var spørgsmålID14 = Guid.Parse("8a67c5a6-bd19-4e76-8fd6-e5be6c0d8c3f");
-            var spørgsmålID15 = Guid.Parse("113fb830-ffba-4fd8-b264-82c6f4640571");
+            var spørgsmålID11 = Guid.Parse("2f02f12d-3c9a-4b63-b7f0-8df70d9ed799");  // Generated GUID 61
+            var spørgsmålID12 = Guid.Parse("67f31858-40f0-481d-844a-7dcc7c4e0b48");  // Generated GUID 62
+            var spørgsmålID13 = Guid.Parse("6e6089f3-1f29-412e-b7ba-9cfe652fecce");  // Generated GUID 63
+            var spørgsmålID14 = Guid.Parse("600a1b8b-6eed-434d-9a1f-1337124da834");  // Generated GUID 64
+            var spørgsmålID15 = Guid.Parse("d1a60bed-fd96-47dd-b86a-a944230d53bb");  // Generated GUID 65
 
             // Static GUIDs for Træning (Training IDs) and other related IDs
-            var træningID1 = Guid.Parse("bb33c7e1-50b5-4639-a314-18f7ad365c98");
-            var træningID2 = Guid.Parse("d3b376cf-c3c7-48a5-8125-f199a5b7809b");
-            var træningID3 = Guid.Parse("929ea3b7-b0d5-417b-9a9d-c8f29e56c77b");
-            var træningID4 = Guid.Parse("99f49c4b-8b7f-4c62-9283-fc249e3d8bfb");
-            var træningID5 = Guid.Parse("f4a7f9c9-6d77-4a8d-a3f3-b0f5095df9fe");
-            var træningID6 = Guid.Parse("c2b8f72e-2d56-4c64-b536-ff2b742bfcdc");
+            var træningID1 = Guid.Parse("4a91f6e6-3b23-4de7-85a1-1f173a90a27f");  // Generated GUID 66
+            var træningID2 = Guid.Parse("84a19dcc-6f70-49ce-9629-d04b0cb0c7dd");  // Generated GUID 67
+            var træningID3 = Guid.Parse("2faf5b1b-40a2-4599-99c9-c0e948a31dc7");  // Generated GUID 68
+            var træningID4 = Guid.Parse("cf9ce0e3-f9d0-41a0-8486-7b9d41aa43be");  // Generated GUID 69
+            var træningID5 = Guid.Parse("58d29731-5915-496c-9f52-b1c64199fdd7");  // Generated GUID 70
+            var træningID6 = Guid.Parse("3949e642-5f71-40b7-8c4f-7bdaee0686c9");  // Generated GUID 71
+
 
             // Define fixed GUIDs for seeding ordbog
-            var ordbogID1 = Guid.Parse("f1a7f9c9-6d77-4a8d-a3f3-b0f5095df9fe");
-            var ordbogID2 = Guid.Parse("c2b8f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var ordbogID3 = Guid.Parse("d3c9e72e-2d56-4c64-b536-ff2b742bfcdc");
-            var ordbogID4 = Guid.Parse("e4d0f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var ordbogID5 = Guid.Parse("f5e1f72e-2d56-4c64-b536-ff2b742bfcdc");
-            var ordbogID6 = Guid.Parse("f7e2f82e-3d56-5c64-c637-gg3b743bfcdc");
-            var ordbogID7 = Guid.Parse("a8e3f92e-4e67-5d75-b548-hh4c824bfcdc");
-            var ordbogID8 = Guid.Parse("b9e4f02e-5f78-6e86-c659-ii5d935bfcdc");
-            var ordbogID9 = Guid.Parse("c0f5f12e-6g89-7f97-d760-jj6e046bfcdc");
-            var ordbogID10 = Guid.Parse("d1f6f22e-7h90-8g08-e871-kk7f157bfcdc");
-
+            var ordbogID1 = Guid.Parse("2d189ccb-a481-4ea2-8bf3-8014d3fe5825");  // Generated GUID 72
+            var ordbogID2 = Guid.Parse("3a2ba1b6-34c7-4be1-af4f-13bd66db3079");  // Generated GUID 73
+            var ordbogID3 = Guid.Parse("3e459839-3c17-43a2-b141-6140eeae07d9");  // Generated GUID 74
+            var ordbogID4 = Guid.Parse("4bae52b7-970b-41ce-938b-690a44c29795");  // Generated GUID 75
+            var ordbogID5 = Guid.Parse("73d3dea1-d21b-4f45-bb0a-2eaca4c7aa04");  // Generated GUID 76
+            var ordbogID6 = Guid.Parse("7c83305d-527c-4eb7-bb39-28280ad42a2d");  // Generated GUID 77
+            var ordbogID7 = Guid.Parse("965a856f-eb8f-4910-a6a3-661ff0c4a78a");  // Generated GUID 78
+            var ordbogID8 = Guid.Parse("10efa19d-6353-4373-b455-414131376826");  // Generated GUID 79
+            var ordbogID9 = Guid.Parse("0fd1ec97-6cee-4e0f-a032-0a3f3020d5be");  // Generated GUID 80
+            var ordbogID10 = Guid.Parse("a61b1f2a-3236-4af5-90aa-3483b96a5666");  // Generated GUID 81
+            
             modelBuilder.Entity<Bruger>().HasData(
                 new Bruger
                 {
