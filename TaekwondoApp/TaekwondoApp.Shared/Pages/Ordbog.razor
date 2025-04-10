@@ -345,6 +345,7 @@ else
                         await SQLiteService.UpdateEntryWithServerIdAsync(serverEntry);
                         entryModel = new(); // Reset the entry after successful creation
                     }
+                    await TrySyncIfOnline();
                 }
                 else
                 {
