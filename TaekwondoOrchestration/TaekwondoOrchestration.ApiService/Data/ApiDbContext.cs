@@ -226,147 +226,245 @@ namespace TaekwondoOrchestration.ApiService.Data
                 .WithMany()
                 .HasForeignKey(t => t.ØvelseID);
 
-            // Generate static GUIDs for the entities
-            var programId = Guid.Parse("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe");  // Replace with your fixed GUID
-            var quizId = Guid.Parse("29f8a1b3-62f0-4d92-b7ad-4079239a9730");      // Replace with your fixed GUID
-            var teoriId = Guid.Parse("cd428c33-d8d7-46f3-8e8a-3a82e8b5f547");    // Replace with your fixed GUID
-            var teknikId = Guid.Parse("81c54d38-cb85-420b-b697-13f1f2a8c1cd");   // Replace with your fixed GUID
-            var øvelseId = Guid.Parse("431e1b6b-3b4f-442b-b97f-11b238f660b2");  // Replace with your fixed GUID
-            var pensumId = Guid.Parse("08ff7a3e-0627-493b-92c9-36c26f6ad7fa");  // Replace with your fixed GUID
+            // Define fixed GUIDs for seeding relationships
+            var brugerID1 = Guid.Parse("f1f4f9c9-6d77-4a8d-a3f3-b0f5095df9fe");
+            var brugerID2 = Guid.Parse("b2e7d72e-2d56-4c64-b536-ff2b742bfcdc");
+            var brugerID3 = Guid.Parse("c3e7d72e-2d56-4c64-b536-ff2b742bfcdc");
+            var brugerID4 = Guid.Parse("d4e7d72e-2d56-4c64-b536-ff2b742bfcdc");
+            var brugerID5 = Guid.Parse("e5e7d72e-2d56-4c64-b536-ff2b742bfcdc");
+            var klubID = Guid.Parse("a2e7d72e-2d56-4c64-b536-ff2b742bfcdc");
+            var programID = Guid.Parse("7f5d8424-0c8a-4532-b4f0-19508fda7f5c");
+            var øvelseID = Guid.Parse("e8c0420b-8360-4a24-bb30-3eabb99462b1");
+            var teknikID = Guid.Parse("6e8726d4-9e4d-4389-b8b7-09829c08c826");
+            var teoriID = Guid.Parse("4f5ac028-30be-4c93-b7e9-21d95a4b1a97");
+            var quizID = Guid.Parse("0b35a9fd-d575-4712-8e35-58d7a3ecb0be");
+            var pensumID = Guid.Parse("a35b2394-16f2-4bc1-8aef-8c94b0a334b1");
+            var træningID = Guid.Parse("d3b50b32-67d3-4fa7-9db8-32b6e850c409");
+            var ordbogID = Guid.Parse("4d89d76d-f206-4018-bb7f-35dbf87c4f9e");
 
-            // Seed data for entities
             modelBuilder.Entity<Bruger>().HasData(
                 new Bruger
                 {
-                    BrugerID = Guid.Parse("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), // Replace with your fixed GUID
-                    Email = "emma@dojo.dk",
-                    Brugernavn = "emma123",
-                    Fornavn = "Emma",
-                    Efternavn = "Jensen",
-                    Brugerkode = "123456", // hash in real app
-                    Address = "Nørrebrogade 42",
+                    BrugerID = brugerID1,
+                    Email = "john.doe@example.com",
+                    Brugernavn = "johndoe123",
+                    Fornavn = "John",
+                    Efternavn = "Doe",
+                    Brugerkode = "hashed_password",  // This should be a hashed password
+                    Address = "123 Taekwondo St.",
+                    Bæltegrad = "Hvidt Bælte",
+                    Role = "Bruger"
+                },
+                new Bruger
+                {
+                    BrugerID = brugerID2,
+                    Email = "jane.doe@example.com",
+                    Brugernavn = "janedoe456",
+                    Fornavn = "Jane",
+                    Efternavn = "Doe",
+                    Brugerkode = "hashed_password2",  // This should be a hashed password
+                    Address = "456 Taekwondo St.",
                     Bæltegrad = "Gult Bælte",
+                    Role = "Bruger"
+                },
+                new Bruger
+                {
+                    BrugerID = brugerID3,
+                    Email = "mark.smith@example.com",
+                    Brugernavn = "marksmith789",
+                    Fornavn = "Mark",
+                    Efternavn = "Smith",
+                    Brugerkode = "hashed_password3",  // This should be a hashed password
+                    Address = "789 Taekwondo St.",
+                    Bæltegrad = "Blåt Bælte",
+                    Role = "Bruger"
+                },
+                new Bruger
+                {
+                    BrugerID = brugerID4,
+                    Email = "lucy.jones@example.com",
+                    Brugernavn = "lucyjones321",
+                    Fornavn = "Lucy",
+                    Efternavn = "Jones",
+                    Brugerkode = "hashed_password4",  // This should be a hashed password
+                    Address = "321 Taekwondo St.",
+                    Bæltegrad = "Grønt Bælte",
+                    Role = "Bruger"
+                },
+                new Bruger
+                {
+                    BrugerID = brugerID5,
+                    Email = "robert.brown@example.com",
+                    Brugernavn = "robertbrown654",
+                    Fornavn = "Robert",
+                    Efternavn = "Brown",
+                    Brugerkode = "hashed_password5",  // This should be a hashed password
+                    Address = "654 Taekwondo St.",
+                    Bæltegrad = "Brunt Bælte",
                     Role = "Bruger"
                 }
             );
 
-            modelBuilder.Entity<BrugerKlub>().HasData(
-                new BrugerKlub { BrugerID = Guid.Parse("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), KlubID = Guid.Parse("c2b62e9a-38da-43ab-9731-f3641cd3121d") } // Replace with your fixed GUIDs
+            // Seed for Klub
+            modelBuilder.Entity<Klub>().HasData(
+            new Klub
+            {
+                KlubID = klubID,
+                KlubNavn = "Taekwondo Club"
+            }
             );
 
-            modelBuilder.Entity<Øvelse>().HasData(
-                new Øvelse
-                {
-                    ØvelseID = øvelseId,
-                    ØvelseNavn = "Front Spark",
-                    ØvelseBeskrivelse = "En simpel frontspark teknik.",
-                    ØvelseBillede = "",
-                    ØvelseVideo = "",
-                    ØvelseTid = 30,
-                    ØvelseSværhed = "Begynder",
-                    PensumID = pensumId
-                }
-            );
-
-            modelBuilder.Entity<BrugerØvelse>().HasData(
-                new BrugerØvelse { BrugerID = Guid.Parse("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), ØvelseID = øvelseId }
-            );
-
-            modelBuilder.Entity<KlubØvelse>().HasData(
-                new KlubØvelse { KlubID = Guid.Parse("c2b62e9a-38da-43ab-9731-f3641cd3121d"), ØvelseID = øvelseId }
-            );
-
-            modelBuilder.Entity<Teori>().HasData(
-                new Teori
-                {
-                    TeoriID = teoriId,
-                    TeoriNavn = "Respect",
-                    TeoriBeskrivelse = "Respekt for dojo og lærere.",
-                    TeoriBillede = "",
-                    TeoriVideo = "",
-                    TeoriLyd = "",
-                    PensumID = pensumId
-                }
-            );
-
-            modelBuilder.Entity<Teknik>().HasData(
-                new Teknik
-                {
-                    TeknikID = teknikId,
-                    TeknikNavn = "Blokering",
-                    TeknikBeskrivelse = "Forsvar mod angreb.",
-                    TeknikBillede = "",
-                    TeknikVideo = "",
-                    TeknikLyd = "",
-                    PensumID = pensumId
-                }
-            );
-
-            modelBuilder.Entity<Quiz>().HasData(
-                new Quiz
-                {
-                    QuizID = quizId,
-                    QuizNavn = "Begynder Quiz",
-                    QuizBeskrivelse = "Spørgsmål for begyndere",
-                    PensumID = pensumId
-                }
-            );
-
-            modelBuilder.Entity<Spørgsmål>().HasData(
-                new Spørgsmål
-                {
-                    SpørgsmålID = Guid.Parse("f2563f57-92c7-4388-b920-bf38e47e9d12"), // Replace with your fixed GUID
-                    SpørgsmålRækkefølge = 1,
-                    SpørgsmålTid = 30,
-                    QuizID = quizId,
-                    TeoriID = teoriId
-                }
-            );
-
-            modelBuilder.Entity<BrugerQuiz>().HasData(
-                new BrugerQuiz { BrugerID = Guid.Parse("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), QuizID = quizId }
-            );
-
-            modelBuilder.Entity<KlubQuiz>().HasData(
-                new KlubQuiz { KlubID = Guid.Parse("c2b62e9a-38da-43ab-9731-f3641cd3121d"), QuizID = quizId }
-            );
-
-            // Seed data for ProgramPlan
+            // Seed for ProgramPlan
             modelBuilder.Entity<ProgramPlan>().HasData(
                 new ProgramPlan
                 {
-                    ProgramID = programId,
-                    ProgramNavn = "Intro Program",
-                    Beskrivelse = "2 ugers intro",
-                    Længde = 14,
-                    OprettelseDato = new DateTime(2025, 4, 8)  // Fixed date instead of DateTime.UtcNow
+                    ProgramID = programID,
+                    ProgramNavn = "Basic Taekwondo Program",
+                    OprettelseDato = DateTime.UtcNow,
+                    Længde = 4,
+                    Beskrivelse = "A basic program to get started with Taekwondo."
                 }
             );
 
-            // Link ProgramPlan to KlubProgram and BrugerProgram using their fixed GUIDs
-            modelBuilder.Entity<KlubProgram>().HasData(
-                new KlubProgram { KlubID = Guid.Parse("c2b62e9a-38da-43ab-9731-f3641cd3121d"), ProgramID = programId }
+            // Seed for Øvelse
+            modelBuilder.Entity<Øvelse>().HasData(
+                new Øvelse
+                {
+                    ØvelseID = øvelseID,
+                    ØvelseNavn = "Front Kick",
+                    ØvelseBeskrivelse = "A basic front kick in Taekwondo.",
+                    ØvelseBillede = "front_kick_image_url",
+                    ØvelseVideo = "front_kick_video_url",
+                    ØvelseTid = 30,
+                    ØvelseSværhed = "Let",
+                    PensumID = pensumID  // Example PensumID
+                }
             );
 
-            modelBuilder.Entity<BrugerProgram>().HasData(
-                new BrugerProgram { BrugerID = Guid.Parse("a7b6372f-35a2-47e2-8bfb-e418e2337b8f"), ProgramID = programId }
+            // Seed for Teknik
+            modelBuilder.Entity<Teknik>().HasData(
+                new Teknik
+                {
+                    TeknikID = teknikID,
+                    TeknikNavn = "Roundhouse Kick",
+                    TeknikBeskrivelse = "A powerful kick aimed at the opponent's head or torso.",
+                    TeknikBillede = "roundhouse_kick_image_url",
+                    TeknikVideo = "roundhouse_kick_video_url",
+                    TeknikLyd = "roundhouse_kick_sound_url",
+                    PensumID = pensumID  // Example PensumID
+                }
             );
 
-            // Seed data for Træning and link it to ProgramPlan using the fixed GUID
+            // Seed for Teori
+            modelBuilder.Entity<Teori>().HasData(
+                new Teori
+                {
+                    TeoriID = teoriID,
+                    TeoriNavn = "Taekwondo Etiquette",
+                    TeoriBeskrivelse = "The formal etiquette and behavior expected in Taekwondo.",
+                    TeoriBillede = "taekwondo_etiquette_image_url",
+                    TeoriVideo = "taekwondo_etiquette_video_url",
+                    TeoriLyd = "taekwondo_etiquette_sound_url",
+                    PensumID = pensumID  // Example PensumID
+                }
+            );
+
+            // Seed for Quiz
+            modelBuilder.Entity<Quiz>().HasData(
+                new Quiz
+                {
+                    QuizID = quizID,
+                    QuizNavn = "Taekwondo Basics Quiz",
+                    QuizBeskrivelse = "A quiz to test your knowledge of basic Taekwondo concepts.",
+                    PensumID = pensumID  // Example PensumID
+                }
+            );
+
+            // Seed for Spørgsmål
+            modelBuilder.Entity<Spørgsmål>().HasData(
+                new Spørgsmål
+                {
+                    SpørgsmålID = Guid.NewGuid(),
+                    SpørgsmålRækkefølge = 1,
+                    SpørgsmålTid = 30,
+                    QuizID = quizID,  // Reference the quiz
+                    TeoriID = teoriID,  // Reference the theory
+                    TeknikID = teknikID,  // Reference the technique
+                    ØvelseID = øvelseID  // Reference the exercise
+                }
+            );
+
+            // Seed for Ordbog
+            modelBuilder.Entity<Ordbog>().HasData(
+                new Ordbog
+                {
+                    OrdbogId = ordbogID,
+                    DanskOrd = "Taekwondo",
+                    KoranskOrd = "تايكوندو",
+                    Beskrivelse = "A Korean martial art focusing on high kicks and hand techniques.",
+                    BilledeLink = "taekwondo_image_url",
+                    LydLink = "taekwondo_sound_url",
+                    VideoLink = "taekwondo_video_url"
+                }
+            );
+
+            // Seed for Pensum
+            modelBuilder.Entity<Pensum>().HasData(
+                new Pensum
+                {
+                    PensumID = pensumID,
+                    PensumGrad = "Beginner"
+                }
+            );
+
+            // Seed for Træning
             modelBuilder.Entity<Træning>().HasData(
                 new Træning
                 {
-                    TræningID = Guid.Parse("a3e2121b-b256-4564-bff1-2f2c94ed00de"), // Replace with your fixed GUID
+                    TræningID = træningID,
                     TræningRækkefølge = 1,
-                    Tid = 45,
-                    ProgramID = programId, // Using the fixed ProgramPlan GUID
-                    QuizID = quizId,
-                    TeoriID = teoriId,
-                    TeknikID = teknikId,
-                    ØvelseID = øvelseId,
-                    PensumID = pensumId
+                    Tid = 60,
+                    ProgramID = programID,  // Reference the program
+                    PensumID = pensumID  // Reference the Pensum
+                }
+            );
+
+            // Seed for BrugerKlub (Link Bruger and Klub)
+            modelBuilder.Entity<BrugerKlub>().HasData(
+                new BrugerKlub
+                {
+                    BrugerID = brugerID,  // Link to Bruger
+                    KlubID = klubID           // Link to Klub
+                }
+            );
+
+            // Seed for KlubProgram (Link Klub and ProgramPlan)
+            modelBuilder.Entity<KlubProgram>().HasData(
+                new KlubProgram
+                {
+                    KlubID = klubID,  // Link to Klub
+                    ProgramID = programID  // Link to ProgramPlan
+                }
+            );
+
+            // Seed for KlubQuiz (Link Klub and Quiz)
+            modelBuilder.Entity<KlubQuiz>().HasData(
+                new KlubQuiz
+                {
+                    KlubID = klubID,  // Link to Klub
+                    QuizID = quizID  // Link to Quiz
+                }
+            );
+
+            // Seed for KlubØvelse (Link Klub and Øvelse)
+            modelBuilder.Entity<KlubØvelse>().HasData(
+                new KlubØvelse
+                {
+                    KlubID = klubID,  // Link to Klub
+                    ØvelseID = øvelseID  // Link to Øvelse
                 }
             );
         }
     }
 }
+
