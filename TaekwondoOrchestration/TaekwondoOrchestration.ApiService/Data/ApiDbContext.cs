@@ -457,7 +457,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                 {
                     ProgramID = programID1,
                     ProgramNavn = "Basic Taekwondo Program",
-                    OprettelseDato = DateTime.UtcNow,
+                    OprettelseDato = new DateTime(2025, 4, 8),  // Static date
                     Længde = 4,
                     Beskrivelse = "A basic program to get started with Taekwondo."
                 },
@@ -465,7 +465,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                 {
                     ProgramID = programID2,
                     ProgramNavn = "Intermediate Taekwondo Program",
-                    OprettelseDato = DateTime.UtcNow,
+                    OprettelseDato = new DateTime(2025, 4, 9),  // Static date
                     Længde = 6,
                     Beskrivelse = "An intermediate program to enhance your Taekwondo skills."
                 },
@@ -473,7 +473,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                 {
                     ProgramID = programID3,
                     ProgramNavn = "Advanced Taekwondo Program",
-                    OprettelseDato = DateTime.UtcNow,
+                    OprettelseDato = new DateTime(2025, 4, 10),  // Static date
                     Længde = 8,
                     Beskrivelse = "An advanced program for mastering Taekwondo techniques."
                 }
@@ -801,6 +801,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "push_up_video_url",
                     ØvelseTid = 30,  // Time for each round of exercise in seconds
                     ØvelseSværhed = "Let",  // Difficulty: Easy
+                    PensumID = pensumID1  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -811,6 +812,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "sit_up_video_url",
                     ØvelseTid = 30,
                     ØvelseSværhed = "Let",
+                    PensumID = pensumID1  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -821,6 +823,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "squat_video_url",
                     ØvelseTid = 45,
                     ØvelseSværhed = "Mellem",  // Difficulty: Medium
+                    PensumID = pensumID2  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -831,6 +834,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "burpee_video_url",
                     ØvelseTid = 60,
                     ØvelseSværhed = "Svær",  // Difficulty: Hard
+                    PensumID = pensumID1  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -841,6 +845,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "lunge_video_url",
                     ØvelseTid = 40,
                     ØvelseSværhed = "Mellem",
+                    PensumID = pensumID3  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -851,6 +856,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "mountain_climber_video_url",
                     ØvelseTid = 30,
                     ØvelseSværhed = "Mellem",
+                    PensumID = pensumID2  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -861,6 +867,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "plank_video_url",
                     ØvelseTid = 45,
                     ØvelseSværhed = "Mellem",
+                    PensumID = pensumID1  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -871,6 +878,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "jumping_jacks_video_url",
                     ØvelseTid = 30,
                     ØvelseSværhed = "Let",
+                    PensumID = pensumID1  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -881,6 +889,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "high_knees_video_url",
                     ØvelseTid = 40,
                     ØvelseSværhed = "Mellem",
+                    PensumID = pensumID2  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -891,6 +900,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "tricep_dips_video_url",
                     ØvelseTid = 45,
                     ØvelseSværhed = "Mellem",
+                    PensumID = pensumID3  // Example PensumID
                 }
             );
 

@@ -492,26 +492,9 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 columns: new[] { "ProgramID", "Beskrivelse", "Længde", "OprettelseDato", "ProgramNavn" },
                 values: new object[,]
                 {
-                    { new Guid("11741c42-315e-42fe-a0a8-337afd6d511f"), "A basic program to get started with Taekwondo.", 4, new DateTime(2025, 4, 10, 11, 59, 8, 696, DateTimeKind.Utc).AddTicks(4047), "Basic Taekwondo Program" },
-                    { new Guid("3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47"), "An advanced program for mastering Taekwondo techniques.", 8, new DateTime(2025, 4, 10, 11, 59, 8, 696, DateTimeKind.Utc).AddTicks(4283), "Advanced Taekwondo Program" },
-                    { new Guid("8c98eb00-1efb-4361-99b7-974c1aed66e8"), "An intermediate program to enhance your Taekwondo skills.", 6, new DateTime(2025, 4, 10, 11, 59, 8, 696, DateTimeKind.Utc).AddTicks(4282), "Intermediate Taekwondo Program" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Øvelser",
-                columns: new[] { "ØvelseID", "PensumID", "ØvelseBeskrivelse", "ØvelseBillede", "ØvelseNavn", "ØvelseSværhed", "ØvelseTid", "ØvelseVideo" },
-                values: new object[,]
-                {
-                    { new Guid("0335fde9-e05e-4a72-b08c-0c076803b395"), new Guid("00000000-0000-0000-0000-000000000000"), "A basic bodyweight exercise for strengthening the upper body and arms.", "push_up_image_url", "Push-ups", "Let", 30, "push_up_video_url" },
-                    { new Guid("1ab7a999-d644-418a-b3ba-c3cd27a5dfd6"), new Guid("00000000-0000-0000-0000-000000000000"), "A core exercise to strengthen the abdominal muscles.", "sit_up_image_url", "Sit-ups", "Let", 30, "sit_up_video_url" },
-                    { new Guid("1e86d0c9-1d34-4b46-a939-1326f7f9df42"), new Guid("00000000-0000-0000-0000-000000000000"), "A lower body exercise to strengthen the thighs, hips, and buttocks.", "squat_image_url", "Squats", "Mellem", 45, "squat_video_url" },
-                    { new Guid("29433916-f5aa-4d34-9bf3-6e0eb09aa010"), new Guid("00000000-0000-0000-0000-000000000000"), "A core stability exercise to strengthen the abdominals, back, and shoulders.", "plank_image_url", "Plank", "Mellem", 45, "plank_video_url" },
-                    { new Guid("a36f91d7-c05b-48c8-97a3-11f86a2eae69"), new Guid("00000000-0000-0000-0000-000000000000"), "A cardiovascular exercise that mimics climbing a mountain while on the ground.", "mountain_climber_image_url", "Mountain Climbers", "Mellem", 30, "mountain_climber_video_url" },
-                    { new Guid("bdb87fa8-e777-42e6-ad08-7187707fe1c3"), new Guid("00000000-0000-0000-0000-000000000000"), "An upper body exercise that targets the triceps, using parallel bars or a bench.", "tricep_dips_image_url", "Tricep Dips", "Mellem", 45, "tricep_dips_video_url" },
-                    { new Guid("d5a762e1-b401-4118-955d-bbb3d26f370e"), new Guid("00000000-0000-0000-0000-000000000000"), "A lower body exercise targeting the quads, hamstrings, and glutes.", "lunge_image_url", "Lunges", "Mellem", 40, "lunge_video_url" },
-                    { new Guid("d9f50fe9-11d5-46ee-8836-a57727dc424b"), new Guid("00000000-0000-0000-0000-000000000000"), "A full-body cardio exercise to improve endurance and agility.", "jumping_jacks_image_url", "Jumping Jacks", "Let", 30, "jumping_jacks_video_url" },
-                    { new Guid("dcbcc571-4377-4fcc-91a8-fb83f07165f6"), new Guid("00000000-0000-0000-0000-000000000000"), "A full-body exercise that combines squats, push-ups, and jumps.", "burpee_image_url", "Burpees", "Svær", 60, "burpee_video_url" },
-                    { new Guid("f1c414cb-8ce7-4583-b65e-510bc0f2fd8b"), new Guid("00000000-0000-0000-0000-000000000000"), "A cardio exercise focusing on fast leg movement to increase heart rate.", "high_knees_image_url", "High Knees", "Mellem", 40, "high_knees_video_url" }
+                    { new Guid("11741c42-315e-42fe-a0a8-337afd6d511f"), "A basic program to get started with Taekwondo.", 4, new DateTime(2025, 4, 8, 0, 0, 0, 0, DateTimeKind.Unspecified), "Basic Taekwondo Program" },
+                    { new Guid("3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47"), "An advanced program for mastering Taekwondo techniques.", 8, new DateTime(2025, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), "Advanced Taekwondo Program" },
+                    { new Guid("8c98eb00-1efb-4361-99b7-974c1aed66e8"), "An intermediate program to enhance your Taekwondo skills.", 6, new DateTime(2025, 4, 9, 0, 0, 0, 0, DateTimeKind.Unspecified), "Intermediate Taekwondo Program" }
                 });
 
             migrationBuilder.InsertData(
@@ -529,30 +512,12 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 values: new object[] { new Guid("8bb14e0c-04a3-4679-aa0b-48b9978eb220"), new Guid("3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47") });
 
             migrationBuilder.InsertData(
-                table: "BrugerØvelser",
-                columns: new[] { "BrugerID", "ØvelseID" },
-                values: new object[,]
-                {
-                    { new Guid("446a5a83-a0bd-4633-b28f-a6526245eed7"), new Guid("dcbcc571-4377-4fcc-91a8-fb83f07165f6") },
-                    { new Guid("8bb14e0c-04a3-4679-aa0b-48b9978eb220"), new Guid("1e86d0c9-1d34-4b46-a939-1326f7f9df42") }
-                });
-
-            migrationBuilder.InsertData(
                 table: "KlubProgrammer",
                 columns: new[] { "KlubID", "ProgramID" },
                 values: new object[,]
                 {
                     { new Guid("afa9ebbf-49bb-4737-9ab0-7d9d3153c993"), new Guid("11741c42-315e-42fe-a0a8-337afd6d511f") },
                     { new Guid("fed25ea9-7695-4945-a109-2900a24ff1ce"), new Guid("8c98eb00-1efb-4361-99b7-974c1aed66e8") }
-                });
-
-            migrationBuilder.InsertData(
-                table: "KlubØvelser",
-                columns: new[] { "KlubID", "ØvelseID" },
-                values: new object[,]
-                {
-                    { new Guid("afa9ebbf-49bb-4737-9ab0-7d9d3153c993"), new Guid("0335fde9-e05e-4a72-b08c-0c076803b395") },
-                    { new Guid("fed25ea9-7695-4945-a109-2900a24ff1ce"), new Guid("1ab7a999-d644-418a-b3ba-c3cd27a5dfd6") }
                 });
 
             migrationBuilder.InsertData(
@@ -613,9 +578,35 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Øvelser",
+                columns: new[] { "ØvelseID", "PensumID", "ØvelseBeskrivelse", "ØvelseBillede", "ØvelseNavn", "ØvelseSværhed", "ØvelseTid", "ØvelseVideo" },
+                values: new object[,]
+                {
+                    { new Guid("0335fde9-e05e-4a72-b08c-0c076803b395"), new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"), "A basic bodyweight exercise for strengthening the upper body and arms.", "push_up_image_url", "Push-ups", "Let", 30, "push_up_video_url" },
+                    { new Guid("1ab7a999-d644-418a-b3ba-c3cd27a5dfd6"), new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"), "A core exercise to strengthen the abdominal muscles.", "sit_up_image_url", "Sit-ups", "Let", 30, "sit_up_video_url" },
+                    { new Guid("1e86d0c9-1d34-4b46-a939-1326f7f9df42"), new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"), "A lower body exercise to strengthen the thighs, hips, and buttocks.", "squat_image_url", "Squats", "Mellem", 45, "squat_video_url" },
+                    { new Guid("29433916-f5aa-4d34-9bf3-6e0eb09aa010"), new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"), "A core stability exercise to strengthen the abdominals, back, and shoulders.", "plank_image_url", "Plank", "Mellem", 45, "plank_video_url" },
+                    { new Guid("a36f91d7-c05b-48c8-97a3-11f86a2eae69"), new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"), "A cardiovascular exercise that mimics climbing a mountain while on the ground.", "mountain_climber_image_url", "Mountain Climbers", "Mellem", 30, "mountain_climber_video_url" },
+                    { new Guid("bdb87fa8-e777-42e6-ad08-7187707fe1c3"), new Guid("67db5817-3c5a-4604-ba74-8076578528c3"), "An upper body exercise that targets the triceps, using parallel bars or a bench.", "tricep_dips_image_url", "Tricep Dips", "Mellem", 45, "tricep_dips_video_url" },
+                    { new Guid("d5a762e1-b401-4118-955d-bbb3d26f370e"), new Guid("67db5817-3c5a-4604-ba74-8076578528c3"), "A lower body exercise targeting the quads, hamstrings, and glutes.", "lunge_image_url", "Lunges", "Mellem", 40, "lunge_video_url" },
+                    { new Guid("d9f50fe9-11d5-46ee-8836-a57727dc424b"), new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"), "A full-body cardio exercise to improve endurance and agility.", "jumping_jacks_image_url", "Jumping Jacks", "Let", 30, "jumping_jacks_video_url" },
+                    { new Guid("dcbcc571-4377-4fcc-91a8-fb83f07165f6"), new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"), "A full-body exercise that combines squats, push-ups, and jumps.", "burpee_image_url", "Burpees", "Svær", 60, "burpee_video_url" },
+                    { new Guid("f1c414cb-8ce7-4583-b65e-510bc0f2fd8b"), new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"), "A cardio exercise focusing on fast leg movement to increase heart rate.", "high_knees_image_url", "High Knees", "Mellem", 40, "high_knees_video_url" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "BrugerQuizzer",
                 columns: new[] { "BrugerID", "QuizID" },
                 values: new object[] { new Guid("8bb14e0c-04a3-4679-aa0b-48b9978eb220"), new Guid("f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2") });
+
+            migrationBuilder.InsertData(
+                table: "BrugerØvelser",
+                columns: new[] { "BrugerID", "ØvelseID" },
+                values: new object[,]
+                {
+                    { new Guid("446a5a83-a0bd-4633-b28f-a6526245eed7"), new Guid("dcbcc571-4377-4fcc-91a8-fb83f07165f6") },
+                    { new Guid("8bb14e0c-04a3-4679-aa0b-48b9978eb220"), new Guid("1e86d0c9-1d34-4b46-a939-1326f7f9df42") }
+                });
 
             migrationBuilder.InsertData(
                 table: "KlubQuizzer",
@@ -624,6 +615,15 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                 {
                     { new Guid("afa9ebbf-49bb-4737-9ab0-7d9d3153c993"), new Guid("69cde397-c39c-4172-8d95-56c9a5cdc099") },
                     { new Guid("fed25ea9-7695-4945-a109-2900a24ff1ce"), new Guid("3b89bd9d-dd30-4ea4-8563-984dbfccb644") }
+                });
+
+            migrationBuilder.InsertData(
+                table: "KlubØvelser",
+                columns: new[] { "KlubID", "ØvelseID" },
+                values: new object[,]
+                {
+                    { new Guid("afa9ebbf-49bb-4737-9ab0-7d9d3153c993"), new Guid("0335fde9-e05e-4a72-b08c-0c076803b395") },
+                    { new Guid("fed25ea9-7695-4945-a109-2900a24ff1ce"), new Guid("1ab7a999-d644-418a-b3ba-c3cd27a5dfd6") }
                 });
 
             migrationBuilder.InsertData(

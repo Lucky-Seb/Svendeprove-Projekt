@@ -12,7 +12,7 @@ using TaekwondoOrchestration.ApiService.Data;
 namespace TaekwondoOrchestration.ApiService.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20250410115909_initdatabase")]
+    [Migration("20250410120920_initdatabase")]
     partial class initdatabase
     {
         /// <inheritdoc />
@@ -565,7 +565,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                             ProgramID = new Guid("11741c42-315e-42fe-a0a8-337afd6d511f"),
                             Beskrivelse = "A basic program to get started with Taekwondo.",
                             Længde = 4,
-                            OprettelseDato = new DateTime(2025, 4, 10, 11, 59, 8, 696, DateTimeKind.Utc).AddTicks(4047),
+                            OprettelseDato = new DateTime(2025, 4, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProgramNavn = "Basic Taekwondo Program"
                         },
                         new
@@ -573,7 +573,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                             ProgramID = new Guid("8c98eb00-1efb-4361-99b7-974c1aed66e8"),
                             Beskrivelse = "An intermediate program to enhance your Taekwondo skills.",
                             Længde = 6,
-                            OprettelseDato = new DateTime(2025, 4, 10, 11, 59, 8, 696, DateTimeKind.Utc).AddTicks(4282),
+                            OprettelseDato = new DateTime(2025, 4, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProgramNavn = "Intermediate Taekwondo Program"
                         },
                         new
@@ -581,7 +581,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                             ProgramID = new Guid("3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47"),
                             Beskrivelse = "An advanced program for mastering Taekwondo techniques.",
                             Længde = 8,
-                            OprettelseDato = new DateTime(2025, 4, 10, 11, 59, 8, 696, DateTimeKind.Utc).AddTicks(4283),
+                            OprettelseDato = new DateTime(2025, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ProgramNavn = "Advanced Taekwondo Program"
                         });
                 });
@@ -1243,7 +1243,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         new
                         {
                             ØvelseID = new Guid("0335fde9-e05e-4a72-b08c-0c076803b395"),
-                            PensumID = new Guid("00000000-0000-0000-0000-000000000000"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
                             ØvelseBeskrivelse = "A basic bodyweight exercise for strengthening the upper body and arms.",
                             ØvelseBillede = "push_up_image_url",
                             ØvelseNavn = "Push-ups",
@@ -1254,7 +1254,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         new
                         {
                             ØvelseID = new Guid("1ab7a999-d644-418a-b3ba-c3cd27a5dfd6"),
-                            PensumID = new Guid("00000000-0000-0000-0000-000000000000"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
                             ØvelseBeskrivelse = "A core exercise to strengthen the abdominal muscles.",
                             ØvelseBillede = "sit_up_image_url",
                             ØvelseNavn = "Sit-ups",
@@ -1265,7 +1265,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         new
                         {
                             ØvelseID = new Guid("1e86d0c9-1d34-4b46-a939-1326f7f9df42"),
-                            PensumID = new Guid("00000000-0000-0000-0000-000000000000"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
                             ØvelseBeskrivelse = "A lower body exercise to strengthen the thighs, hips, and buttocks.",
                             ØvelseBillede = "squat_image_url",
                             ØvelseNavn = "Squats",
@@ -1276,7 +1276,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         new
                         {
                             ØvelseID = new Guid("dcbcc571-4377-4fcc-91a8-fb83f07165f6"),
-                            PensumID = new Guid("00000000-0000-0000-0000-000000000000"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
                             ØvelseBeskrivelse = "A full-body exercise that combines squats, push-ups, and jumps.",
                             ØvelseBillede = "burpee_image_url",
                             ØvelseNavn = "Burpees",
@@ -1287,7 +1287,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         new
                         {
                             ØvelseID = new Guid("d5a762e1-b401-4118-955d-bbb3d26f370e"),
-                            PensumID = new Guid("00000000-0000-0000-0000-000000000000"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
                             ØvelseBeskrivelse = "A lower body exercise targeting the quads, hamstrings, and glutes.",
                             ØvelseBillede = "lunge_image_url",
                             ØvelseNavn = "Lunges",
@@ -1298,7 +1298,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         new
                         {
                             ØvelseID = new Guid("a36f91d7-c05b-48c8-97a3-11f86a2eae69"),
-                            PensumID = new Guid("00000000-0000-0000-0000-000000000000"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
                             ØvelseBeskrivelse = "A cardiovascular exercise that mimics climbing a mountain while on the ground.",
                             ØvelseBillede = "mountain_climber_image_url",
                             ØvelseNavn = "Mountain Climbers",
@@ -1309,7 +1309,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         new
                         {
                             ØvelseID = new Guid("29433916-f5aa-4d34-9bf3-6e0eb09aa010"),
-                            PensumID = new Guid("00000000-0000-0000-0000-000000000000"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
                             ØvelseBeskrivelse = "A core stability exercise to strengthen the abdominals, back, and shoulders.",
                             ØvelseBillede = "plank_image_url",
                             ØvelseNavn = "Plank",
@@ -1320,7 +1320,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         new
                         {
                             ØvelseID = new Guid("d9f50fe9-11d5-46ee-8836-a57727dc424b"),
-                            PensumID = new Guid("00000000-0000-0000-0000-000000000000"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
                             ØvelseBeskrivelse = "A full-body cardio exercise to improve endurance and agility.",
                             ØvelseBillede = "jumping_jacks_image_url",
                             ØvelseNavn = "Jumping Jacks",
@@ -1331,7 +1331,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         new
                         {
                             ØvelseID = new Guid("f1c414cb-8ce7-4583-b65e-510bc0f2fd8b"),
-                            PensumID = new Guid("00000000-0000-0000-0000-000000000000"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
                             ØvelseBeskrivelse = "A cardio exercise focusing on fast leg movement to increase heart rate.",
                             ØvelseBillede = "high_knees_image_url",
                             ØvelseNavn = "High Knees",
@@ -1342,7 +1342,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         new
                         {
                             ØvelseID = new Guid("bdb87fa8-e777-42e6-ad08-7187707fe1c3"),
-                            PensumID = new Guid("00000000-0000-0000-0000-000000000000"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
                             ØvelseBeskrivelse = "An upper body exercise that targets the triceps, using parallel bars or a bench.",
                             ØvelseBillede = "tricep_dips_image_url",
                             ØvelseNavn = "Tricep Dips",
