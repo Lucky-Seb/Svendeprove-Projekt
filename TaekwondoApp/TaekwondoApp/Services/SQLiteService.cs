@@ -103,16 +103,16 @@ namespace TaekwondoApp.Services
         }
 
         // Get only entries that are unsynced (Pending or Failed)
-        public async Task<OrdbogDTO[]> GetUnsyncedEntriesAsync()
+        public Task<OrdbogDTO[]> GetUnsyncedEntriesAsync()
         {
             try
             {
                 var unsynced = _database
                     .Table<OrdbogDTO>()
                     .Where(e => e.Status == SyncStatus.Pending || e.Status == SyncStatus.Failed)
-                    .ToList();
+                    .ToArray();  // This is synchronous, no need for await
 
-                return await Task.FromResult(unsynced.ToArray());
+                return Task.FromResult(unsynced);  // Return as Task<OrdbogDTO[]>
             }
             catch (Exception ex)
             {

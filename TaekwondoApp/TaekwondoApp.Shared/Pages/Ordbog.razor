@@ -302,11 +302,12 @@ else
         LogAction("Edit canceled.");
     }
 
-    private async Task EditEntry(OrdbogDTO entry)
+    private Task EditEntry(OrdbogDTO entry)
     {
         entryModel = entry;
         isEditing = true;
         LogAction($"Editing entry: {entry.OrdbogId}");
+        return Task.CompletedTask;
     }
 
     private async Task ApplyFilter()

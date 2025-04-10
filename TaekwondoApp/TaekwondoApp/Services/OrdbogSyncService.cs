@@ -36,8 +36,12 @@ namespace TaekwondoApp.Services
 
         public async Task SyncOrdbogLocalChangesToServerAsync()
         {
+            // Fetch unsynced entries (this is an array)
+            var unsyncedEntries = await _sqliteService.GetUnsyncedEntriesAsync();
+
+            // Pass the array as a List using .ToList()
             await _syncService.SyncLocalChangesToServerAsync<OrdbogDTO>(
-                getUnsyncedEntries: async () => await _sqliteService.GetUnsyncedEntriesAsync(),
+                getUnsyncedEntries: () => Task.FromResult(unsyncedEntries.ToList()),  // Convert array to List<OrdbogDTO>
                 postToServer: async (entry) => await _httpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entry),
                 markAsSynced: async (entry) => await _sqliteService.MarkAsSyncedAsync(entry.OrdbogId)
             );
