@@ -5,6 +5,7 @@
 @inject IOrdbogSyncService OrdbogSyncService
 @inject ISQLiteService SQLiteService
 @inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
 
 <h1>Ordbog</h1>
 
@@ -236,22 +237,32 @@ else
         {
             if (internet)
             {
-                LogAction("Creating entry (online) and syncing to server...");
-                await OrdbogSyncService.SyncOrdbogLocalChangesToServerAsync();
+                // Directly call the API to create the entry on the server
+                LogAction("Creating entry (online) and sending to server...");
+                var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModel);
+                if (response.IsSuccessStatusCode)
+                {
+                    LogAction("Entry created on the server.");
+                    // After the entry is created, load updated list from the server
+                    await LoadEntries();
+                }
+                else
+                {
+                    errorMessage = "Failed to create entry on the server.";
+                }
             }
             else
             {
                 LogAction("Creating entry (offline) and saving locally...");
                 await SQLiteService.AddEntryAsync(entryModel);
+                LogAction("Entry created locally.");
+                await LoadEntries();
             }
-
-            LogAction("Entry created successfully.");
-            await LoadEntries();
         }
         catch (Exception ex)
         {
             LogAction($"Error creating entry: {ex.Message}");
-            errorMessage = $"Error creating entry: {ex.Message}"; // Display in UI
+            errorMessage = $"Error creating entry: {ex.Message}";
         }
     }
 
@@ -261,22 +272,30 @@ else
         {
             if (internet)
             {
-                LogAction("Updating entry (online) and syncing to server...");
-                await OrdbogSyncService.SyncOrdbogLocalChangesToServerAsync();
+                LogAction("Updating entry (online) and sending to server...");
+                var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entryModel.OrdbogId}", entryModel);
+                if (response.IsSuccessStatusCode)
+                {
+                    LogAction("Entry updated on the server.");
+                    await LoadEntries();
+                }
+                else
+                {
+                    errorMessage = "Failed to update entry on the server.";
+                }
             }
             else
             {
                 LogAction("Updating entry (offline) and saving locally...");
                 await SQLiteService.UpdateEntryAsync(entryModel);
+                LogAction("Entry updated locally.");
+                await LoadEntries();
             }
-
-            LogAction("Entry updated successfully.");
-            await LoadEntries();
         }
         catch (Exception ex)
         {
             LogAction($"Error updating entry: {ex.Message}");
-            errorMessage = $"Error updating entry: {ex.Message}";  // Display in UI
+            errorMessage = $"Error updating entry: {ex.Message}";
         }
     }
 
@@ -286,22 +305,30 @@ else
         {
             if (internet)
             {
-                LogAction("Deleting entry (online) and syncing to server...");
-                await OrdbogSyncService.SyncOrdbogLocalChangesToServerAsync();
+                LogAction("Deleting entry (online) from server...");
+                var response = await HttpClient.DeleteAsync($"https://localhost:7478/api/ordbog/{OrdbogId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    LogAction("Entry deleted from the server.");
+                    await LoadEntries();
+                }
+                else
+                {
+                    errorMessage = "Failed to delete entry from the server.";
+                }
             }
             else
             {
                 LogAction($"Deleting entry {OrdbogId} (offline) from local storage...");
                 await SQLiteService.DeleteEntryAsync(OrdbogId);
+                LogAction("Entry deleted locally.");
+                await LoadEntries();
             }
-
-            LogAction("Entry deleted successfully.");
-            await LoadEntries();
         }
         catch (Exception ex)
         {
             LogAction($"Error deleting entry: {ex.Message}");
-            errorMessage = $"Error deleting entry: {ex.Message}";  // Display in UI
+            errorMessage = $"Error deleting entry: {ex.Message}";
         }
     }
 
