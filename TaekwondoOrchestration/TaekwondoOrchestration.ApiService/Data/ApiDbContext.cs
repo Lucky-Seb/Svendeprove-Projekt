@@ -161,16 +161,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                 .HasForeignKey(ko => ko.ØvelseID)
                 .OnDelete(DeleteBehavior.Cascade);  // Cascade delete for KlubØvelse
 
-            // Seed data (with GUIDs instead of integers)
-            modelBuilder.Entity<Pensum>().HasData(
-                new Pensum { PensumID = Guid.NewGuid(), PensumGrad = "Hvidt Bælte" },
-                new Pensum { PensumID = Guid.NewGuid(), PensumGrad = "Gult Bælte" }
-            );
+            // Generate GUIDs for the entities first
+            var programId = Guid.NewGuid(); // Generate GUID for ProgramPlan
+            var quizId = Guid.NewGuid(); // Generate GUID for Quiz
+            var teoriId = Guid.NewGuid(); // Generate GUID for Teori
+            var teknikId = Guid.NewGuid(); // Generate GUID for Teknik
+            var øvelseId = Guid.NewGuid(); // Generate GUID for Øvelse
+            var pensumId = Guid.NewGuid(); // Generate GUID for Pensum
 
-            modelBuilder.Entity<Klub>().HasData(
-                new Klub { KlubID = Guid.NewGuid(), KlubNavn = "København Taekwondo Klub" },
-                new Klub { KlubID = Guid.NewGuid(), KlubNavn = "Aarhus Kampkunstcenter" }
-            );
+            // Seed data for entities
 
             modelBuilder.Entity<Bruger>().HasData(
                 new Bruger
@@ -192,60 +191,60 @@ namespace TaekwondoOrchestration.ApiService.Data
             );
 
             modelBuilder.Entity<Øvelse>().HasData(
-                new Øvelse
-                {
-                    ØvelseID = Guid.NewGuid(),
+            new Øvelse
+            {
+                    ØvelseID = øvelseId,
                     ØvelseNavn = "Front Spark",
                     ØvelseBeskrivelse = "En simpel frontspark teknik.",
                     ØvelseBillede = "",
                     ØvelseVideo = "",
                     ØvelseTid = 30,
                     ØvelseSværhed = "Begynder",
-                    PensumID = Guid.NewGuid()
+                    PensumID = pensumId
                 }
             );
 
             modelBuilder.Entity<BrugerØvelse>().HasData(
-                new BrugerØvelse { BrugerID = Guid.NewGuid(), ØvelseID = Guid.NewGuid() }
+                new BrugerØvelse { BrugerID = Guid.NewGuid(), ØvelseID = øvelseId }
             );
 
             modelBuilder.Entity<KlubØvelse>().HasData(
-                new KlubØvelse { KlubID = Guid.NewGuid(), ØvelseID = Guid.NewGuid() }
+                new KlubØvelse { KlubID = Guid.NewGuid(), ØvelseID = øvelseId }
             );
 
             modelBuilder.Entity<Teori>().HasData(
                 new Teori
                 {
-                    TeoriID = Guid.NewGuid(),
+                    TeoriID = teoriId,
                     TeoriNavn = "Respect",
                     TeoriBeskrivelse = "Respekt for dojo og lærere.",
                     TeoriBillede = "",
                     TeoriVideo = "",
                     TeoriLyd = "",
-                    PensumID = Guid.NewGuid()
+                    PensumID = pensumId
                 }
             );
 
             modelBuilder.Entity<Teknik>().HasData(
                 new Teknik
                 {
-                    TeknikID = Guid.NewGuid(),
+                    TeknikID = teknikId,
                     TeknikNavn = "Blokering",
                     TeknikBeskrivelse = "Forsvar mod angreb.",
                     TeknikBillede = "",
                     TeknikVideo = "",
                     TeknikLyd = "",
-                    PensumID = Guid.NewGuid()
+                    PensumID = pensumId
                 }
             );
 
             modelBuilder.Entity<Quiz>().HasData(
                 new Quiz
                 {
-                    QuizID = Guid.NewGuid(),
+                    QuizID = quizId,
                     QuizNavn = "Begynder Quiz",
                     QuizBeskrivelse = "Spørgsmål for begyndere",
-                    PensumID = Guid.NewGuid()
+                    PensumID = pensumId
                 }
             );
 
@@ -255,23 +254,24 @@ namespace TaekwondoOrchestration.ApiService.Data
                     SpørgsmålID = Guid.NewGuid(),
                     SpørgsmålRækkefølge = 1,
                     SpørgsmålTid = 30,
-                    QuizID = Guid.NewGuid(),
-                    TeoriID = Guid.NewGuid()
+                    QuizID = quizId,
+                    TeoriID = teoriId
                 }
             );
 
             modelBuilder.Entity<BrugerQuiz>().HasData(
-                new BrugerQuiz { BrugerID = Guid.NewGuid(), QuizID = Guid.NewGuid() }
+                new BrugerQuiz { BrugerID = Guid.NewGuid(), QuizID = quizId }
             );
 
             modelBuilder.Entity<KlubQuiz>().HasData(
-                new KlubQuiz { KlubID = Guid.NewGuid(), QuizID = Guid.NewGuid() }
+                new KlubQuiz { KlubID = Guid.NewGuid(), QuizID = quizId }
             );
 
+            // Seed data for ProgramPlan
             modelBuilder.Entity<ProgramPlan>().HasData(
                 new ProgramPlan
                 {
-                    ProgramID = Guid.NewGuid(),
+                    ProgramID = programId,
                     ProgramNavn = "Intro Program",
                     Beskrivelse = "2 ugers intro",
                     Længde = 14,
@@ -279,23 +279,28 @@ namespace TaekwondoOrchestration.ApiService.Data
                 }
             );
 
+            // Link ProgramPlan to KlubProgram and BrugerProgram using their GUIDs
             modelBuilder.Entity<KlubProgram>().HasData(
-                new KlubProgram { KlubID = Guid.NewGuid(), ProgramID = Guid.NewGuid() }
+                new KlubProgram { KlubID = Guid.NewGuid(), ProgramID = programId }
             );
 
             modelBuilder.Entity<BrugerProgram>().HasData(
-                new BrugerProgram { BrugerID = Guid.NewGuid(), ProgramID = Guid.NewGuid() }
+                new BrugerProgram { BrugerID = Guid.NewGuid(), ProgramID = programId }
             );
 
+            // Seed data for Træning and link it to ProgramPlan using the GUID
             modelBuilder.Entity<Træning>().HasData(
                 new Træning
                 {
                     TræningID = Guid.NewGuid(),
                     TræningRækkefølge = 1,
                     Tid = 45,
-                    ProgramID = Guid.NewGuid(),
-                    QuizID = Guid.NewGuid(),
-                    TeoriID = Guid.NewGuid()
+                    ProgramID = programId, // Assign the seeded ProgramPlan's ID to ProgramID
+                    QuizID = quizId,
+                    TeoriID = teoriId,
+                    TeknikID = teknikId,
+                    ØvelseID = øvelseId,
+                    PensumID = pensumId
                 }
             );
         }

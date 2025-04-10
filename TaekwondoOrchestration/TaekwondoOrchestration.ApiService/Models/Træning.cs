@@ -6,7 +6,6 @@
         public int TræningRækkefølge { get; set; }
         public int Tid { get; set; }
 
-
         // Foreign keys (single items)
         public Guid ProgramID { get; set; }
         public Guid? QuizID { get; set; }
