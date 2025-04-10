@@ -2,17 +2,18 @@
 {
     public class Træning
     {
-        public int TræningID { get; set; }
+        public Guid TræningID { get; set; }
         public int TræningRækkefølge { get; set; }
         public int Tid { get; set; }
-        public int ProgramID { get; set; }
+
 
         // Foreign keys (single items)
-        public int? QuizID { get; set; }
-        public int? TeoriID { get; set; }
-        public int? TeknikID { get; set; }
-        public int? ØvelseID { get; set; }
-        public int? PensumID { get; set; }
+        public Guid ProgramID { get; set; }
+        public Guid? QuizID { get; set; }
+        public Guid? TeoriID { get; set; }
+        public Guid? TeknikID { get; set; }
+        public Guid? ØvelseID { get; set; }
+        public Guid? PensumID { get; set; }
 
         // Navigation properties (single items)
         public Quiz? Quiz { get; set; }

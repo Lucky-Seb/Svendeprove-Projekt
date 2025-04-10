@@ -6,7 +6,7 @@ namespace TaekwondoOrchestration.ApiService.Data
     public class ApiDbContext : DbContext
     {
         public ApiDbContext(DbContextOptions<ApiDbContext> options)
-            : base(options)
+                    : base(options)
         { }
 
         // DbSet properties for each model
@@ -33,20 +33,41 @@ namespace TaekwondoOrchestration.ApiService.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Define primary keys
+            // Define primary keys and sequential GUID generation
             modelBuilder.Entity<Bruger>().HasKey(b => b.BrugerID);
-            modelBuilder.Entity<Klub>().HasKey(k => k.KlubID);
-            modelBuilder.Entity<Ordbog>().HasKey(o => o.Id);
-            modelBuilder.Entity<Øvelse>().HasKey(e => e.ØvelseID);
-            modelBuilder.Entity<Pensum>().HasKey(p => p.PensumID);
-            modelBuilder.Entity<ProgramPlan>().HasKey(pp => pp.ProgramID);
-            modelBuilder.Entity<Quiz>().HasKey(q => q.QuizID);
-            modelBuilder.Entity<Spørgsmål>().HasKey(s => s.SpørgsmålID);
-            modelBuilder.Entity<Teknik>().HasKey(t => t.TeknikID);
-            modelBuilder.Entity<Teori>().HasKey(t => t.TeoriID);
-            modelBuilder.Entity<Træning>().HasKey(t => t.TræningID);
+            modelBuilder.Entity<Bruger>().Property(b => b.BrugerID).HasDefaultValueSql("NEWSEQUENTIALID()");
 
-            // Many-to-Many relationships
+            modelBuilder.Entity<Klub>().HasKey(k => k.KlubID);
+            modelBuilder.Entity<Klub>().Property(k => k.KlubID).HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            modelBuilder.Entity<Ordbog>().HasKey(o => o.OrdbogId);
+            modelBuilder.Entity<Ordbog>().Property(o => o.OrdbogId).HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            modelBuilder.Entity<Øvelse>().HasKey(e => e.ØvelseID);
+            modelBuilder.Entity<Øvelse>().Property(e => e.ØvelseID).HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            modelBuilder.Entity<Pensum>().HasKey(p => p.PensumID);
+            modelBuilder.Entity<Pensum>().Property(p => p.PensumID).HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            modelBuilder.Entity<ProgramPlan>().HasKey(pp => pp.ProgramID);
+            modelBuilder.Entity<ProgramPlan>().Property(pp => pp.ProgramID).HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            modelBuilder.Entity<Quiz>().HasKey(q => q.QuizID);
+            modelBuilder.Entity<Quiz>().Property(q => q.QuizID).HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            modelBuilder.Entity<Spørgsmål>().HasKey(s => s.SpørgsmålID);
+            modelBuilder.Entity<Spørgsmål>().Property(s => s.SpørgsmålID).HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            modelBuilder.Entity<Teknik>().HasKey(t => t.TeknikID);
+            modelBuilder.Entity<Teknik>().Property(t => t.TeknikID).HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            modelBuilder.Entity<Teori>().HasKey(t => t.TeoriID);
+            modelBuilder.Entity<Teori>().Property(t => t.TeoriID).HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            modelBuilder.Entity<Træning>().HasKey(t => t.TræningID);
+            modelBuilder.Entity<Træning>().Property(t => t.TræningID).HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            // Many-to-Many relationships (with GUID composite keys)
             modelBuilder.Entity<KlubProgram>().HasKey(kp => new { kp.KlubID, kp.ProgramID });
             modelBuilder.Entity<BrugerProgram>().HasKey(bp => new { bp.BrugerID, bp.ProgramID });
             modelBuilder.Entity<BrugerØvelse>().HasKey(bo => new { bo.BrugerID, bo.ØvelseID });
@@ -55,7 +76,7 @@ namespace TaekwondoOrchestration.ApiService.Data
             modelBuilder.Entity<BrugerKlub>().HasKey(bk => new { bk.BrugerID, bk.KlubID });
             modelBuilder.Entity<KlubØvelse>().HasKey(ko => new { ko.KlubID, ko.ØvelseID });
 
-            // Define relationships
+            // Define relationships and cascade deletes
             modelBuilder.Entity<KlubProgram>()
                 .HasOne(kp => kp.Klub)
                 .WithMany(k => k.KlubProgrammer)
@@ -120,16 +141,13 @@ namespace TaekwondoOrchestration.ApiService.Data
                 .HasOne(bk => bk.Bruger)
                 .WithMany(b => b.BrugerKlubber)
                 .HasForeignKey(bk => bk.BrugerID)
-                .OnDelete(DeleteBehavior.Cascade);  // Cascade delete for KlubØvelse
-
-
+                .OnDelete(DeleteBehavior.Cascade);  // Cascade delete for BrugerKlub
 
             modelBuilder.Entity<BrugerKlub>()
                 .HasOne(bk => bk.Klub)
                 .WithMany(k => k.BrugerKlubber)
                 .HasForeignKey(bk => bk.KlubID)
-                .OnDelete(DeleteBehavior.Cascade);  // Cascade delete for KlubØvelse
-
+                .OnDelete(DeleteBehavior.Cascade);  // Cascade delete for BrugerKlub
 
             modelBuilder.Entity<KlubØvelse>()
                 .HasOne(ko => ko.Klub)
@@ -143,88 +161,21 @@ namespace TaekwondoOrchestration.ApiService.Data
                 .HasForeignKey(ko => ko.ØvelseID)
                 .OnDelete(DeleteBehavior.Cascade);  // Cascade delete for KlubØvelse
 
-            // Define relationships for entities that belong to Pensum
-            modelBuilder.Entity<Quiz>()
-                .HasOne(q => q.Pensum)
-                .WithMany(p => p.Quizzer)
-                .HasForeignKey(q => q.PensumID);
-
-            modelBuilder.Entity<Teori>()
-                .HasOne(t => t.Pensum)
-                .WithMany(p => p.Teorier)
-                .HasForeignKey(t => t.PensumID);
-
-            modelBuilder.Entity<Teknik>()
-                .HasOne(t => t.Pensum)
-                .WithMany(p => p.Teknikker)
-                .HasForeignKey(t => t.PensumID);
-
-            // Define relationships for Træning
-            modelBuilder.Entity<Træning>()
-                .HasOne(t => t.ProgramPlan)
-                .WithMany(p => p.Træninger)
-                .HasForeignKey(t => t.ProgramID);
-
-            modelBuilder.Entity<Træning>()
-                .HasOne(t => t.Quiz)
-                .WithMany()
-                .HasForeignKey(t => t.QuizID);
-
-            modelBuilder.Entity<Træning>()
-                .HasOne(t => t.Teori)
-                .WithMany()
-                .HasForeignKey(t => t.TeoriID);
-
-            modelBuilder.Entity<Træning>()
-                .HasOne(t => t.Teknik)
-                .WithMany()
-                .HasForeignKey(t => t.TeknikID);
-
-            modelBuilder.Entity<Træning>()
-                .HasOne(t => t.Øvelse)
-                .WithMany()
-                .HasForeignKey(t => t.ØvelseID);
-
-            // Define relationships for Spørgsmål
-            modelBuilder.Entity<Spørgsmål>()
-                .HasOne(s => s.Quiz)
-                .WithMany(q => q.Spørgsmåls)
-                .HasForeignKey(s => s.QuizID);  // Explicitly specify the foreign key
-                                                //.OnDelete(DeleteBehavior.Cascade);  // Add the delete behavior if needed
-
-
-            modelBuilder.Entity<Spørgsmål>()
-                .HasOne(t => t.Teori)
-                .WithMany()
-                .HasForeignKey(t => t.TeoriID);
-
-            modelBuilder.Entity<Spørgsmål>()
-                .HasOne(t => t.Teknik)
-                .WithMany()
-                .HasForeignKey(t => t.TeknikID);
-
-            modelBuilder.Entity<Spørgsmål>()
-                .HasOne(t => t.Øvelse)
-                .WithMany()
-                .HasForeignKey(t => t.ØvelseID);
-
-            // --- Seed Pensum ---
+            // Seed data (with GUIDs instead of integers)
             modelBuilder.Entity<Pensum>().HasData(
-                new Pensum { PensumID = 1, PensumGrad = "Hvidt Bælte" },
-                new Pensum { PensumID = 2, PensumGrad = "Gult Bælte" }
+                new Pensum { PensumID = Guid.NewGuid(), PensumGrad = "Hvidt Bælte" },
+                new Pensum { PensumID = Guid.NewGuid(), PensumGrad = "Gult Bælte" }
             );
 
-            // --- Seed Klub ---
             modelBuilder.Entity<Klub>().HasData(
-                new Klub { KlubID = 1, KlubNavn = "København Taekwondo Klub" },
-                new Klub { KlubID = 2, KlubNavn = "Aarhus Kampkunstcenter" }
+                new Klub { KlubID = Guid.NewGuid(), KlubNavn = "København Taekwondo Klub" },
+                new Klub { KlubID = Guid.NewGuid(), KlubNavn = "Aarhus Kampkunstcenter" }
             );
 
-            // --- Seed Bruger ---
             modelBuilder.Entity<Bruger>().HasData(
                 new Bruger
                 {
-                    BrugerID = 1,
+                    BrugerID = Guid.NewGuid(),
                     Email = "emma@dojo.dk",
                     Brugernavn = "emma123",
                     Fornavn = "Emma",
@@ -236,102 +187,91 @@ namespace TaekwondoOrchestration.ApiService.Data
                 }
             );
 
-            // --- BrugerKlub ---
             modelBuilder.Entity<BrugerKlub>().HasData(
-                new BrugerKlub { BrugerID = 1, KlubID = 1 }
+                new BrugerKlub { BrugerID = Guid.NewGuid(), KlubID = Guid.NewGuid() }
             );
 
-            // --- Øvelse ---
             modelBuilder.Entity<Øvelse>().HasData(
                 new Øvelse
                 {
-                    ØvelseID = 1,
+                    ØvelseID = Guid.NewGuid(),
                     ØvelseNavn = "Front Spark",
                     ØvelseBeskrivelse = "En simpel frontspark teknik.",
                     ØvelseBillede = "",
                     ØvelseVideo = "",
                     ØvelseTid = 30,
                     ØvelseSværhed = "Begynder",
-                    PensumID = 1
+                    PensumID = Guid.NewGuid()
                 }
             );
 
-            // --- BrugerØvelse ---
             modelBuilder.Entity<BrugerØvelse>().HasData(
-                new BrugerØvelse { BrugerID = 1, ØvelseID = 1 }
+                new BrugerØvelse { BrugerID = Guid.NewGuid(), ØvelseID = Guid.NewGuid() }
             );
 
-            // --- KlubØvelse ---
             modelBuilder.Entity<KlubØvelse>().HasData(
-                new KlubØvelse { KlubID = 1, ØvelseID = 1 }
+                new KlubØvelse { KlubID = Guid.NewGuid(), ØvelseID = Guid.NewGuid() }
             );
 
-            // --- Teori ---
             modelBuilder.Entity<Teori>().HasData(
                 new Teori
                 {
-                    TeoriID = 1,
+                    TeoriID = Guid.NewGuid(),
                     TeoriNavn = "Respect",
                     TeoriBeskrivelse = "Respekt for dojo og lærere.",
                     TeoriBillede = "",
                     TeoriVideo = "",
                     TeoriLyd = "",
-                    PensumID = 1
+                    PensumID = Guid.NewGuid()
                 }
             );
 
-            // --- Teknik ---
             modelBuilder.Entity<Teknik>().HasData(
                 new Teknik
                 {
-                    TeknikID = 1,
+                    TeknikID = Guid.NewGuid(),
                     TeknikNavn = "Blokering",
                     TeknikBeskrivelse = "Forsvar mod angreb.",
                     TeknikBillede = "",
                     TeknikVideo = "",
                     TeknikLyd = "",
-                    PensumID = 1
+                    PensumID = Guid.NewGuid()
                 }
             );
 
-            // --- Quiz ---
             modelBuilder.Entity<Quiz>().HasData(
                 new Quiz
                 {
-                    QuizID = 1,
+                    QuizID = Guid.NewGuid(),
                     QuizNavn = "Begynder Quiz",
                     QuizBeskrivelse = "Spørgsmål for begyndere",
-                    PensumID = 1
+                    PensumID = Guid.NewGuid()
                 }
             );
 
-            // --- Spørgsmål ---
             modelBuilder.Entity<Spørgsmål>().HasData(
                 new Spørgsmål
                 {
-                    SpørgsmålID = 1,
+                    SpørgsmålID = Guid.NewGuid(),
                     SpørgsmålRækkefølge = 1,
                     SpørgsmålTid = 30,
-                    QuizID = 1,
-                    TeoriID = 1
+                    QuizID = Guid.NewGuid(),
+                    TeoriID = Guid.NewGuid()
                 }
             );
 
-            // --- BrugerQuiz ---
             modelBuilder.Entity<BrugerQuiz>().HasData(
-                new BrugerQuiz { BrugerID = 1, QuizID = 1 }
+                new BrugerQuiz { BrugerID = Guid.NewGuid(), QuizID = Guid.NewGuid() }
             );
 
-            // --- KlubQuiz ---
             modelBuilder.Entity<KlubQuiz>().HasData(
-                new KlubQuiz { KlubID = 1, QuizID = 1 }
+                new KlubQuiz { KlubID = Guid.NewGuid(), QuizID = Guid.NewGuid() }
             );
 
-            // --- ProgramPlan ---
             modelBuilder.Entity<ProgramPlan>().HasData(
                 new ProgramPlan
                 {
-                    ProgramID = 1,
+                    ProgramID = Guid.NewGuid(),
                     ProgramNavn = "Intro Program",
                     Beskrivelse = "2 ugers intro",
                     Længde = 14,
@@ -339,43 +279,23 @@ namespace TaekwondoOrchestration.ApiService.Data
                 }
             );
 
-            // --- KlubProgram ---
             modelBuilder.Entity<KlubProgram>().HasData(
-                new KlubProgram { KlubID = 1, ProgramID = 1 }
+                new KlubProgram { KlubID = Guid.NewGuid(), ProgramID = Guid.NewGuid() }
             );
 
-            // --- BrugerProgram ---
             modelBuilder.Entity<BrugerProgram>().HasData(
-                new BrugerProgram { BrugerID = 1, ProgramID = 1 }
+                new BrugerProgram { BrugerID = Guid.NewGuid(), ProgramID = Guid.NewGuid() }
             );
 
-            // --- Træning ---
             modelBuilder.Entity<Træning>().HasData(
                 new Træning
                 {
-                    TræningID = 1,
+                    TræningID = Guid.NewGuid(),
                     TræningRækkefølge = 1,
                     Tid = 45,
-                    ProgramID = 1,
-                    QuizID = 1,
-                    TeoriID = 1,
-                    TeknikID = 1,
-                    ØvelseID = 1,
-                    PensumID = 1
-                }
-            );
-
-            // --- Ordbog ---
-            modelBuilder.Entity<Ordbog>().HasData(
-                new Ordbog
-                {
-                    Id = 1,
-                    DanskOrd = "Hilsen",
-                    KoranskOrd = "Annyeonghaseyo",
-                    Beskrivelse = "En typisk hilsen i kampkunst",
-                    BilledeLink = "",
-                    LydLink = "",
-                    VideoLink = ""
+                    ProgramID = Guid.NewGuid(),
+                    QuizID = Guid.NewGuid(),
+                    TeoriID = Guid.NewGuid()
                 }
             );
         }

@@ -2,7 +2,7 @@
 {
     public class Øvelse
     {
-        public int ØvelseID { get; set; }
+        public Guid ØvelseID { get; set; }
         public string ØvelseNavn { get; set; }
         public string ØvelseBeskrivelse { get; set; }
         public string ØvelseBillede { get; set; }
@@ -10,7 +10,7 @@
         public int ØvelseTid { get; set; }
         public string ØvelseSværhed { get; set; }
 
-        public int PensumID { get; set; }  // Foreign Key
+        public Guid PensumID { get; set; }  // Foreign Key
         public Pensum Pensum { get; set; }
 
         public ICollection<BrugerØvelse>? BrugerØvelses { get; set; }

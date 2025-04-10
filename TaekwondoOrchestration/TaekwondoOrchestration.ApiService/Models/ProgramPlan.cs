@@ -2,7 +2,7 @@
 {
     public class ProgramPlan
     {
-        public int ProgramID { get; set; }
+        public Guid ProgramID { get; set; }
         public string ProgramNavn { get; set; }
         public DateTime OprettelseDato { get; set; }
         public int Længde { get; set; }

@@ -2,15 +2,15 @@
 {
     public class Spørgsmål
     {
-        public int SpørgsmålID { get; set; }
+        public Guid SpørgsmålID { get; set; }
         public int SpørgsmålRækkefølge { get; set; }
         public int SpørgsmålTid { get; set; }
 
         //ForeigenKey
-        public int? TeoriID { get; set; }
-        public int? TeknikID { get; set; }
-        public int? ØvelseID { get; set; }
-        public int QuizID { get; set; }
+        public Guid? TeoriID { get; set; }
+        public Guid? TeknikID { get; set; }
+        public Guid? ØvelseID { get; set; }
+        public Guid QuizID { get; set; }
 
         public Quiz? Quiz { get; set; }
         public Teori? Teori { get; set; }

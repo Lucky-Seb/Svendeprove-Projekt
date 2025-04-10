@@ -2,7 +2,7 @@
 {
     public class Klub
     {
-        public int KlubID { get; set; }
+        public Guid KlubID { get; set; }
         public string KlubNavn { get; set; }
 
         public ICollection<KlubProgram>? KlubProgrammer { get; set; }

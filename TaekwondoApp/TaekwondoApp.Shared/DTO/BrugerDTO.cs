@@ -2,7 +2,7 @@
 {
     public class BrugerDTO
     {
-        public int BrugerID { get; set; }
+        public Guid BrugerID { get; set; }
         public string Email { get; set; }
         public string Brugernavn { get; set; }
         public string Fornavn { get; set; }

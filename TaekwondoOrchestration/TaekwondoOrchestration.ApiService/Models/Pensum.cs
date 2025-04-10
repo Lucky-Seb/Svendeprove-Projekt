@@ -2,7 +2,7 @@
 {
     public class Pensum
     {
-        public int PensumID { get; set; }
+        public Guid PensumID { get; set; }
         public string PensumGrad { get; set; }
 
         // Navigation property
