@@ -262,19 +262,19 @@ else
         {
             if (internet)
             {
+                // Convert OrdbogDTO to Ordbog
+                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel);  // AutoMapper will convert DTO to model
 
-                // Ensure the entry has the required fields for syncing with the server
-                entryModel.ETag = entryModel.DanskOrd + entryModel.KoranskOrd;  // Set a new ETag for new entries
-                entryModel.ModifiedBy = "user123";  // Replace with the actual user/device ID
+                // Ensure ETag is set before saving
+                entryModelMapped.ETag = entryModel.DanskOrd + entryModel.KoranskOrd;
+                entryModelMapped.ModifiedBy = "user123";  // Replace with actual user/device ID
 
-                // Sync with the server
-                var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModel);
+                var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModelMapped);
 
                 if (response.IsSuccessStatusCode)
                 {
                     LogAction("Entry created on the server.");
                     await LoadEntries();
-                    // After successful sync, update the status to Synced
                     await SQLiteService.MarkAsSyncedAsync(entryModel.OrdbogId);
                 }
                 else
@@ -286,9 +286,10 @@ else
             }
             else
             {
-                // Map the OrdbogDTO to Ordbog using AutoMapper for offline storage
-                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel);
-                await SQLiteService.AddEntryAsync(entryModelMapped);  // Save locally when offline
+                // Save the DTO entry locally (Offline scenario)
+                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel); // Convert DTO to model for local storage
+                entryModelMapped.ETag = GenerateETag(entryModelMapped);  // Set ETag
+                await SQLiteService.AddEntryAsync(entryModelMapped);  // Save locally
                 LogAction("Entry created locally.");
                 await LoadEntries();
             }
@@ -302,7 +303,7 @@ else
 
     private string GenerateETag(Ordbog entry)
     {
-        return $"{entry.OrdbogId}-{entry.LastSyncedVersion}-{entry.DanskOrd}-{entry.KoranskOrd}";
+        return $"{entry.DanskOrd}-{entry.KoranskOrd}";
     }
 
     private async Task UpdateEntry(Ordbog entry)

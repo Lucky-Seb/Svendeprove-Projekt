@@ -60,7 +60,7 @@ namespace TaekwondoApp.Services
                 {
                     entry.Status = SyncStatus.Pending;
                 }
-
+                entry.OrdbogId = Guid.NewGuid();
                 entry.LastSyncedVersion = 1;  // New entry, start at version 1
                 entry.ETag = GenerateETag(entry);  // Generate an initial ETag
                 entry.CreatedAt = DateTime.UtcNow;  // Setting CreatedAt for new entry
