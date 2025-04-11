@@ -1,4 +1,4 @@
-﻿using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.Models;
 
 namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
 {

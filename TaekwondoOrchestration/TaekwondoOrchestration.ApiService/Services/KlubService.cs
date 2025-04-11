@@ -1,6 +1,6 @@
 ﻿// In KlubService.cs
 using TaekwondoApp.Shared.DTO;
-using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using System.Collections.Generic;
 using System.Linq;

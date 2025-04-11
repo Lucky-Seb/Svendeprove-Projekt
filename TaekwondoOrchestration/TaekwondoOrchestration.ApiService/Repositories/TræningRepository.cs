@@ -1,6 +1,6 @@
 ﻿using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoApp.Shared.DTO;
-using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;

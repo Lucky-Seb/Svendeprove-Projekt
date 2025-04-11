@@ -1,4 +1,4 @@
-﻿using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 

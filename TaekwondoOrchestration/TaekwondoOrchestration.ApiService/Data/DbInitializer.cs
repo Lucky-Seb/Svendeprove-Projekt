@@ -1,4 +1,4 @@
-﻿using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Data;
 public static class DbInitializer
 {
