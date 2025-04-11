@@ -212,11 +212,31 @@ else
 
     private async Task LoadEntries()
     {
-        LogAction("Loading all entries from local storage...");
         try
         {
-            filteredWords = await SQLiteService.GetAllEntriesAsync();
-            LogAction($"{filteredWords.Length} entries loaded.");
+            if (internet)
+            {
+                // When online, load entries from the server
+                LogAction("Loading entries from the server...");
+                var response = await HttpClient.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog");
+
+                if (response != null)
+                {
+                    filteredWords = response.ToArray();
+                    LogAction($"{filteredWords.Length} entries loaded from the server.");
+                }
+                else
+                {
+                    LogAction("No entries found on the server.");
+                }
+            }
+            else
+            {
+                // When offline, load entries from local storage
+                LogAction("Loading all entries from local storage...");
+                filteredWords = await SQLiteService.GetAllEntriesAsync();
+                LogAction($"{filteredWords.Length} entries loaded from local storage.");
+            }
         }
         catch (Exception ex)
         {
