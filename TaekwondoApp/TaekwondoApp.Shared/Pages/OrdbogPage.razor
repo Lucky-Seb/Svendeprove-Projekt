@@ -2,6 +2,7 @@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
+@using AutoMapper
 @inject IOrdbogSyncService OrdbogSyncService
 @inject ISQLiteService SQLiteService
 @inject NavigationManager NavigationManager
@@ -275,8 +276,11 @@ else
             }
             else
             {
+                // Map the OrdbogDTO to Ordbog using AutoMapper
+                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel);
+
                 // Save locally when offline
-                await SQLiteService.AddEntryAsync(entryModel);
+                await SQLiteService.AddEntryAsync(entryModelMapped);  // Pass the mapped Ordbog model
                 LogAction("Entry created locally.");
                 await LoadEntries();
             }
@@ -308,8 +312,11 @@ else
             }
             else
             {
+                // Map the OrdbogDTO to Ordbog using AutoMapper
+                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel);
+
                 // Update locally when offline
-                await SQLiteService.UpdateEntryAsync(entryModel);
+                await SQLiteService.UpdateEntryAsync(entryModelMapped);  // Pass the mapped Ordbog model
                 LogAction("Entry updated locally.");
                 await LoadEntries();
             }
@@ -320,8 +327,7 @@ else
             errorMessage = $"Error updating entry: {ex.Message}";
         }
     }
-
-
+    
     private async Task DeleteEntry(Guid OrdbogId)
     {
         try
