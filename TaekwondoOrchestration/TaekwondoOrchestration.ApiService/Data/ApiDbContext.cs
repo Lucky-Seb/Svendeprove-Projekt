@@ -36,51 +36,45 @@ namespace TaekwondoOrchestration.ApiService.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure SyncableEntity properties for all derived classes
-            modelBuilder.Entity<SyncableEntity>()
-                .Property(s => s.CreatedAt)
+            // Ignore SyncableEntity itself, since it's abstract
+            modelBuilder.Ignore<SyncableEntity>();
+
+            // Configure properties for each derived class
+            modelBuilder.Entity<Ordbog>()
+                .Property(o => o.CreatedAt)
                 .IsRequired();
 
-            modelBuilder.Entity<SyncableEntity>()
-                .Property(s => s.LastModified)
+            modelBuilder.Entity<Ordbog>()
+                .Property(o => o.LastModified)
                 .IsRequired();
 
-            modelBuilder.Entity<SyncableEntity>()
-                .Property(s => s.ConflictStatus)
+            modelBuilder.Entity<Ordbog>()
+                .Property(o => o.ConflictStatus)
                 .HasDefaultValue(ConflictResolutionStatus.NoConflict);
 
-            modelBuilder.Entity<SyncableEntity>()
-                .Property(s => s.Status)
+            modelBuilder.Entity<Ordbog>()
+                .Property(o => o.Status)
                 .HasDefaultValue(SyncStatus.Pending);
 
-            modelBuilder.Entity<SyncableEntity>()
-                .Property(s => s.LastSyncedVersion)
+            modelBuilder.Entity<Ordbog>()
+                .Property(o => o.LastSyncedVersion)
                 .HasDefaultValue(0);
 
-            modelBuilder.Entity<SyncableEntity>()
-                .Property(s => s.ETag)
+            modelBuilder.Entity<Ordbog>()
+                .Property(o => o.ETag)
                 .HasMaxLength(255);
 
-            modelBuilder.Entity<SyncableEntity>()
-                .Property(s => s.ModifiedBy)
+            modelBuilder.Entity<Ordbog>()
+                .Property(o => o.ModifiedBy)
                 .HasMaxLength(255);
 
-            modelBuilder.Entity<SyncableEntity>()
-                .Property(s => s.IsDeleted)
+            modelBuilder.Entity<Ordbog>()
+                .Property(o => o.IsDeleted)
                 .HasDefaultValue(false);
 
-            // Handle ChangeHistoryJson (store it as text)
-            modelBuilder.Entity<SyncableEntity>()
-                .Property(s => s.ChangeHistoryJson)
-                .HasColumnType("nvarchar(max)");  // Use a suitable type based on your database (nvarchar in SQL Server, text in SQLite, etc.)
-
-            // Optional: You could configure your derived entities to inherit properties from SyncableEntity
-            // by making sure the entities are correctly inheriting properties from SyncableEntity
-            modelBuilder.Entity<Bruger>().ToTable("Brugere");
-            modelBuilder.Entity<Klub>().ToTable("Klubber");
-
-            // Example: Configure relationships for derived models here as well if needed.
-            // Other configurations related to your model relationships
+            modelBuilder.Entity<Ordbog>()
+                .Property(o => o.ChangeHistoryJson)
+                .HasColumnType("nvarchar(max)");  // Use the appropriate type for your DB (nvarchar, text, etc.)
 
             // Define primary keys and sequential GUID generation
             modelBuilder.Entity<Bruger>().HasKey(b => b.BrugerID);
