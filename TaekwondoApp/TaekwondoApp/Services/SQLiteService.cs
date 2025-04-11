@@ -1,11 +1,9 @@
 ﻿using SQLite;
-using TaekwondoApp.Shared.Services;
+using TaekwondoApp.Shared.Models;
 using System;
-using System.IO;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Linq;
-using TaekwondoApp.Shared.DTO;
+using System.Threading.Tasks;
+using TaekwondoApp.Shared.Services;
 
 namespace TaekwondoApp.Services
 {
@@ -16,20 +14,21 @@ namespace TaekwondoApp.Services
         public SQLiteService(string dbPath)
         {
             _database = new SQLiteConnection(dbPath);
-            InitializeDatabase(); // Ensure the database is initialized
+            InitializeDatabase();  // Ensure the database is initialized
         }
 
         public void InitializeDatabase()
         {
-            _database.CreateTable<OrdbogDTO>();
+            _database.CreateTable<Ordbog>();  // Create table using the model Ordbog
         }
 
-        public async Task<OrdbogDTO[]> GetAllEntriesAsync()
+        // Fetch all entries (includes LastSyncedVersion, ETag, etc.)
+        public async Task<Ordbog[]> GetAllEntriesAsync()
         {
             try
             {
-                var list = _database.Table<OrdbogDTO>().ToList();
-                return await Task.FromResult(list.ToArray()); // Safe for AOT/WinRT
+                var list = _database.Table<Ordbog>().ToList();
+                return await Task.FromResult(list.ToArray());  // Safe for AOT/WinRT
             }
             catch (Exception ex)
             {
@@ -37,17 +36,41 @@ namespace TaekwondoApp.Services
                 throw;
             }
         }
-
-        public async Task<int> AddEntryAsync(OrdbogDTO entry)
+        public async Task<Ordbog> GetEntryByIdAsync(Guid OrdbogId)
         {
             try
             {
-                // Make sure the entry's IsSync is correctly set (if it's not set from the Blazor component)
+                // Fetch the Ordbog entry by OrdbogId, excluding deleted entries
+                return await Task.FromResult(_database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId && !e.IsDeleted));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching entry by OrdbogId: {ex.Message}");
+                throw;
+            }
+        }
+
+        // Add entry with versioning, syncing, and conflict detection
+        public async Task<int> AddEntryAsync(Ordbog entry)
+        {
+            try
+            {
+                // Set default sync status and initialize version if not set
                 if (entry.Status == SyncStatus.Pending)
                 {
-                    entry.Status = SyncStatus.Pending; // Default to Pending if it's not set
+                    entry.Status = SyncStatus.Pending;
                 }
 
+                entry.LastSyncedVersion = 1;  // New entry, start at version 1
+                entry.ETag = GenerateETag(entry);  // Generate an initial ETag
+                entry.CreatedAt = DateTime.UtcNow;  // Setting CreatedAt for new entry
+                // Set the 'ModifiedBy' field (could be a user or device ID)
+                entry.ModifiedBy = "System"; // Replace with actual logic to track user/device
+
+                // Log the initial change (first entry creation)
+                LogChange(entry, "Initial entry creation");
+
+                // Insert the new entry into the database
                 return await Task.Run(() => _database.Insert(entry));
             }
             catch (Exception ex)
@@ -57,10 +80,23 @@ namespace TaekwondoApp.Services
             }
         }
 
-        public async Task<int> UpdateEntryAsync(OrdbogDTO entry)
+        public async Task<int> UpdateEntryAsync(Ordbog entry)
         {
             try
             {
+                // Increment the version on every update
+                entry.LastSyncedVersion++;
+
+                // Update ETag based on version and content
+                entry.ETag = GenerateETag(entry);
+
+                // Set the 'ModifiedBy' field (could be a user or device ID)
+                entry.ModifiedBy = "System"; // Replace with actual logic to track user/device
+
+                // Log the change made
+                LogChange(entry, "Updated entry");
+
+                // Update the entry in the database
                 return await Task.Run(() => _database.Update(entry));
             }
             catch (Exception ex)
@@ -70,49 +106,45 @@ namespace TaekwondoApp.Services
             }
         }
 
-        // Physical deletion: deletes the entry from the database
+
+        // Delete entry (logical deletion)
         public async Task<int> DeleteEntryAsync(Guid OrdbogId)
         {
             try
             {
-                var entry = _database.Table<OrdbogDTO>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
+                // Get the Ordbog entry by its OrdbogId
+                var entry = _database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
                 if (entry != null)
                 {
-                    return await Task.Run(() => _database.Delete(entry)); // Physically delete the record
+                    entry.IsDeleted = true; // Mark the entry as deleted (logical deletion)
+                    return await Task.Run(() => _database.Update(entry));  // Update the entry in the database
                 }
-                return 0;
+                return 0; // Return 0 if entry was not found
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting entry: {ex.Message}");
+                Console.WriteLine($"Error marking entry as deleted: {ex.Message}");
                 throw;
             }
         }
 
-        public async Task<OrdbogDTO> GetEntryByIdAsync(Guid OrdbogId)
+        // Generate ETag based on entity versioning and other fields
+        private string GenerateETag(Ordbog entry)
         {
-            try
-            {
-                return await Task.FromResult(_database.Table<OrdbogDTO>().FirstOrDefault(e => e.OrdbogId == OrdbogId && !e.IsDeleted));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error fetching entry by OrdbogId: {ex.Message}");
-                throw;
-            }
+            return $"{entry.OrdbogId}-{entry.LastSyncedVersion}-{entry.DanskOrd}-{entry.KoranskOrd}";
         }
 
-        // Get only entries that are unsynced (Pending or Failed)
-        public Task<OrdbogDTO[]> GetUnsyncedEntriesAsync()
+        // Get entries with unsynced status (Pending or Failed)
+        public Task<Ordbog[]> GetUnsyncedEntriesAsync()
         {
             try
             {
                 var unsynced = _database
-                    .Table<OrdbogDTO>()
+                    .Table<Ordbog>()
                     .Where(e => e.Status == SyncStatus.Pending || e.Status == SyncStatus.Failed)
-                    .ToArray();  // This is synchronous, no need for await
+                    .ToArray();  // Synchronously get unsynced entries
 
-                return Task.FromResult(unsynced);  // Return as Task<OrdbogDTO[]>
+                return Task.FromResult(unsynced);  // Return as Task<Ordbog[]>
             }
             catch (Exception ex)
             {
@@ -121,15 +153,15 @@ namespace TaekwondoApp.Services
             }
         }
 
-        // Mark an entry as synced after pushing to the server
+        // Mark an entry as synced
         public async Task<int> MarkAsSyncedAsync(Guid OrdbogId)
         {
             try
             {
-                var entry = _database.Table<OrdbogDTO>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
+                var entry = _database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
                 if (entry != null)
                 {
-                    entry.Status = SyncStatus.Synced; // Set Status to Synced
+                    entry.Status = SyncStatus.Synced;  // Mark as synced
                     return await Task.Run(() => _database.Update(entry));
                 }
 
@@ -147,10 +179,10 @@ namespace TaekwondoApp.Services
         {
             try
             {
-                var entry = _database.Table<OrdbogDTO>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
+                var entry = _database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
                 if (entry != null)
                 {
-                    entry.Status = SyncStatus.Failed; // Set Status to Failed
+                    entry.Status = SyncStatus.Failed;  // Mark as failed
                     await Task.Run(() => _database.Update(entry));
                 }
             }
@@ -166,11 +198,11 @@ namespace TaekwondoApp.Services
         {
             try
             {
-                var entry = _database.Table<OrdbogDTO>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
+                var entry = _database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
                 if (entry != null)
                 {
-                    entry.IsDeleted = true;  // Set IsDeleted flag to true
-                    return await Task.Run(() => _database.Update(entry));  // Update the entry to mark as deleted
+                    entry.Status = SyncStatus.Deleted;  // Mark status as deleted
+                    return await Task.Run(() => _database.Update(entry));  // Update entry to mark as deleted
                 }
 
                 return 0;
@@ -182,21 +214,22 @@ namespace TaekwondoApp.Services
             }
         }
 
-        public async Task<int> UpdateEntryWithServerIdAsync(OrdbogDTO entry)
+        // Update entry with server-assigned ID and status
+        public async Task<int> UpdateEntryWithServerIdAsync(Ordbog entry)
         {
             try
             {
-                var existingEntry = _database.Table<OrdbogDTO>().FirstOrDefault(e => e.OrdbogId == entry.OrdbogId);
+                var existingEntry = _database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == entry.OrdbogId);
                 if (existingEntry != null)
                 {
-                    // Update the entry with the server-assigned ID and sync status
+                    // Update with server-assigned ID and sync status
                     existingEntry.DanskOrd = entry.DanskOrd;
                     existingEntry.KoranskOrd = entry.KoranskOrd;
                     existingEntry.Beskrivelse = entry.Beskrivelse;
                     existingEntry.BilledeLink = entry.BilledeLink;
                     existingEntry.LydLink = entry.LydLink;
                     existingEntry.VideoLink = entry.VideoLink;
-                    existingEntry.Status = SyncStatus.Synced; // Mark as synced with server
+                    existingEntry.Status = SyncStatus.Synced;
 
                     return await Task.Run(() => _database.Update(existingEntry));
                 }
@@ -208,6 +241,18 @@ namespace TaekwondoApp.Services
                 Console.WriteLine($"Error updating entry with server ID: {ex.Message}");
                 throw;
             }
+        }
+        private void LogChange(Ordbog entry, string changeDescription)
+        {
+            var changeRecord = new ChangeRecord
+            {
+                ChangedAt = DateTime.UtcNow,
+                ChangedBy = entry.ModifiedBy,  // Who made the change (user/device)
+                ChangeDescription = changeDescription
+            };
+
+            // Add the change record to the ChangeHistory of the entry
+            entry.ChangeHistory.Add(changeRecord);
         }
     }
 }

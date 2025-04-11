@@ -1,22 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;  // Make sure to include the namespace for Ordbog
 
 namespace TaekwondoApp.Shared.Services
 {
     public interface ISQLiteService
     {
-        Task<int> AddEntryAsync(OrdbogDTO entry);
-        Task<OrdbogDTO[]> GetAllEntriesAsync();
-        Task<int> DeleteEntryAsync(Guid OrdbogId); // Mark as deleted instead of actually deleting from DB
-        Task<int> UpdateEntryAsync(OrdbogDTO entry);
-        Task<OrdbogDTO> GetEntryByIdAsync(Guid OrdbogId);
+        Task<int> AddEntryAsync(Ordbog entry);  // Use Ordbog instead of OrdbogDTO
+        Task<Ordbog[]> GetAllEntriesAsync();    // Use Ordbog[] instead of OrdbogDTO[]
+        Task<int> DeleteEntryAsync(Guid OrdbogId);  // Mark as deleted instead of physically deleting
+        Task<int> UpdateEntryAsync(Ordbog entry);  // Use Ordbog instead of OrdbogDTO
+        Task<Ordbog> GetEntryByIdAsync(Guid OrdbogId);  // Return Ordbog instead of OrdbogDTO
         void InitializeDatabase();
-        Task<int> UpdateEntryWithServerIdAsync(OrdbogDTO entry);
+        Task<int> UpdateEntryWithServerIdAsync(Ordbog entry);  // Use Ordbog instead of OrdbogDTO
 
         // Get entries that need to be synced (Pending or Failed)
-        Task<OrdbogDTO[]> GetUnsyncedEntriesAsync(); // instead of List<OrdbogDTO>
+        Task<Ordbog[]> GetUnsyncedEntriesAsync();  // Use Ordbog[] instead of OrdbogDTO[]
 
         // Mark an entry as synced after pushing to the server
         Task<int> MarkAsSyncedAsync(Guid OrdbogId);
@@ -25,6 +24,6 @@ namespace TaekwondoApp.Shared.Services
         Task MarkAsFailedAsync(Guid OrdbogId);
 
         // Mark an entry as deleted (logical deletion)
-        Task<int> MarkAsDeletedAsync(Guid OrdbogId); // New method to mark entry as deleted
+        Task<int> MarkAsDeletedAsync(Guid OrdbogId);  // New method to mark entry as deleted
     }
 }

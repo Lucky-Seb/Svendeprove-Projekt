@@ -2,13 +2,23 @@
 {
     public abstract class SyncableEntity
     {
-        public Guid Id { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime LastModified { get; set; }
-        public ConflictResolutionStatus ConflictStatus { get; set; } = ConflictResolutionStatus.NoConflict; // Default to NoConflict if not resolved
+        public ConflictResolutionStatus ConflictStatus { get; set; } = ConflictResolutionStatus.NoConflict;  // Default to NoConflict if not resolved
         public SyncStatus Status { get; set; } = SyncStatus.Pending;  // Default to Pending if it's not synced yet
-    }
 
+        // Versioning fields for conflict detection
+        public int LastSyncedVersion { get; set; } = 0;  // Increment on each sync
+        public string ETag { get; set; }  // Optional: String-based versioning (can be used with ETag header)
+
+        // Tracking who or what modified the entity (user or device)
+        public string ModifiedBy { get; set; }  // UserID or DeviceID
+
+        // List of changes made to this entity (audit trail)
+        public List<ChangeRecord> ChangeHistory { get; set; } = new List<ChangeRecord>();
+
+        public bool IsDeleted { get; set; } = false;  // Logical deletion flag
+    }
     public enum ConflictResolutionStatus
     {
         NoConflict,
@@ -22,5 +32,11 @@
         Synced,
         Failed,
         Deleted
+    }
+    public class ChangeRecord
+    {
+        public DateTime ChangedAt { get; set; }
+        public string ChangedBy { get; set; }  // User or device ID making the change
+        public string ChangeDescription { get; set; }  // Description of what changed
     }
 }

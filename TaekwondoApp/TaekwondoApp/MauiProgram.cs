@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using TaekwondoApp.Services;
 using TaekwondoApp.Shared.Services;
+using TaekwondoApp.Shared.Mapping;
 using Microsoft.Maui.Storage;
 using System.IO;
 using Microsoft.AspNetCore.Components;
@@ -25,7 +26,7 @@ namespace TaekwondoApp
             // Register OrdbogSyncService and pass IHttpClientFactory to it
             builder.Services.AddSingleton<IGenericSyncService, GenericSyncService>();
             builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
-
+            builder.Services.AddAutoMapper(typeof(OrdbogMap)); // Register the profile
             // Configure SQLite service with the database path
             string dbPath = Path.Combine(FileSystem.AppDataDirectory, "ordbog.db");
 
