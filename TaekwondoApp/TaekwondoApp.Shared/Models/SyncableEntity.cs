@@ -1,4 +1,9 @@
-﻿namespace TaekwondoApp.Shared.Models
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using SQLite;
+
+namespace TaekwondoApp.Shared.Models
 {
     public abstract class SyncableEntity
     {
@@ -15,10 +20,19 @@
         public string ModifiedBy { get; set; }  // UserID or DeviceID
 
         // List of changes made to this entity (audit trail)
+        [Ignore]  // SQLite will ignore this property when working with the database
         public List<ChangeRecord> ChangeHistory { get; set; } = new List<ChangeRecord>();
+
+        // Property to store serialized ChangeHistory as a JSON string
+        public string ChangeHistoryJson
+        {
+            get => JsonConvert.SerializeObject(ChangeHistory);  // Serialize List<ChangeRecord> to JSON
+            set => ChangeHistory = JsonConvert.DeserializeObject<List<ChangeRecord>>(value);  // Deserialize JSON to List<ChangeRecord>
+        }
 
         public bool IsDeleted { get; set; } = false;  // Logical deletion flag
     }
+
     public enum ConflictResolutionStatus
     {
         NoConflict,
@@ -26,6 +40,7 @@
         LocalWins,
         ManualResolve
     }
+
     public enum SyncStatus
     {
         Pending,
@@ -33,6 +48,7 @@
         Failed,
         Deleted
     }
+
     public class ChangeRecord
     {
         public DateTime ChangedAt { get; set; }
