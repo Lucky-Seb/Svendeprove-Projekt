@@ -1,4 +1,4 @@
-﻿using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,8 +7,8 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
     public interface IBrugerØvelseRepository
     {
         Task<List<BrugerØvelse>> GetAllBrugerØvelserAsync();
-        Task<BrugerØvelse?> GetBrugerØvelseByIdAsync(int brugerId, int øvelseId);
+        Task<BrugerØvelse?> GetBrugerØvelseByIdAsync(Guid brugerId, Guid øvelseId);
         Task<BrugerØvelse> CreateBrugerØvelseAsync(BrugerØvelse brugerØvelse);
-        Task<bool> DeleteBrugerØvelseAsync(int brugerId, int øvelseId);
+        Task<bool> DeleteBrugerØvelseAsync(Guid brugerId, Guid øvelseId);
     }
 }

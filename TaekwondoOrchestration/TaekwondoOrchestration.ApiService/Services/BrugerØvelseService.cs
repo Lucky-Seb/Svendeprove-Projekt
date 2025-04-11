@@ -1,5 +1,5 @@
-﻿using TaekwondoOrchestration.ApiService.DTO;
-using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +27,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             }).ToList();
         }
 
-        public async Task<BrugerØvelseDTO?> GetBrugerØvelseByIdAsync(int brugerId, int øvelseId)
+        public async Task<BrugerØvelseDTO?> GetBrugerØvelseByIdAsync(Guid brugerId, Guid øvelseId)
         {
             var brugerØvelse = await _brugerØvelseRepository.GetBrugerØvelseByIdAsync(brugerId, øvelseId);
             if (brugerØvelse == null)
@@ -46,8 +46,8 @@ namespace TaekwondoOrchestration.ApiService.Services
             if (brugerØvelseDto == null) return null;
 
             // Validate required fields
-            if (brugerØvelseDto.BrugerID <= 0) return null;  // BrugerID must be a positive integer
-            if (brugerØvelseDto.ØvelseID <= 0) return null;  // ØvelseID must be a positive integer
+            //if (brugerØvelseDto.BrugerID <= 0) return null;  // BrugerID must be a positive integer
+            //if (brugerØvelseDto.ØvelseID <= 0) return null;  // ØvelseID must be a positive integer
 
             // Create new BrugerØvelse entity
             var newBrugerØvelse = new BrugerØvelse
@@ -68,7 +68,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             };
         }
 
-        public async Task<bool> DeleteBrugerØvelseAsync(int brugerId, int øvelseId)
+        public async Task<bool> DeleteBrugerØvelseAsync(Guid brugerId, Guid øvelseId)
         {
             return await _brugerØvelseRepository.DeleteBrugerØvelseAsync(brugerId, øvelseId);
         }

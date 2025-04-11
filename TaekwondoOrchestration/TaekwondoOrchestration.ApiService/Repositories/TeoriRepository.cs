@@ -1,5 +1,5 @@
 ﻿using TaekwondoOrchestration.ApiService.Data;
-using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoApp.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,13 +25,13 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         }
 
         // Get a Teori by its ID
-        public async Task<Teori?> GetTeoriByIdAsync(int id)
+        public async Task<Teori?> GetTeoriByIdAsync(Guid teoriId)
         {
-            return await _context.Teorier.FindAsync(id);
+            return await _context.Teorier.FindAsync(teoriId);
         }
 
         // Get all Teori records by Pensum ID
-        public async Task<List<Teori>> GetTeoriByPensumAsync(int pensumId)
+        public async Task<List<Teori>> GetTeoriByPensumAsync(Guid pensumId)
         {
             return await _context.Teorier
                                  .Where(t => t.PensumID == pensumId)
@@ -53,9 +53,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         }
 
         // Delete a Teori record by its ID
-        public async Task<bool> DeleteTeoriAsync(int id)
+        public async Task<bool> DeleteTeoriAsync(Guid teoriId)
         {
-            var teori = await _context.Teorier.FindAsync(id);
+            var teori = await _context.Teorier.FindAsync(teoriId);
             if (teori == null) return false;
 
             _context.Teorier.Remove(teori);

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaekwondoOrchestration.ApiService.Services;
-using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoApp.Shared.DTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -27,7 +27,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // GET: api/quiz/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<QuizDTO>> GetQuiz(int id)
+        public async Task<ActionResult<QuizDTO>> GetQuiz(Guid id)
         {
             var quiz = await _quizService.GetQuizByIdAsync(id);
             if (quiz == null)
@@ -45,7 +45,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // PUT: api/quiz/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutQuiz(int id, QuizDTO quizDto)
+        public async Task<IActionResult> PutQuiz(Guid id, QuizDTO quizDto)
         {
             var success = await _quizService.UpdateQuizAsync(id, quizDto);
             if (!success)
@@ -55,7 +55,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // DELETE: api/quiz/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteQuiz(int id)
+        public async Task<IActionResult> DeleteQuiz(Guid id)
         {
             var success = await _quizService.DeleteQuizAsync(id);
             if (!success)
@@ -63,7 +63,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return NoContent();
         }
         [HttpPut("spørgsmål/{id}")]
-        public async Task<IActionResult> PutProgramPlanwithtræning(int id, QuizDTO quizDTO)
+        public async Task<IActionResult> PutProgramPlanwithtræning(Guid id, QuizDTO quizDTO)
         {
             var updatedProgramPlan = await _quizService.UpdateQuizWithBrugerAndKlubAsync(id, quizDTO);
             if (updatedProgramPlan == null)
@@ -75,7 +75,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Get all quizzes by bruger (user)
         [HttpGet("by-bruger/{brugerId}")]
-        public async Task<IActionResult> GetAllByBrugerAsync(int brugerId)
+        public async Task<IActionResult> GetAllByBrugerAsync(Guid brugerId)
         {
             var quizzes = await _quizService.GetAllQuizzesByBrugerAsync(brugerId);
             if (quizzes == null || !quizzes.Any())
@@ -87,7 +87,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Get all quizzes by klub (club)
         [HttpGet("by-klub/{klubId}")]
-        public async Task<IActionResult> GetAllByKlubAsync(int klubId)
+        public async Task<IActionResult> GetAllByKlubAsync(Guid klubId)
         {
             var quizzes = await _quizService.GetAllQuizzesByKlubAsync(klubId);
             if (quizzes == null || !quizzes.Any())
@@ -99,7 +99,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Get all quizzes by pensum (curriculum)
         [HttpGet("by-pensum/{pensumId}")]
-        public async Task<IActionResult> GetAllByPensumAsync(int pensumId)
+        public async Task<IActionResult> GetAllByPensumAsync(Guid pensumId)
         {
             var quizzes = await _quizService.GetAllQuizzesByPensumAsync(pensumId);
             if (quizzes == null || !quizzes.Any())

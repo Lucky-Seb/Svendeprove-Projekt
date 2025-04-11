@@ -1,17 +1,21 @@
-﻿using TaekwondoOrchestration.ApiService.DTO;
-using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using AutoMapper;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
     public class OrdbogService
     {
         private readonly IOrdbogRepository _ordbogRepository;
+        private readonly IMapper _mapper;  // Declare IMapper
 
-        public OrdbogService(IOrdbogRepository ordbogRepository)
+        // Correct the constructor to inject IMapper
+        public OrdbogService(IOrdbogRepository ordbogRepository, IMapper mapper)
         {
             _ordbogRepository = ordbogRepository;
+            _mapper = mapper;  // Initialize IMapper via the constructor
         }
 
         public async Task<List<OrdbogDTO>> GetAllOrdbogAsync()
@@ -19,7 +23,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             var ordboger = await _ordbogRepository.GetAllOrdbogAsync();
             return ordboger.Select(o => new OrdbogDTO
             {
-                Id = o.Id,
+                OrdbogId = o.OrdbogId,
                 DanskOrd = o.DanskOrd,
                 KoranskOrd = o.KoranskOrd,
                 Beskrivelse = o.Beskrivelse,
@@ -29,7 +33,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             }).ToList();
         }
 
-        public async Task<OrdbogDTO?> GetOrdbogByIdAsync(int id)
+        public async Task<OrdbogDTO?> GetOrdbogByIdAsync(Guid id)
         {
             var ordbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
             if (ordbog == null)
@@ -37,7 +41,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return new OrdbogDTO
             {
-                Id = ordbog.Id,
+                OrdbogId = ordbog.OrdbogId,
                 DanskOrd = ordbog.DanskOrd,
                 KoranskOrd = ordbog.KoranskOrd,
                 Beskrivelse = ordbog.Beskrivelse,
@@ -49,42 +53,31 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<OrdbogDTO> CreateOrdbogAsync(OrdbogDTO ordbogDto)
         {
-            var newOrdbog = new Ordbog
-            {
-                DanskOrd = ordbogDto.DanskOrd,
-                KoranskOrd = ordbogDto.KoranskOrd,
-                Beskrivelse = ordbogDto.Beskrivelse,
-                BilledeLink = ordbogDto.BilledeLink,
-                LydLink = ordbogDto.LydLink,
-                VideoLink = ordbogDto.VideoLink
-            };
+            // Map DTO to Ordbog entity using AutoMapper
+            var newOrdbog = _mapper.Map<Ordbog>(ordbogDto);
 
+            // Manually set ETag for new entry
+            newOrdbog.ETag = ordbogDto.DanskOrd + ordbogDto.KoranskOrd;
+
+            // Create the Ordbog in the repository
             var createdOrdbog = await _ordbogRepository.CreateOrdbogAsync(newOrdbog);
 
-            return new OrdbogDTO
-            {
-                Id = createdOrdbog.Id,
-                DanskOrd = createdOrdbog.DanskOrd,
-                KoranskOrd = createdOrdbog.KoranskOrd,
-                Beskrivelse = createdOrdbog.Beskrivelse,
-                BilledeLink = createdOrdbog.BilledeLink,
-                LydLink = createdOrdbog.LydLink,
-                VideoLink = createdOrdbog.VideoLink
-            };
+            // Return the DTO back with the mapped values
+            return _mapper.Map<OrdbogDTO>(createdOrdbog);
         }
 
-        public async Task<bool> UpdateOrdbogAsync(int id, OrdbogDTO ordbogDto)
-        {
-            if (id <= 0 || ordbogDto == null || id != ordbogDto.Id) return false;
 
+        public async Task<bool> UpdateOrdbogAsync(Guid id, OrdbogDTO ordbogDto)
+        {
             // Validate required fields
-            if (string.IsNullOrEmpty(ordbogDto.DanskOrd)) return false;  // Ord cannot be null or empty
-            if (string.IsNullOrEmpty(ordbogDto.KoranskOrd)) return false;  // Ord cannot be null or empty
-            if (string.IsNullOrEmpty(ordbogDto.Beskrivelse)) return false;  // Beskrivelse cannot be null or empty
+            if (string.IsNullOrEmpty(ordbogDto.DanskOrd)) return false;
+            if (string.IsNullOrEmpty(ordbogDto.KoranskOrd)) return false;
+            if (string.IsNullOrEmpty(ordbogDto.Beskrivelse)) return false;
 
             var existingOrdbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
             if (existingOrdbog == null) return false;
 
+            // Update fields
             existingOrdbog.DanskOrd = ordbogDto.DanskOrd;
             existingOrdbog.KoranskOrd = ordbogDto.KoranskOrd;
             existingOrdbog.Beskrivelse = ordbogDto.Beskrivelse;
@@ -92,10 +85,23 @@ namespace TaekwondoOrchestration.ApiService.Services
             existingOrdbog.LydLink = ordbogDto.LydLink;
             existingOrdbog.VideoLink = ordbogDto.VideoLink;
 
+            // Regenerate ETag for updated entry
+            existingOrdbog.ETag = GenerateETag(existingOrdbog);
+
+            // Update LastModified field
+            existingOrdbog.LastModified = DateTime.UtcNow;
+
+            // You can set sync status based on your sync logic (e.g., mark it as 'Pending' until it's successfully synced)
+            existingOrdbog.Status = SyncStatus.Pending;
+
+            // Update conflict status as per the sync logic
+            existingOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
+
             return await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
         }
 
-        public async Task<bool> DeleteOrdbogAsync(int id)
+
+        public async Task<bool> DeleteOrdbogAsync(Guid id)
         {
             return await _ordbogRepository.DeleteOrdbogAsync(id);
         }
@@ -109,7 +115,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return new OrdbogDTO
             {
-                Id = ordbog.Id,
+                OrdbogId = ordbog.OrdbogId,
                 DanskOrd = ordbog.DanskOrd,
                 KoranskOrd = ordbog.KoranskOrd,
                 Beskrivelse = ordbog.Beskrivelse,
@@ -128,7 +134,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return new OrdbogDTO
             {
-                Id = ordbog.Id,
+                OrdbogId = ordbog.OrdbogId,
                 DanskOrd = ordbog.DanskOrd,
                 KoranskOrd = ordbog.KoranskOrd,
                 Beskrivelse = ordbog.Beskrivelse,
@@ -136,6 +142,10 @@ namespace TaekwondoOrchestration.ApiService.Services
                 LydLink = ordbog.LydLink,
                 VideoLink = ordbog.VideoLink
             };
+        }
+        private string GenerateETag(Ordbog entry)
+        {
+            return $"{entry.DanskOrd}-{entry.KoranskOrd}";
         }
     }
 }

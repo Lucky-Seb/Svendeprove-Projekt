@@ -4,6 +4,7 @@ using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoOrchestration.ApiService.Services;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoApp.Shared.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,7 @@ foreach (var serviceType in serviceTypes)
 {
     builder.Services.AddScoped(serviceType);
 }
-
+builder.Services.AddAutoMapper(typeof(OrdbogMap));
 // Register repositories using reflection
 var repositoryTypes = typeof(IBrugerKlubRepository).Assembly
     .GetTypes()

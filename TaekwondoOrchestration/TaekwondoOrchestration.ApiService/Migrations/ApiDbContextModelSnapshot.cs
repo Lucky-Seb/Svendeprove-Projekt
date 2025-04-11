@@ -17,18 +17,17 @@ namespace TaekwondoOrchestration.ApiService.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Bruger", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Bruger", b =>
                 {
-                    b.Property<int>("BrugerID")
+                    b.Property<Guid>("BrugerID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BrugerID"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -69,25 +68,73 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            BrugerID = 1,
-                            Address = "Nørrebrogade 42",
-                            Brugerkode = "123456",
-                            Brugernavn = "emma123",
+                            BrugerID = new Guid("8bb14e0c-04a3-4679-aa0b-48b9978eb220"),
+                            Address = "123 Taekwondo St.",
+                            Brugerkode = "hashed_password",
+                            Brugernavn = "johndoe123",
+                            Bæltegrad = "Hvidt Bælte",
+                            Efternavn = "Doe",
+                            Email = "john.doe@example.com",
+                            Fornavn = "John",
+                            Role = "Bruger"
+                        },
+                        new
+                        {
+                            BrugerID = new Guid("446a5a83-a0bd-4633-b28f-a6526245eed7"),
+                            Address = "456 Taekwondo St.",
+                            Brugerkode = "hashed_password2",
+                            Brugernavn = "janedoe456",
                             Bæltegrad = "Gult Bælte",
-                            Efternavn = "Jensen",
-                            Email = "emma@dojo.dk",
-                            Fornavn = "Emma",
+                            Efternavn = "Doe",
+                            Email = "jane.doe@example.com",
+                            Fornavn = "Jane",
+                            Role = "Bruger"
+                        },
+                        new
+                        {
+                            BrugerID = new Guid("98e78576-6bc4-408d-b4af-2ad9051f905b"),
+                            Address = "789 Taekwondo St.",
+                            Brugerkode = "hashed_password3",
+                            Brugernavn = "marksmith789",
+                            Bæltegrad = "Blåt Bælte",
+                            Efternavn = "Smith",
+                            Email = "mark.smith@example.com",
+                            Fornavn = "Mark",
+                            Role = "Bruger"
+                        },
+                        new
+                        {
+                            BrugerID = new Guid("e4ef6612-011c-453a-894f-858dff3937d4"),
+                            Address = "321 Taekwondo St.",
+                            Brugerkode = "hashed_password4",
+                            Brugernavn = "lucyjones321",
+                            Bæltegrad = "Grønt Bælte",
+                            Efternavn = "Jones",
+                            Email = "lucy.jones@example.com",
+                            Fornavn = "Lucy",
+                            Role = "Bruger"
+                        },
+                        new
+                        {
+                            BrugerID = new Guid("4153884f-a1ce-44d0-970b-8898a11fdb81"),
+                            Address = "654 Taekwondo St.",
+                            Brugerkode = "hashed_password5",
+                            Brugernavn = "robertbrown654",
+                            Bæltegrad = "Brunt Bælte",
+                            Efternavn = "Brown",
+                            Email = "robert.brown@example.com",
+                            Fornavn = "Robert",
                             Role = "Bruger"
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerKlub", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.BrugerKlub", b =>
                 {
-                    b.Property<int>("BrugerID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BrugerID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("KlubID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("KlubID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("BrugerID", "KlubID");
 
@@ -98,18 +145,23 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            BrugerID = 1,
-                            KlubID = 1
+                            BrugerID = new Guid("8bb14e0c-04a3-4679-aa0b-48b9978eb220"),
+                            KlubID = new Guid("afa9ebbf-49bb-4737-9ab0-7d9d3153c993")
+                        },
+                        new
+                        {
+                            BrugerID = new Guid("446a5a83-a0bd-4633-b28f-a6526245eed7"),
+                            KlubID = new Guid("fed25ea9-7695-4945-a109-2900a24ff1ce")
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerProgram", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.BrugerProgram", b =>
                 {
-                    b.Property<int>("BrugerID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BrugerID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ProgramID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ProgramID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("BrugerID", "ProgramID");
 
@@ -120,18 +172,18 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            BrugerID = 1,
-                            ProgramID = 1
+                            BrugerID = new Guid("8bb14e0c-04a3-4679-aa0b-48b9978eb220"),
+                            ProgramID = new Guid("3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47")
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerQuiz", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.BrugerQuiz", b =>
                 {
-                    b.Property<int>("BrugerID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BrugerID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("QuizID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("QuizID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("BrugerID", "QuizID");
 
@@ -142,18 +194,18 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            BrugerID = 1,
-                            QuizID = 1
+                            BrugerID = new Guid("8bb14e0c-04a3-4679-aa0b-48b9978eb220"),
+                            QuizID = new Guid("f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2")
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerØvelse", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.BrugerØvelse", b =>
                 {
-                    b.Property<int>("BrugerID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("BrugerID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ØvelseID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ØvelseID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("BrugerID", "ØvelseID");
 
@@ -164,18 +216,22 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            BrugerID = 1,
-                            ØvelseID = 1
+                            BrugerID = new Guid("8bb14e0c-04a3-4679-aa0b-48b9978eb220"),
+                            ØvelseID = new Guid("1e86d0c9-1d34-4b46-a939-1326f7f9df42")
+                        },
+                        new
+                        {
+                            BrugerID = new Guid("446a5a83-a0bd-4633-b28f-a6526245eed7"),
+                            ØvelseID = new Guid("dcbcc571-4377-4fcc-91a8-fb83f07165f6")
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Klub", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Klub", b =>
                 {
-                    b.Property<int>("KlubID")
+                    b.Property<Guid>("KlubID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("KlubID"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("KlubNavn")
                         .IsRequired()
@@ -188,23 +244,38 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            KlubID = 1,
-                            KlubNavn = "København Taekwondo Klub"
+                            KlubID = new Guid("afa9ebbf-49bb-4737-9ab0-7d9d3153c993"),
+                            KlubNavn = "Taekwondo Club A"
                         },
                         new
                         {
-                            KlubID = 2,
-                            KlubNavn = "Aarhus Kampkunstcenter"
+                            KlubID = new Guid("fed25ea9-7695-4945-a109-2900a24ff1ce"),
+                            KlubNavn = "Taekwondo Club B"
+                        },
+                        new
+                        {
+                            KlubID = new Guid("6b25c814-a97b-41dc-9597-0864f08cb779"),
+                            KlubNavn = "Taekwondo Club C"
+                        },
+                        new
+                        {
+                            KlubID = new Guid("2bed2d1b-b96e-427a-8451-3c43ea48ea5c"),
+                            KlubNavn = "Taekwondo Club D"
+                        },
+                        new
+                        {
+                            KlubID = new Guid("9c3e5c16-5bb2-4076-a871-b2414bd782c2"),
+                            KlubNavn = "Taekwondo Club E"
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.KlubProgram", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.KlubProgram", b =>
                 {
-                    b.Property<int>("KlubID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("KlubID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ProgramID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ProgramID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("KlubID", "ProgramID");
 
@@ -215,18 +286,23 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            KlubID = 1,
-                            ProgramID = 1
+                            KlubID = new Guid("afa9ebbf-49bb-4737-9ab0-7d9d3153c993"),
+                            ProgramID = new Guid("11741c42-315e-42fe-a0a8-337afd6d511f")
+                        },
+                        new
+                        {
+                            KlubID = new Guid("fed25ea9-7695-4945-a109-2900a24ff1ce"),
+                            ProgramID = new Guid("8c98eb00-1efb-4361-99b7-974c1aed66e8")
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.KlubQuiz", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.KlubQuiz", b =>
                 {
-                    b.Property<int>("KlubID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("KlubID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("QuizID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("QuizID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("KlubID", "QuizID");
 
@@ -237,18 +313,23 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            KlubID = 1,
-                            QuizID = 1
+                            KlubID = new Guid("afa9ebbf-49bb-4737-9ab0-7d9d3153c993"),
+                            QuizID = new Guid("69cde397-c39c-4172-8d95-56c9a5cdc099")
+                        },
+                        new
+                        {
+                            KlubID = new Guid("fed25ea9-7695-4945-a109-2900a24ff1ce"),
+                            QuizID = new Guid("3b89bd9d-dd30-4ea4-8563-984dbfccb644")
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.KlubØvelse", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.KlubØvelse", b =>
                 {
-                    b.Property<int>("KlubID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("KlubID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ØvelseID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ØvelseID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("KlubID", "ØvelseID");
 
@@ -259,18 +340,22 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            KlubID = 1,
-                            ØvelseID = 1
+                            KlubID = new Guid("afa9ebbf-49bb-4737-9ab0-7d9d3153c993"),
+                            ØvelseID = new Guid("0335fde9-e05e-4a72-b08c-0c076803b395")
+                        },
+                        new
+                        {
+                            KlubID = new Guid("fed25ea9-7695-4945-a109-2900a24ff1ce"),
+                            ØvelseID = new Guid("1ab7a999-d644-418a-b3ba-c3cd27a5dfd6")
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Ordbog", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Ordbog", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("OrdbogId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("Beskrivelse")
                         .IsRequired()
@@ -280,46 +365,265 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ChangeHistoryJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ConflictStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("DanskOrd")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ETag")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("KoranskOrd")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("LastModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LastSyncedVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("LydLink")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("VideoLink")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("OrdbogId");
 
                     b.ToTable("Ordboger");
 
                     b.HasData(
                         new
                         {
-                            Id = 1,
-                            Beskrivelse = "En typisk hilsen i kampkunst",
-                            BilledeLink = "",
-                            DanskOrd = "Hilsen",
-                            KoranskOrd = "Annyeonghaseyo",
-                            LydLink = "",
-                            VideoLink = ""
+                            OrdbogId = new Guid("2d189ccb-a481-4ea2-8bf3-8014d3fe5825"),
+                            Beskrivelse = "A Korean martial art focusing on high kicks and hand techniques.",
+                            BilledeLink = "taekwondo_image_url",
+                            ChangeHistoryJson = "[]",
+                            ConflictStatus = 0,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DanskOrd = "Taekwondo",
+                            ETag = "12345",
+                            IsDeleted = false,
+                            KoranskOrd = "تايكوندو",
+                            LastModified = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastSyncedVersion = 0,
+                            LydLink = "taekwondo_sound_url",
+                            ModifiedBy = "Admin",
+                            Status = 0,
+                            VideoLink = "taekwondo_video_url"
+                        },
+                        new
+                        {
+                            OrdbogId = new Guid("3a2ba1b6-34c7-4be1-af4f-13bd66db3079"),
+                            Beskrivelse = "A kick in Taekwondo, used for both offense and defense.",
+                            BilledeLink = "kick_image_url",
+                            ChangeHistoryJson = "[]",
+                            ConflictStatus = 0,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DanskOrd = "Kik",
+                            ETag = "12346",
+                            IsDeleted = false,
+                            KoranskOrd = "킥",
+                            LastModified = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastSyncedVersion = 0,
+                            LydLink = "kick_sound_url",
+                            ModifiedBy = "Admin",
+                            Status = 0,
+                            VideoLink = "kick_video_url"
+                        },
+                        new
+                        {
+                            OrdbogId = new Guid("3e459839-3c17-43a2-b141-6140eeae07d9"),
+                            Beskrivelse = "A fundamental position in Taekwondo used for balance and power.",
+                            BilledeLink = "stance_image_url",
+                            ChangeHistoryJson = "[]",
+                            ConflictStatus = 0,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DanskOrd = "Stance",
+                            ETag = "12347",
+                            IsDeleted = false,
+                            KoranskOrd = "자세",
+                            LastModified = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastSyncedVersion = 0,
+                            LydLink = "stance_sound_url",
+                            ModifiedBy = "Admin",
+                            Status = 0,
+                            VideoLink = "stance_video_url"
+                        },
+                        new
+                        {
+                            OrdbogId = new Guid("4bae52b7-970b-41ce-938b-690a44c29795"),
+                            Beskrivelse = "A series of movements and techniques in a specific sequence.",
+                            BilledeLink = "form_image_url",
+                            ChangeHistoryJson = "[]",
+                            ConflictStatus = 0,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DanskOrd = "Form",
+                            ETag = "12348",
+                            IsDeleted = false,
+                            KoranskOrd = "품세",
+                            LastModified = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastSyncedVersion = 0,
+                            LydLink = "form_sound_url",
+                            ModifiedBy = "Admin",
+                            Status = 0,
+                            VideoLink = "form_video_url"
+                        },
+                        new
+                        {
+                            OrdbogId = new Guid("73d3dea1-d21b-4f45-bb0a-2eaca4c7aa04"),
+                            Beskrivelse = "A highly skilled Taekwondo practitioner and instructor.",
+                            BilledeLink = "master_image_url",
+                            ChangeHistoryJson = "[]",
+                            ConflictStatus = 0,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DanskOrd = "Master",
+                            ETag = "12349",
+                            IsDeleted = false,
+                            KoranskOrd = "사범",
+                            LastModified = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastSyncedVersion = 0,
+                            LydLink = "master_sound_url",
+                            ModifiedBy = "Admin",
+                            Status = 0,
+                            VideoLink = "master_video_url"
+                        },
+                        new
+                        {
+                            OrdbogId = new Guid("7c83305d-527c-4eb7-bb39-28280ad42a2d"),
+                            Beskrivelse = "A practice of fighting against an opponent in Taekwondo.",
+                            BilledeLink = "sparring_image_url",
+                            ChangeHistoryJson = "[]",
+                            ConflictStatus = 0,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DanskOrd = "Sparring",
+                            ETag = "12350",
+                            IsDeleted = false,
+                            KoranskOrd = "겨루기",
+                            LastModified = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastSyncedVersion = 0,
+                            LydLink = "sparring_sound_url",
+                            ModifiedBy = "Admin",
+                            Status = 0,
+                            VideoLink = "sparring_video_url"
+                        },
+                        new
+                        {
+                            OrdbogId = new Guid("965a856f-eb8f-4910-a6a3-661ff0c4a78a"),
+                            Beskrivelse = "A board used in training for practicing kicks.",
+                            BilledeLink = "kickboard_image_url",
+                            ChangeHistoryJson = "[]",
+                            ConflictStatus = 0,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DanskOrd = "Kickboard",
+                            ETag = "12351",
+                            IsDeleted = false,
+                            KoranskOrd = "발차기보드",
+                            LastModified = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastSyncedVersion = 0,
+                            LydLink = "kickboard_sound_url",
+                            ModifiedBy = "Admin",
+                            Status = 0,
+                            VideoLink = "kickboard_video_url"
+                        },
+                        new
+                        {
+                            OrdbogId = new Guid("10efa19d-6353-4373-b455-414131376826"),
+                            Beskrivelse = "The act of breaking boards or other objects to test strength and technique.",
+                            BilledeLink = "breaking_image_url",
+                            ChangeHistoryJson = "[]",
+                            ConflictStatus = 0,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DanskOrd = "Breaking",
+                            ETag = "12352",
+                            IsDeleted = false,
+                            KoranskOrd = "격파",
+                            LastModified = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastSyncedVersion = 0,
+                            LydLink = "breaking_sound_url",
+                            ModifiedBy = "Admin",
+                            Status = 0,
+                            VideoLink = "breaking_video_url"
+                        },
+                        new
+                        {
+                            OrdbogId = new Guid("0fd1ec97-6cee-4e0f-a032-0a3f3020d5be"),
+                            Beskrivelse = "A symbol of rank in Taekwondo, representing the practitioner's level.",
+                            BilledeLink = "belt_image_url",
+                            ChangeHistoryJson = "[]",
+                            ConflictStatus = 0,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DanskOrd = "Belt",
+                            ETag = "12353",
+                            IsDeleted = false,
+                            KoranskOrd = "띠",
+                            LastModified = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastSyncedVersion = 0,
+                            LydLink = "belt_sound_url",
+                            ModifiedBy = "Admin",
+                            Status = 0,
+                            VideoLink = "belt_video_url"
+                        },
+                        new
+                        {
+                            OrdbogId = new Guid("a61b1f2a-3236-4af5-90aa-3483b96a5666"),
+                            Beskrivelse = "A command to stand at attention, often used during training or ceremonies.",
+                            BilledeLink = "charyeot_image_url",
+                            ChangeHistoryJson = "[]",
+                            ConflictStatus = 0,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DanskOrd = "Charyeot",
+                            ETag = "12354",
+                            IsDeleted = false,
+                            KoranskOrd = "차렷",
+                            LastModified = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastSyncedVersion = 0,
+                            LydLink = "charyeot_sound_url",
+                            ModifiedBy = "Admin",
+                            Status = 0,
+                            VideoLink = "charyeot_video_url"
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Pensum", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Pensum", b =>
                 {
-                    b.Property<int>("PensumID")
+                    b.Property<Guid>("PensumID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PensumID"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("PensumGrad")
                         .IsRequired()
@@ -332,23 +636,37 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            PensumID = 1,
-                            PensumGrad = "Hvidt Bælte"
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            PensumGrad = "Hvid"
                         },
                         new
                         {
-                            PensumID = 2,
-                            PensumGrad = "Gult Bælte"
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            PensumGrad = "Gult"
+                        },
+                        new
+                        {
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
+                            PensumGrad = "Blåt"
+                        },
+                        new
+                        {
+                            PensumID = new Guid("9c3cabef-0731-4243-a5e8-d837c77ee523"),
+                            PensumGrad = "Rød"
+                        },
+                        new
+                        {
+                            PensumID = new Guid("362385ac-7c43-41b1-989c-b8d9ba6fce67"),
+                            PensumGrad = "Sort"
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.ProgramPlan", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.ProgramPlan", b =>
                 {
-                    b.Property<int>("ProgramID")
+                    b.Property<Guid>("ProgramID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProgramID"));
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("Beskrivelse")
                         .IsRequired()
@@ -371,24 +689,39 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            ProgramID = 1,
-                            Beskrivelse = "2 ugers intro",
-                            Længde = 14,
+                            ProgramID = new Guid("11741c42-315e-42fe-a0a8-337afd6d511f"),
+                            Beskrivelse = "A basic program to get started with Taekwondo.",
+                            Længde = 4,
                             OprettelseDato = new DateTime(2025, 4, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ProgramNavn = "Intro Program"
+                            ProgramNavn = "Basic Taekwondo Program"
+                        },
+                        new
+                        {
+                            ProgramID = new Guid("8c98eb00-1efb-4361-99b7-974c1aed66e8"),
+                            Beskrivelse = "An intermediate program to enhance your Taekwondo skills.",
+                            Længde = 6,
+                            OprettelseDato = new DateTime(2025, 4, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ProgramNavn = "Intermediate Taekwondo Program"
+                        },
+                        new
+                        {
+                            ProgramID = new Guid("3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47"),
+                            Beskrivelse = "An advanced program for mastering Taekwondo techniques.",
+                            Længde = 8,
+                            OprettelseDato = new DateTime(2025, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ProgramNavn = "Advanced Taekwondo Program"
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Quiz", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Quiz", b =>
                 {
-                    b.Property<int>("QuizID")
+                    b.Property<Guid>("QuizID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuizID"));
-
-                    b.Property<int>("PensumID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("PensumID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("QuizBeskrivelse")
                         .IsRequired()
@@ -407,23 +740,36 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            QuizID = 1,
-                            PensumID = 1,
-                            QuizBeskrivelse = "Spørgsmål for begyndere",
-                            QuizNavn = "Begynder Quiz"
+                            QuizID = new Guid("69cde397-c39c-4172-8d95-56c9a5cdc099"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            QuizBeskrivelse = "A quiz to test your knowledge of basic Taekwondo concepts.",
+                            QuizNavn = "Taekwondo Basics Quiz"
+                        },
+                        new
+                        {
+                            QuizID = new Guid("3b89bd9d-dd30-4ea4-8563-984dbfccb644"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            QuizBeskrivelse = "Test your knowledge of the history and origins of Taekwondo.",
+                            QuizNavn = "Taekwondo History Quiz"
+                        },
+                        new
+                        {
+                            QuizID = new Guid("f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
+                            QuizBeskrivelse = "A quiz to assess your understanding of various Taekwondo techniques and movements.",
+                            QuizNavn = "Taekwondo Techniques Quiz"
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Spørgsmål", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Spørgsmål", b =>
                 {
-                    b.Property<int>("SpørgsmålID")
+                    b.Property<Guid>("SpørgsmålID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SpørgsmålID"));
-
-                    b.Property<int>("QuizID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("QuizID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("SpørgsmålRækkefølge")
                         .HasColumnType("int");
@@ -431,14 +777,14 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Property<int>("SpørgsmålTid")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TeknikID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("TeknikID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("TeoriID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("TeoriID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ØvelseID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ØvelseID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("SpørgsmålID");
 
@@ -455,24 +801,165 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            SpørgsmålID = 1,
-                            QuizID = 1,
+                            SpørgsmålID = new Guid("4ba89cd8-b931-4071-a057-1c9740dac086"),
+                            QuizID = new Guid("69cde397-c39c-4172-8d95-56c9a5cdc099"),
                             SpørgsmålRækkefølge = 1,
                             SpørgsmålTid = 30,
-                            TeoriID = 1
+                            TeknikID = new Guid("4d608ca7-227c-4dc5-b7b9-f8f2315233ec"),
+                            TeoriID = new Guid("bf4135c9-db91-4354-956f-f1606bddccd8"),
+                            ØvelseID = new Guid("0335fde9-e05e-4a72-b08c-0c076803b395")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("8fe43b9a-f64d-4701-911a-764204b423ad"),
+                            QuizID = new Guid("69cde397-c39c-4172-8d95-56c9a5cdc099"),
+                            SpørgsmålRækkefølge = 2,
+                            SpørgsmålTid = 30,
+                            TeknikID = new Guid("f4a14256-bf7c-4910-a4c4-13fc063a455a"),
+                            TeoriID = new Guid("aae05942-0586-4000-aca2-b02525c0f1ea"),
+                            ØvelseID = new Guid("1ab7a999-d644-418a-b3ba-c3cd27a5dfd6")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("94dac4ff-3ef1-41dd-8593-de3736627b98"),
+                            QuizID = new Guid("69cde397-c39c-4172-8d95-56c9a5cdc099"),
+                            SpørgsmålRækkefølge = 3,
+                            SpørgsmålTid = 40,
+                            TeknikID = new Guid("72385206-876c-4f9d-bfc6-dc8aa02ef587"),
+                            TeoriID = new Guid("a845c529-8362-4fac-b7d0-df079db04860"),
+                            ØvelseID = new Guid("1e86d0c9-1d34-4b46-a939-1326f7f9df42")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("464d80b9-28b4-4e16-949a-bddbafc4c6f1"),
+                            QuizID = new Guid("69cde397-c39c-4172-8d95-56c9a5cdc099"),
+                            SpørgsmålRækkefølge = 4,
+                            SpørgsmålTid = 45,
+                            TeknikID = new Guid("49425f68-4bcf-412e-8ac3-0f87b3b117ca"),
+                            TeoriID = new Guid("ecac9146-b9b2-492c-9561-032c39b1436b"),
+                            ØvelseID = new Guid("dcbcc571-4377-4fcc-91a8-fb83f07165f6")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("85c9d413-5148-488c-a667-f971171d2d78"),
+                            QuizID = new Guid("69cde397-c39c-4172-8d95-56c9a5cdc099"),
+                            SpørgsmålRækkefølge = 5,
+                            SpørgsmålTid = 60,
+                            TeknikID = new Guid("fe2b1123-5434-4c83-ab16-e8372bd99fef"),
+                            TeoriID = new Guid("26abad43-d433-416e-ba59-6ddb20a64093"),
+                            ØvelseID = new Guid("d5a762e1-b401-4118-955d-bbb3d26f370e")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("d1797c4a-4378-49a9-84d5-375efcff0d88"),
+                            QuizID = new Guid("3b89bd9d-dd30-4ea4-8563-984dbfccb644"),
+                            SpørgsmålRækkefølge = 1,
+                            SpørgsmålTid = 30,
+                            TeknikID = new Guid("f4a14256-bf7c-4910-a4c4-13fc063a455a"),
+                            TeoriID = new Guid("bf4135c9-db91-4354-956f-f1606bddccd8"),
+                            ØvelseID = new Guid("0335fde9-e05e-4a72-b08c-0c076803b395")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("0a4b9bd3-1fc3-498c-9574-51d1db67cce4"),
+                            QuizID = new Guid("3b89bd9d-dd30-4ea4-8563-984dbfccb644"),
+                            SpørgsmålRækkefølge = 2,
+                            SpørgsmålTid = 30,
+                            TeknikID = new Guid("72385206-876c-4f9d-bfc6-dc8aa02ef587"),
+                            TeoriID = new Guid("aae05942-0586-4000-aca2-b02525c0f1ea"),
+                            ØvelseID = new Guid("1ab7a999-d644-418a-b3ba-c3cd27a5dfd6")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("3e5a25d1-a1a2-411d-b5ab-db0aead404c3"),
+                            QuizID = new Guid("3b89bd9d-dd30-4ea4-8563-984dbfccb644"),
+                            SpørgsmålRækkefølge = 3,
+                            SpørgsmålTid = 40,
+                            TeknikID = new Guid("49425f68-4bcf-412e-8ac3-0f87b3b117ca"),
+                            TeoriID = new Guid("a845c529-8362-4fac-b7d0-df079db04860"),
+                            ØvelseID = new Guid("1e86d0c9-1d34-4b46-a939-1326f7f9df42")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("a79c2d74-bccf-4a9f-ba03-ac02c906f6c7"),
+                            QuizID = new Guid("3b89bd9d-dd30-4ea4-8563-984dbfccb644"),
+                            SpørgsmålRækkefølge = 4,
+                            SpørgsmålTid = 45,
+                            TeknikID = new Guid("fe2b1123-5434-4c83-ab16-e8372bd99fef"),
+                            TeoriID = new Guid("ecac9146-b9b2-492c-9561-032c39b1436b"),
+                            ØvelseID = new Guid("dcbcc571-4377-4fcc-91a8-fb83f07165f6")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("49da5e18-a087-40aa-8ea8-0a67e13d249b"),
+                            QuizID = new Guid("3b89bd9d-dd30-4ea4-8563-984dbfccb644"),
+                            SpørgsmålRækkefølge = 5,
+                            SpørgsmålTid = 60,
+                            TeknikID = new Guid("4d608ca7-227c-4dc5-b7b9-f8f2315233ec"),
+                            TeoriID = new Guid("26abad43-d433-416e-ba59-6ddb20a64093"),
+                            ØvelseID = new Guid("d5a762e1-b401-4118-955d-bbb3d26f370e")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("2f02f12d-3c9a-4b63-b7f0-8df70d9ed799"),
+                            QuizID = new Guid("f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2"),
+                            SpørgsmålRækkefølge = 1,
+                            SpørgsmålTid = 30,
+                            TeknikID = new Guid("f4a14256-bf7c-4910-a4c4-13fc063a455a"),
+                            TeoriID = new Guid("bf4135c9-db91-4354-956f-f1606bddccd8"),
+                            ØvelseID = new Guid("0335fde9-e05e-4a72-b08c-0c076803b395")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("67f31858-40f0-481d-844a-7dcc7c4e0b48"),
+                            QuizID = new Guid("f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2"),
+                            SpørgsmålRækkefølge = 2,
+                            SpørgsmålTid = 30,
+                            TeknikID = new Guid("72385206-876c-4f9d-bfc6-dc8aa02ef587"),
+                            TeoriID = new Guid("aae05942-0586-4000-aca2-b02525c0f1ea"),
+                            ØvelseID = new Guid("1ab7a999-d644-418a-b3ba-c3cd27a5dfd6")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("6e6089f3-1f29-412e-b7ba-9cfe652fecce"),
+                            QuizID = new Guid("f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2"),
+                            SpørgsmålRækkefølge = 3,
+                            SpørgsmålTid = 40,
+                            TeknikID = new Guid("49425f68-4bcf-412e-8ac3-0f87b3b117ca"),
+                            TeoriID = new Guid("a845c529-8362-4fac-b7d0-df079db04860"),
+                            ØvelseID = new Guid("1e86d0c9-1d34-4b46-a939-1326f7f9df42")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("600a1b8b-6eed-434d-9a1f-1337124da834"),
+                            QuizID = new Guid("f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2"),
+                            SpørgsmålRækkefølge = 4,
+                            SpørgsmålTid = 45,
+                            TeknikID = new Guid("fe2b1123-5434-4c83-ab16-e8372bd99fef"),
+                            TeoriID = new Guid("ecac9146-b9b2-492c-9561-032c39b1436b"),
+                            ØvelseID = new Guid("dcbcc571-4377-4fcc-91a8-fb83f07165f6")
+                        },
+                        new
+                        {
+                            SpørgsmålID = new Guid("d1a60bed-fd96-47dd-b86a-a944230d53bb"),
+                            QuizID = new Guid("f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2"),
+                            SpørgsmålRækkefølge = 5,
+                            SpørgsmålTid = 60,
+                            TeknikID = new Guid("4d608ca7-227c-4dc5-b7b9-f8f2315233ec"),
+                            TeoriID = new Guid("26abad43-d433-416e-ba59-6ddb20a64093"),
+                            ØvelseID = new Guid("d5a762e1-b401-4118-955d-bbb3d26f370e")
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Teknik", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Teknik", b =>
                 {
-                    b.Property<int>("TeknikID")
+                    b.Property<Guid>("TeknikID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TeknikID"));
-
-                    b.Property<int>("PensumID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("PensumID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TeknikBeskrivelse")
                         .IsRequired()
@@ -503,26 +990,115 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            TeknikID = 1,
-                            PensumID = 1,
-                            TeknikBeskrivelse = "Forsvar mod angreb.",
-                            TeknikBillede = "",
-                            TeknikLyd = "",
-                            TeknikNavn = "Blokering",
-                            TeknikVideo = ""
+                            TeknikID = new Guid("4d608ca7-227c-4dc5-b7b9-f8f2315233ec"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            TeknikBeskrivelse = "A powerful kick aimed at the opponent's head or torso.",
+                            TeknikBillede = "roundhouse_kick_image_url",
+                            TeknikLyd = "roundhouse_kick_sound_url",
+                            TeknikNavn = "Roundhouse Kick",
+                            TeknikVideo = "roundhouse_kick_video_url"
+                        },
+                        new
+                        {
+                            TeknikID = new Guid("f4a14256-bf7c-4910-a4c4-13fc063a455a"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            TeknikBeskrivelse = "A quick kick aimed at the opponent's stomach or face.",
+                            TeknikBillede = "front_kick_image_url",
+                            TeknikLyd = "front_kick_sound_url",
+                            TeknikNavn = "Front Kick",
+                            TeknikVideo = "front_kick_video_url"
+                        },
+                        new
+                        {
+                            TeknikID = new Guid("72385206-876c-4f9d-bfc6-dc8aa02ef587"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            TeknikBeskrivelse = "A kick delivered by turning your back to the opponent and kicking backward.",
+                            TeknikBillede = "back_kick_image_url",
+                            TeknikLyd = "back_kick_sound_url",
+                            TeknikNavn = "Back Kick",
+                            TeknikVideo = "back_kick_video_url"
+                        },
+                        new
+                        {
+                            TeknikID = new Guid("49425f68-4bcf-412e-8ac3-0f87b3b117ca"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            TeknikBeskrivelse = "A powerful kick aimed at the opponent's torso, delivered from the side.",
+                            TeknikBillede = "side_kick_image_url",
+                            TeknikLyd = "side_kick_sound_url",
+                            TeknikNavn = "Side Kick",
+                            TeknikVideo = "side_kick_video_url"
+                        },
+                        new
+                        {
+                            TeknikID = new Guid("fe2b1123-5434-4c83-ab16-e8372bd99fef"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
+                            TeknikBeskrivelse = "A strike using the bottom of the fist, like a hammer blow.",
+                            TeknikBillede = "hammerfist_image_url",
+                            TeknikLyd = "hammerfist_sound_url",
+                            TeknikNavn = "Hammerfist",
+                            TeknikVideo = "hammerfist_video_url"
+                        },
+                        new
+                        {
+                            TeknikID = new Guid("49e7612b-36ff-4f40-9224-5d126945e3e2"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
+                            TeknikBeskrivelse = "A strike using the elbow to target the opponent's head or torso.",
+                            TeknikBillede = "elbow_strike_image_url",
+                            TeknikLyd = "elbow_strike_sound_url",
+                            TeknikNavn = "Elbow Strike",
+                            TeknikVideo = "elbow_strike_video_url"
+                        },
+                        new
+                        {
+                            TeknikID = new Guid("ca16ac6c-3697-49b2-891b-dd9e632790c1"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            TeknikBeskrivelse = "A strike using the knee to target the opponent's midsection or head.",
+                            TeknikBillede = "knee_strike_image_url",
+                            TeknikLyd = "knee_strike_sound_url",
+                            TeknikNavn = "Knee Strike",
+                            TeknikVideo = "knee_strike_video_url"
+                        },
+                        new
+                        {
+                            TeknikID = new Guid("42e75d1b-d44e-416c-8a6a-0dd9b2803d9c"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            TeknikBeskrivelse = "A kick where the foot comes down like an axe to strike the opponent.",
+                            TeknikBillede = "axe_kick_image_url",
+                            TeknikLyd = "axe_kick_sound_url",
+                            TeknikNavn = "Axe Kick",
+                            TeknikVideo = "axe_kick_video_url"
+                        },
+                        new
+                        {
+                            TeknikID = new Guid("ff1f1f02-2a9f-4281-9569-7bf33ec6f457"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
+                            TeknikBeskrivelse = "A spinning kick where you turn around and strike with a powerful back kick.",
+                            TeknikBillede = "spinning_back_kick_image_url",
+                            TeknikLyd = "spinning_back_kick_sound_url",
+                            TeknikNavn = "Spinning Back Kick",
+                            TeknikVideo = "spinning_back_kick_video_url"
+                        },
+                        new
+                        {
+                            TeknikID = new Guid("13eeede6-81ae-4c79-a25e-9226d7a20316"),
+                            PensumID = new Guid("362385ac-7c43-41b1-989c-b8d9ba6fce67"),
+                            TeknikBeskrivelse = "A strike using the edge of the hand, aimed at vulnerable areas.",
+                            TeknikBillede = "knife_hand_strike_image_url",
+                            TeknikLyd = "knife_hand_strike_sound_url",
+                            TeknikNavn = "Knife Hand Strike",
+                            TeknikVideo = "knife_hand_strike_video_url"
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Teori", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Teori", b =>
                 {
-                    b.Property<int>("TeoriID")
+                    b.Property<Guid>("TeoriID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TeoriID"));
-
-                    b.Property<int>("PensumID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("PensumID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TeoriBeskrivelse")
                         .IsRequired()
@@ -553,38 +1129,127 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            TeoriID = 1,
-                            PensumID = 1,
-                            TeoriBeskrivelse = "Respekt for dojo og lærere.",
-                            TeoriBillede = "",
-                            TeoriLyd = "",
-                            TeoriNavn = "Respect",
-                            TeoriVideo = ""
+                            TeoriID = new Guid("bf4135c9-db91-4354-956f-f1606bddccd8"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            TeoriBeskrivelse = "The formal etiquette and behavior expected in Taekwondo.",
+                            TeoriBillede = "taekwondo_etiquette_image_url",
+                            TeoriLyd = "taekwondo_etiquette_sound_url",
+                            TeoriNavn = "Taekwondo Etiquette",
+                            TeoriVideo = "taekwondo_etiquette_video_url"
+                        },
+                        new
+                        {
+                            TeoriID = new Guid("aae05942-0586-4000-aca2-b02525c0f1ea"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            TeoriBeskrivelse = "A deep dive into the origins and history of Taekwondo.",
+                            TeoriBillede = "history_of_taekwondo_image_url",
+                            TeoriLyd = "history_of_taekwondo_sound_url",
+                            TeoriNavn = "History of Taekwondo",
+                            TeoriVideo = "history_of_taekwondo_video_url"
+                        },
+                        new
+                        {
+                            TeoriID = new Guid("a845c529-8362-4fac-b7d0-df079db04860"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            TeoriBeskrivelse = "Overview of the basic stances used in Taekwondo.",
+                            TeoriBillede = "taekwondo_stances_image_url",
+                            TeoriLyd = "taekwondo_stances_sound_url",
+                            TeoriNavn = "Taekwondo Stances",
+                            TeoriVideo = "taekwondo_stances_video_url"
+                        },
+                        new
+                        {
+                            TeoriID = new Guid("ecac9146-b9b2-492c-9561-032c39b1436b"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            TeoriBeskrivelse = "The significance of the Taekwondo training hall, the Dojang.",
+                            TeoriBillede = "dojang_image_url",
+                            TeoriLyd = "dojang_sound_url",
+                            TeoriNavn = "The Dojang",
+                            TeoriVideo = "dojang_video_url"
+                        },
+                        new
+                        {
+                            TeoriID = new Guid("26abad43-d433-416e-ba59-6ddb20a64093"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            TeoriBeskrivelse = "Understanding the belt levels in Taekwondo and their meanings.",
+                            TeoriBillede = "belt_system_image_url",
+                            TeoriLyd = "belt_system_sound_url",
+                            TeoriNavn = "Taekwondo Belt System",
+                            TeoriVideo = "belt_system_video_url"
+                        },
+                        new
+                        {
+                            TeoriID = new Guid("9e4df6a6-af38-445f-a4d5-2f2f5e01b029"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
+                            TeoriBeskrivelse = "The foundational movements in Taekwondo.",
+                            TeoriBillede = "basic_movements_image_url",
+                            TeoriLyd = "basic_movements_sound_url",
+                            TeoriNavn = "Basic Taekwondo Movements",
+                            TeoriVideo = "basic_movements_video_url"
+                        },
+                        new
+                        {
+                            TeoriID = new Guid("d93a6ee0-f753-4f04-ac35-7fbb1cd09803"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
+                            TeoriBeskrivelse = "Introduction to basic self-defense techniques in Taekwondo.",
+                            TeoriBillede = "self_defense_image_url",
+                            TeoriLyd = "self_defense_sound_url",
+                            TeoriNavn = "Taekwondo Self-defense Techniques",
+                            TeoriVideo = "self_defense_video_url"
+                        },
+                        new
+                        {
+                            TeoriID = new Guid("340c59b4-9f76-46af-8abb-49a200eb4671"),
+                            PensumID = new Guid("9c3cabef-0731-4243-a5e8-d837c77ee523"),
+                            TeoriBeskrivelse = "How Taekwondo tournaments are organized and what the rules are.",
+                            TeoriBillede = "tournaments_image_url",
+                            TeoriLyd = "tournaments_sound_url",
+                            TeoriNavn = "Taekwondo Tournaments",
+                            TeoriVideo = "tournaments_video_url"
+                        },
+                        new
+                        {
+                            TeoriID = new Guid("e10b50fa-9224-4469-9f4c-7553db8328b6"),
+                            PensumID = new Guid("362385ac-7c43-41b1-989c-b8d9ba6fce67"),
+                            TeoriBeskrivelse = "The different forms (patterns) performed in Taekwondo.",
+                            TeoriBillede = "forms_image_url",
+                            TeoriLyd = "forms_sound_url",
+                            TeoriNavn = "Taekwondo Forms",
+                            TeoriVideo = "forms_video_url"
+                        },
+                        new
+                        {
+                            TeoriID = new Guid("3ed65b45-89f7-4209-bc51-9de0b3c6b6d3"),
+                            PensumID = new Guid("362385ac-7c43-41b1-989c-b8d9ba6fce67"),
+                            TeoriBeskrivelse = "The philosophy behind Taekwondo and its martial arts principles.",
+                            TeoriBillede = "philosophy_image_url",
+                            TeoriLyd = "philosophy_sound_url",
+                            TeoriNavn = "Taekwondo Philosophy",
+                            TeoriVideo = "philosophy_video_url"
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Træning", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Træning", b =>
                 {
-                    b.Property<int>("TræningID")
+                    b.Property<Guid>("TræningID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TræningID"));
+                    b.Property<Guid?>("PensumID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("PensumID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ProgramID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ProgramID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("QuizID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("QuizID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("TeknikID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("TeknikID")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TeoriID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("TeoriID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Tid")
                         .HasColumnType("int");
@@ -592,8 +1257,8 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Property<int>("TræningRækkefølge")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ØvelseID")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ØvelseID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("TræningID");
 
@@ -614,28 +1279,63 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            TræningID = 1,
-                            PensumID = 1,
-                            ProgramID = 1,
-                            QuizID = 1,
-                            TeknikID = 1,
-                            TeoriID = 1,
-                            Tid = 45,
-                            TræningRækkefølge = 1,
-                            ØvelseID = 1
+                            TræningID = new Guid("4a91f6e6-3b23-4de7-85a1-1f173a90a27f"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            ProgramID = new Guid("11741c42-315e-42fe-a0a8-337afd6d511f"),
+                            Tid = 60,
+                            TræningRækkefølge = 1
+                        },
+                        new
+                        {
+                            TræningID = new Guid("84a19dcc-6f70-49ce-9629-d04b0cb0c7dd"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            ProgramID = new Guid("11741c42-315e-42fe-a0a8-337afd6d511f"),
+                            Tid = 75,
+                            TræningRækkefølge = 2
+                        },
+                        new
+                        {
+                            TræningID = new Guid("2faf5b1b-40a2-4599-99c9-c0e948a31dc7"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            ProgramID = new Guid("8c98eb00-1efb-4361-99b7-974c1aed66e8"),
+                            Tid = 90,
+                            TræningRækkefølge = 1
+                        },
+                        new
+                        {
+                            TræningID = new Guid("cf9ce0e3-f9d0-41a0-8486-7b9d41aa43be"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            ProgramID = new Guid("8c98eb00-1efb-4361-99b7-974c1aed66e8"),
+                            Tid = 80,
+                            TræningRækkefølge = 2
+                        },
+                        new
+                        {
+                            TræningID = new Guid("58d29731-5915-496c-9f52-b1c64199fdd7"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
+                            ProgramID = new Guid("3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47"),
+                            Tid = 90,
+                            TræningRækkefølge = 1
+                        },
+                        new
+                        {
+                            TræningID = new Guid("3949e642-5f71-40b7-8c4f-7bdaee0686c9"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
+                            ProgramID = new Guid("3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47"),
+                            Tid = 80,
+                            TræningRækkefølge = 2
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Øvelse", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Øvelse", b =>
                 {
-                    b.Property<int>("ØvelseID")
+                    b.Property<Guid>("ØvelseID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ØvelseID"));
-
-                    b.Property<int>("PensumID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("PensumID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ØvelseBeskrivelse")
                         .IsRequired()
@@ -669,26 +1369,125 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.HasData(
                         new
                         {
-                            ØvelseID = 1,
-                            PensumID = 1,
-                            ØvelseBeskrivelse = "En simpel frontspark teknik.",
-                            ØvelseBillede = "",
-                            ØvelseNavn = "Front Spark",
-                            ØvelseSværhed = "Begynder",
+                            ØvelseID = new Guid("0335fde9-e05e-4a72-b08c-0c076803b395"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            ØvelseBeskrivelse = "A basic bodyweight exercise for strengthening the upper body and arms.",
+                            ØvelseBillede = "push_up_image_url",
+                            ØvelseNavn = "Push-ups",
+                            ØvelseSværhed = "Let",
                             ØvelseTid = 30,
-                            ØvelseVideo = ""
+                            ØvelseVideo = "push_up_video_url"
+                        },
+                        new
+                        {
+                            ØvelseID = new Guid("1ab7a999-d644-418a-b3ba-c3cd27a5dfd6"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            ØvelseBeskrivelse = "A core exercise to strengthen the abdominal muscles.",
+                            ØvelseBillede = "sit_up_image_url",
+                            ØvelseNavn = "Sit-ups",
+                            ØvelseSværhed = "Let",
+                            ØvelseTid = 30,
+                            ØvelseVideo = "sit_up_video_url"
+                        },
+                        new
+                        {
+                            ØvelseID = new Guid("1e86d0c9-1d34-4b46-a939-1326f7f9df42"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            ØvelseBeskrivelse = "A lower body exercise to strengthen the thighs, hips, and buttocks.",
+                            ØvelseBillede = "squat_image_url",
+                            ØvelseNavn = "Squats",
+                            ØvelseSværhed = "Mellem",
+                            ØvelseTid = 45,
+                            ØvelseVideo = "squat_video_url"
+                        },
+                        new
+                        {
+                            ØvelseID = new Guid("dcbcc571-4377-4fcc-91a8-fb83f07165f6"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            ØvelseBeskrivelse = "A full-body exercise that combines squats, push-ups, and jumps.",
+                            ØvelseBillede = "burpee_image_url",
+                            ØvelseNavn = "Burpees",
+                            ØvelseSværhed = "Svær",
+                            ØvelseTid = 60,
+                            ØvelseVideo = "burpee_video_url"
+                        },
+                        new
+                        {
+                            ØvelseID = new Guid("d5a762e1-b401-4118-955d-bbb3d26f370e"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
+                            ØvelseBeskrivelse = "A lower body exercise targeting the quads, hamstrings, and glutes.",
+                            ØvelseBillede = "lunge_image_url",
+                            ØvelseNavn = "Lunges",
+                            ØvelseSværhed = "Mellem",
+                            ØvelseTid = 40,
+                            ØvelseVideo = "lunge_video_url"
+                        },
+                        new
+                        {
+                            ØvelseID = new Guid("a36f91d7-c05b-48c8-97a3-11f86a2eae69"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            ØvelseBeskrivelse = "A cardiovascular exercise that mimics climbing a mountain while on the ground.",
+                            ØvelseBillede = "mountain_climber_image_url",
+                            ØvelseNavn = "Mountain Climbers",
+                            ØvelseSværhed = "Mellem",
+                            ØvelseTid = 30,
+                            ØvelseVideo = "mountain_climber_video_url"
+                        },
+                        new
+                        {
+                            ØvelseID = new Guid("29433916-f5aa-4d34-9bf3-6e0eb09aa010"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            ØvelseBeskrivelse = "A core stability exercise to strengthen the abdominals, back, and shoulders.",
+                            ØvelseBillede = "plank_image_url",
+                            ØvelseNavn = "Plank",
+                            ØvelseSværhed = "Mellem",
+                            ØvelseTid = 45,
+                            ØvelseVideo = "plank_video_url"
+                        },
+                        new
+                        {
+                            ØvelseID = new Guid("d9f50fe9-11d5-46ee-8836-a57727dc424b"),
+                            PensumID = new Guid("094cb97e-10b1-4b4b-bfa0-fb6cf18cb973"),
+                            ØvelseBeskrivelse = "A full-body cardio exercise to improve endurance and agility.",
+                            ØvelseBillede = "jumping_jacks_image_url",
+                            ØvelseNavn = "Jumping Jacks",
+                            ØvelseSværhed = "Let",
+                            ØvelseTid = 30,
+                            ØvelseVideo = "jumping_jacks_video_url"
+                        },
+                        new
+                        {
+                            ØvelseID = new Guid("f1c414cb-8ce7-4583-b65e-510bc0f2fd8b"),
+                            PensumID = new Guid("dcd90332-5e1b-4352-bf88-fb40e75932bd"),
+                            ØvelseBeskrivelse = "A cardio exercise focusing on fast leg movement to increase heart rate.",
+                            ØvelseBillede = "high_knees_image_url",
+                            ØvelseNavn = "High Knees",
+                            ØvelseSværhed = "Mellem",
+                            ØvelseTid = 40,
+                            ØvelseVideo = "high_knees_video_url"
+                        },
+                        new
+                        {
+                            ØvelseID = new Guid("bdb87fa8-e777-42e6-ad08-7187707fe1c3"),
+                            PensumID = new Guid("67db5817-3c5a-4604-ba74-8076578528c3"),
+                            ØvelseBeskrivelse = "An upper body exercise that targets the triceps, using parallel bars or a bench.",
+                            ØvelseBillede = "tricep_dips_image_url",
+                            ØvelseNavn = "Tricep Dips",
+                            ØvelseSværhed = "Mellem",
+                            ØvelseTid = 45,
+                            ØvelseVideo = "tricep_dips_video_url"
                         });
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerKlub", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.BrugerKlub", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Bruger", "Bruger")
+                    b.HasOne("TaekwondoApp.Shared.Models.Bruger", "Bruger")
                         .WithMany("BrugerKlubber")
                         .HasForeignKey("BrugerID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Klub", "Klub")
+                    b.HasOne("TaekwondoApp.Shared.Models.Klub", "Klub")
                         .WithMany("BrugerKlubber")
                         .HasForeignKey("KlubID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -699,15 +1498,15 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Klub");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerProgram", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.BrugerProgram", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Bruger", "Bruger")
+                    b.HasOne("TaekwondoApp.Shared.Models.Bruger", "Bruger")
                         .WithMany("BrugerProgrammer")
                         .HasForeignKey("BrugerID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.ProgramPlan", "Plan")
+                    b.HasOne("TaekwondoApp.Shared.Models.ProgramPlan", "Plan")
                         .WithMany("BrugerProgrammer")
                         .HasForeignKey("ProgramID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -718,15 +1517,15 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Plan");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerQuiz", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.BrugerQuiz", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Bruger", "Bruger")
+                    b.HasOne("TaekwondoApp.Shared.Models.Bruger", "Bruger")
                         .WithMany("BrugerQuizzer")
                         .HasForeignKey("BrugerID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Quiz", "Quiz")
+                    b.HasOne("TaekwondoApp.Shared.Models.Quiz", "Quiz")
                         .WithMany("BrugerQuizzer")
                         .HasForeignKey("QuizID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -737,15 +1536,15 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Quiz");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.BrugerØvelse", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.BrugerØvelse", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Bruger", "Bruger")
+                    b.HasOne("TaekwondoApp.Shared.Models.Bruger", "Bruger")
                         .WithMany("BrugerØvelser")
                         .HasForeignKey("BrugerID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Øvelse", "Øvelse")
+                    b.HasOne("TaekwondoApp.Shared.Models.Øvelse", "Øvelse")
                         .WithMany("BrugerØvelses")
                         .HasForeignKey("ØvelseID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -756,15 +1555,15 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Øvelse");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.KlubProgram", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.KlubProgram", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Klub", "Klub")
+                    b.HasOne("TaekwondoApp.Shared.Models.Klub", "Klub")
                         .WithMany("KlubProgrammer")
                         .HasForeignKey("KlubID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.ProgramPlan", "Plan")
+                    b.HasOne("TaekwondoApp.Shared.Models.ProgramPlan", "Plan")
                         .WithMany("KlubProgrammer")
                         .HasForeignKey("ProgramID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -775,15 +1574,15 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Plan");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.KlubQuiz", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.KlubQuiz", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Klub", "Klub")
+                    b.HasOne("TaekwondoApp.Shared.Models.Klub", "Klub")
                         .WithMany("KlubQuizzer")
                         .HasForeignKey("KlubID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Quiz", "Quiz")
+                    b.HasOne("TaekwondoApp.Shared.Models.Quiz", "Quiz")
                         .WithMany("KlubQuizzer")
                         .HasForeignKey("QuizID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -794,15 +1593,15 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Quiz");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.KlubØvelse", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.KlubØvelse", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Klub", "Klub")
+                    b.HasOne("TaekwondoApp.Shared.Models.Klub", "Klub")
                         .WithMany("KlubØvelser")
                         .HasForeignKey("KlubID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Øvelse", "Øvelse")
+                    b.HasOne("TaekwondoApp.Shared.Models.Øvelse", "Øvelse")
                         .WithMany("KlubØvelses")
                         .HasForeignKey("ØvelseID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -813,9 +1612,9 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Øvelse");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Quiz", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Quiz", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Pensum", "Pensum")
+                    b.HasOne("TaekwondoApp.Shared.Models.Pensum", "Pensum")
                         .WithMany("Quizzer")
                         .HasForeignKey("PensumID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -824,23 +1623,23 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Pensum");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Spørgsmål", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Spørgsmål", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Quiz", "Quiz")
+                    b.HasOne("TaekwondoApp.Shared.Models.Quiz", "Quiz")
                         .WithMany("Spørgsmåls")
                         .HasForeignKey("QuizID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Teknik", "Teknik")
+                    b.HasOne("TaekwondoApp.Shared.Models.Teknik", "Teknik")
                         .WithMany()
                         .HasForeignKey("TeknikID");
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Teori", "Teori")
+                    b.HasOne("TaekwondoApp.Shared.Models.Teori", "Teori")
                         .WithMany()
                         .HasForeignKey("TeoriID");
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Øvelse", "Øvelse")
+                    b.HasOne("TaekwondoApp.Shared.Models.Øvelse", "Øvelse")
                         .WithMany()
                         .HasForeignKey("ØvelseID");
 
@@ -853,9 +1652,9 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Øvelse");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Teknik", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Teknik", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Pensum", "Pensum")
+                    b.HasOne("TaekwondoApp.Shared.Models.Pensum", "Pensum")
                         .WithMany("Teknikker")
                         .HasForeignKey("PensumID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -864,9 +1663,9 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Pensum");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Teori", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Teori", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Pensum", "Pensum")
+                    b.HasOne("TaekwondoApp.Shared.Models.Pensum", "Pensum")
                         .WithMany("Teorier")
                         .HasForeignKey("PensumID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -875,31 +1674,31 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Pensum");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Træning", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Træning", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Pensum", "Pensum")
+                    b.HasOne("TaekwondoApp.Shared.Models.Pensum", "Pensum")
                         .WithMany()
                         .HasForeignKey("PensumID");
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.ProgramPlan", "ProgramPlan")
+                    b.HasOne("TaekwondoApp.Shared.Models.ProgramPlan", "ProgramPlan")
                         .WithMany("Træninger")
                         .HasForeignKey("ProgramID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Quiz", "Quiz")
+                    b.HasOne("TaekwondoApp.Shared.Models.Quiz", "Quiz")
                         .WithMany()
                         .HasForeignKey("QuizID");
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Teknik", "Teknik")
+                    b.HasOne("TaekwondoApp.Shared.Models.Teknik", "Teknik")
                         .WithMany()
                         .HasForeignKey("TeknikID");
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Teori", "Teori")
+                    b.HasOne("TaekwondoApp.Shared.Models.Teori", "Teori")
                         .WithMany()
                         .HasForeignKey("TeoriID");
 
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Øvelse", "Øvelse")
+                    b.HasOne("TaekwondoApp.Shared.Models.Øvelse", "Øvelse")
                         .WithMany()
                         .HasForeignKey("ØvelseID");
 
@@ -916,9 +1715,9 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Øvelse");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Øvelse", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Øvelse", b =>
                 {
-                    b.HasOne("TaekwondoOrchestration.ApiService.Models.Pensum", "Pensum")
+                    b.HasOne("TaekwondoApp.Shared.Models.Pensum", "Pensum")
                         .WithMany("Øvelser")
                         .HasForeignKey("PensumID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -927,7 +1726,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Pensum");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Bruger", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Bruger", b =>
                 {
                     b.Navigation("BrugerKlubber");
 
@@ -938,7 +1737,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("BrugerØvelser");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Klub", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Klub", b =>
                 {
                     b.Navigation("BrugerKlubber");
 
@@ -949,7 +1748,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("KlubØvelser");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Pensum", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Pensum", b =>
                 {
                     b.Navigation("Quizzer");
 
@@ -960,7 +1759,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Øvelser");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.ProgramPlan", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.ProgramPlan", b =>
                 {
                     b.Navigation("BrugerProgrammer");
 
@@ -969,7 +1768,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Træninger");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Quiz", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Quiz", b =>
                 {
                     b.Navigation("BrugerQuizzer");
 
@@ -978,7 +1777,7 @@ namespace TaekwondoOrchestration.ApiService.Migrations
                     b.Navigation("Spørgsmåls");
                 });
 
-            modelBuilder.Entity("TaekwondoOrchestration.ApiService.Models.Øvelse", b =>
+            modelBuilder.Entity("TaekwondoApp.Shared.Models.Øvelse", b =>
                 {
                     b.Navigation("BrugerØvelses");
 

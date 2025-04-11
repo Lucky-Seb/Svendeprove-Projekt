@@ -1,5 +1,5 @@
-﻿using TaekwondoOrchestration.ApiService.DTO;
-using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +27,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             }).ToList();
         }
 
-        public async Task<PensumDTO?> GetPensumByIdAsync(int id)
+        public async Task<PensumDTO?> GetPensumByIdAsync(Guid id)
         {
             var pensum = await _pensumRepository.GetByIdAsync(id);
             if (pensum == null)
@@ -87,7 +87,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
 
-        public async Task<bool> UpdatePensumAsync(int id, PensumDTO pensumDTO)
+        public async Task<bool> UpdatePensumAsync(Guid id, PensumDTO pensumDTO)
         {
             var pensum = await _pensumRepository.GetByIdAsync(id);
             if (pensum == null) return false;
@@ -97,7 +97,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return await _pensumRepository.UpdateAsync(pensum);
         }
 
-        public async Task<bool> DeletePensumAsync(int id)
+        public async Task<bool> DeletePensumAsync(Guid id)
         {
             return await _pensumRepository.DeleteAsync(id);
         }

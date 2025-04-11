@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaekwondoOrchestration.ApiService.Data;
-using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
 namespace TaekwondoOrchestration.ApiService.Repositories
@@ -19,9 +19,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.Ordboger.ToListAsync();
         }
 
-        public async Task<Ordbog?> GetOrdbogByIdAsync(int id)
+        public async Task<Ordbog?> GetOrdbogByIdAsync(Guid ordbogId)
         {
-            return await _context.Ordboger.FindAsync(id);
+            return await _context.Ordboger.FindAsync(ordbogId);
         }
 
         public async Task<Ordbog> CreateOrdbogAsync(Ordbog ordbog)
@@ -38,9 +38,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return true;
         }
 
-        public async Task<bool> DeleteOrdbogAsync(int id)
+        public async Task<bool> DeleteOrdbogAsync(Guid ordbogId)
         {
-            var ordbog = await _context.Ordboger.FindAsync(id);
+            var ordbog = await _context.Ordboger.FindAsync(ordbogId);
             if (ordbog == null)
                 return false;
 

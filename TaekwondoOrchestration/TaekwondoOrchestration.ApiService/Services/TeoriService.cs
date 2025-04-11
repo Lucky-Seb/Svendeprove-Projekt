@@ -1,5 +1,5 @@
-﻿using TaekwondoOrchestration.ApiService.Models;
-using TaekwondoOrchestration.ApiService.DTO;
+﻿using TaekwondoApp.Shared.Models;
+using TaekwondoApp.Shared.DTO;
 using TaekwondoOrchestration.ApiService.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -42,9 +42,9 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Get Teori by ID
-        public async Task<TeoriDTO?> GetTeoriByIdAsync(int id)
+        public async Task<TeoriDTO?> GetTeoriByIdAsync(Guid id)
         {
-            if (id <= 0) return null;
+            if (id <= null) return null;
 
             var teori = await _teoriRepository.GetTeoriByIdAsync(id);
             if (teori == null) return null;
@@ -53,9 +53,9 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Get all Teori by PensumID
-        public async Task<List<TeoriDTO>> GetTeoriByPensumAsync(int pensumId)
+        public async Task<List<TeoriDTO>> GetTeoriByPensumAsync(Guid pensumId)
         {
-            if (pensumId <= 0) return new List<TeoriDTO>();
+            if (pensumId <= null) return new List<TeoriDTO>();
 
             var teoriList = await _teoriRepository.GetTeoriByPensumAsync(pensumId);
             if (teoriList == null || !teoriList.Any()) return new List<TeoriDTO>();
@@ -96,16 +96,16 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Delete Teori by ID
-        public async Task<bool> DeleteTeoriAsync(int id)
+        public async Task<bool> DeleteTeoriAsync(Guid id)
         {
-            if (id <= 0) return false;
+            if (id <= null) return false;
             return await _teoriRepository.DeleteTeoriAsync(id);
         }
 
         // Update Teori by ID and DTO
-        public async Task<bool> UpdateTeoriAsync(int id, TeoriDTO teoriDto)
+        public async Task<bool> UpdateTeoriAsync(Guid id, TeoriDTO teoriDto)
         {
-            if (id <= 0 || teoriDto == null || id != teoriDto.TeoriID) return false;
+            if (id <= null || teoriDto == null || id != teoriDto.TeoriID) return false;
             if (string.IsNullOrWhiteSpace(teoriDto.TeoriNavn) || string.IsNullOrWhiteSpace(teoriDto.TeoriBeskrivelse)) return false;
 
             var existingTeori = await _teoriRepository.GetTeoriByIdAsync(id);

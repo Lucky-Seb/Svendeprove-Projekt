@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaekwondoOrchestration.ApiService.Services;
-using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoApp.Shared.DTO;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -23,7 +23,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PensumDTO>> GetPensum(int id)
+        public async Task<ActionResult<PensumDTO>> GetPensum(Guid id)
         {
             var pensum = await _pensumService.GetPensumByIdAsync(id);
             if (pensum == null)
@@ -42,7 +42,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPensum(int id, [FromBody] PensumDTO pensumDTO)
+        public async Task<IActionResult> PutPensum(Guid id, [FromBody] PensumDTO pensumDTO)
         {
             var success = await _pensumService.UpdatePensumAsync(id, pensumDTO);
             if (!success)
@@ -51,7 +51,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePensum(int id)
+        public async Task<IActionResult> DeletePensum(Guid id)
         {
             var success = await _pensumService.DeletePensumAsync(id);
             if (!success)

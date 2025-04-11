@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaekwondoOrchestration.ApiService.Data;
-using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoApp.Shared.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
@@ -21,7 +21,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.KlubProgrammer.ToListAsync();
         }
 
-        public async Task<KlubProgram?> GetKlubProgramByIdAsync(int klubId, int programId)
+        public async Task<KlubProgram?> GetKlubProgramByIdAsync(Guid klubId, Guid programId)
         {
             return await _context.KlubProgrammer
                 .FirstOrDefaultAsync(k => k.KlubID == klubId && k.ProgramID == programId);
@@ -34,7 +34,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return klubProgram;
         }
 
-        public async Task<bool> DeleteKlubProgramAsync(int klubId, int programId)
+        public async Task<bool> DeleteKlubProgramAsync(Guid klubId, Guid programId)
         {
             var klubProgram = await _context.KlubProgrammer
                 .FirstOrDefaultAsync(k => k.KlubID == klubId && k.ProgramID == programId);

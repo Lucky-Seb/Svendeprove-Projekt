@@ -1,5 +1,5 @@
-﻿using TaekwondoOrchestration.ApiService.DTO;
-using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +27,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             }).ToList();
         }
 
-        public async Task<BrugerKlubDTO?> GetBrugerKlubByIdAsync(int brugerId, int klubId)
+        public async Task<BrugerKlubDTO?> GetBrugerKlubByIdAsync(Guid brugerId, Guid klubId)
         {
             var brugerKlub = await _brugerKlubRepository.GetBrugerKlubByIdAsync(brugerId, klubId);
             if (brugerKlub == null)
@@ -45,9 +45,9 @@ namespace TaekwondoOrchestration.ApiService.Services
             // Check if the DTO is null
             if (brugerKlubDto == null) return null;
 
-            // Validate required fields
-            if (brugerKlubDto.BrugerID <= 0) return null;  // BrugerID must be a positive integer
-            if (brugerKlubDto.KlubID <= 0) return null;    // KlubID must be a positive integer
+            //// Validate required fields
+            //if (brugerKlubDto.BrugerID <= 0) return null;  // BrugerID must be a positive integer
+            //if (brugerKlubDto.KlubID <= 0) return null;    // KlubID must be a positive integer
 
             // Create new BrugerKlub entity
             var newBrugerKlub = new BrugerKlub
@@ -69,7 +69,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
 
-        public async Task<bool> DeleteBrugerKlubAsync(int brugerId, int klubId)
+        public async Task<bool> DeleteBrugerKlubAsync(Guid brugerId, Guid klubId)
         {
             return await _brugerKlubRepository.DeleteBrugerKlubAsync(brugerId, klubId);
         }

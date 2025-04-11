@@ -1,5 +1,5 @@
-﻿using TaekwondoOrchestration.ApiService.DTO;
-using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
@@ -30,9 +30,8 @@ public class TeknikService
     }
 
     // Get Teknik by ID
-    public async Task<TeknikDTO?> GetTeknikByIdAsync(int id)
+    public async Task<TeknikDTO?> GetTeknikByIdAsync(Guid id)
     {
-        if (id <= 0) return null;
 
         var teknik = await _teknikRepository.GetTeknikByIdAsync(id);
         if (teknik == null) return null;
@@ -44,9 +43,6 @@ public class TeknikService
     public async Task<TeknikDTO> CreateTeknikAsync(TeknikDTO teknikDto)
     {
         if (teknikDto == null)
-            return null;
-
-        if (string.IsNullOrWhiteSpace(teknikDto.TeknikNavn) || string.IsNullOrWhiteSpace(teknikDto.TeknikBeskrivelse) || teknikDto.PensumID <= 0)
             return null;
 
         var newTeknik = new Teknik
@@ -65,16 +61,14 @@ public class TeknikService
     }
 
     // Delete Teknik
-    public async Task<bool> DeleteTeknikAsync(int id)
+    public async Task<bool> DeleteTeknikAsync(Guid id)
     {
-        if (id <= 0) return false;
         return await _teknikRepository.DeleteTeknikAsync(id);
     }
 
     // Update Teknik
-    public async Task<bool> UpdateTeknikAsync(int id, TeknikDTO teknikDto)
+    public async Task<bool> UpdateTeknikAsync(Guid id, TeknikDTO teknikDto)
     {
-        if (id <= 0 || teknikDto == null || id != teknikDto.TeknikID) return false;
 
         var existingTeknik = await _teknikRepository.GetTeknikByIdAsync(id);
         if (existingTeknik == null) return false;
@@ -94,9 +88,8 @@ public class TeknikService
     }
 
     // Get all Tekniks by Pensum ID
-    public async Task<List<TeknikDTO>> GetAllTeknikByPensumAsync(int pensumId)
+    public async Task<List<TeknikDTO>> GetAllTeknikByPensumAsync(Guid pensumId)
     {
-        if (pensumId <= 0) return new List<TeknikDTO>();
 
         var teknikList = await _teknikRepository.GetTekniksByPensumAsync(pensumId);
         return teknikList.Select(t => MapToDto(t)).ToList();

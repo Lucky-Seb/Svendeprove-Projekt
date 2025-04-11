@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaekwondoOrchestration.ApiService.Services;
-using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoApp.Shared.DTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -27,7 +27,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // GET: api/træning/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<TræningDTO>> GetTræning(int id)
+        public async Task<ActionResult<TræningDTO>> GetTræning(Guid id)
         {
             var træning = await _træningService.GetTræningByIdAsync(id);
             if (træning == null)
@@ -45,7 +45,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // PUT: api/træning/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTræning(int id, TræningDTO træningDto)
+        public async Task<IActionResult> PutTræning(Guid id, TræningDTO træningDto)
         {
             if (id != træningDto.TræningID)
             {
@@ -63,7 +63,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // DELETE: api/træning/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTræning(int id)
+        public async Task<IActionResult> DeleteTræning(Guid id)
         {
             var success = await _træningService.DeleteTræningAsync(id);
             if (!success)

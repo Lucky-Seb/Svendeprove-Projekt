@@ -1,7 +1,7 @@
 ﻿// In KlubRepository.cs
 using Microsoft.EntityFrameworkCore;
 using TaekwondoOrchestration.ApiService.Data;
-using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoApp.Shared.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,9 +23,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.Klubber.ToListAsync();
         }
 
-        public async Task<Klub?> GetKlubByIdAsync(int id)
+        public async Task<Klub?> GetKlubByIdAsync(Guid klubId)
         {
-            return await _context.Klubber.FindAsync(id);
+            return await _context.Klubber.FindAsync(klubId);
         }
 
         public async Task<Klub?> GetKlubByNavnAsync(string klubNavn)
@@ -47,9 +47,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> DeleteKlubAsync(int id)
+        public async Task<bool> DeleteKlubAsync(Guid klubId)
         {
-            var klub = await _context.Klubber.FindAsync(id);
+            var klub = await _context.Klubber.FindAsync(klubId);
             if (klub == null) return false;
 
             _context.Klubber.Remove(klub);

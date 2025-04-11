@@ -1,5 +1,5 @@
-﻿using TaekwondoOrchestration.ApiService.DTO;
-using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
 namespace TaekwondoOrchestration.ApiService.Services
@@ -70,7 +70,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Get quiz by ID
-        public async Task<QuizDTO?> GetQuizByIdAsync(int id)
+        public async Task<QuizDTO?> GetQuizByIdAsync(Guid id)
         {
             var quiz = await _quizRepository.GetByIdAsync(id);
             if (quiz == null)
@@ -142,7 +142,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Update quiz based on DTO
-        public async Task<bool> UpdateQuizAsync(int id, QuizDTO quizDto)
+        public async Task<bool> UpdateQuizAsync(Guid id, QuizDTO quizDto)
         {
             if (id != quizDto.QuizID) return false;
 
@@ -162,7 +162,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Delete quiz by ID
-        public async Task<bool> DeleteQuizAsync(int id)
+        public async Task<bool> DeleteQuizAsync(Guid id)
         {
             return await _quizRepository.DeleteAsync(id);
         }
@@ -180,22 +180,22 @@ namespace TaekwondoOrchestration.ApiService.Services
             var createdQuiz = await _quizRepository.CreateAsync(quiz);
 
             // Validate BrugerID (User ID)
-            if (dto.BrugerID != null && dto.BrugerID != 0)
+            if (dto.BrugerID != null && dto.BrugerID != null)
             {
                 var brugerQuiz = new BrugerQuiz
                 {
-                    BrugerID = (int)dto.BrugerID,
+                    BrugerID = (Guid)dto.BrugerID,
                     QuizID = createdQuiz.QuizID,
                 };
                 await _brugerQuizRepository.CreateBrugerQuizAsync(brugerQuiz);
             }
 
             // Validate KlubID (Club ID)
-            if (dto.KlubID != null && dto.KlubID != 0)
+            if (dto.KlubID != null && dto.KlubID != null)
             {
                 var klubQuiz = new KlubQuiz
                 {
-                    KlubID = (int)dto.KlubID,
+                    KlubID = (Guid)dto.KlubID,
                     QuizID = createdQuiz.QuizID,
                 };
                 await _klubQuizRepository.CreateKlubQuizAsync(klubQuiz);
@@ -220,7 +220,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return dto;
         }
-        public async Task<QuizDTO> UpdateQuizWithBrugerAndKlubAsync(int quizId, QuizDTO dto)
+        public async Task<QuizDTO> UpdateQuizWithBrugerAndKlubAsync(Guid quizId, QuizDTO dto)
         {
             var existingQuiz = await _quizRepository.GetByIdAsync(quizId);
             if (existingQuiz == null)
@@ -320,7 +320,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return dto;
 
         }
-        public async Task<List<QuizDTO>> GetAllQuizzesByBrugerAsync(int brugerId)
+        public async Task<List<QuizDTO>> GetAllQuizzesByBrugerAsync(Guid brugerId)
         {
             var quizzes = await _quizRepository.GetAllByBrugerAsync(brugerId);
 
@@ -368,7 +368,7 @@ namespace TaekwondoOrchestration.ApiService.Services
                 }).ToList()
             }).ToList();
         }
-        public async Task<List<QuizDTO>> GetAllQuizzesByKlubAsync(int klubId)
+        public async Task<List<QuizDTO>> GetAllQuizzesByKlubAsync(Guid klubId)
         {
             var quizzes = await _quizRepository.GetAllByKlubAsync(klubId);
 
@@ -416,7 +416,7 @@ namespace TaekwondoOrchestration.ApiService.Services
                 }).ToList()
             }).ToList();
         }
-        public async Task<List<QuizDTO>> GetAllQuizzesByPensumAsync(int pensumId)
+        public async Task<List<QuizDTO>> GetAllQuizzesByPensumAsync(Guid pensumId)
         {
             var quizzes = await _quizRepository.GetAllByPensumAsync(pensumId);
 

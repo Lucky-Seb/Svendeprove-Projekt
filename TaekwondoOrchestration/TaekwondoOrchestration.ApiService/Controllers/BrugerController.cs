@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaekwondoOrchestration.ApiService.Services;
-using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoApp.Shared.DTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -25,7 +25,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<BrugerDTO>> GetBruger(int id)
+        public async Task<ActionResult<BrugerDTO>> GetBruger(Guid id)
         {
             var bruger = await _brugerService.GetBrugerByIdAsync(id);
             if (bruger == null)
@@ -55,7 +55,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Get Brugere by KlubID
         [HttpGet("klub/{klubId}")]
-        public async Task<ActionResult<List<BrugerDTO>>> GetBrugereByKlubAsync(int klubId)
+        public async Task<ActionResult<List<BrugerDTO>>> GetBrugereByKlubAsync(Guid klubId)
         {
             var brugere = await _brugerService.GetBrugereByKlubAsync(klubId);
             if (brugere == null || brugere.Count == 0)
@@ -65,7 +65,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Get Brugere by KlubID and Bæltegrad
         [HttpGet("klub/{klubId}/bæltegrad/{bæltegrad}")]
-        public async Task<ActionResult<List<BrugerDTO>>> GetBrugereByKlubAndBæltegrad(int klubId, string bæltegrad)
+        public async Task<ActionResult<List<BrugerDTO>>> GetBrugereByKlubAndBæltegrad(Guid klubId, string bæltegrad)
         {
             var brugere = await _brugerService.GetBrugereByKlubAndBæltegradAsync(klubId, bæltegrad);
             if (brugere == null || brugere.Count == 0)
@@ -104,7 +104,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBruger(int id, [FromBody] BrugerDTO brugerDTO)
+        public async Task<IActionResult> PutBruger(Guid id, [FromBody] BrugerDTO brugerDTO)
         {
             var success = await _brugerService.UpdateBrugerAsync(id, brugerDTO);
             if (!success)
@@ -113,7 +113,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBruger(int id)
+        public async Task<IActionResult> DeleteBruger(Guid id)
         {
             var success = await _brugerService.DeleteBrugerAsync(id);
             if (!success)

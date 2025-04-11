@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaekwondoOrchestration.ApiService.Data;
-using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoApp.Shared.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,9 +22,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.Øvelser.ToListAsync();
         }
 
-        public async Task<Øvelse?> GetØvelseByIdAsync(int id)
+        public async Task<Øvelse?> GetØvelseByIdAsync(Guid øvelseId)
         {
-            return await _context.Øvelser.FindAsync(id);
+            return await _context.Øvelser.FindAsync(øvelseId);
         }
 
         public async Task<List<Øvelse>> GetØvelserBySværhedAsync(string sværhed)
@@ -33,7 +33,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         }
 
         // Method to fetch Øvelser by BrugerID
-        public async Task<List<Øvelse>> GetØvelserByBrugerAsync(int brugerId)
+        public async Task<List<Øvelse>> GetØvelserByBrugerAsync(Guid brugerId)
         {
             return await _context.Øvelser
                 .Where(o => o.BrugerØvelses.Any(b => b.BrugerID == brugerId))
@@ -42,7 +42,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Øvelse>> GetØvelserByKlubAsync(int klubId)
+        public async Task<List<Øvelse>> GetØvelserByKlubAsync(Guid klubId)
         {
             return await _context.Øvelser
                 .Where(o => o.KlubØvelses.Any(k => k.KlubID == klubId))
@@ -64,9 +64,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return øvelse;
         }
 
-        public async Task<bool> DeleteØvelseAsync(int id)
+        public async Task<bool> DeleteØvelseAsync(Guid øvelseId)
         {
-            var øvelse = await _context.Øvelser.FindAsync(id);
+            var øvelse = await _context.Øvelser.FindAsync(øvelseId);
             if (øvelse == null)
                 return false;
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaekwondoOrchestration.ApiService.Services;
-using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoApp.Shared.DTO;
 
 
 namespace TaekwondoOrchestration.ApiService.Controllers
@@ -23,7 +23,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("{klubId}/{programId}")]
-        public async Task<ActionResult<KlubProgramDTO>> GetKlubProgram(int klubId, int programId)
+        public async Task<ActionResult<KlubProgramDTO>> GetKlubProgram(Guid klubId, Guid programId)
         {
             var klubProgram = await _klubProgramService.GetKlubProgramByIdAsync(klubId, programId);
             if (klubProgram == null)
@@ -39,7 +39,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpDelete("{klubId}/{programId}")]
-        public async Task<IActionResult> DeleteKlubProgram(int klubId, int programId)
+        public async Task<IActionResult> DeleteKlubProgram(Guid klubId, Guid programId)
         {
             var success = await _klubProgramService.DeleteKlubProgramAsync(klubId, programId);
             if (!success)

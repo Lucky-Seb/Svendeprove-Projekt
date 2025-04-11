@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaekwondoOrchestration.ApiService.Services;
-using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoApp.Shared.DTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -27,7 +27,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Get Teori by ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<TeoriDTO>> GetTeori(int id)
+        public async Task<ActionResult<TeoriDTO>> GetTeori(Guid id)
         {
             var teori = await _teoriService.GetTeoriByIdAsync(id);
             if (teori == null)
@@ -37,7 +37,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Get all Teori by Pensum ID
         [HttpGet("pensum/{pensumId}")]
-        public async Task<ActionResult<IEnumerable<TeoriDTO>>> GetTeorierByPensum(int pensumId)
+        public async Task<ActionResult<IEnumerable<TeoriDTO>>> GetTeorierByPensum(Guid pensumId)
         {
             var teorier = await _teoriService.GetTeoriByPensumAsync(pensumId);
             if (teorier == null || teorier.Count == 0)
@@ -68,7 +68,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Update an existing Teori
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTeori(int id, [FromBody] TeoriDTO teoriDTO)
+        public async Task<IActionResult> PutTeori(Guid id, [FromBody] TeoriDTO teoriDTO)
         {
             var success = await _teoriService.UpdateTeoriAsync(id, teoriDTO);
             if (!success)
@@ -78,7 +78,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Delete a Teori by ID
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTeori(int id)
+        public async Task<IActionResult> DeleteTeori(Guid id)
         {
             var success = await _teoriService.DeleteTeoriAsync(id);
             if (!success)

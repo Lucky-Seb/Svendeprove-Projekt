@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaekwondoOrchestration.ApiService.Data;
-using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoApp.Shared.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TaekwondoOrchestration.ApiService.DTO;
+using TaekwondoApp.Shared.DTO;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
 
@@ -24,9 +24,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.Brugere.ToListAsync();
         }
 
-        public async Task<Bruger?> GetBrugerByIdAsync(int id)
+        public async Task<Bruger?> GetBrugerByIdAsync(Guid brugerId)
         {
-            return await _context.Brugere.FindAsync(id);
+            return await _context.Brugere.FindAsync(brugerId);
         }
 
         public async Task<List<Bruger>> GetBrugerByRoleAsync(string role)
@@ -43,7 +43,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<BrugerDTO>> GetBrugereByKlubAsync(int klubId)
+        public async Task<List<BrugerDTO>> GetBrugereByKlubAsync(Guid klubId)
         {
             var result = await _context.Brugere
                 .Join(_context.BrugerKlubber,
@@ -78,7 +78,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         }
 
         // Get all Brugere by KlubID and Bæltegrad
-        public async Task<List<BrugerDTO>> GetBrugereByKlubAndBæltegradAsync(int klubId, string bæltegrad)
+        public async Task<List<BrugerDTO>> GetBrugereByKlubAndBæltegradAsync(Guid klubId, string bæltegrad)
         {
             var result = await _context.Brugere
                 .Join(_context.BrugerKlubber,
@@ -138,9 +138,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> DeleteBrugerAsync(int id)
+        public async Task<bool> DeleteBrugerAsync(Guid brugerId)
         {
-            var bruger = await _context.Brugere.FindAsync(id);
+            var bruger = await _context.Brugere.FindAsync(brugerId);
             if (bruger == null) return false;
 
             _context.Brugere.Remove(bruger);

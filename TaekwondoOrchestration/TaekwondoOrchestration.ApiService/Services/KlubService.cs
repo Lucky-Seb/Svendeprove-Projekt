@@ -1,6 +1,6 @@
 ﻿// In KlubService.cs
-using TaekwondoOrchestration.ApiService.DTO;
-using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +28,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             }).ToList();
         }
 
-        public async Task<KlubDTO?> GetKlubByIdAsync(int id)
+        public async Task<KlubDTO?> GetKlubByIdAsync(Guid id)
         {
             var klub = await _klubRepository.GetKlubByIdAsync(id);
             if (klub == null)
@@ -75,12 +75,12 @@ namespace TaekwondoOrchestration.ApiService.Services
             };
         }
 
-        public async Task<bool> DeleteKlubAsync(int id)
+        public async Task<bool> DeleteKlubAsync(Guid id)
         {
             return await _klubRepository.DeleteKlubAsync(id);
         }
 
-        public async Task<(bool success, string message)> UpdateKlubAsync(int id, KlubDTO klubDto)
+        public async Task<(bool success, string message)> UpdateKlubAsync(Guid id, KlubDTO klubDto)
         {
             var existingKlub = await _klubRepository.GetKlubByIdAsync(id);
             if (existingKlub == null)

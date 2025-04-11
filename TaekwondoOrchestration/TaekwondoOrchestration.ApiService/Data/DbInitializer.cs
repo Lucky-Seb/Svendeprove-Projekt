@@ -1,4 +1,4 @@
-﻿using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Data;
 public static class DbInitializer
 {
@@ -130,7 +130,7 @@ public static class DbInitializer
             ProgramNavn = "Intro Program",
             Beskrivelse = "2 ugers intro",
             Længde = 14,
-            OprettelseDato = DateTime.UtcNow
+            OprettelseDato = new DateTime(2025, 4, 10, 12, 30, 0)
         };
         context.ProgramPlans.Add(plan);
 

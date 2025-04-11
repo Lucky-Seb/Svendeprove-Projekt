@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaekwondoOrchestration.ApiService.Data;
-using TaekwondoOrchestration.ApiService.Models;
+using TaekwondoApp.Shared.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
@@ -21,7 +21,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.BrugerQuizzer.ToListAsync();
         }
 
-        public async Task<BrugerQuiz?> GetBrugerQuizByIdAsync(int brugerId, int quizId)
+        public async Task<BrugerQuiz?> GetBrugerQuizByIdAsync(Guid brugerId, Guid quizId)
         {
             return await _context.BrugerQuizzer
                 .FirstOrDefaultAsync(bq => bq.BrugerID == brugerId && bq.QuizID == quizId);
@@ -34,7 +34,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return brugerQuiz;
         }
 
-        public async Task<bool> DeleteBrugerQuizAsync(int brugerId, int quizId)
+        public async Task<bool> DeleteBrugerQuizAsync(Guid brugerId, Guid quizId)
         {
             var brugerQuiz = await _context.BrugerQuizzer
                 .FirstOrDefaultAsync(bq => bq.BrugerID == brugerId && bq.QuizID == quizId);

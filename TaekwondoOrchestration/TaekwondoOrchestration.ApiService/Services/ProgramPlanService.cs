@@ -1,5 +1,5 @@
-﻿using TaekwondoOrchestration.ApiService.DTO;
-using TaekwondoOrchestration.ApiService.Models;
+﻿using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
 
@@ -38,7 +38,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Get ProgramPlan by ID
-        public async Task<ProgramPlanDTO?> GetProgramPlanByIdAsync(int id)
+        public async Task<ProgramPlanDTO?> GetProgramPlanByIdAsync(Guid id)
         {
             var programPlan = await _programPlanRepository.GetByIdAsync(id);
             if (programPlan == null) return null;
@@ -118,7 +118,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             
 
-            if (dto.BrugerID != null && dto.BrugerID != 0)
+            if (dto.BrugerID != null && dto.BrugerID != null)
             {
                 var brugerProgram = new BrugerProgram
                 {
@@ -132,7 +132,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             //var klub = await _klubService.GetKlubByIdAsync(dto.KlubID);
 
             // Validate KlubID (Club ID)
-            if (dto.KlubID != null && dto.KlubID != 0)
+            if (dto.KlubID != null && dto.KlubID != null)
             {
                 var klubprogram = new KlubProgram
                 {
@@ -163,7 +163,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return dto;
         }
-        public async Task<ProgramPlanDTO> UpdateProgramPlanWithBrugerAndKlubAsync(int id, ProgramPlanDTO dto)
+        public async Task<ProgramPlanDTO> UpdateProgramPlanWithBrugerAndKlubAsync(Guid id, ProgramPlanDTO dto)
         {
             var existingProgramPlan = await _programPlanRepository.GetByIdAsync(id);
             if (existingProgramPlan == null)
@@ -255,7 +255,7 @@ namespace TaekwondoOrchestration.ApiService.Services
                     // Insert new træning
                     await _træningRepository.CreateTræningAsync(new Træning
                     {
-                        ProgramID = id,
+                        ProgramID = træningDTO.ProgramID,
                         TeoriID = træningDTO.TeoriID,
                         TeknikID = træningDTO.TeknikID,
                         ØvelseID = træningDTO.ØvelseID,
@@ -280,7 +280,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Update ProgramPlan based on DTO
-        public async Task<bool> UpdateProgramPlanAsync(int id, ProgramPlanDTO programPlanDto)
+        public async Task<bool> UpdateProgramPlanAsync(Guid id, ProgramPlanDTO programPlanDto)
         {
             if (id != programPlanDto.ProgramID) return false;
 
@@ -296,7 +296,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Delete ProgramPlan by ID
-        public async Task<bool> DeleteProgramPlanAsync(int id)
+        public async Task<bool> DeleteProgramPlanAsync(Guid id)
         {
             return await _programPlanRepository.DeleteAsync(id);
         }
@@ -337,7 +337,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             }).ToList();
         }
 
-        public async Task<ProgramPlanDTO?> GetProgramByIdAsync(int id)
+        public async Task<ProgramPlanDTO?> GetProgramByIdAsync(Guid id)
         {
             var program = await _programPlanRepository.GetByIdAsync(id);
             if (program == null) return null;
@@ -373,7 +373,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             };
         }
 
-        public async Task<List<ProgramPlanDTO>> GetProgramsByBrugerAsync(int brugerId)
+        public async Task<List<ProgramPlanDTO>> GetProgramsByBrugerAsync(Guid brugerId)
         {
             var programs = await _programPlanRepository.GetAllByBrugerIdAsync(brugerId);
 
@@ -409,7 +409,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
 
-        public async Task<List<ProgramPlanDTO>> GetProgramsByKlubAsync(int klubId)
+        public async Task<List<ProgramPlanDTO>> GetProgramsByKlubAsync(Guid klubId)
         {
             var programs = await _programPlanRepository.GetAllByKlubIdAsync(klubId);
 
