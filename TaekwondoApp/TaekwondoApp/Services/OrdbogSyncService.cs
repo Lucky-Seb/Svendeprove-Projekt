@@ -28,57 +28,104 @@ namespace TaekwondoApp.Services
         }
 
         // Sync data from the server to the local database
-        public async Task SyncOrdbogDataFromServerAsync()
+        public async Task SyncDataAsync()
         {
-            await _syncService.SyncDataFromServerAsync<OrdbogDTO>(
-                getServerData: async () => await _httpClient.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog"),
+            try
+            {
+                // Sync from server to local
+                var serverData = await _httpClient.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog");
+                Console.WriteLine($"Fetched {serverData.Count} entries from the server.");
 
-                // Map Ordbog to OrdbogDTO here
-                getLocalData: async (entryDTO) =>
+                foreach (var entryDTO in serverData)
                 {
-                    // Fetch Ordbog from SQLite using its ID
-                    var ordbogModel = await _sqliteService.GetEntryByIdAsync(entryDTO.OrdbogId);
+                    try
+                    {
+                        var localEntry = await _sqliteService.GetEntryByIdAsync(entryDTO.OrdbogId);
 
-                    // Map Ordbog model to OrdbogDTO
-                    var mappedEntry = _mapper.Map<OrdbogDTO>(ordbogModel);
+                        if (localEntry == null)
+                        {
+                            // No entry exists locally, add it
+                            Console.WriteLine($"Adding new entry: {entryDTO.OrdbogId}");
+                            var newEntry = _mapper.Map<Ordbog>(entryDTO);
+                            await _sqliteService.AddEntryAsync(newEntry);
+                        }
+                        else
+                        {
+                            // Entry exists, check for differences and update if necessary
+                            Console.WriteLine($"Checking for updates for entry: {entryDTO.OrdbogId}");
 
-                    return mappedEntry;
-                },
-
-                saveLocalData: async (entryDTO) =>
-                {
-                    // Map OrdbogDTO to Ordbog model before saving
-                    var ordbogModel = _mapper.Map<Ordbog>(entryDTO);
-                    await _sqliteService.AddEntryAsync(ordbogModel);
-                },
-
-                updateLocalData: async (entryDTO) =>
-                {
-                    // Map OrdbogDTO to Ordbog model before updating
-                    var ordbogModel = _mapper.Map<Ordbog>(entryDTO);
-                    await _sqliteService.UpdateEntryAsync(ordbogModel);
+                            if (entryDTO.ETag != localEntry.ETag)
+                            {
+                                // ETag mismatch: compare LastModified dates
+                                if (entryDTO.LastModified > localEntry.LastModified)
+                                {
+                                    // Server data is newer, update the local database
+                                    var updatedEntry = _mapper.Map<Ordbog>(entryDTO);
+                                    await _sqliteService.UpdateEntryAsync(updatedEntry);
+                                }
+                                else
+                                {
+                                    // Local data is newer; handle accordingly (e.g., upload or notify user)
+                                    Console.WriteLine($"Local data for {entryDTO.OrdbogId} is more recent.");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error processing server entry with ID {entryDTO.OrdbogId}: {ex.Message}");
+                    }
                 }
-            );
-        }
 
-        public async Task SyncOrdbogLocalChangesToServerAsync()
-        {
-            // Fetch unsynced entries (these are Ordbog models)
-            var unsyncedEntries = await _sqliteService.GetUnsyncedEntriesAsync();
+                // Sync from local to server (upload local changes)
+                var unsyncedEntries = await _sqliteService.GetUnsyncedEntriesAsync();
+                var unsyncedEntriesDTO = _mapper.Map<List<OrdbogDTO>>(unsyncedEntries);
 
-            // Map Ordbog model entries to OrdbogDTO before passing to sync service
-            var unsyncedEntriesDTO = _mapper.Map<List<OrdbogDTO>>(unsyncedEntries);
-
-            // Pass the mapped List<OrdbogDTO> to the Sync service
-            await _syncService.SyncLocalChangesToServerAsync<OrdbogDTO>(
-                getUnsyncedEntries: () => Task.FromResult(unsyncedEntriesDTO),  // Return the List<OrdbogDTO> here
-                postToServer: async (entryDTO) =>
+                foreach (var entryDTO in unsyncedEntriesDTO)
                 {
-                    // Directly post OrdbogDTO to the server, no need to map to Ordbog model
-                    await _httpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryDTO);
-                },
-                markAsSynced: async (entryDTO) => await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId)
-            );
+                    try
+                    {
+                        // Check if the entry already exists on the server using its OrdbogId
+                        HttpResponseMessage response = await _httpClient.GetAsync($"https://localhost:7478/api/ordbog/{entryDTO.OrdbogId}");
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var etag = response.Headers.ETag?.ToString();
+                            var existingEntry = await response.Content.ReadFromJsonAsync<OrdbogDTO>();
+
+                            if (etag != null && entryDTO.ETag != etag)
+                            {
+                                // ETag mismatch, compare LastModified dates
+                                if (entryDTO.LastModified > existingEntry.LastModified)
+                                {
+                                    // Local data is newer, update the server
+                                    await _httpClient.PutAsJsonAsync("https://localhost:7478/api/ordbog", entryDTO);
+                                    await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);  // Mark as synced locally
+                                }
+                                else
+                                {
+                                    // Server data is newer; handle accordingly (e.g., fetch new data or notify user)
+                                    Console.WriteLine($"Server data for {entryDTO.OrdbogId} is more recent.");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Entry does not exist on the server, so upload as new
+                            await _httpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryDTO);
+                            await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);  // Mark as synced locally
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error syncing local entry with ID {entryDTO.OrdbogId} to the server: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during sync process: {ex.Message}");
+            }
         }
     }
 }

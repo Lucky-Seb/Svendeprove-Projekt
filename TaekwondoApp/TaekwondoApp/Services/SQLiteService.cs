@@ -56,14 +56,29 @@ namespace TaekwondoApp.Services
             try
             {
                 // Set default sync status and initialize version if not set
-                if (entry.Status == SyncStatus.Pending)
+                if (entry.Status == SyncStatus.Synced)
                 {
-                    entry.Status = SyncStatus.Pending;
+                    entry.Status = SyncStatus.Synced;
                 }
-                entry.OrdbogId = Guid.NewGuid();
-                entry.LastSyncedVersion = 1;  // New entry, start at version 1
-                entry.ETag = GenerateETag(entry);  // Generate an initial ETag
-                entry.CreatedAt = DateTime.UtcNow;  // Setting CreatedAt for new entry
+
+                // Do not generate a new Guid if OrdbogId is already set (i.e., it's an existing entry from the server)
+                if (entry.OrdbogId == Guid.Empty)
+                {
+                    entry.OrdbogId = Guid.NewGuid(); // Only generate a new Guid for new entries
+                }
+
+                // Ensure LastSyncedVersion is initialized
+                entry.LastSyncedVersion = 1;  // New entry, start at version 1, if this is a new entry from the server
+
+                // Generate the ETag for the entry (based on the data)
+                entry.ETag = GenerateETag(entry);
+
+                // Set CreatedAt for new entries
+                if (entry.CreatedAt == default(DateTime))
+                {
+                    entry.CreatedAt = DateTime.UtcNow;  // Setting CreatedAt for new entry
+                }
+
                 // Set the 'ModifiedBy' field (could be a user or device ID)
                 entry.ModifiedBy = "System"; // Replace with actual logic to track user/device
 
@@ -79,6 +94,7 @@ namespace TaekwondoApp.Services
                 throw;
             }
         }
+
 
         public async Task<int> UpdateEntryAsync(Ordbog entry)
         {

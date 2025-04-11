@@ -8,8 +8,7 @@ namespace TaekwondoApp.Shared.Services
 {
     public interface IOrdbogSyncService
     {
-        Task SyncOrdbogDataFromServerAsync();
-        Task SyncOrdbogLocalChangesToServerAsync();
+        Task SyncDataAsync();
     }
 
 }

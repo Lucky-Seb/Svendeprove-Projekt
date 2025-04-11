@@ -200,28 +200,30 @@ else
     {
         try
         {
-            // 1. Try syncing from server to local
+            LogAction("App initializing...");
+
             if (internet)
             {
-                await OrdbogSyncService.SyncOrdbogDataFromServerAsync();
-                Console.WriteLine("Synced from server to local.");
+                try
+                {
+                    await OrdbogSyncService.SyncDataAsync();
+                    Console.WriteLine("✅ Synced from server to local.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("❌ Error syncing from server to local: " + ex.Message);
+                    Console.WriteLine(ex);
+                }
             }
 
-            // 2. Sync local unsynced changes to server (if online)
-            if (internet)
-            {
-                await OrdbogSyncService.SyncOrdbogLocalChangesToServerAsync();
-                Console.WriteLine("Synced local changes to server.");
-            }
-
-            // 3. Load from local
             await LoadEntries();
-            LogAction("Initialization complete.");
+            LogAction("✅ Entries loaded.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error during sync: {ex.Message}");
-            Console.WriteLine(ex.StackTrace);
+            Console.WriteLine($"❌ Error during OnInitializedAsync: {ex.Message}");
+            Console.WriteLine(ex);
+            errorMessage = $"Error during initialization: {ex.Message}\n{ex.StackTrace}";
         }
     }
 
@@ -231,29 +233,29 @@ else
         {
             if (internet)
             {
-                // When online, load entries from the server
                 LogAction("Loading entries from the server...");
-                var response = await HttpClient.GetFromJsonAsync<List<Ordbog>>("https://localhost:7478/api/ordbog");
 
-                if (response != null)
+                try
                 {
-                    // Use AutoMapper to map Ordbog to OrdbogDTO
-                    filteredWords = _mapper.Map<List<OrdbogDTO>>(response).ToArray();
-                    LogAction($"{filteredWords.Length} entries loaded from the server.");
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)); // add timeout
+                    var response = await HttpClient.GetFromJsonAsync<List<Ordbog>>("https://localhost:7478/api/ordbog", cts.Token);
+
+                    if (response != null)
+                    {
+                        filteredWords = _mapper.Map<List<OrdbogDTO>>(response).ToArray();
+                        LogAction($"{filteredWords.Length} entries loaded from the server.");
+                    }
+                    else
+                    {
+                        LogAction("Server returned null or invalid data.");
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    LogAction("No entries found on the server.");
+                    LogAction($"Error fetching from server: {ex.Message}");
+                    errorMessage = $"Error fetching from server: {ex.Message}";
+                    Console.WriteLine(ex); // For stacktrace visibility
                 }
-            }
-            else
-            {
-                // When offline, load entries from local storage
-                LogAction("Loading all entries from local storage...");
-                filteredWords = (await SQLiteService.GetAllEntriesAsync())
-                                 .Select(entry => _mapper.Map<OrdbogDTO>(entry))
-                                 .ToArray();
-                LogAction($"{filteredWords.Length} entries loaded from local storage.");
             }
         }
         catch (Exception ex)
@@ -401,7 +403,8 @@ else
             isSyncing = true;
             try
             {
-                await OrdbogSyncService.SyncOrdbogDataFromServerAsync(); // New method to sync
+                await OrdbogSyncService.SyncDataAsync(); // New method to sync
+
                 syncFailed = false;
                 LogAction("Data sync from server completed successfully.");
             }
