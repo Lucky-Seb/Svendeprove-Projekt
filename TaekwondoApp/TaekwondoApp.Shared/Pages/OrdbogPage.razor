@@ -141,7 +141,7 @@ else
 
 <h3>@(isEditing ? "Edit Entry" : "Add New Entry")</h3>
 
-<EditForm Model="entryModel" OnValidSubmit="@(isEditing ? UpdateEntry : CreateEntry)">
+<EditForm Model="entryModel" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -262,25 +262,33 @@ else
         {
             if (internet)
             {
+
+                // Ensure the entry has the required fields for syncing with the server
+                entryModel.ETag = entryModel.DanskOrd + entryModel.KoranskOrd;  // Set a new ETag for new entries
+                entryModel.ModifiedBy = "user123";  // Replace with the actual user/device ID
+
                 // Sync with the server
                 var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModel);
+
                 if (response.IsSuccessStatusCode)
                 {
                     LogAction("Entry created on the server.");
                     await LoadEntries();
+                    // After successful sync, update the status to Synced
+                    await SQLiteService.MarkAsSyncedAsync(entryModel.OrdbogId);
                 }
                 else
                 {
-                    errorMessage = "Failed to create entry on the server.";
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    LogAction($"Failed to create entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}");
+                    errorMessage = $"Failed to create entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}";
                 }
             }
             else
             {
-                // Map the OrdbogDTO to Ordbog using AutoMapper
+                // Map the OrdbogDTO to Ordbog using AutoMapper for offline storage
                 Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel);
-
-                // Save locally when offline
-                await SQLiteService.AddEntryAsync(entryModelMapped);  // Pass the mapped Ordbog model
+                await SQLiteService.AddEntryAsync(entryModelMapped);  // Save locally when offline
                 LogAction("Entry created locally.");
                 await LoadEntries();
             }
@@ -292,31 +300,41 @@ else
         }
     }
 
-    private async Task UpdateEntry()
+    private string GenerateETag(Ordbog entry)
+    {
+        return $"{entry.OrdbogId}-{entry.LastSyncedVersion}-{entry.DanskOrd}-{entry.KoranskOrd}";
+    }
+
+    private async Task UpdateEntry(Ordbog entry)
     {
         try
         {
             if (internet)
             {
-                // Sync with the server
-                var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entryModel.OrdbogId}", entryModel);
+                // Ensure the entry has the required fields for syncing with the server
+                entry.ETag = GenerateETag(entry);  // Generate the ETag for the updated entry
+                entry.ModifiedBy = "user123";  // Replace with actual user/device ID
+
+                var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entry.OrdbogId}", entry);
+
                 if (response.IsSuccessStatusCode)
                 {
                     LogAction("Entry updated on the server.");
                     await LoadEntries();
+                    // After successful sync, update the status to Synced
+                    await SQLiteService.MarkAsSyncedAsync(entry.OrdbogId);
                 }
                 else
                 {
-                    errorMessage = "Failed to update entry on the server.";
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    LogAction($"Failed to update entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}");
+                    errorMessage = $"Failed to update entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}";
                 }
             }
             else
             {
-                // Map the OrdbogDTO to Ordbog using AutoMapper
-                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel);
-
-                // Update locally when offline
-                await SQLiteService.UpdateEntryAsync(entryModelMapped);  // Pass the mapped Ordbog model
+                // Handle offline update logic here, e.g., update locally
+                await SQLiteService.UpdateEntryAsync(entry);
                 LogAction("Entry updated locally.");
                 await LoadEntries();
             }
@@ -327,7 +345,7 @@ else
             errorMessage = $"Error updating entry: {ex.Message}";
         }
     }
-    
+
     private async Task DeleteEntry(Guid OrdbogId)
     {
         try
@@ -387,7 +405,6 @@ else
         }
     }
 
-
     private void CancelEdit()
     {
         entryModel = new OrdbogDTO();
@@ -426,7 +443,6 @@ else
         }
     }
 
-
     private async void ClearSearch()
     {
         LogAction("Clearing search filter...");
@@ -441,5 +457,22 @@ else
             logs.RemoveAt(logs.Count - 1);  // Remove the oldest entry
         }
         logs.Insert(0, $"{DateTime.Now}: {message}");
+    }
+
+    private async Task HandleSubmit()
+    {
+        // If the model is in edit mode
+        if (isEditing)
+        {
+            // Map OrdbogDTO to Ordbog
+            Ordbog entry = _mapper.Map<Ordbog>(entryModel);
+            await UpdateEntry(entry);  // Update existing entry
+        }
+        else
+        {
+            // Map OrdbogDTO to Ordbog
+            Ordbog entry = _mapper.Map<Ordbog>(entryModel);
+            await CreateEntry();  // Create new entry
+        }
     }
 }
