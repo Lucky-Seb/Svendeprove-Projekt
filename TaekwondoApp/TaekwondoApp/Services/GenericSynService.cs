@@ -5,7 +5,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using TaekwondoApp.Shared.Services;
-using TaekwondoApp.Shared.Model;
+using TaekwondoApp.Shared.Models;
 
 namespace TaekwondoApp.Services
 {

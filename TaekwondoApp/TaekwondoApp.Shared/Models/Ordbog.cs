@@ -1,6 +1,6 @@
 ﻿using SQLite;
 
-namespace TaekwondoOrchestration.ApiService.Models
+namespace TaekwondoApp.Shared.Models
 {
     public class Ordbog : SyncableEntity
     {
