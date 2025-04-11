@@ -74,9 +74,8 @@ namespace TaekwondoApp.Services
                 getUnsyncedEntries: () => Task.FromResult(unsyncedEntriesDTO),  // Return the List<OrdbogDTO> here
                 postToServer: async (entryDTO) =>
                 {
-                    // Use AutoMapper to convert OrdbogDTO to Ordbog model before posting to the server
-                    var ordbogModel = _mapper.Map<Ordbog>(entryDTO);
-                    await _httpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", ordbogModel);
+                    // Directly post OrdbogDTO to the server, no need to map to Ordbog model
+                    await _httpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryDTO);
                 },
                 markAsSynced: async (entryDTO) => await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId)
             );
