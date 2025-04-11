@@ -29,9 +29,58 @@ namespace TaekwondoOrchestration.ApiService.Data
         public DbSet<BrugerKlub> BrugerKlubber { get; set; }
         public DbSet<KlubØvelse> KlubØvelser { get; set; }
 
+        // Any other entities inheriting SyncableEntity
+        public DbSet<SyncableEntity> SyncableEntities { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Configure SyncableEntity properties for all derived classes
+            modelBuilder.Entity<SyncableEntity>()
+                .Property(s => s.CreatedAt)
+                .IsRequired();
+
+            modelBuilder.Entity<SyncableEntity>()
+                .Property(s => s.LastModified)
+                .IsRequired();
+
+            modelBuilder.Entity<SyncableEntity>()
+                .Property(s => s.ConflictStatus)
+                .HasDefaultValue(ConflictResolutionStatus.NoConflict);
+
+            modelBuilder.Entity<SyncableEntity>()
+                .Property(s => s.Status)
+                .HasDefaultValue(SyncStatus.Pending);
+
+            modelBuilder.Entity<SyncableEntity>()
+                .Property(s => s.LastSyncedVersion)
+                .HasDefaultValue(0);
+
+            modelBuilder.Entity<SyncableEntity>()
+                .Property(s => s.ETag)
+                .HasMaxLength(255);
+
+            modelBuilder.Entity<SyncableEntity>()
+                .Property(s => s.ModifiedBy)
+                .HasMaxLength(255);
+
+            modelBuilder.Entity<SyncableEntity>()
+                .Property(s => s.IsDeleted)
+                .HasDefaultValue(false);
+
+            // Handle ChangeHistoryJson (store it as text)
+            modelBuilder.Entity<SyncableEntity>()
+                .Property(s => s.ChangeHistoryJson)
+                .HasColumnType("nvarchar(max)");  // Use a suitable type based on your database (nvarchar in SQL Server, text in SQLite, etc.)
+
+            // Optional: You could configure your derived entities to inherit properties from SyncableEntity
+            // by making sure the entities are correctly inheriting properties from SyncableEntity
+            modelBuilder.Entity<Bruger>().ToTable("Brugere");
+            modelBuilder.Entity<Klub>().ToTable("Klubber");
+
+            // Example: Configure relationships for derived models here as well if needed.
+            // Other configurations related to your model relationships
 
             // Define primary keys and sequential GUID generation
             modelBuilder.Entity<Bruger>().HasKey(b => b.BrugerID);
