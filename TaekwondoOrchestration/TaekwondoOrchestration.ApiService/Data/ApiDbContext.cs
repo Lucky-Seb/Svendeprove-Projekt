@@ -39,6 +39,8 @@ namespace TaekwondoOrchestration.ApiService.Data
             // Ignore SyncableEntity itself, since it's abstract
             modelBuilder.Ignore<SyncableEntity>();
 
+            modelBuilder.Ignore<ChangeRecord>();
+
             // Configure properties for each derived class
             modelBuilder.Entity<Ordbog>()
                 .Property(o => o.CreatedAt)
@@ -740,7 +742,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Beskrivelse = "A Korean martial art focusing on high kicks and hand techniques.",
                     BilledeLink = "taekwondo_image_url",
                     LydLink = "taekwondo_sound_url",
-                    VideoLink = "taekwondo_video_url"
+                    VideoLink = "taekwondo_video_url",
+                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
+                    CreatedAt = DateTime.Now,  // Set CreatedAt
+                    LastModified = DateTime.Now,  // Set LastModified
+                    Status = SyncStatus.Pending,  // Set status if needed
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
+                    LastSyncedVersion = 0,  // Set version if needed
+                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
+                    IsDeleted = false  // Set IsDeleted flag if applicable
                 },
                 new Ordbog
                 {
@@ -750,7 +760,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Beskrivelse = "A kick in Taekwondo, used for both offense and defense.",
                     BilledeLink = "kick_image_url",
                     LydLink = "kick_sound_url",
-                    VideoLink = "kick_video_url"
+                    VideoLink = "kick_video_url",
+                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
+                    CreatedAt = DateTime.Now,  // Set CreatedAt
+                    LastModified = DateTime.Now,  // Set LastModified
+                    Status = SyncStatus.Pending,  // Set status if needed
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
+                    LastSyncedVersion = 0,  // Set version if needed
+                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
+                    IsDeleted = false  // Set IsDeleted flag if applicable
                 },
                 new Ordbog
                 {
@@ -760,7 +778,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Beskrivelse = "A fundamental position in Taekwondo used for balance and power.",
                     BilledeLink = "stance_image_url",
                     LydLink = "stance_sound_url",
-                    VideoLink = "stance_video_url"
+                    VideoLink = "stance_video_url",
+                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
+                    CreatedAt = DateTime.Now,  // Set CreatedAt
+                    LastModified = DateTime.Now,  // Set LastModified
+                    Status = SyncStatus.Pending,  // Set status if needed
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
+                    LastSyncedVersion = 0,  // Set version if needed
+                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
+                    IsDeleted = false  // Set IsDeleted flag if applicable
                 },
                 new Ordbog
                 {
@@ -770,7 +796,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Beskrivelse = "A series of movements and techniques in a specific sequence.",
                     BilledeLink = "form_image_url",
                     LydLink = "form_sound_url",
-                    VideoLink = "form_video_url"
+                    VideoLink = "form_video_url",
+                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
+                    CreatedAt = DateTime.Now,  // Set CreatedAt
+                    LastModified = DateTime.Now,  // Set LastModified
+                    Status = SyncStatus.Pending,  // Set status if needed
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
+                    LastSyncedVersion = 0,  // Set version if needed
+                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
+                    IsDeleted = false  // Set IsDeleted flag if applicable
                 },
                 new Ordbog
                 {
@@ -780,7 +814,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Beskrivelse = "A highly skilled Taekwondo practitioner and instructor.",
                     BilledeLink = "master_image_url",
                     LydLink = "master_sound_url",
-                    VideoLink = "master_video_url"
+                    VideoLink = "master_video_url",
+                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
+                    CreatedAt = DateTime.Now,  // Set CreatedAt
+                    LastModified = DateTime.Now,  // Set LastModified
+                    Status = SyncStatus.Pending,  // Set status if needed
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
+                    LastSyncedVersion = 0,  // Set version if needed
+                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
+                    IsDeleted = false  // Set IsDeleted flag if applicable
                 },
                 new Ordbog
                 {
@@ -790,7 +832,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Beskrivelse = "A practice of fighting against an opponent in Taekwondo.",
                     BilledeLink = "sparring_image_url",
                     LydLink = "sparring_sound_url",
-                    VideoLink = "sparring_video_url"
+                    VideoLink = "sparring_video_url",
+                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
+                    CreatedAt = DateTime.Now,  // Set CreatedAt
+                    LastModified = DateTime.Now,  // Set LastModified
+                    Status = SyncStatus.Pending,  // Set status if needed
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
+                    LastSyncedVersion = 0,  // Set version if needed
+                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
+                    IsDeleted = false  // Set IsDeleted flag if applicable
                 },
                 new Ordbog
                 {
@@ -800,7 +850,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Beskrivelse = "A board used in training for practicing kicks.",
                     BilledeLink = "kickboard_image_url",
                     LydLink = "kickboard_sound_url",
-                    VideoLink = "kickboard_video_url"
+                    VideoLink = "kickboard_video_url",
+                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
+                    CreatedAt = DateTime.Now,  // Set CreatedAt
+                    LastModified = DateTime.Now,  // Set LastModified
+                    Status = SyncStatus.Pending,  // Set status if needed
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
+                    LastSyncedVersion = 0,  // Set version if needed
+                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
+                    IsDeleted = false  // Set IsDeleted flag if applicable
                 },
                 new Ordbog
                 {
@@ -810,7 +868,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Beskrivelse = "The act of breaking boards or other objects to test strength and technique.",
                     BilledeLink = "breaking_image_url",
                     LydLink = "breaking_sound_url",
-                    VideoLink = "breaking_video_url"
+                    VideoLink = "breaking_video_url",
+                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
+                    CreatedAt = DateTime.Now,  // Set CreatedAt
+                    LastModified = DateTime.Now,  // Set LastModified
+                    Status = SyncStatus.Pending,  // Set status if needed
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
+                    LastSyncedVersion = 0,  // Set version if needed
+                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
+                    IsDeleted = false  // Set IsDeleted flag if applicable
                 },
                 new Ordbog
                 {
@@ -820,7 +886,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Beskrivelse = "A symbol of rank in Taekwondo, representing the practitioner's level.",
                     BilledeLink = "belt_image_url",
                     LydLink = "belt_sound_url",
-                    VideoLink = "belt_video_url"
+                    VideoLink = "belt_video_url",
+                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
+                    CreatedAt = DateTime.Now,  // Set CreatedAt
+                    LastModified = DateTime.Now,  // Set LastModified
+                    Status = SyncStatus.Pending,  // Set status if needed
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
+                    LastSyncedVersion = 0,  // Set version if needed
+                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
+                    IsDeleted = false  // Set IsDeleted flag if applicable
                 },
                 new Ordbog
                 {
@@ -830,7 +904,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Beskrivelse = "A command to stand at attention, often used during training or ceremonies.",
                     BilledeLink = "charyeot_image_url",
                     LydLink = "charyeot_sound_url",
-                    VideoLink = "charyeot_video_url"
+                    VideoLink = "charyeot_video_url",
+                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
+                    CreatedAt = DateTime.Now,  // Set CreatedAt
+                    LastModified = DateTime.Now,  // Set LastModified
+                    Status = SyncStatus.Pending,  // Set status if needed
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
+                    LastSyncedVersion = 0,  // Set version if needed
+                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
+                    IsDeleted = false  // Set IsDeleted flag if applicable
                 }
             );
 
