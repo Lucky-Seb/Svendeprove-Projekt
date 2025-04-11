@@ -120,8 +120,7 @@ namespace TaekwondoApp.Services
                 var entry = _database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
                 if (entry != null)
                 {
-                    entry.IsDeleted = true; // Mark the entry as deleted (logical deletion)
-                    return await Task.Run(() => _database.Update(entry));  // Update the entry in the database
+                    return await Task.Run(() => _database.Delete(entry));  // Delete the entry in the database
                 }
                 return 0; // Return 0 if entry was not found
             }
