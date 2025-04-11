@@ -84,7 +84,7 @@ namespace TaekwondoApp.Services
         {
             try
             {
-                // Increment the version on every update
+                // Increment version on every update
                 entry.LastSyncedVersion++;
 
                 // Update ETag based on version and content
@@ -93,7 +93,10 @@ namespace TaekwondoApp.Services
                 // Set the 'ModifiedBy' field (could be a user or device ID)
                 entry.ModifiedBy = "System"; // Replace with actual logic to track user/device
 
-                // Log the change made
+                // Set ConflictStatus (no conflict by default)
+                entry.ConflictStatus = ConflictResolutionStatus.NoConflict;
+
+                // Log the change
                 LogChange(entry, "Updated entry");
 
                 // Update the entry in the database
@@ -105,6 +108,7 @@ namespace TaekwondoApp.Services
                 throw;
             }
         }
+
 
 
         // Delete entry (logical deletion)
@@ -183,6 +187,7 @@ namespace TaekwondoApp.Services
                 if (entry != null)
                 {
                     entry.Status = SyncStatus.Failed;  // Mark as failed
+                    entry.ConflictStatus = ConflictResolutionStatus.ManualResolve; // Set conflict status
                     await Task.Run(() => _database.Update(entry));
                 }
             }

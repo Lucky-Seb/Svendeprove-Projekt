@@ -6,6 +6,7 @@
 @inject ISQLiteService SQLiteService
 @inject NavigationManager NavigationManager
 @inject HttpClient HttpClient
+@inject IMapper _mapper
 
 <h1>Ordbog</h1>
 
@@ -218,11 +219,12 @@ else
             {
                 // When online, load entries from the server
                 LogAction("Loading entries from the server...");
-                var response = await HttpClient.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog");
+                var response = await HttpClient.GetFromJsonAsync<List<Ordbog>>("https://localhost:7478/api/ordbog");
 
                 if (response != null)
                 {
-                    filteredWords = response.ToArray();
+                    // Use AutoMapper to map Ordbog to OrdbogDTO
+                    filteredWords = _mapper.Map<List<OrdbogDTO>>(response).ToArray();
                     LogAction($"{filteredWords.Length} entries loaded from the server.");
                 }
                 else
@@ -234,7 +236,9 @@ else
             {
                 // When offline, load entries from local storage
                 LogAction("Loading all entries from local storage...");
-                filteredWords = await SQLiteService.GetAllEntriesAsync();
+                filteredWords = (await SQLiteService.GetAllEntriesAsync())
+                                 .Select(entry => _mapper.Map<OrdbogDTO>(entry))
+                                 .ToArray();
                 LogAction($"{filteredWords.Length} entries loaded from local storage.");
             }
         }
@@ -257,13 +261,11 @@ else
         {
             if (internet)
             {
-                // Directly call the API to create the entry on the server
-                LogAction("Creating entry (online) and sending to server...");
+                // Sync with the server
                 var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModel);
                 if (response.IsSuccessStatusCode)
                 {
                     LogAction("Entry created on the server.");
-                    // After the entry is created, load updated list from the server
                     await LoadEntries();
                 }
                 else
@@ -273,7 +275,7 @@ else
             }
             else
             {
-                LogAction("Creating entry (offline) and saving locally...");
+                // Save locally when offline
                 await SQLiteService.AddEntryAsync(entryModel);
                 LogAction("Entry created locally.");
                 await LoadEntries();
@@ -292,7 +294,7 @@ else
         {
             if (internet)
             {
-                LogAction("Updating entry (online) and sending to server...");
+                // Sync with the server
                 var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entryModel.OrdbogId}", entryModel);
                 if (response.IsSuccessStatusCode)
                 {
@@ -306,7 +308,7 @@ else
             }
             else
             {
-                LogAction("Updating entry (offline) and saving locally...");
+                // Update locally when offline
                 await SQLiteService.UpdateEntryAsync(entryModel);
                 LogAction("Entry updated locally.");
                 await LoadEntries();
@@ -319,13 +321,14 @@ else
         }
     }
 
+
     private async Task DeleteEntry(Guid OrdbogId)
     {
         try
         {
             if (internet)
             {
-                LogAction("Deleting entry (online) from server...");
+                // Delete entry from server
                 var response = await HttpClient.DeleteAsync($"https://localhost:7478/api/ordbog/{OrdbogId}");
                 if (response.IsSuccessStatusCode)
                 {
@@ -339,7 +342,7 @@ else
             }
             else
             {
-                LogAction($"Deleting entry {OrdbogId} (offline) from local storage...");
+                // Delete entry locally when offline
                 await SQLiteService.DeleteEntryAsync(OrdbogId);
                 LogAction("Entry deleted locally.");
                 await LoadEntries();
@@ -360,7 +363,7 @@ else
             isSyncing = true;
             try
             {
-                await OrdbogSyncService.SyncOrdbogDataFromServerAsync();
+                await OrdbogSyncService.SyncOrdbogDataFromServerAsync(); // New method to sync
                 syncFailed = false;
                 LogAction("Data sync from server completed successfully.");
             }
@@ -377,6 +380,7 @@ else
             LogAction("Cannot sync: Internet is offline.");
         }
     }
+
 
     private void CancelEdit()
     {
@@ -415,6 +419,7 @@ else
             await LoadEntries();
         }
     }
+
 
     private async void ClearSearch()
     {
