@@ -732,7 +732,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                 }
             );
 
-            // Seed for Ordbog
+            // Seed for Ordbog with static values
             modelBuilder.Entity<Ordbog>().HasData(
                 new Ordbog
                 {
@@ -743,14 +743,14 @@ namespace TaekwondoOrchestration.ApiService.Data
                     BilledeLink = "taekwondo_image_url",
                     LydLink = "taekwondo_sound_url",
                     VideoLink = "taekwondo_video_url",
-                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
-                    CreatedAt = DateTime.Now,  // Set CreatedAt
-                    LastModified = DateTime.Now,  // Set LastModified
-                    Status = SyncStatus.Pending,  // Set status if needed
-                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
-                    LastSyncedVersion = 0,  // Set version if needed
-                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
-                    IsDeleted = false  // Set IsDeleted flag if applicable
+                    ETag = "12345",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Pending,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Ordbog
                 {
@@ -761,14 +761,14 @@ namespace TaekwondoOrchestration.ApiService.Data
                     BilledeLink = "kick_image_url",
                     LydLink = "kick_sound_url",
                     VideoLink = "kick_video_url",
-                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
-                    CreatedAt = DateTime.Now,  // Set CreatedAt
-                    LastModified = DateTime.Now,  // Set LastModified
-                    Status = SyncStatus.Pending,  // Set status if needed
-                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
-                    LastSyncedVersion = 0,  // Set version if needed
-                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
-                    IsDeleted = false  // Set IsDeleted flag if applicable
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Pending,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Ordbog
                 {
@@ -779,14 +779,14 @@ namespace TaekwondoOrchestration.ApiService.Data
                     BilledeLink = "stance_image_url",
                     LydLink = "stance_sound_url",
                     VideoLink = "stance_video_url",
-                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
-                    CreatedAt = DateTime.Now,  // Set CreatedAt
-                    LastModified = DateTime.Now,  // Set LastModified
-                    Status = SyncStatus.Pending,  // Set status if needed
-                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
-                    LastSyncedVersion = 0,  // Set version if needed
-                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
-                    IsDeleted = false  // Set IsDeleted flag if applicable
+                    ETag = "12347",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Pending,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Ordbog
                 {
@@ -797,14 +797,14 @@ namespace TaekwondoOrchestration.ApiService.Data
                     BilledeLink = "form_image_url",
                     LydLink = "form_sound_url",
                     VideoLink = "form_video_url",
-                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
-                    CreatedAt = DateTime.Now,  // Set CreatedAt
-                    LastModified = DateTime.Now,  // Set LastModified
-                    Status = SyncStatus.Pending,  // Set status if needed
-                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
-                    LastSyncedVersion = 0,  // Set version if needed
-                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
-                    IsDeleted = false  // Set IsDeleted flag if applicable
+                    ETag = "12348",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Pending,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Ordbog
                 {
@@ -815,14 +815,14 @@ namespace TaekwondoOrchestration.ApiService.Data
                     BilledeLink = "master_image_url",
                     LydLink = "master_sound_url",
                     VideoLink = "master_video_url",
-                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
-                    CreatedAt = DateTime.Now,  // Set CreatedAt
-                    LastModified = DateTime.Now,  // Set LastModified
-                    Status = SyncStatus.Pending,  // Set status if needed
-                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
-                    LastSyncedVersion = 0,  // Set version if needed
-                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
-                    IsDeleted = false  // Set IsDeleted flag if applicable
+                    ETag = "12349",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Pending,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Ordbog
                 {
@@ -833,14 +833,14 @@ namespace TaekwondoOrchestration.ApiService.Data
                     BilledeLink = "sparring_image_url",
                     LydLink = "sparring_sound_url",
                     VideoLink = "sparring_video_url",
-                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
-                    CreatedAt = DateTime.Now,  // Set CreatedAt
-                    LastModified = DateTime.Now,  // Set LastModified
-                    Status = SyncStatus.Pending,  // Set status if needed
-                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
-                    LastSyncedVersion = 0,  // Set version if needed
-                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
-                    IsDeleted = false  // Set IsDeleted flag if applicable
+                    ETag = "12350",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Pending,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Ordbog
                 {
@@ -851,14 +851,14 @@ namespace TaekwondoOrchestration.ApiService.Data
                     BilledeLink = "kickboard_image_url",
                     LydLink = "kickboard_sound_url",
                     VideoLink = "kickboard_video_url",
-                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
-                    CreatedAt = DateTime.Now,  // Set CreatedAt
-                    LastModified = DateTime.Now,  // Set LastModified
-                    Status = SyncStatus.Pending,  // Set status if needed
-                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
-                    LastSyncedVersion = 0,  // Set version if needed
-                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
-                    IsDeleted = false  // Set IsDeleted flag if applicable
+                    ETag = "12351",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Pending,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Ordbog
                 {
@@ -869,14 +869,14 @@ namespace TaekwondoOrchestration.ApiService.Data
                     BilledeLink = "breaking_image_url",
                     LydLink = "breaking_sound_url",
                     VideoLink = "breaking_video_url",
-                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
-                    CreatedAt = DateTime.Now,  // Set CreatedAt
-                    LastModified = DateTime.Now,  // Set LastModified
-                    Status = SyncStatus.Pending,  // Set status if needed
-                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
-                    LastSyncedVersion = 0,  // Set version if needed
-                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
-                    IsDeleted = false  // Set IsDeleted flag if applicable
+                    ETag = "12352",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Pending,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Ordbog
                 {
@@ -887,14 +887,14 @@ namespace TaekwondoOrchestration.ApiService.Data
                     BilledeLink = "belt_image_url",
                     LydLink = "belt_sound_url",
                     VideoLink = "belt_video_url",
-                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
-                    CreatedAt = DateTime.Now,  // Set CreatedAt
-                    LastModified = DateTime.Now,  // Set LastModified
-                    Status = SyncStatus.Pending,  // Set status if needed
-                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
-                    LastSyncedVersion = 0,  // Set version if needed
-                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
-                    IsDeleted = false  // Set IsDeleted flag if applicable
+                    ETag = "12353",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Pending,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Ordbog
                 {
@@ -905,14 +905,14 @@ namespace TaekwondoOrchestration.ApiService.Data
                     BilledeLink = "charyeot_image_url",
                     LydLink = "charyeot_sound_url",
                     VideoLink = "charyeot_video_url",
-                    ETag = Guid.NewGuid().ToString(),  // Provide a unique ETag
-                    CreatedAt = DateTime.Now,  // Set CreatedAt
-                    LastModified = DateTime.Now,  // Set LastModified
-                    Status = SyncStatus.Pending,  // Set status if needed
-                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Set ConflictResolutionStatus if needed
-                    LastSyncedVersion = 0,  // Set version if needed
-                    ModifiedBy = "Admin",  // Provide who modified, this could be a placeholder
-                    IsDeleted = false  // Set IsDeleted flag if applicable
+                    ETag = "12354",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Pending,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 }
             );
 
