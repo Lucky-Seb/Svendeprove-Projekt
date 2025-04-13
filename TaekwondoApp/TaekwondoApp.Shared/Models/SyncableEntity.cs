@@ -26,8 +26,10 @@ namespace TaekwondoApp.Shared.Models
         // Property to store serialized ChangeHistory as a JSON string
         public string ChangeHistoryJson
         {
-            get => JsonConvert.SerializeObject(ChangeHistory);  // Serialize List<ChangeRecord> to JSON
-            set => ChangeHistory = JsonConvert.DeserializeObject<List<ChangeRecord>>(value);  // Deserialize JSON to List<ChangeRecord>
+            get => JsonConvert.SerializeObject(ChangeHistory);
+            set => ChangeHistory = string.IsNullOrEmpty(value)
+                ? new List<ChangeRecord>()
+                : JsonConvert.DeserializeObject<List<ChangeRecord>>(value);
         }
 
         public bool IsDeleted { get; set; } = false;  // Logical deletion flag

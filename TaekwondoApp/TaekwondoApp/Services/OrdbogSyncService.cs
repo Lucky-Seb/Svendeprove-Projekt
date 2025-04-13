@@ -16,24 +16,22 @@ namespace TaekwondoApp.Services
         private readonly ISQLiteService _sqliteService;
         private readonly HttpClient _httpClient;
         private readonly IGenericSyncService _syncService;
-        private readonly IMapper _mapper;  // Inject AutoMapper
+        private readonly IMapper _mapper;
 
-        // Modify constructor to accept AutoMapper
         public OrdbogSyncService(IGenericSyncService syncService, ISQLiteService sqliteService, IHttpClientFactory httpClientFactory, IMapper mapper)
         {
             _syncService = syncService;
             _sqliteService = sqliteService;
-            _httpClient = httpClientFactory.CreateClient();  // Initialize HttpClient using IHttpClientFactory
-            _mapper = mapper;  // Inject AutoMapper
+            _httpClient = httpClientFactory.CreateClient();
+            _mapper = mapper;
         }
 
-        // Sync data from the server to the local database
         public async Task SyncDataAsync()
         {
             try
             {
-                // Sync from server to local
-                var serverData = await _httpClient.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog");
+                // 1. Pull latest data from server
+                var serverData = await _httpClient.GetFromJsonAsync<List<OrdbogDTO>>("https://localhost:7478/api/ordbog/including-deleted");
                 Console.WriteLine($"Fetched {serverData.Count} entries from the server.");
 
                 foreach (var entryDTO in serverData)
@@ -44,83 +42,176 @@ namespace TaekwondoApp.Services
 
                         if (localEntry == null)
                         {
-                            // No entry exists locally, add it
-                            Console.WriteLine($"Adding new entry: {entryDTO.OrdbogId}");
+                            // If entry doesn't exist locally, map and add it
                             var newEntry = _mapper.Map<Ordbog>(entryDTO);
                             await _sqliteService.AddEntryAsync(newEntry);
+                            await _sqliteService.MarkAsSyncedAsync(newEntry.OrdbogId);
                         }
-                        else
+                        else if (entryDTO.ETag != localEntry.ETag)
                         {
-                            // Entry exists, check for differences and update if necessary
-                            Console.WriteLine($"Checking for updates for entry: {entryDTO.OrdbogId}");
-
-                            if (entryDTO.ETag != localEntry.ETag)
+                            // If ETag differs, check which version is newer and update accordingly
+                            if (entryDTO.LastModified > localEntry.LastModified)
                             {
-                                // ETag mismatch: compare LastModified dates
-                                if (entryDTO.LastModified > localEntry.LastModified)
-                                {
-                                    // Server data is newer, update the local database
-                                    var updatedEntry = _mapper.Map<Ordbog>(entryDTO);
-                                    await _sqliteService.UpdateEntryAsync(updatedEntry);
-                                }
-                                else
-                                {
-                                    // Local data is newer; handle accordingly (e.g., upload or notify user)
-                                    Console.WriteLine($"Local data for {entryDTO.OrdbogId} is more recent.");
-                                }
+                                
+                                var updatedEntry = _mapper.Map<Ordbog>(entryDTO);
+                                await _sqliteService.UpdateEntryAsync(updatedEntry);
+                                await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);
+                            }
+                            else if (entryDTO.LastModified < localEntry.LastModified)
+                            {
+                                var updatedEntry = _mapper.Map<OrdbogDTO>(localEntry);
+                                await _httpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/including-deleted/{updatedEntry.OrdbogId}", updatedEntry);
+                                await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error processing server entry with ID {entryDTO.OrdbogId}: {ex.Message}");
+                        Console.WriteLine($"Error processing server entry {entryDTO.OrdbogId}: {ex.Message}");
                     }
                 }
 
-                // Sync from local to server (upload local changes)
-                var unsyncedEntries = await _sqliteService.GetUnsyncedEntriesAsync();
-                var unsyncedEntriesDTO = _mapper.Map<List<OrdbogDTO>>(unsyncedEntries);
+                // 2. Handle deletions and restorations
+                var deletedEntries = await _sqliteService.GetLocallyDeletedEntriesAsync();
 
-                foreach (var entryDTO in unsyncedEntriesDTO)
+                foreach (var deleted in deletedEntries)
                 {
                     try
                     {
-                        // Check if the entry already exists on the server using its OrdbogId
-                        HttpResponseMessage response = await _httpClient.GetAsync($"https://localhost:7478/api/ordbog/{entryDTO.OrdbogId}");
-
-                        if (response.IsSuccessStatusCode)
+                        // Handle soft delete (if the entry is marked as deleted in the local database)
+                        if (deleted.IsDeleted)
                         {
-                            var etag = response.Headers.ETag?.ToString();
-                            var existingEntry = await response.Content.ReadFromJsonAsync<OrdbogDTO>();
+                            // Handle soft deletion on the server
+                            var deleteResponse = await _httpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/including-deleted/{deleted.OrdbogId}", deleted);
 
-                            if (etag != null && entryDTO.ETag != etag)
+                            if (deleteResponse.IsSuccessStatusCode)
                             {
-                                // ETag mismatch, compare LastModified dates
-                                if (entryDTO.LastModified > existingEntry.LastModified)
-                                {
-                                    // Local data is newer, update the server
-                                    await _httpClient.PutAsJsonAsync("https://localhost:7478/api/ordbog", entryDTO);
-                                    await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);  // Mark as synced locally
-                                }
-                                else
-                                {
-                                    // Server data is newer; handle accordingly (e.g., fetch new data or notify user)
-                                    Console.WriteLine($"Server data for {entryDTO.OrdbogId} is more recent.");
-                                }
+                                Console.WriteLine($"Deleted {deleted.OrdbogId} on server.");
+                                await _sqliteService.MarkAsSyncedAsync(deleted.OrdbogId); // Mark as synced after successful deletion
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Failed to delete {deleted.OrdbogId} on server: {deleteResponse.StatusCode}");
                             }
                         }
                         else
                         {
-                            // Entry does not exist on the server, so upload as new
-                            await _httpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryDTO);
-                            await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);  // Mark as synced locally
+                            // Handle restore action for soft-deleted entries
+                            var restoreResponse = await _httpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/including-deleted/{deleted.OrdbogId}", deleted);
+
+                            if (restoreResponse.IsSuccessStatusCode)
+                            {
+                                Console.WriteLine($"Restored {deleted.OrdbogId} on server.");
+                                await _sqliteService.MarkAsSyncedAsync(deleted.OrdbogId); // Mark as restored after successful restore
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Failed to restore {deleted.OrdbogId} on server: {restoreResponse.StatusCode}");
+                            }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error syncing local entry with ID {entryDTO.OrdbogId} to the server: {ex.Message}");
+                        Console.WriteLine($"Error syncing deletion/restoration for {deleted.OrdbogId}: {ex.Message}");
                     }
                 }
+
+                // 3. Push local additions/updates
+                var unsyncedEntries = await _sqliteService.GetUnsyncedEntriesAsync();
+
+                foreach (var entry in unsyncedEntries)
+                {
+                    try
+                    {
+                        // Skip deleted entries (don't attempt to create or update them)
+                        if (entry.IsDeleted)
+                        {
+                            // Handle deletion or restoration logic for deleted entries
+                            var response = await _httpClient.GetAsync($"https://localhost:7478/api/ordbog/including-deleted/{entry.OrdbogId}");
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                                // If the entity exists on the server, handle soft delete
+                                var existing = await response.Content.ReadFromJsonAsync<OrdbogDTO>();
+
+                                // Only mark as deleted on the server if it's not already deleted there
+                                if (!existing.IsDeleted)
+                                {
+                                    // Send soft delete to the server
+                                    var deleteResponse = await _httpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/including-deleted/{entry.OrdbogId}", entry);
+
+                                    if (deleteResponse.IsSuccessStatusCode)
+                                    {
+                                        Console.WriteLine($"Successfully marked entry {entry.OrdbogId} as deleted on server.");
+                                        await _sqliteService.MarkAsSyncedAsync(entry.OrdbogId); // Mark as synced after successful deletion
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine($"Failed to mark entry {entry.OrdbogId} as deleted on server.");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // If the entry doesn't exist on the server, no need to create it as it is marked for deletion locally
+                                Console.WriteLine($"Entry {entry.OrdbogId} not found on server (likely deleted), skipping creation.");
+                            }
+                        }
+                        else
+                        {
+                            // Only sync non-deleted entries (normal creation or update)
+                            var response = await _httpClient.GetAsync($"https://localhost:7478/api/ordbog/including-deleted/{entry.OrdbogId}");
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                                // Entry exists on the server, update it if necessary
+                                var existing = await response.Content.ReadFromJsonAsync<OrdbogDTO>();
+
+                                // Handle conflicts: ETag mismatch and local modification timestamp is later than the server's timestamp
+                                if (entry.ETag != existing.ETag && entry.LastModified > existing.LastModified)
+                                {
+                                    var dto = _mapper.Map<OrdbogDTO>(entry);
+
+                                    // Update the existing entry on the server
+                                    var updateResponse = await _httpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/including-deleted/{entry.OrdbogId}", dto);
+
+                                    if (updateResponse.IsSuccessStatusCode)
+                                    {
+                                        // Mark as synced after successful update
+                                        await _sqliteService.MarkAsSyncedAsync(entry.OrdbogId);
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine($"Failed to update entry {entry.OrdbogId} on the server.");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Entry doesn't exist on the server — create new entry on the server
+                                var dto = _mapper.Map<OrdbogDTO>(entry);
+
+                                // Post the new entry to the server
+                                var createResponse = await _httpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", dto);
+
+                                if (createResponse.IsSuccessStatusCode)
+                                {
+                                    // Mark as synced after successful creation
+                                    await _sqliteService.MarkAsSyncedAsync(entry.OrdbogId);
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"Failed to create entry {entry.OrdbogId} on the server.");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error syncing entry {entry.OrdbogId}: {ex.Message}");
+                    }
+                }
+
             }
             catch (Exception ex)
             {

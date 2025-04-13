@@ -25,5 +25,7 @@ namespace TaekwondoApp.Shared.Services
 
         // Mark an entry as deleted (logical deletion)
         Task<int> MarkAsDeletedAsync(Guid OrdbogId);  // New method to mark entry as deleted
+        Task<List<Ordbog>> GetLocallyDeletedEntriesAsync();
+        Task MarkAsRestoredAsync(Guid OrdbogId);  // New method to mark entry as restored
     }
 }

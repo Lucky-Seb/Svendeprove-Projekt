@@ -41,6 +41,18 @@ namespace TaekwondoOrchestration.ApiService.Data
 
             modelBuilder.Ignore<ChangeRecord>();
 
+            // Apply soft delete filter globally to SyncableEntities
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (typeof(SyncableEntity).IsAssignableFrom(entityType.ClrType))
+                {
+                    var method = typeof(ApiDbContext)
+                        .GetMethod(nameof(ApplySoftDeleteFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                        .MakeGenericMethod(entityType.ClrType);
+
+                    method.Invoke(null, new object[] { modelBuilder });
+                }
+            }
             // Configure properties for each derived class
             modelBuilder.Entity<Ordbog>()
                 .Property(o => o.CreatedAt)
@@ -1355,6 +1367,12 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseID = øvelseID2   // Link to Øvelse 2
                 }
             );
+
+        }
+        // Apply soft delete filter for SyncableEntity types
+        private static void ApplySoftDeleteFilter<T>(ModelBuilder builder) where T : SyncableEntity
+        {
+            builder.Entity<T>().HasQueryFilter(e => !e.IsDeleted);  // Soft delete filter
         }
     }
 }

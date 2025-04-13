@@ -24,7 +24,7 @@
         <button class="btn btn-sm btn-danger" @onclick="TrySyncIfOnline">Retry Sync</button>
     </div>
 }
-@if (isSyncing)
+@if (isSyncing is true)
 {
     <div class="d-flex align-items-center mb-3">
         <div class="spinner-border text-primary me-2" role="status">
@@ -39,6 +39,11 @@
     <button class="btn @(internet ? "btn-outline-danger" : "btn-outline-success")" @onclick="ToggleInternet">
         @(internet ? "Go Offline (Simulated)" : "Go Online (Simulated)")
     </button>
+</div>
+<!-- Show Deleted Entries Toggle -->
+<div class="form-check mb-3">
+    <InputCheckbox class="form-check-input" @bind-Value="showDeleted" />
+    <label class="form-check-label">Show Deleted Entries</label>
 </div>
 
 <!-- Search -->
@@ -84,6 +89,12 @@ else
                 <th>Lyd</th>
                 <th>Video</th>
                 <th>Status</th>
+                <th>Conflict</th>
+                <th>Modified By</th>
+                <th>Last Modified</th>
+                <th>Created At</th>
+                <th>ETag</th>
+                <th>Is Deleted</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -114,22 +125,34 @@ else
                         }
                     </td>
                     <td>
-                        @if (word.Status == SyncStatus.Synced)
+                        <span class="badge @(word.Status switch
                         {
-                            <span class="badge bg-success">Synced</span>
+                            SyncStatus.Pending => "bg-success",
+                            SyncStatus.Synced => "bg-warning text-dark",
+                            SyncStatus.Failed => "bg-danger",
+                            SyncStatus.Deleted => "bg-secondary",
+                            _ => "bg-light"
+                        })">@word.Status</span>
+                    </td>
+                    <td>@word.ConflictStatus</td>
+                    <td>@word.ModifiedBy</td>
+                    <td>@word.LastModified.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@word.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@word.ETag</td>
+                    <td>
+                        @if (word.IsDeleted)
+                        {
+                            <span class="text-danger">Yes</span>
                         }
-                        else if (word.Status == SyncStatus.Pending)
+                        else
                         {
-                            <span class="badge bg-warning text-dark">Pending</span>
-                        }
-                        else if (word.Status == SyncStatus.Failed)
-                        {
-                            <span class="badge bg-danger">Failed</span>
+                            <span class="text-success">No</span>
                         }
                     </td>
                     <td>
                         <button class="btn btn-sm btn-primary" @onclick="() => EditEntry(word)">Edit</button>
                         <button class="btn btn-sm btn-danger" @onclick="() => DeleteEntry(word.OrdbogId)">Delete</button>
+                        <button class="btn btn-sm btn-warning" @onclick="() => RestoreEntry(word.OrdbogId)">Restore</button>
                     </td>
                 </tr>
             }
@@ -195,6 +218,7 @@ else
     private bool internet = true; // Simulate the internet status for the app
     private string errorMessage = string.Empty;
     private string searchTerm = string.Empty;
+    private bool showDeleted = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -204,14 +228,16 @@ else
 
             if (internet)
             {
+                LogAction("App Has internet...");
                 try
                 {
-                    await OrdbogSyncService.SyncDataAsync();
-                    Console.WriteLine("✅ Synced from server to local.");
+                    LogAction("App Try to Sync...");
+                    await TrySyncIfOnline();
+                    LogAction("✅ Synced from server to local.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("❌ Error syncing from server to local: " + ex.Message);
+                    LogAction("❌ Error syncing from server to local: " + ex.Message);
                     Console.WriteLine(ex);
                 }
             }
@@ -221,9 +247,10 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error during OnInitializedAsync: {ex.Message}");
+            LogAction($"❌ Error during OnInitializedAsync: {ex.Message}");
             Console.WriteLine(ex);
             errorMessage = $"Error during initialization: {ex.Message}\n{ex.StackTrace}";
+            LogAction(errorMessage);
         }
     }
 
@@ -233,16 +260,20 @@ else
         {
             if (internet)
             {
+                await TrySyncIfOnline();
                 LogAction("Loading entries from the server...");
-
+                isSyncing = false;
                 try
                 {
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)); // add timeout
-                    var response = await HttpClient.GetFromJsonAsync<List<Ordbog>>("https://localhost:7478/api/ordbog", cts.Token);
+                    var response = await HttpClient.GetFromJsonAsync<List<Ordbog>>("https://localhost:7478/api/ordbog/including-deleted", cts.Token);
 
                     if (response != null)
                     {
-                        filteredWords = _mapper.Map<List<OrdbogDTO>>(response).ToArray();
+                        var allEntries = _mapper.Map<List<OrdbogDTO>>(response);
+                        filteredWords = allEntries
+                            .Where(e => showDeleted || !e.IsDeleted)
+                            .ToArray(); 
                         LogAction($"{filteredWords.Length} entries loaded from the server.");
                     }
                     else
@@ -257,6 +288,32 @@ else
                     Console.WriteLine(ex); // For stacktrace visibility
                 }
             }
+            else
+            {
+                try
+                {
+                    var response = await SQLiteService.GetAllEntriesAsync();
+
+                    if (response != null)
+                    {
+                        var allEntries = _mapper.Map<List<OrdbogDTO>>(response);
+                        filteredWords = allEntries
+                            .Where(e => showDeleted || !e.IsDeleted)
+                            .ToArray(); 
+                        LogAction($"{filteredWords.Length} entries loaded from the Local Database.");
+                    }
+                    else
+                    {
+                        LogAction("Local Database returned null or invalid data.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogAction($"Error fetching from Local Database: {ex.Message}");
+                    errorMessage = $"Error fetching from Local Database: {ex.Message}";
+                    Console.WriteLine(ex); // For stacktrace visibility
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -265,10 +322,11 @@ else
         }
     }
 
-    private void ToggleInternet()
+    private async Task ToggleInternet()
     {
         internet = !internet;
         LogAction($"Internet toggled {(internet ? "ON" : "OFF")}.");
+        await LoadEntries();
     }
 
     private async Task CreateEntry()
@@ -308,6 +366,7 @@ else
                 LogAction("Entry created locally.");
                 await LoadEntries();
             }
+            await TrySyncIfOnline();
         }
         catch (Exception ex)
         {
@@ -331,7 +390,7 @@ else
                 entry.ETag = GenerateETag(entry);  // Generate the ETag for the updated entry
                 entry.ModifiedBy = "user123";  // Replace with actual user/device ID
 
-                var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entry.OrdbogId}", entry);
+                var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/including-deleted/{entry.OrdbogId}", entry);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -354,6 +413,7 @@ else
                 LogAction("Entry updated locally.");
                 await LoadEntries();
             }
+            await TrySyncIfOnline();
         }
         catch (Exception ex)
         {
@@ -368,31 +428,44 @@ else
         {
             if (internet)
             {
-                // Delete entry from server
-                var response = await HttpClient.DeleteAsync($"https://localhost:7478/api/ordbog/{OrdbogId}");
-                if (response.IsSuccessStatusCode)
+                var wordToDelete = filteredWords.FirstOrDefault(w => w.OrdbogId == OrdbogId);
+
+                if (wordToDelete != null)
                 {
-                    LogAction("Entry deleted from the server.");
-                    await LoadEntries();
-                }
-                else
-                {
-                    errorMessage = "Failed to delete entry from the server.";
+                    // Mark entry as deleted for sync
+                    wordToDelete.IsDeleted = true;
+                    wordToDelete.Status = SyncStatus.Deleted;
+
+                    // Send update to server
+                    var response = await HttpClient.PutAsJsonAsync(
+                        $"https://localhost:7478/api/ordbog/including-deleted/{wordToDelete.OrdbogId}",
+                        wordToDelete
+                    );
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        LogAction("✅ Entry marked as deleted on server.");
+                    }
+                    else
+                    {
+                        var details = await response.Content.ReadAsStringAsync();
+                        LogAction($"❌ Failed to mark as deleted on server. Status: {response.StatusCode}, Details: {details}");
+                    }
                 }
             }
-            else
-            {
-                // Delete entry locally when offline
-                await SQLiteService.DeleteEntryAsync(OrdbogId);
-                LogAction("Entry deleted locally.");
-                await LoadEntries();
-            }
+
+            // Mark entry as deleted in local database
+            await SQLiteService.MarkAsDeletedAsync(OrdbogId);
+            LogAction("✅ Entry marked as deleted locally.");
         }
         catch (Exception ex)
         {
-            LogAction($"Error deleting entry: {ex.Message}");
+            LogAction($"❌ Error deleting entry: {ex.Message}");
             errorMessage = $"Error deleting entry: {ex.Message}";
+            Console.WriteLine(ex);
         }
+
+        await LoadEntries();
     }
 
     private async Task TrySyncIfOnline()
@@ -492,4 +565,67 @@ else
             await CreateEntry();  // Create new entry
         }
     }
+
+    private async Task RestoreEntry(Guid OrdbogId)
+    {
+        try
+        {
+            // Log initial parameters and conditions
+            LogAction($"Starting RestoreEntry for OrdbogId: {OrdbogId}, internet status: {internet}");
+
+            if (internet)
+            {
+                // Find the word in filteredWords collection
+                var wordToRestore = filteredWords.FirstOrDefault(w => w.OrdbogId == OrdbogId);
+
+                // Log if the word is found or not
+                if (wordToRestore != null)
+                {
+                    LogAction($"Word found: {wordToRestore.DanskOrd} ({wordToRestore.OrdbogId}), Status: {wordToRestore.Status}, IsDeleted: {wordToRestore.IsDeleted}");
+
+                    // Set IsDeleted to false to restore the word
+                    wordToRestore.IsDeleted = false;
+                    wordToRestore.Status = SyncStatus.Synced;
+                    LogAction($"Word restored locally: {wordToRestore.DanskOrd}, Status set to {wordToRestore.Status}, IsDeleted set to {wordToRestore.IsDeleted}");
+
+                    // Send a PUT request to restore the entry on the server
+                    LogAction($"Sending PUT request to restore entry on server. URL: https://localhost:7478/api/ordbog/restore/{wordToRestore.OrdbogId}");
+                    var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/restore/{wordToRestore.OrdbogId}", wordToRestore);
+
+                    // Log the response status code and the outcome of the request
+                    if (response.IsSuccessStatusCode)
+                    {
+                        LogAction($"✅ Entry restored on server successfully. Status Code: {response.StatusCode}");
+                    }
+                    else
+                    {
+                        LogAction($"❌ Failed to restore entry on server. Status Code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+                        errorMessage = $"Failed to restore entry on server. Status Code: {response.StatusCode}, Reason: {response.ReasonPhrase}";
+                    }
+                }
+                else
+                {
+                    LogAction($"❌ Word to restore not found in filteredWords collection. OrdbogId: {OrdbogId}");
+                }
+            }
+            else
+            {
+                LogAction("❌ No internet connection. Cannot restore entry on the server.");
+            }
+
+            // Log the attempt to restore locally
+            LogAction($"Attempting to restore entry locally in SQLite database for OrdbogId: {OrdbogId}");
+            await SQLiteService.MarkAsRestoredAsync(OrdbogId);
+            LogAction($"✅ Entry restored locally in SQLite database for OrdbogId: {OrdbogId}");
+            LoadEntries();
+        }
+        catch (Exception ex)
+        {
+            // Log error details
+            LogAction($"Error restoring entry for OrdbogId: {OrdbogId}, Exception: {ex.Message}, StackTrace: {ex.StackTrace}");
+            errorMessage = $"Error restoring entry: {ex.Message}";
+            Console.WriteLine(ex);
+        }
+    }
+
 }

@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using TaekwondoApp.Shared.Services;
+using Newtonsoft.Json;
 
 namespace TaekwondoApp.Services
 {
@@ -41,7 +42,7 @@ namespace TaekwondoApp.Services
             try
             {
                 // Fetch the Ordbog entry by OrdbogId, excluding deleted entries
-                return await Task.FromResult(_database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId && !e.IsDeleted));
+                return await Task.FromResult(_database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId));
             }
             catch (Exception ex)
             {
@@ -49,41 +50,54 @@ namespace TaekwondoApp.Services
                 throw;
             }
         }
-
         // Add entry with versioning, syncing, and conflict detection
         public async Task<int> AddEntryAsync(Ordbog entry)
         {
             try
             {
-                // Set default sync status and initialize version if not set
+                // Ensure all necessary fields are set on the Ordbog entry
                 if (entry.Status == SyncStatus.Synced)
                 {
-                    entry.Status = SyncStatus.Synced;
+                    entry.Status = SyncStatus.Pending;  // Default sync status if not set
                 }
 
-                // Do not generate a new Guid if OrdbogId is already set (i.e., it's an existing entry from the server)
+                // If the entry is already present on the server (exists in the local database), don't generate new GUID
                 if (entry.OrdbogId == Guid.Empty)
                 {
-                    entry.OrdbogId = Guid.NewGuid(); // Only generate a new Guid for new entries
+                    entry.OrdbogId = Guid.NewGuid();  // Generate new Guid only for new entries
                 }
 
-                // Ensure LastSyncedVersion is initialized
-                entry.LastSyncedVersion = 1;  // New entry, start at version 1, if this is a new entry from the server
-
-                // Generate the ETag for the entry (based on the data)
-                entry.ETag = GenerateETag(entry);
-
-                // Set CreatedAt for new entries
-                if (entry.CreatedAt == default(DateTime))
+                // If the entry was fetched from the server and it's marked as deleted, ensure its status is also deleted in local storage
+                if (entry.IsDeleted)
                 {
-                    entry.CreatedAt = DateTime.UtcNow;  // Setting CreatedAt for new entry
+                    // Ensure that 'IsDeleted' is kept as true for deleted entries
+                    entry.Status = SyncStatus.Synced;  // Mark as synced for deletion entities
+                    entry.LastModified = DateTime.UtcNow; // Set current time for last modified
+                }
+                else
+                {
+                    // Ensure the normal fields for non-deleted entries
+                    entry.LastSyncedVersion = 1;  // Set to 1 for new entries
+                    entry.ETag = GenerateETag(entry);  // Generate a version identifier for the entry
+
+                    // Set CreatedAt for new entries if it's not already set
+                    if (entry.CreatedAt == default(DateTime))
+                    {
+                        entry.CreatedAt = DateTime.UtcNow;  // Setting CreatedAt for new entry
+                    }
+
+                    // Set the 'ModifiedBy' field (replace with actual user/device ID)
+                    entry.ModifiedBy = "System";  // You can dynamically replace this with user/device ID
+
+                    // Log the initial change (first entry creation)
+                    LogChange(entry, "Initial entry creation");
+
+                    // Default to no conflict
+                    entry.ConflictStatus = ConflictResolutionStatus.NoConflict;
                 }
 
-                // Set the 'ModifiedBy' field (could be a user or device ID)
-                entry.ModifiedBy = "System"; // Replace with actual logic to track user/device
-
-                // Log the initial change (first entry creation)
-                LogChange(entry, "Initial entry creation");
+                // Serialize ChangeHistory as a JSON string
+                entry.ChangeHistoryJson = JsonConvert.SerializeObject(entry.ChangeHistory);
 
                 // Insert the new entry into the database
                 return await Task.Run(() => _database.Insert(entry));
@@ -95,7 +109,6 @@ namespace TaekwondoApp.Services
             }
         }
 
-
         public async Task<int> UpdateEntryAsync(Ordbog entry)
         {
             try
@@ -106,15 +119,26 @@ namespace TaekwondoApp.Services
                 // Update ETag based on version and content
                 entry.ETag = GenerateETag(entry);
 
-                // Set the 'ModifiedBy' field (could be a user or device ID)
-                entry.ModifiedBy = "System"; // Replace with actual logic to track user/device
+                // Set the 'ModifiedBy' field (replace with actual logic to track user/device)
+                entry.ModifiedBy = "System"; // You can replace this with actual user or device ID
 
                 // Set ConflictStatus (no conflict by default)
                 entry.ConflictStatus = ConflictResolutionStatus.NoConflict;
 
-                // Log the change
-                LogChange(entry, "Updated entry");
+                // Logical deletion flag
+                entry.IsDeleted = false;
 
+                // Set the sync status to pending
+                entry.Status = SyncStatus.Pending;
+
+                // Update LastModified to the current time for updated entry
+                entry.LastModified = DateTime.UtcNow;
+
+                // Serialize ChangeHistory to JSON if it's not already set
+                entry.ChangeHistoryJson = JsonConvert.SerializeObject(entry.ChangeHistory);
+
+                // Log the change (this can be used for auditing or debugging)
+                LogChange(entry, entry.IsDeleted ? "Marked as deleted" : "Updated entry");
                 // Update the entry in the database
                 return await Task.Run(() => _database.Update(entry));
             }
@@ -124,8 +148,6 @@ namespace TaekwondoApp.Services
                 throw;
             }
         }
-
-
 
         // Delete entry (logical deletion)
         public async Task<int> DeleteEntryAsync(Guid OrdbogId)
@@ -150,7 +172,7 @@ namespace TaekwondoApp.Services
         // Generate ETag based on entity versioning and other fields
         private string GenerateETag(Ordbog entry)
         {
-            return $"{entry.OrdbogId}-{entry.LastSyncedVersion}-{entry.DanskOrd}-{entry.KoranskOrd}";
+            return $"{entry.DanskOrd}-{entry.KoranskOrd}";
         }
 
         // Get entries with unsynced status (Pending or Failed)
@@ -222,6 +244,7 @@ namespace TaekwondoApp.Services
                 if (entry != null)
                 {
                     entry.Status = SyncStatus.Deleted;  // Mark status as deleted
+                    entry.IsDeleted = true;
                     return await Task.Run(() => _database.Update(entry));  // Update entry to mark as deleted
                 }
 
@@ -274,5 +297,28 @@ namespace TaekwondoApp.Services
             // Add the change record to the ChangeHistory of the entry
             entry.ChangeHistory.Add(changeRecord);
         }
+        public async Task<List<Ordbog>> GetLocallyDeletedEntriesAsync()
+        {
+            return await Task.Run(() =>
+            {
+                return _database.Table<Ordbog>()
+                                .Where(e => e.IsDeleted == true && e.Status == SyncStatus.Deleted)
+                                .ToList();
+            });
+        }
+        public async Task MarkAsRestoredAsync(Guid OrdbogId)
+        {
+            var entry = _database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
+            if (entry != null)
+            {
+                entry.Status = SyncStatus.Synced;  // Mark status as Pending (for syncing again)
+                entry.IsDeleted = false;            // Mark the entry as not deleted
+                entry.LastModified = DateTime.UtcNow;  // Update LastModified to the current time
+                entry.ConflictStatus = ConflictResolutionStatus.NoConflict;  // Reset any conflicts
+
+                await Task.Run(() => _database.Update(entry));  // Update entry to restore
+            }
+        }
+
     }
 }
