@@ -420,7 +420,6 @@ else
                 if (response.IsSuccessStatusCode)
                 {
                     LogAction("Entry deleted from the server.");
-                    await LoadEntries();
                 }
                 else
                 {
@@ -432,7 +431,6 @@ else
                 // Delete entry locally when offline
                 await SQLiteService.DeleteEntryAsync(OrdbogId);
                 LogAction("Entry deleted locally.");
-                await LoadEntries();
             }
             await TrySyncIfOnline();
         }
@@ -468,6 +466,7 @@ else
             syncFailed = true;
             LogAction("Cannot sync: Internet is offline.");
         }
+        LoadEntries();
     }
 
     private void CancelEdit()
