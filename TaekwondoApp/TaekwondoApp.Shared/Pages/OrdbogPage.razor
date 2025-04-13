@@ -114,17 +114,20 @@ else
                         }
                     </td>
                     <td>
-                        @if (word.Status == SyncStatus.Synced)
+                        @if (word.Status == SyncStatus.Pending)
                         {
                             <span class="badge bg-success">Synced</span>
+                            @word.Status
                         }
-                        else if (word.Status == SyncStatus.Pending)
+                        else if (word.Status == SyncStatus.Synced)
                         {
                             <span class="badge bg-warning text-dark">Pending</span>
+                            @word.Status
                         }
                         else if (word.Status == SyncStatus.Failed)
                         {
                             <span class="badge bg-danger">Failed</span>
+                            @word.Status
                         }
                     </td>
                     <td>
