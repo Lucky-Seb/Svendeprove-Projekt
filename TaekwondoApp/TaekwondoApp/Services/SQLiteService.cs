@@ -42,7 +42,7 @@ namespace TaekwondoApp.Services
             try
             {
                 // Fetch the Ordbog entry by OrdbogId, excluding deleted entries
-                return await Task.FromResult(_database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId && !e.IsDeleted));
+                return await Task.FromResult(_database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId));
             }
             catch (Exception ex)
             {
@@ -50,7 +50,6 @@ namespace TaekwondoApp.Services
                 throw;
             }
         }
-
         // Add entry with versioning, syncing, and conflict detection
         public async Task<int> AddEntryAsync(Ordbog entry)
         {
@@ -140,8 +139,7 @@ namespace TaekwondoApp.Services
                 entry.ChangeHistoryJson = JsonConvert.SerializeObject(entry.ChangeHistory);
 
                 // Log the change (this can be used for auditing or debugging)
-                LogChange(entry, "Updated entry");
-
+                LogChange(entry, entry.IsDeleted ? "Marked as deleted" : "Updated entry");
                 // Update the entry in the database
                 return await Task.Run(() => _database.Update(entry));
             }
@@ -247,6 +245,7 @@ namespace TaekwondoApp.Services
                 if (entry != null)
                 {
                     entry.Status = SyncStatus.Deleted;  // Mark status as deleted
+                    entry.IsDeleted = true;
                     return await Task.Run(() => _database.Update(entry));  // Update entry to mark as deleted
                 }
 
@@ -298,6 +297,25 @@ namespace TaekwondoApp.Services
 
             // Add the change record to the ChangeHistory of the entry
             entry.ChangeHistory.Add(changeRecord);
+        }
+        public async Task<List<Ordbog>> GetLocallyDeletedEntriesAsync()
+        {
+            return await Task.Run(() =>
+            {
+                return _database.Table<Ordbog>()
+                                .Where(e => e.IsDeleted == true && e.Status == SyncStatus.Deleted)
+                                .ToList();
+            });
+        }
+        public async Task MarkAsRestoredAsync(Guid OrdbogId)
+        {
+            var entry = _database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
+            if (entry != null)
+            {
+                entry.Status = SyncStatus.Pending;  // Mark status as deleted
+                entry.IsDeleted = false;
+                await Task.Run(() => _database.Update(entry));  // Update entry to mark as deleted
+            }
         }
     }
 }

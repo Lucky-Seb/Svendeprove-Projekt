@@ -40,6 +40,11 @@
         @(internet ? "Go Offline (Simulated)" : "Go Online (Simulated)")
     </button>
 </div>
+<!-- Show Deleted Entries Toggle -->
+<div class="form-check mb-3">
+    <InputCheckbox class="form-check-input" @bind-Value="showDeleted" />
+    <label class="form-check-label">Show Deleted Entries</label>
+</div>
 
 <!-- Search -->
 <div class="mb-3 row">
@@ -147,6 +152,7 @@ else
                     <td>
                         <button class="btn btn-sm btn-primary" @onclick="() => EditEntry(word)">Edit</button>
                         <button class="btn btn-sm btn-danger" @onclick="() => DeleteEntry(word.OrdbogId)">Delete</button>
+                        <button class="btn btn-sm btn-warning" @onclick="() => RestoreEntry(word.OrdbogId)">Restore</button>
                     </td>
                 </tr>
             }
@@ -212,6 +218,7 @@ else
     private bool internet = true; // Simulate the internet status for the app
     private string errorMessage = string.Empty;
     private string searchTerm = string.Empty;
+    private bool showDeleted = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -263,7 +270,10 @@ else
 
                     if (response != null)
                     {
-                        filteredWords = _mapper.Map<List<OrdbogDTO>>(response).ToArray();
+                        var allEntries = _mapper.Map<List<OrdbogDTO>>(response);
+                        filteredWords = allEntries
+                            .Where(e => showDeleted || !e.IsDeleted)
+                            .ToArray(); 
                         LogAction($"{filteredWords.Length} entries loaded from the server.");
                     }
                     else
@@ -286,7 +296,10 @@ else
 
                     if (response != null)
                     {
-                        filteredWords = _mapper.Map<List<OrdbogDTO>>(response).ToArray();
+                        var allEntries = _mapper.Map<List<OrdbogDTO>>(response);
+                        filteredWords = allEntries
+                            .Where(e => showDeleted || !e.IsDeleted)
+                            .ToArray(); 
                         LogAction($"{filteredWords.Length} entries loaded from the Local Database.");
                     }
                     else
@@ -413,40 +426,34 @@ else
     {
         try
         {
-            bool success = false;
             if (internet)
             {
-                // Delete entry from the server
-                var response = await HttpClient.DeleteAsync($"https://localhost:7478/api/ordbog/{OrdbogId}");
-                if (response.IsSuccessStatusCode)
+                var wordToDelete = filteredWords.FirstOrDefault(w => w.OrdbogId == OrdbogId);
+
+                if (wordToDelete != null)
                 {
-                    LogAction("Entry deleted from the server.");
-                    success = true;
+                    // Mark entry as deleted on the server
+                    wordToDelete.IsDeleted = true;
+                    wordToDelete.Status = SyncStatus.Deleted;
+                    // Sync with the server
+                    await HttpClient.PutAsJsonAsync("https://localhost:7478/api/ordbog", wordToDelete);
+
+                    LogAction("✅ Entry marked as deleted on server.");
                 }
-                else
-                {
-                    errorMessage = "Failed to delete entry from the server.";
-                }
-            }
-            else
-            {
-                // Delete entry locally when offline
-                await SQLiteService.DeleteEntryAsync(OrdbogId);
-                LogAction("Entry deleted locally.");
-                success = true;
             }
 
-            if (success)
-            {
-                await LoadEntries(); // Reload the entries after deletion
-                await TrySyncIfOnline(); // Sync with the server
-            }
+            // Delete entry locally (mark as deleted in local database)
+            await SQLiteService.MarkAsDeletedAsync(OrdbogId);
+            LogAction("✅ Entry marked as deleted locally.");
         }
         catch (Exception ex)
         {
             LogAction($"Error deleting entry: {ex.Message}");
             errorMessage = $"Error deleting entry: {ex.Message}";
+            Console.WriteLine(ex);
         }
+
+        await LoadEntries();
     }
 
     private async Task TrySyncIfOnline()
@@ -545,5 +552,39 @@ else
             Ordbog entry = _mapper.Map<Ordbog>(entryModel);
             await CreateEntry();  // Create new entry
         }
+    }
+
+    private async Task RestoreEntry(Guid OrdbogId)
+    {
+        try
+        {
+            if (internet)
+            {
+                var wordToRestore = filteredWords.FirstOrDefault(w => w.OrdbogId == OrdbogId);
+
+                if (wordToRestore != null)
+                {
+                    // Mark entry as restored on the server
+                    wordToRestore.IsDeleted = false;
+
+                    // Sync with the server
+                    await HttpClient.PutAsJsonAsync("https://localhost:7478/api/ordbog", wordToRestore);
+
+                    LogAction("✅ Entry restored on server.");
+                }
+            }
+
+            // Restore entry locally (mark as restored in local database)
+            await SQLiteService.MarkAsRestoredAsync(OrdbogId);
+            LogAction("✅ Entry restored locally.");
+        }
+        catch (Exception ex)
+        {
+            LogAction($"Error restoring entry: {ex.Message}");
+            errorMessage = $"Error restoring entry: {ex.Message}";
+            Console.WriteLine(ex);
+        }
+
+        await LoadEntries();
     }
 }

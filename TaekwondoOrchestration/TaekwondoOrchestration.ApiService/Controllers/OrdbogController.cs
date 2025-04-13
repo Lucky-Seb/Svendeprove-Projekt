@@ -24,7 +24,12 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         {
             return Ok(await _ordbogService.GetAllOrdbogAsync());
         }
-
+        [HttpGet("including-deleted")]
+        public async Task<ActionResult<IEnumerable<OrdbogDTO>>> GetOrdbogerIncludingDeleted()
+        {
+            var ordboger = await _ordbogService.GetAllOrdbogIncludingDeletedAsync();
+            return Ok(ordboger);
+        }
         [HttpGet("{id}")]
         public async Task<ActionResult<OrdbogDTO>> GetOrdbog(Guid id)
         {
@@ -95,6 +100,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
                 return NotFound();
 
             return Ok(ordbog);
-        }
+        } 
     }
 }

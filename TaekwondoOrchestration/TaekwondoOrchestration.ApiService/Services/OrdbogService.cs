@@ -4,6 +4,7 @@ using TaekwondoOrchestration.ApiService.Repositories;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using AutoMapper;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -108,9 +109,51 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<bool> DeleteOrdbogAsync(Guid id)
         {
-            return await _ordbogRepository.DeleteOrdbogAsync(id);
-        }
+            var ordbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
+            if (ordbog == null || ordbog.IsDeleted) return false;
 
+            ordbog.IsDeleted = true;
+            ordbog.LastModified = DateTime.UtcNow;
+            ordbog.ModifiedBy = "System"; // or current user
+            ordbog.Status = SyncStatus.Deleted;
+            ordbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
+            ordbog.LastSyncedVersion++;
+
+            ordbog.ChangeHistory.Add(new ChangeRecord
+            {
+                ChangedAt = DateTime.UtcNow,
+                ChangedBy = ordbog.ModifiedBy,
+                ChangeDescription = $"Soft-deleted Ordbog entry with ID: {ordbog.OrdbogId}"
+            });
+
+            ordbog.ChangeHistoryJson = JsonConvert.SerializeObject(ordbog.ChangeHistory);
+            ordbog.ETag = GenerateETag(ordbog);
+
+            return await _ordbogRepository.UpdateOrdbogAsync(ordbog);
+        }
+        public async Task<bool> RestoreOrdbogAsync(Guid id)
+        {
+            var ordbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
+            if (ordbog == null || !ordbog.IsDeleted) return false;
+
+            ordbog.IsDeleted = false;
+            ordbog.LastModified = DateTime.UtcNow;
+            ordbog.ModifiedBy = "System";
+            ordbog.Status = SyncStatus.Synced;
+            ordbog.LastSyncedVersion++;
+
+            ordbog.ChangeHistory.Add(new ChangeRecord
+            {
+                ChangedAt = DateTime.UtcNow,
+                ChangedBy = ordbog.ModifiedBy,
+                ChangeDescription = $"Restored Ordbog entry with ID: {ordbog.OrdbogId}"
+            });
+
+            ordbog.ChangeHistoryJson = JsonConvert.SerializeObject(ordbog.ChangeHistory);
+            ordbog.ETag = GenerateETag(ordbog);
+
+            return await _ordbogRepository.UpdateOrdbogAsync(ordbog);
+        }
         public async Task<OrdbogDTO?> GetOrdbogByDanskOrdAsync(string danskOrd)
         {
             var ordbog = await _ordbogRepository.GetOrdbogByDanskOrdAsync(danskOrd);
@@ -126,6 +169,11 @@ namespace TaekwondoOrchestration.ApiService.Services
         private string GenerateETag(Ordbog entry)
         {
             return $"{entry.DanskOrd}-{entry.KoranskOrd}";
+        }
+        public async Task<IEnumerable<OrdbogDTO>> GetAllOrdbogIncludingDeletedAsync()
+        {
+            var ordboger = await _ordbogRepository.GetAllOrdbogIncludingDeletedAsync();
+            return _mapper.Map<IEnumerable<OrdbogDTO>>(ordboger);
         }
     }
 }
