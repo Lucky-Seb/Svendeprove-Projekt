@@ -72,9 +72,9 @@ namespace TaekwondoApp.Services
                                 {
 
                                     // Local data is newer; handle accordingly (e.g., upload or notify user)
-                                    Console.WriteLine($"Local data for {entryDTO.OrdbogId} is more recent.");
+                                    Console.WriteLine($"Local data for {localEntry.OrdbogId} is more recent.");
                                     var updatedEntry = _mapper.Map<Ordbog>(localEntry);
-                                    await _httpClient.PutAsJsonAsync("https://localhost:7478/api/ordbog", updatedEntry);
+                                    await _httpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{updatedEntry.OrdbogId}", updatedEntry);
                                     await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);  // Mark as synced locally
 
                                 }
