@@ -413,13 +413,15 @@ else
     {
         try
         {
+            bool success = false;
             if (internet)
             {
-                // Delete entry from server
+                // Delete entry from the server
                 var response = await HttpClient.DeleteAsync($"https://localhost:7478/api/ordbog/{OrdbogId}");
                 if (response.IsSuccessStatusCode)
                 {
                     LogAction("Entry deleted from the server.");
+                    success = true;
                 }
                 else
                 {
@@ -431,8 +433,14 @@ else
                 // Delete entry locally when offline
                 await SQLiteService.DeleteEntryAsync(OrdbogId);
                 LogAction("Entry deleted locally.");
+                success = true;
             }
-            await TrySyncIfOnline();
+
+            if (success)
+            {
+                await LoadEntries(); // Reload the entries after deletion
+                await TrySyncIfOnline(); // Sync with the server
+            }
         }
         catch (Exception ex)
         {
@@ -466,7 +474,6 @@ else
             syncFailed = true;
             LogAction("Cannot sync: Internet is offline.");
         }
-        LoadEntries();
     }
 
     private void CancelEdit()

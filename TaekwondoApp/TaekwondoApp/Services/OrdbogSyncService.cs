@@ -48,6 +48,8 @@ namespace TaekwondoApp.Services
                             Console.WriteLine($"Adding new entry: {entryDTO.OrdbogId}");
                             var newEntry = _mapper.Map<Ordbog>(entryDTO);
                             await _sqliteService.AddEntryAsync(newEntry);
+                            await _sqliteService.MarkAsSyncedAsync(newEntry.OrdbogId);  // Mark as synced locally
+
                         }
                         else
                         {
