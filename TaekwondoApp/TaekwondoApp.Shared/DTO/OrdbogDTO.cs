@@ -2,7 +2,7 @@
 
 namespace TaekwondoApp.Shared.DTO
 {
-    public class OrdbogDTO : SyncableEntity
+    public class OrdbogDTO : SyncableEntityDTO
     {
         public Guid OrdbogId { get; set; }
         public string DanskOrd { get; set; }
@@ -11,5 +11,7 @@ namespace TaekwondoApp.Shared.DTO
         public string BilledeLink { get; set; }
         public string LydLink { get; set; }
         public string VideoLink { get; set; }
+
+
     }
 }

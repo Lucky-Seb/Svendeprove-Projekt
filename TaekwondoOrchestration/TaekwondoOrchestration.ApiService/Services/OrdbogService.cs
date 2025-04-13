@@ -3,90 +3,78 @@ using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using AutoMapper;
+using Newtonsoft.Json;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
     public class OrdbogService
     {
         private readonly IOrdbogRepository _ordbogRepository;
-        private readonly IMapper _mapper;  // Declare IMapper
+        private readonly IMapper _mapper;
 
-        // Correct the constructor to inject IMapper
         public OrdbogService(IOrdbogRepository ordbogRepository, IMapper mapper)
         {
             _ordbogRepository = ordbogRepository;
-            _mapper = mapper;  // Initialize IMapper via the constructor
+            _mapper = mapper;
         }
 
         public async Task<List<OrdbogDTO>> GetAllOrdbogAsync()
         {
             var ordboger = await _ordbogRepository.GetAllOrdbogAsync();
-            return ordboger.Select(o => new OrdbogDTO
-            {
-                OrdbogId = o.OrdbogId,
-                DanskOrd = o.DanskOrd,
-                KoranskOrd = o.KoranskOrd,
-                Beskrivelse = o.Beskrivelse,
-                BilledeLink = o.BilledeLink,
-                LydLink = o.LydLink,
-                VideoLink = o.VideoLink
-            }).ToList();
+            return _mapper.Map<List<OrdbogDTO>>(ordboger);
         }
 
         public async Task<OrdbogDTO?> GetOrdbogByIdAsync(Guid id)
         {
             var ordbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
-            if (ordbog == null)
-                return null;
-
-            return new OrdbogDTO
-            {
-                OrdbogId = ordbog.OrdbogId,
-                DanskOrd = ordbog.DanskOrd,
-                KoranskOrd = ordbog.KoranskOrd,
-                Beskrivelse = ordbog.Beskrivelse,
-                BilledeLink = ordbog.BilledeLink,
-                LydLink = ordbog.LydLink,
-                VideoLink = ordbog.VideoLink
-            };
+            return ordbog == null ? null : _mapper.Map<OrdbogDTO>(ordbog);
         }
 
         public async Task<OrdbogDTO> CreateOrdbogAsync(OrdbogDTO ordbogDto)
         {
-            // Map DTO to Ordbog entity using AutoMapper
             var newOrdbog = _mapper.Map<Ordbog>(ordbogDto);
 
-            // Manually set ETag for new entry
-            newOrdbog.ETag = ordbogDto.DanskOrd + ordbogDto.KoranskOrd;
+            newOrdbog.ETag = GenerateETag(newOrdbog);
+            newOrdbog.CreatedAt = DateTime.UtcNow;
+            newOrdbog.LastModified = DateTime.UtcNow;
+            newOrdbog.Status = SyncStatus.Synced;
+            newOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
+            newOrdbog.LastSyncedVersion = 0;
+            newOrdbog.ModifiedBy = "System";
+            newOrdbog.IsDeleted = false;
+            newOrdbog.ChangeHistory = new List<ChangeRecord>
+            {
+                new ChangeRecord
+                {
+                    ChangedAt = DateTime.UtcNow,
+                    ChangedBy = newOrdbog.ModifiedBy,
+                    ChangeDescription = "Created new Ordbog entry."
+                }
+            };
+            newOrdbog.ChangeHistoryJson = JsonConvert.SerializeObject(newOrdbog.ChangeHistory);
 
-            newOrdbog.LastModified = DateTime.UtcNow; // Set the LastModified date to now
-            newOrdbog.CreatedAt = DateTime.UtcNow; // Set the CreatedAt date to now
-            newOrdbog.Status = SyncStatus.Synced; // Set the status to pending
-            newOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict; // Set the conflict status to no conflict
-            newOrdbog.IsDeleted = false; // Set the IsDeleted flag to false
-            newOrdbog.LastSyncedVersion = 0; // Initialize the LastSyncedVersion to 0
-            newOrdbog.ModifiedBy = "System"; // Set the ModifiedBy field to a default value
-            newOrdbog.ChangeHistory = new List<ChangeRecord>(); // Initialize the ChangeHistory list
-            newOrdbog.ChangeHistoryJson = string.Empty; // Initialize the ChangeHistoryJson to an empty string
-            // Create the Ordbog in the repository
             var createdOrdbog = await _ordbogRepository.CreateOrdbogAsync(newOrdbog);
 
-            // Return the DTO back with the mapped values
             return _mapper.Map<OrdbogDTO>(createdOrdbog);
         }
 
-
         public async Task<bool> UpdateOrdbogAsync(Guid id, OrdbogDTO ordbogDto)
         {
-            // Validate required fields
-            if (string.IsNullOrEmpty(ordbogDto.DanskOrd)) return false;
-            if (string.IsNullOrEmpty(ordbogDto.KoranskOrd)) return false;
-            if (string.IsNullOrEmpty(ordbogDto.Beskrivelse)) return false;
+            if (string.IsNullOrEmpty(ordbogDto.DanskOrd) ||
+                string.IsNullOrEmpty(ordbogDto.KoranskOrd) ||
+                string.IsNullOrEmpty(ordbogDto.Beskrivelse))
+            {
+                return false;
+            }
 
             var existingOrdbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
             if (existingOrdbog == null) return false;
 
-            // Update fields
+            // Preserve non-editable fields
+            var createdAt = existingOrdbog.CreatedAt;
+            var isDeleted = existingOrdbog.IsDeleted;
+
+            // Update editable fields
             existingOrdbog.DanskOrd = ordbogDto.DanskOrd;
             existingOrdbog.KoranskOrd = ordbogDto.KoranskOrd;
             existingOrdbog.Beskrivelse = ordbogDto.Beskrivelse;
@@ -94,13 +82,12 @@ namespace TaekwondoOrchestration.ApiService.Services
             existingOrdbog.LydLink = ordbogDto.LydLink;
             existingOrdbog.VideoLink = ordbogDto.VideoLink;
 
-            // Regenerate ETag for updated entry
-            existingOrdbog.ETag = GenerateETag(existingOrdbog);
-
-            // Update LastModified field
             existingOrdbog.LastModified = DateTime.UtcNow;
-
-            existingOrdbog.ModifiedBy = "System"; // Set the ModifiedBy field to a default value
+            existingOrdbog.ETag = GenerateETag(existingOrdbog);
+            existingOrdbog.ModifiedBy = "System";
+            existingOrdbog.Status = SyncStatus.Synced;
+            existingOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
+            existingOrdbog.LastSyncedVersion++; // optional: increment version
 
             existingOrdbog.ChangeHistory.Add(new ChangeRecord
             {
@@ -109,11 +96,11 @@ namespace TaekwondoOrchestration.ApiService.Services
                 ChangeDescription = $"Updated Ordbog entry with ID: {existingOrdbog.OrdbogId}"
             });
 
-            // You can set sync status based on your sync logic (e.g., mark it as 'Pending' until it's successfully synced)
-            existingOrdbog.Status = SyncStatus.Synced;
+            existingOrdbog.ChangeHistoryJson = JsonConvert.SerializeObject(existingOrdbog.ChangeHistory);
 
-            // Update conflict status as per the sync logic
-            existingOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
+            // Re-apply preserved fields
+            existingOrdbog.CreatedAt = createdAt;
+            existingOrdbog.IsDeleted = isDeleted;
 
             return await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
         }
@@ -124,43 +111,18 @@ namespace TaekwondoOrchestration.ApiService.Services
             return await _ordbogRepository.DeleteOrdbogAsync(id);
         }
 
-        // Get Ordbog by DanskOrd
         public async Task<OrdbogDTO?> GetOrdbogByDanskOrdAsync(string danskOrd)
         {
             var ordbog = await _ordbogRepository.GetOrdbogByDanskOrdAsync(danskOrd);
-            if (ordbog == null)
-                return null;
-
-            return new OrdbogDTO
-            {
-                OrdbogId = ordbog.OrdbogId,
-                DanskOrd = ordbog.DanskOrd,
-                KoranskOrd = ordbog.KoranskOrd,
-                Beskrivelse = ordbog.Beskrivelse,
-                BilledeLink = ordbog.BilledeLink,
-                LydLink = ordbog.LydLink,
-                VideoLink = ordbog.VideoLink
-            };
+            return ordbog == null ? null : _mapper.Map<OrdbogDTO>(ordbog);
         }
 
-        // Get Ordbog by KoranOrd
         public async Task<OrdbogDTO?> GetOrdbogByKoranOrdAsync(string koranOrd)
         {
             var ordbog = await _ordbogRepository.GetOrdbogByKoranOrdAsync(koranOrd);
-            if (ordbog == null)
-                return null;
-
-            return new OrdbogDTO
-            {
-                OrdbogId = ordbog.OrdbogId,
-                DanskOrd = ordbog.DanskOrd,
-                KoranskOrd = ordbog.KoranskOrd,
-                Beskrivelse = ordbog.Beskrivelse,
-                BilledeLink = ordbog.BilledeLink,
-                LydLink = ordbog.LydLink,
-                VideoLink = ordbog.VideoLink
-            };
+            return ordbog == null ? null : _mapper.Map<OrdbogDTO>(ordbog);
         }
+
         private string GenerateETag(Ordbog entry)
         {
             return $"{entry.DanskOrd}-{entry.KoranskOrd}";

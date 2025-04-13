@@ -84,6 +84,12 @@ else
                 <th>Lyd</th>
                 <th>Video</th>
                 <th>Status</th>
+                <th>Conflict</th>
+                <th>Modified By</th>
+                <th>Last Modified</th>
+                <th>Created At</th>
+                <th>ETag</th>
+                <th>Is Deleted</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -114,20 +120,28 @@ else
                         }
                     </td>
                     <td>
-                        @if (word.Status == SyncStatus.Pending)
+                        <span class="badge @(word.Status switch
                         {
-                            <span class="badge bg-success">Synced</span>
-                            @word.Status
+                            SyncStatus.Pending => "bg-success",
+                            SyncStatus.Synced => "bg-warning text-dark",
+                            SyncStatus.Failed => "bg-danger",
+                            SyncStatus.Deleted => "bg-secondary",
+                            _ => "bg-light"
+                        })">@word.Status</span>
+                    </td>
+                    <td>@word.ConflictStatus</td>
+                    <td>@word.ModifiedBy</td>
+                    <td>@word.LastModified.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@word.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@word.ETag</td>
+                    <td>
+                        @if (word.IsDeleted)
+                        {
+                            <span class="text-danger">Yes</span>
                         }
-                        else if (word.Status == SyncStatus.Synced)
+                        else
                         {
-                            <span class="badge bg-warning text-dark">Pending</span>
-                            @word.Status
-                        }
-                        else if (word.Status == SyncStatus.Failed)
-                        {
-                            <span class="badge bg-danger">Failed</span>
-                            @word.Status
+                            <span class="text-success">No</span>
                         }
                     </td>
                     <td>
