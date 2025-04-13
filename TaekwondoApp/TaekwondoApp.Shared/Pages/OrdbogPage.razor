@@ -257,6 +257,29 @@ else
                     Console.WriteLine(ex); // For stacktrace visibility
                 }
             }
+            else
+            {
+                try
+                {
+                    var response = await SQLiteService.GetAllEntriesAsync();
+
+                    if (response != null)
+                    {
+                        filteredWords = _mapper.Map<List<OrdbogDTO>>(response).ToArray();
+                        LogAction($"{filteredWords.Length} entries loaded from the Local Database.");
+                    }
+                    else
+                    {
+                        LogAction("Local Database returned null or invalid data.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogAction($"Error fetching from Local Database: {ex.Message}");
+                    errorMessage = $"Error fetching from Local Database: {ex.Message}";
+                    Console.WriteLine(ex); // For stacktrace visibility
+                }
+            }
         }
         catch (Exception ex)
         {
