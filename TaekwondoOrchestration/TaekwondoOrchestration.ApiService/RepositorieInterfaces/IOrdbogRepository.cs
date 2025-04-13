@@ -15,5 +15,9 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
         // Add methods for searching by DanskOrd or KoranOrd
         Task<Ordbog?> GetOrdbogByDanskOrdAsync(string danskOrd);
         Task<Ordbog?> GetOrdbogByKoranOrdAsync(string koranOrd);
+        Task<Ordbog?> UpdateOrdbogIncludingDeletedAsync(Guid id, Ordbog ordbog);
+        Task<bool> UpdateAsync(Ordbog ordbog);
+        Task<Ordbog?> GetOrdbogByIdIncludingDeletedAsync(Guid id);
+
     }
 }

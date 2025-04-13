@@ -37,7 +37,16 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+        // Repository UpdateOrdbog (simplified)
+        public async Task<Ordbog?> UpdateOrdbogIncludingDeletedAsync(Guid id, Ordbog ordbog)
+        {
+            var existing = await _context.Ordboger.IgnoreQueryFilters().FirstOrDefaultAsync(o => o.OrdbogId == id);
+            if (existing == null) return null;
 
+            _context.Entry(existing).CurrentValues.SetValues(ordbog);  // Set updated values
+            await _context.SaveChangesAsync();
+            return existing;
+        }
         // Soft delete Ordbog (update IsDeleted flag)
         public async Task<bool> DeleteOrdbogAsync(Guid ordbogId)
         {
@@ -69,6 +78,18 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.Ordboger
                 .IgnoreQueryFilters()  // This disables the global soft delete filter
                 .ToListAsync();
+        }
+        public async Task<Ordbog?> GetOrdbogByIdIncludingDeletedAsync(Guid id)
+        {
+            return await _context.Ordboger
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(x => x.OrdbogId == id);
+        }
+
+        public async Task<bool> UpdateAsync(Ordbog ordbog)
+        {
+            _context.Ordboger.Update(ordbog);
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 }

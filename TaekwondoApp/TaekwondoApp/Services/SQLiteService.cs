@@ -61,41 +61,40 @@ namespace TaekwondoApp.Services
                     entry.Status = SyncStatus.Pending;  // Default sync status if not set
                 }
 
-                // Do not generate a new Guid if OrdbogId is already set (i.e., it's an existing entry from the server)
+                // If the entry is already present on the server (exists in the local database), don't generate new GUID
                 if (entry.OrdbogId == Guid.Empty)
                 {
-                    entry.OrdbogId = Guid.NewGuid();  // Generate new Guid for new entries
+                    entry.OrdbogId = Guid.NewGuid();  // Generate new Guid only for new entries
                 }
 
-                // Ensure LastSyncedVersion is initialized
-                entry.LastSyncedVersion = 1;  // Set to 1 for new entries
-
-                // Generate the ETag for the entry (based on the data)
-                entry.ETag = GenerateETag(entry);  // Generate a version identifier for the entry
-
-                // Set CreatedAt for new entries if it's not already set
-                if (entry.CreatedAt == default(DateTime))
+                // If the entry was fetched from the server and it's marked as deleted, ensure its status is also deleted in local storage
+                if (entry.IsDeleted)
                 {
-                    entry.CreatedAt = DateTime.UtcNow;  // Setting CreatedAt for new entry
+                    // Ensure that 'IsDeleted' is kept as true for deleted entries
+                    entry.Status = SyncStatus.Synced;  // Mark as synced for deletion entities
+                    entry.LastModified = DateTime.UtcNow; // Set current time for last modified
                 }
+                else
+                {
+                    // Ensure the normal fields for non-deleted entries
+                    entry.LastSyncedVersion = 1;  // Set to 1 for new entries
+                    entry.ETag = GenerateETag(entry);  // Generate a version identifier for the entry
 
-                // Set the 'ModifiedBy' field (replace with actual user/device ID)
-                entry.ModifiedBy = "System";  // You can dynamically replace this with user/device ID
+                    // Set CreatedAt for new entries if it's not already set
+                    if (entry.CreatedAt == default(DateTime))
+                    {
+                        entry.CreatedAt = DateTime.UtcNow;  // Setting CreatedAt for new entry
+                    }
 
-                // Log the initial change (first entry creation)
-                LogChange(entry, "Initial entry creation");
+                    // Set the 'ModifiedBy' field (replace with actual user/device ID)
+                    entry.ModifiedBy = "System";  // You can dynamically replace this with user/device ID
 
-                // Set LastModified date
-                entry.LastModified = DateTime.UtcNow;  // Set LastModified to now for new entry
+                    // Log the initial change (first entry creation)
+                    LogChange(entry, "Initial entry creation");
 
-                // Default to no conflict
-                entry.ConflictStatus = ConflictResolutionStatus.NoConflict;
-
-                // Logical deletion flag
-                entry.IsDeleted = false;  // Ensure IsDeleted is false for new entries
-
-                // Set the initial sync status
-                entry.Status = SyncStatus.Pending;  // Default to Pending for new entries
+                    // Default to no conflict
+                    entry.ConflictStatus = ConflictResolutionStatus.NoConflict;
+                }
 
                 // Serialize ChangeHistory as a JSON string
                 entry.ChangeHistoryJson = JsonConvert.SerializeObject(entry.ChangeHistory);
@@ -312,10 +311,14 @@ namespace TaekwondoApp.Services
             var entry = _database.Table<Ordbog>().FirstOrDefault(e => e.OrdbogId == OrdbogId);
             if (entry != null)
             {
-                entry.Status = SyncStatus.Pending;  // Mark status as deleted
-                entry.IsDeleted = false;
-                await Task.Run(() => _database.Update(entry));  // Update entry to mark as deleted
+                entry.Status = SyncStatus.Synced;  // Mark status as Pending (for syncing again)
+                entry.IsDeleted = false;            // Mark the entry as not deleted
+                entry.LastModified = DateTime.UtcNow;  // Update LastModified to the current time
+                entry.ConflictStatus = ConflictResolutionStatus.NoConflict;  // Reset any conflicts
+
+                await Task.Run(() => _database.Update(entry));  // Update entry to restore
             }
         }
+
     }
 }

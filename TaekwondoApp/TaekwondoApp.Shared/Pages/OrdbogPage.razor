@@ -24,7 +24,7 @@
         <button class="btn btn-sm btn-danger" @onclick="TrySyncIfOnline">Retry Sync</button>
     </div>
 }
-@if (isSyncing)
+@if (isSyncing is true)
 {
     <div class="d-flex align-items-center mb-3">
         <div class="spinner-border text-primary me-2" role="status">
@@ -262,11 +262,11 @@ else
             {
                 await TrySyncIfOnline();
                 LogAction("Loading entries from the server...");
-
+                isSyncing = false;
                 try
                 {
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)); // add timeout
-                    var response = await HttpClient.GetFromJsonAsync<List<Ordbog>>("https://localhost:7478/api/ordbog", cts.Token);
+                    var response = await HttpClient.GetFromJsonAsync<List<Ordbog>>("https://localhost:7478/api/ordbog/including-deleted", cts.Token);
 
                     if (response != null)
                     {
@@ -390,7 +390,7 @@ else
                 entry.ETag = GenerateETag(entry);  // Generate the ETag for the updated entry
                 entry.ModifiedBy = "user123";  // Replace with actual user/device ID
 
-                var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/{entry.OrdbogId}", entry);
+                var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/including-deleted/{entry.OrdbogId}", entry);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -432,23 +432,35 @@ else
 
                 if (wordToDelete != null)
                 {
-                    // Mark entry as deleted on the server
+                    // Mark entry as deleted for sync
                     wordToDelete.IsDeleted = true;
                     wordToDelete.Status = SyncStatus.Deleted;
-                    // Sync with the server
-                    await HttpClient.PutAsJsonAsync("https://localhost:7478/api/ordbog", wordToDelete);
 
-                    LogAction("✅ Entry marked as deleted on server.");
+                    // Send update to server
+                    var response = await HttpClient.PutAsJsonAsync(
+                        $"https://localhost:7478/api/ordbog/including-deleted/{wordToDelete.OrdbogId}",
+                        wordToDelete
+                    );
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        LogAction("✅ Entry marked as deleted on server.");
+                    }
+                    else
+                    {
+                        var details = await response.Content.ReadAsStringAsync();
+                        LogAction($"❌ Failed to mark as deleted on server. Status: {response.StatusCode}, Details: {details}");
+                    }
                 }
             }
 
-            // Delete entry locally (mark as deleted in local database)
+            // Mark entry as deleted in local database
             await SQLiteService.MarkAsDeletedAsync(OrdbogId);
             LogAction("✅ Entry marked as deleted locally.");
         }
         catch (Exception ex)
         {
-            LogAction($"Error deleting entry: {ex.Message}");
+            LogAction($"❌ Error deleting entry: {ex.Message}");
             errorMessage = $"Error deleting entry: {ex.Message}";
             Console.WriteLine(ex);
         }
@@ -558,33 +570,62 @@ else
     {
         try
         {
+            // Log initial parameters and conditions
+            LogAction($"Starting RestoreEntry for OrdbogId: {OrdbogId}, internet status: {internet}");
+
             if (internet)
             {
+                // Find the word in filteredWords collection
                 var wordToRestore = filteredWords.FirstOrDefault(w => w.OrdbogId == OrdbogId);
 
+                // Log if the word is found or not
                 if (wordToRestore != null)
                 {
-                    // Mark entry as restored on the server
+                    LogAction($"Word found: {wordToRestore.DanskOrd} ({wordToRestore.OrdbogId}), Status: {wordToRestore.Status}, IsDeleted: {wordToRestore.IsDeleted}");
+
+                    // Set IsDeleted to false to restore the word
                     wordToRestore.IsDeleted = false;
+                    wordToRestore.Status = SyncStatus.Synced;
+                    LogAction($"Word restored locally: {wordToRestore.DanskOrd}, Status set to {wordToRestore.Status}, IsDeleted set to {wordToRestore.IsDeleted}");
 
-                    // Sync with the server
-                    await HttpClient.PutAsJsonAsync("https://localhost:7478/api/ordbog", wordToRestore);
+                    // Send a PUT request to restore the entry on the server
+                    LogAction($"Sending PUT request to restore entry on server. URL: https://localhost:7478/api/ordbog/restore/{wordToRestore.OrdbogId}");
+                    var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/restore/{wordToRestore.OrdbogId}", wordToRestore);
 
-                    LogAction("✅ Entry restored on server.");
+                    // Log the response status code and the outcome of the request
+                    if (response.IsSuccessStatusCode)
+                    {
+                        LogAction($"✅ Entry restored on server successfully. Status Code: {response.StatusCode}");
+                    }
+                    else
+                    {
+                        LogAction($"❌ Failed to restore entry on server. Status Code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+                        errorMessage = $"Failed to restore entry on server. Status Code: {response.StatusCode}, Reason: {response.ReasonPhrase}";
+                    }
+                }
+                else
+                {
+                    LogAction($"❌ Word to restore not found in filteredWords collection. OrdbogId: {OrdbogId}");
                 }
             }
+            else
+            {
+                LogAction("❌ No internet connection. Cannot restore entry on the server.");
+            }
 
-            // Restore entry locally (mark as restored in local database)
+            // Log the attempt to restore locally
+            LogAction($"Attempting to restore entry locally in SQLite database for OrdbogId: {OrdbogId}");
             await SQLiteService.MarkAsRestoredAsync(OrdbogId);
-            LogAction("✅ Entry restored locally.");
+            LogAction($"✅ Entry restored locally in SQLite database for OrdbogId: {OrdbogId}");
+            LoadEntries();
         }
         catch (Exception ex)
         {
-            LogAction($"Error restoring entry: {ex.Message}");
+            // Log error details
+            LogAction($"Error restoring entry for OrdbogId: {OrdbogId}, Exception: {ex.Message}, StackTrace: {ex.StackTrace}");
             errorMessage = $"Error restoring entry: {ex.Message}";
             Console.WriteLine(ex);
         }
-
-        await LoadEntries();
     }
+
 }
