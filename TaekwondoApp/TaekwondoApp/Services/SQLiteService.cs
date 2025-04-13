@@ -84,6 +84,11 @@ namespace TaekwondoApp.Services
 
                 // Log the initial change (first entry creation)
                 LogChange(entry, "Initial entry creation");
+                entry.LastModified = DateTime.UtcNow;  // Set LastModified to now for new entry
+                entry.ConflictStatus = ConflictResolutionStatus.NoConflict;  // Default to NoConflict
+                entry.IsDeleted = false;  // Ensure IsDeleted is false for new entries
+                // Set the initial status
+                entry.Status = SyncStatus.Pending;  // Default to Pending for new entries
 
                 // Insert the new entry into the database
                 return await Task.Run(() => _database.Insert(entry));
@@ -111,6 +116,12 @@ namespace TaekwondoApp.Services
 
                 // Set ConflictStatus (no conflict by default)
                 entry.ConflictStatus = ConflictResolutionStatus.NoConflict;
+
+                entry.IsDeleted = false;
+
+                entry.Status = SyncStatus.Pending;
+                // Set LastModified to now for updated entry
+                entry.LastModified = DateTime.UtcNow;
 
                 // Log the change
                 LogChange(entry, "Updated entry");

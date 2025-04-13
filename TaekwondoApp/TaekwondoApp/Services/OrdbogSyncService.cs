@@ -120,7 +120,6 @@ namespace TaekwondoApp.Services
                                     var updatedEntry = _mapper.Map<Ordbog>(entryDTO);
                                     await _sqliteService.UpdateEntryAsync(updatedEntry);
                                     await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);  // Mark as synced locally
-                                    await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);  // Mark as synced locally
                                 }
                             }
                         }

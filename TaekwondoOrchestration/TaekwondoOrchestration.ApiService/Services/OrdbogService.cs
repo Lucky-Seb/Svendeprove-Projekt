@@ -59,6 +59,15 @@ namespace TaekwondoOrchestration.ApiService.Services
             // Manually set ETag for new entry
             newOrdbog.ETag = ordbogDto.DanskOrd + ordbogDto.KoranskOrd;
 
+            newOrdbog.LastModified = DateTime.UtcNow; // Set the LastModified date to now
+            newOrdbog.CreatedAt = DateTime.UtcNow; // Set the CreatedAt date to now
+            newOrdbog.Status = SyncStatus.Synced; // Set the status to pending
+            newOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict; // Set the conflict status to no conflict
+            newOrdbog.IsDeleted = false; // Set the IsDeleted flag to false
+            newOrdbog.LastSyncedVersion = 0; // Initialize the LastSyncedVersion to 0
+            newOrdbog.ModifiedBy = "System"; // Set the ModifiedBy field to a default value
+            newOrdbog.ChangeHistory = new List<ChangeRecord>(); // Initialize the ChangeHistory list
+            newOrdbog.ChangeHistoryJson = string.Empty; // Initialize the ChangeHistoryJson to an empty string
             // Create the Ordbog in the repository
             var createdOrdbog = await _ordbogRepository.CreateOrdbogAsync(newOrdbog);
 
@@ -91,8 +100,17 @@ namespace TaekwondoOrchestration.ApiService.Services
             // Update LastModified field
             existingOrdbog.LastModified = DateTime.UtcNow;
 
+            existingOrdbog.ModifiedBy = "System"; // Set the ModifiedBy field to a default value
+
+            existingOrdbog.ChangeHistory.Add(new ChangeRecord
+            {
+                ChangedAt = DateTime.UtcNow,
+                ChangedBy = existingOrdbog.ModifiedBy,
+                ChangeDescription = $"Updated Ordbog entry with ID: {existingOrdbog.OrdbogId}"
+            });
+
             // You can set sync status based on your sync logic (e.g., mark it as 'Pending' until it's successfully synced)
-            existingOrdbog.Status = SyncStatus.Pending;
+            existingOrdbog.Status = SyncStatus.Synced;
 
             // Update conflict status as per the sync logic
             existingOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
