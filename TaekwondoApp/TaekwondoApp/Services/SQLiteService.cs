@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using TaekwondoApp.Shared.Services;
+using Newtonsoft.Json;
 
 namespace TaekwondoApp.Services
 {
@@ -55,40 +56,50 @@ namespace TaekwondoApp.Services
         {
             try
             {
-                // Set default sync status and initialize version if not set
+                // Ensure all necessary fields are set on the Ordbog entry
                 if (entry.Status == SyncStatus.Synced)
                 {
-                    entry.Status = SyncStatus.Synced;
+                    entry.Status = SyncStatus.Pending;  // Default sync status if not set
                 }
 
                 // Do not generate a new Guid if OrdbogId is already set (i.e., it's an existing entry from the server)
                 if (entry.OrdbogId == Guid.Empty)
                 {
-                    entry.OrdbogId = Guid.NewGuid(); // Only generate a new Guid for new entries
+                    entry.OrdbogId = Guid.NewGuid();  // Generate new Guid for new entries
                 }
 
                 // Ensure LastSyncedVersion is initialized
-                entry.LastSyncedVersion = 1;  // New entry, start at version 1, if this is a new entry from the server
+                entry.LastSyncedVersion = 1;  // Set to 1 for new entries
 
                 // Generate the ETag for the entry (based on the data)
-                entry.ETag = GenerateETag(entry);
+                entry.ETag = GenerateETag(entry);  // Generate a version identifier for the entry
 
-                // Set CreatedAt for new entries
+                // Set CreatedAt for new entries if it's not already set
                 if (entry.CreatedAt == default(DateTime))
                 {
                     entry.CreatedAt = DateTime.UtcNow;  // Setting CreatedAt for new entry
                 }
 
-                // Set the 'ModifiedBy' field (could be a user or device ID)
-                entry.ModifiedBy = "System"; // Replace with actual logic to track user/device
+                // Set the 'ModifiedBy' field (replace with actual user/device ID)
+                entry.ModifiedBy = "System";  // You can dynamically replace this with user/device ID
 
                 // Log the initial change (first entry creation)
                 LogChange(entry, "Initial entry creation");
+
+                // Set LastModified date
                 entry.LastModified = DateTime.UtcNow;  // Set LastModified to now for new entry
-                entry.ConflictStatus = ConflictResolutionStatus.NoConflict;  // Default to NoConflict
+
+                // Default to no conflict
+                entry.ConflictStatus = ConflictResolutionStatus.NoConflict;
+
+                // Logical deletion flag
                 entry.IsDeleted = false;  // Ensure IsDeleted is false for new entries
-                // Set the initial status
+
+                // Set the initial sync status
                 entry.Status = SyncStatus.Pending;  // Default to Pending for new entries
+
+                // Serialize ChangeHistory as a JSON string
+                entry.ChangeHistoryJson = JsonConvert.SerializeObject(entry.ChangeHistory);
 
                 // Insert the new entry into the database
                 return await Task.Run(() => _database.Insert(entry));
@@ -100,7 +111,6 @@ namespace TaekwondoApp.Services
             }
         }
 
-
         public async Task<int> UpdateEntryAsync(Ordbog entry)
         {
             try
@@ -111,19 +121,25 @@ namespace TaekwondoApp.Services
                 // Update ETag based on version and content
                 entry.ETag = GenerateETag(entry);
 
-                // Set the 'ModifiedBy' field (could be a user or device ID)
-                entry.ModifiedBy = "System"; // Replace with actual logic to track user/device
+                // Set the 'ModifiedBy' field (replace with actual logic to track user/device)
+                entry.ModifiedBy = "System"; // You can replace this with actual user or device ID
 
                 // Set ConflictStatus (no conflict by default)
                 entry.ConflictStatus = ConflictResolutionStatus.NoConflict;
 
+                // Logical deletion flag
                 entry.IsDeleted = false;
 
+                // Set the sync status to pending
                 entry.Status = SyncStatus.Pending;
-                // Set LastModified to now for updated entry
+
+                // Update LastModified to the current time for updated entry
                 entry.LastModified = DateTime.UtcNow;
 
-                // Log the change
+                // Serialize ChangeHistory to JSON if it's not already set
+                entry.ChangeHistoryJson = JsonConvert.SerializeObject(entry.ChangeHistory);
+
+                // Log the change (this can be used for auditing or debugging)
                 LogChange(entry, "Updated entry");
 
                 // Update the entry in the database
@@ -135,8 +151,6 @@ namespace TaekwondoApp.Services
                 throw;
             }
         }
-
-
 
         // Delete entry (logical deletion)
         public async Task<int> DeleteEntryAsync(Guid OrdbogId)
@@ -161,7 +175,7 @@ namespace TaekwondoApp.Services
         // Generate ETag based on entity versioning and other fields
         private string GenerateETag(Ordbog entry)
         {
-            return $"{entry.OrdbogId}-{entry.LastSyncedVersion}-{entry.DanskOrd}-{entry.KoranskOrd}";
+            return $"{entry.DanskOrd}-{entry.KoranskOrd}";
         }
 
         // Get entries with unsynced status (Pending or Failed)
