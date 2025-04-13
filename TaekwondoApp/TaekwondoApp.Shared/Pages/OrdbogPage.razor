@@ -208,7 +208,7 @@ else
                 try
                 {
                     LogAction("App Try to Sync...");
-                    await OrdbogSyncService.SyncDataAsync();
+                    await TrySyncIfOnline();
                     LogAction("✅ Synced from server to local.");
                 }
                 catch (Exception ex)
@@ -236,6 +236,7 @@ else
         {
             if (internet)
             {
+                await TrySyncIfOnline();
                 LogAction("Loading entries from the server...");
 
                 try
@@ -335,6 +336,7 @@ else
                 LogAction("Entry created locally.");
                 await LoadEntries();
             }
+            await TrySyncIfOnline();
         }
         catch (Exception ex)
         {
@@ -381,6 +383,7 @@ else
                 LogAction("Entry updated locally.");
                 await LoadEntries();
             }
+            await TrySyncIfOnline();
         }
         catch (Exception ex)
         {
@@ -414,6 +417,7 @@ else
                 LogAction("Entry deleted locally.");
                 await LoadEntries();
             }
+            await TrySyncIfOnline();
         }
         catch (Exception ex)
         {

@@ -62,11 +62,21 @@ namespace TaekwondoApp.Services
                                     // Server data is newer, update the local database
                                     var updatedEntry = _mapper.Map<Ordbog>(entryDTO);
                                     await _sqliteService.UpdateEntryAsync(updatedEntry);
+                                    await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);  // Mark as synced locally
                                 }
-                                else
+                                else if (entryDTO.LastModified == localEntry.LastModified)
                                 {
+                                    Console.WriteLine($"Local data for {entryDTO.OrdbogId} has been updated at the samme time.");
+                                }
+                                else if (entryDTO.LastModified < localEntry.LastModified)
+                                {
+
                                     // Local data is newer; handle accordingly (e.g., upload or notify user)
                                     Console.WriteLine($"Local data for {entryDTO.OrdbogId} is more recent.");
+                                    var updatedEntry = _mapper.Map<Ordbog>(localEntry);
+                                    await _httpClient.PutAsJsonAsync("https://localhost:7478/api/ordbog", updatedEntry);
+                                    await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);  // Mark as synced locally
+
                                 }
                             }
                         }
@@ -106,6 +116,11 @@ namespace TaekwondoApp.Services
                                 {
                                     // Server data is newer; handle accordingly (e.g., fetch new data or notify user)
                                     Console.WriteLine($"Server data for {entryDTO.OrdbogId} is more recent.");
+                                    // Server data is newer, update the local database
+                                    var updatedEntry = _mapper.Map<Ordbog>(entryDTO);
+                                    await _sqliteService.UpdateEntryAsync(updatedEntry);
+                                    await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);  // Mark as synced locally
+                                    await _sqliteService.MarkAsSyncedAsync(entryDTO.OrdbogId);  // Mark as synced locally
                                 }
                             }
                         }
