@@ -1,8 +1,12 @@
 ﻿@page "/register"
 @using Microsoft.AspNetCore.Components.Forms
 @using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Mapping
+@using AutoMapper
 @inject NavigationManager NavigationManager
 @inject HttpClient HttpClient
+@inject IMapper Mapper
 
 <h3>Register</h3>
 
@@ -13,72 +17,182 @@
     <div>
         <label for="email">Email:</label>
         <InputText id="email" @bind-Value="registerModel.Email" class="form-control" />
+        <small class="form-text text-muted">Enter a valid email address.</small>
+    </div>
+
+    <div>
+        <label for="brugernavn">Username:</label>
+        <InputText id="brugernavn" @bind-Value="registerModel.Brugernavn" class="form-control" />
+        <small class="form-text text-muted">Your username (at least 3 characters). This will be visible to others.</small>
+    </div>
+
+    <div>
+        <label for="fornavn">First Name:</label>
+        <InputText id="fornavn" @bind-Value="registerModel.Fornavn" class="form-control" />
+        <small class="form-text text-muted">Enter your first name.</small>
+    </div>
+
+    <div>
+        <label for="efternavn">Last Name:</label>
+        <InputText id="efternavn" @bind-Value="registerModel.Efternavn" class="form-control" />
+        <small class="form-text text-muted">Enter your last name.</small>
     </div>
 
     <div>
         <label for="password">Password:</label>
         <InputText id="password" type="password" @bind-Value="registerModel.Password" class="form-control" />
+        <small class="form-text text-muted">Your password (at least 8 characters).</small>
     </div>
 
     <div>
         <label for="confirmPassword">Confirm Password:</label>
         <InputText id="confirmPassword" type="password" @bind-Value="registerModel.ConfirmPassword" class="form-control" />
+        <small class="form-text text-muted">Re-enter your password for confirmation.</small>
+    </div>
+
+    <div>
+        <label for="bæltegrad">Bæltegrad (Belt Level):</label>
+        <InputText id="bæltegrad" @bind-Value="registerModel.Bæltegrad" class="form-control" />
+        <small class="form-text text-muted">Enter your belt level (e.g., White, Yellow, Black).</small>
+    </div>
+
+    <div>
+        <label for="address">Address:</label>
+        <InputText id="address" @bind-Value="registerModel.Address" class="form-control" />
+        <small class="form-text text-muted">Enter your address.</small>
+    </div>
+
+    <div>
+        <label for="role">Role:</label>
+        <InputText id="role" @bind-Value="registerModel.Role" class="form-control" />
+        <small class="form-text text-muted">Define your role (e.g., Student, Instructor).</small>
     </div>
 
     <button type="submit" class="btn btn-primary">Register</button>
 </EditForm>
 
-@if (!string.IsNullOrEmpty(errorMessage))
+@if (validationErrors.Any())
 {
-    <div class="alert alert-danger">@errorMessage</div>
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var error in validationErrors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
 }
 
 @code {
     private RegisterModel registerModel = new();
-    private string errorMessage;
+    private List<string> validationErrors = new();
 
     private async Task HandleRegister()
     {
-        errorMessage = string.Empty;
+        validationErrors.Clear(); // Reset validation errors
 
+        // Basic front-end validation
         if (string.IsNullOrWhiteSpace(registerModel.Email) || string.IsNullOrWhiteSpace(registerModel.Password) || string.IsNullOrWhiteSpace(registerModel.ConfirmPassword))
         {
-            errorMessage = "Email, password, and confirm password are required.";
+            validationErrors.Add("Email, password, and confirm password are required.");
             return;
         }
 
         if (registerModel.Password != registerModel.ConfirmPassword)
         {
-            errorMessage = "Passwords do not match.";
+            validationErrors.Add("Passwords do not match.");
+            return;
+        }
+
+        if (!IsValidEmail(registerModel.Email))
+        {
+            validationErrors.Add("Please enter a valid email address.");
             return;
         }
 
         try
         {
-            var encodedEmail = Uri.EscapeDataString(registerModel.Email);
-            var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger/register", registerModel);
+            // Use AutoMapper to map RegisterModel to BrugerDTO
+            var brugerDTO = Mapper.Map<BrugerDTO>(registerModel);
+
+            // Send the registration request to the backend
+            var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger", brugerDTO);
 
             if (response.IsSuccessStatusCode)
             {
-                // Placeholder: Registration successful
+                // Redirect to login page after successful registration
                 NavigationManager.NavigateTo("/login");
             }
             else
             {
-                errorMessage = "Registration failed. Please try again.";
+                // Handle error responses and show appropriate messages
+                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                    if (errorResponse?.ValidationErrors != null)
+                    {
+                        foreach (var error in errorResponse.ValidationErrors)
+                        {
+                            validationErrors.Add(error);
+                        }
+                    }
+                    else
+                    {
+                        validationErrors.Add("Registration failed due to bad request.");
+                    }
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+                {
+                    validationErrors.Add("An account with this email already exists.");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                {
+                    validationErrors.Add("Server error occurred. Please try again later.");
+                }
+                else
+                {
+                    validationErrors.Add("Registration failed. Please try again.");
+                }
+
+                // Additional log to see what the server is sending back
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error Response: {responseContent}");
             }
         }
         catch (Exception ex)
         {
-            errorMessage = "Registration failed. Please try again.";
+            validationErrors.Add($"Registration failed. Error: {ex.Message}");
             Console.WriteLine($"Registration exception: {ex.Message}");
         }
+    }
+
+    private string HashPassword(string password)
+    {
+        // Hash the password here (just an example)
+        return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        return email.Contains("@") && email.Contains(".");
     }
 
     public class RegisterModel
     {
         public string Email { get; set; } = string.Empty;
+        public string Brugernavn { get; set; } = string.Empty;
+        public string Fornavn { get; set; } = string.Empty;
+        public string Efternavn { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string ConfirmPassword { get; set; } = string.Empty;
+        public string Bæltegrad { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+    }
+
+    public class ErrorResponse
+    {
+        public string Message { get; set; } = string.Empty;
+        public List<string> ValidationErrors { get; set; } = new List<string>();
     }
 }

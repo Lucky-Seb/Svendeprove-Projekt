@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
+using static TaekwondoApp.Shared.Pages.Register;
 
 namespace TaekwondoApp.Shared.Mapping
 {
@@ -15,6 +16,7 @@ namespace TaekwondoApp.Shared.Mapping
         {
             CreateMap<Bruger, BrugerDTO>();
             CreateMap<BrugerDTO, Bruger>();
+            CreateMap<RegisterModel, BrugerDTO>();
             // Mapping from BrugerDTO to Bruger
             //CreateMap<BrugerDTO, Bruger>()
             //    .ForMember(dest => dest.BrugerID, opt => opt.MapFrom(src => src.BrugerID))
