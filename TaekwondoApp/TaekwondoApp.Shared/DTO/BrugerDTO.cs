@@ -12,5 +12,6 @@
         public string Address { get; set; }
         public string Role { get; set; }
         public KlubDTO? Klub { get; set; }
+        public string? Token { get; set; }  // Nullable since it will only be populated after successful authentication
     }
 }
