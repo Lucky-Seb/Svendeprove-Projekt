@@ -1,7 +1,10 @@
 ﻿@page "/login"
 @using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using AutoMapper
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IMapper Mapper
 
 <h3>Login</h3>
 
@@ -11,16 +14,21 @@
 
     <div>
         <label for="email">Email:</label>
-        <InputText id="email" class="form-control" @bind-Value="loginModel.Email" />
+        <InputText id="email" class="form-control" @bind="loginModel.Email" />
     </div>
 
     <div>
         <label for="password">Password:</label>
-        <InputPassword id="password" class="form-control" @bind-Value="loginModel.Brugerkode" />
+        <InputPassword id="password" class="form-control" @bind="loginModel.Password" />
     </div>
 
     <button type="submit" class="btn btn-primary">Login</button>
 </EditForm>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
 
 <p>
     Don't have an account? <a href="/register">Register</a>
@@ -28,28 +36,41 @@
 
 @code {
     private LoginModel loginModel = new LoginModel();
+    private string errorMessage;
 
     private async Task HandleLogin()
     {
-        // Since no dedicated login endpoint, you might try to get the user by email or username
-        var response = await Http.GetFromJsonAsync<BrugerDTO>($"api/bruger/brugernavn/{loginModel.Email}");
-
-        if (response != null && response.Brugerkode == loginModel.Brugerkode) // Basic password check (should ideally be hashed comparison)
+        if (string.IsNullOrWhiteSpace(loginModel.Email) || string.IsNullOrWhiteSpace(loginModel.Password))
         {
-            // For now, we navigate to the home page (adjust this as per your requirements)
-            Navigation.NavigateTo("/home");
+            errorMessage = "Email and password are required.";
+            return;
         }
-        else
+
+        try
         {
-            // Show an error if login fails
-            // You can show an alert, or error message in the UI
-            Console.WriteLine("Invalid login credentials.");
+            var encoded = Uri.EscapeDataString(loginModel.Email);
+            var response = await Http.GetFromJsonAsync<BrugerDTO>($"https://localhost:7478/api/bruger/brugernavn/{encoded}");
+
+            if (response != null && response.Brugerkode == loginModel.Password)
+            {
+                var bruger = Mapper.Map<Bruger>(response);
+                Navigation.NavigateTo("/home");
+            }
+            else
+            {
+                errorMessage = "Invalid email or password.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Login failed. Please try again.";
+            Console.WriteLine($"Login exception: {ex.Message}");
         }
     }
 
     public class LoginModel
     {
         public string Email { get; set; }
-        public string Brugerkode { get; set; }
+        public string Password { get; set; }
     }
 }

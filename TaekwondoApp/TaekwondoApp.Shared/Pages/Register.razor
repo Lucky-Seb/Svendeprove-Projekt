@@ -1,7 +1,9 @@
 ﻿@page "/register"
 @using TaekwondoApp.Shared.DTO
+@using AutoMapper
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IMapper Mapper
 
 <h3>Register</h3>
 
@@ -31,7 +33,7 @@
 
     <div>
         <label for="password">Password:</label>
-        <InputPassword id="password" class="form-control" @bind-Value="registerModel.Brugerkode" />
+        <InputPassword id="password" class="form-control" @bind="registerModel.Brugerkode" />
     </div>
 
     <div>
@@ -47,16 +49,15 @@
     <button type="submit" class="btn btn-primary">Register</button>
 </EditForm>
 
-<p>
-    Already have an account? <a href="/login">Login</a>
-</p>
-
 @code {
     private RegisterModel registerModel = new RegisterModel();
 
     private async Task HandleRegister()
     {
-        var response = await Http.PostAsJsonAsync("api/bruger", registerModel);
+        // Map RegisterModel to BrugerDTO using AutoMapper
+        var brugerDTO = Mapper.Map<BrugerDTO>(registerModel);
+
+        var response = await Http.PostAsJsonAsync<BrugerDTO>("api/bruger", brugerDTO);
 
         if (response.IsSuccessStatusCode)
         {
