@@ -1,15 +1,9 @@
 ﻿@page "/login"
 @using Microsoft.AspNetCore.Components.Forms
-@using TaekwondoApp.Shared.DTO
-@using TaekwondoApp.Shared.Models
-@using TaekwondoApp.Shared.Mapping
-@using AutoMapper
-@using BCrypt.Net
 @using TaekwondoApp.Shared.Services
 @inject NavigationManager NavigationManager
 @inject HttpClient HttpClient
 @inject IAuthenticationService AuthenticationService
-
 
 <h3>Login</h3>
 
@@ -62,6 +56,7 @@
     private async Task HandleLogin()
     {
         validationErrors.Clear();
+
         if (string.IsNullOrWhiteSpace(loginModel.EmailOrBrugernavn) || string.IsNullOrWhiteSpace(loginModel.Brugerkode))
         {
             validationErrors.Add("Email/Username and password are required.");
@@ -70,14 +65,23 @@
 
         try
         {
+            LogAction("Attempting login with:");
+            LogAction($"Email/Username: {loginModel.EmailOrBrugernavn}");
+
+            // Posting the login data to the API
             var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger/login", loginModel);
+            LogAction($"Response status code: {response.StatusCode}");
+
             if (response.IsSuccessStatusCode)
             {
+                // Parse the response to get the JWT token
                 var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponseDTO>();
                 if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
                 {
+                    // Store the JWT token using the AuthenticationService
                     await AuthenticationService.SetTokenAsync(loginResponse.Token);
-                    NavigationManager.NavigateTo("/dashboard");
+                    LogAction("Login successful.");
+                    NavigationManager.NavigateTo("/dashboard"); // Redirect after successful login
                 }
                 else
                 {
@@ -92,6 +96,8 @@
         catch (Exception ex)
         {
             validationErrors.Add($"Login failed. Error: {ex.Message}");
+            LogAction($"Login exception: {ex.Message}");
+            LogAction($"Stack Trace: {ex.StackTrace}");
         }
     }
 
@@ -112,8 +118,13 @@
 
     public class LoginModel
     {
-        // These properties match what the backend expects in LoginDTO
         public string EmailOrBrugernavn { get; set; } = string.Empty;
         public string Brugerkode { get; set; } = string.Empty;
+    }
+
+    // DTO to match the response from the backend API
+    public class LoginResponseDTO
+    {
+        public string Token { get; set; } = string.Empty;
     }
 }

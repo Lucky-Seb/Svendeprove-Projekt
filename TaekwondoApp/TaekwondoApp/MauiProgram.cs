@@ -33,7 +33,6 @@ namespace TaekwondoApp
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             // Register SQLiteService as a singleton with the database path
             builder.Services.AddSingleton<ISQLiteService>(new SQLiteService(dbPath));
-
             // Register HttpClientFactory to handle HttpClient instances
             builder.Services.AddScoped<JwtAuthMessageHandler>();
             builder.Services.AddHttpClient("ApiClient")
