@@ -7,13 +7,11 @@
         public string Brugernavn { get; set; }
         public string Fornavn { get; set; }
         public string Efternavn { get; set; }
+        public string Brugerkode { get; set; } // This should be hashed in your logic
         public string Address { get; set; }
         public string Bæltegrad { get; set; }
         public string Role { get; set; }
-        public bool TwoFactorEnabled { get; set; }
 
-        public ICollection<BrugerLogin> Logins { get; set; }
-        public string TwoFactorSecret { get; set; } // For TOTP
         public ICollection<BrugerKlub>? BrugerKlubber { get; set; }
         public ICollection<BrugerProgram>? BrugerProgrammer { get; set; }
         public ICollection<BrugerQuiz>? BrugerQuizzer { get; set; }
