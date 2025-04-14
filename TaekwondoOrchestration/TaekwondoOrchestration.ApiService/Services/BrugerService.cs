@@ -26,7 +26,6 @@ namespace TaekwondoOrchestration.ApiService.Services
                 Brugernavn = bruger.Brugernavn,
                 Fornavn = bruger.Fornavn,
                 Efternavn = bruger.Efternavn,
-                Brugerkode = bruger.Brugerkode,
                 Bæltegrad = bruger.Bæltegrad,
                 Address = bruger.Address,
                 Role = bruger.Role,
@@ -96,7 +95,6 @@ namespace TaekwondoOrchestration.ApiService.Services
                 Email = brugerDto.Email,
                 Fornavn = brugerDto.Fornavn,
                 Efternavn = brugerDto.Efternavn,
-                Brugerkode = brugerDto.Brugerkode,
                 Bæltegrad = brugerDto.Bæltegrad,
                 Address = brugerDto.Address,
                 Role = brugerDto.Role
@@ -119,7 +117,6 @@ namespace TaekwondoOrchestration.ApiService.Services
             bruger.Email = brugerDto.Email;
             bruger.Fornavn = brugerDto.Fornavn;
             bruger.Efternavn = brugerDto.Efternavn;
-            bruger.Brugerkode = brugerDto.Brugerkode;
             bruger.Bæltegrad = brugerDto.Bæltegrad;
             bruger.Address = brugerDto.Address;
             bruger.Role = brugerDto.Role;

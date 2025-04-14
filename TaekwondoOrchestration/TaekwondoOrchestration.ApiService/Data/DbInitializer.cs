@@ -26,7 +26,6 @@ public static class DbInitializer
             Brugernavn = "emma123",
             Fornavn = "Emma",
             Efternavn = "Jensen",
-            Brugerkode = "123456", // ❗ hash it later
             Address = "Nørrebrogade 42",
             Bæltegrad = "Gult Bælte",
             Role = "Bruger"

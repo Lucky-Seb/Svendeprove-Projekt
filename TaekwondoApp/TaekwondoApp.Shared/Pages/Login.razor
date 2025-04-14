@@ -93,7 +93,7 @@ else
         try
         {
             var authResult = await WebAuthenticator.AuthenticateAsync(
-                new Uri("https://yourapi.com/api/auth/externallogin-google"),
+                new Uri("https://localhost:7478/api/auth/externallogin-google"),
                 new Uri("myapp://oauth2redirect"));
 
             if (authResult.Properties.TryGetValue("token", out var token))
@@ -113,7 +113,7 @@ else
         try
         {
             var authResult = await WebAuthenticator.AuthenticateAsync(
-                new Uri("https://yourapi.com/api/auth/externallogin-microsoft"),
+                new Uri("https://localhost:7478/api/auth/externallogin-microsoft"),
                 new Uri("myapp://oauth2redirect"));
 
             if (authResult.Properties.TryGetValue("token", out var token))
