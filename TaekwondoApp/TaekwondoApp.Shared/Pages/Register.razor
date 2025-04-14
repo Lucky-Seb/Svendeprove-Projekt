@@ -1,9 +1,8 @@
 ﻿@page "/register"
+@using Microsoft.AspNetCore.Components.Forms
 @using TaekwondoApp.Shared.DTO
-@using AutoMapper
-@inject HttpClient Http
-@inject NavigationManager Navigation
-@inject IMapper Mapper
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
 
 <h3>Register</h3>
 
@@ -13,37 +12,17 @@
 
     <div>
         <label for="email">Email:</label>
-        <InputText id="email" class="form-control" @bind-Value="registerModel.Email" />
-    </div>
-
-    <div>
-        <label for="username">Username:</label>
-        <InputText id="username" class="form-control" @bind-Value="registerModel.Brugernavn" />
-    </div>
-
-    <div>
-        <label for="firstName">First Name:</label>
-        <InputText id="firstName" class="form-control" @bind-Value="registerModel.Fornavn" />
-    </div>
-
-    <div>
-        <label for="lastName">Last Name:</label>
-        <InputText id="lastName" class="form-control" @bind-Value="registerModel.Efternavn" />
+        <InputText id="email" @bind-Value="registerModel.Email" class="form-control" />
     </div>
 
     <div>
         <label for="password">Password:</label>
-        <InputPassword id="password" class="form-control" @bind-Value="registerModel.Brugerkode" />
+        <InputText id="password" type="password" @bind-Value="registerModel.Password" class="form-control" />
     </div>
 
     <div>
-        <label for="belt">Belt Grade:</label>
-        <InputText id="belt" class="form-control" @bind-Value="registerModel.Bæltegrad" />
-    </div>
-
-    <div>
-        <label for="address">Address:</label>
-        <InputText id="address" class="form-control" @bind-Value="registerModel.Address" />
+        <label for="confirmPassword">Confirm Password:</label>
+        <InputText id="confirmPassword" type="password" @bind-Value="registerModel.ConfirmPassword" class="form-control" />
     </div>
 
     <button type="submit" class="btn btn-primary">Register</button>
@@ -51,69 +30,55 @@
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
-    <div class="alert alert-danger mt-3">@errorMessage</div>
-}
-
-@if (successMessageVisible)
-{
-    <div class="alert alert-success mt-3">Registration successful! Redirecting to login...</div>
+    <div class="alert alert-danger">@errorMessage</div>
 }
 
 @code {
-    private RegisterModel registerModel = new RegisterModel();
+    private RegisterModel registerModel = new();
     private string errorMessage;
-    private bool successMessageVisible = false;
 
     private async Task HandleRegister()
     {
-        if (string.IsNullOrWhiteSpace(registerModel.Email) ||
-            string.IsNullOrWhiteSpace(registerModel.Brugernavn) ||
-            string.IsNullOrWhiteSpace(registerModel.Fornavn) ||
-            string.IsNullOrWhiteSpace(registerModel.Efternavn) ||
-            string.IsNullOrWhiteSpace(registerModel.Brugerkode))
+        errorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(registerModel.Email) || string.IsNullOrWhiteSpace(registerModel.Password) || string.IsNullOrWhiteSpace(registerModel.ConfirmPassword))
         {
-            errorMessage = "Please fill in all required fields.";
+            errorMessage = "Email, password, and confirm password are required.";
+            return;
+        }
+
+        if (registerModel.Password != registerModel.ConfirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
             return;
         }
 
         try
         {
-            // Map RegisterModel to BrugerDTO
-            var brugerDTO = Mapper.Map<BrugerDTO>(registerModel);
-
-            // Post data to the backend
-            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/bruger", brugerDTO);
+            var encodedEmail = Uri.EscapeDataString(registerModel.Email);
+            var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger/register", registerModel);
 
             if (response.IsSuccessStatusCode)
             {
-                // On success, show success message
-                successMessageVisible = true;
-                await Task.Delay(2000); // Optional delay for feedback
-                Navigation.NavigateTo("/login");
+                // Placeholder: Registration successful
+                NavigationManager.NavigateTo("/login");
             }
             else
             {
-                // Handle registration failure based on the API response
-                var errorResponse = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Registration failed: {errorResponse}";
+                errorMessage = "Registration failed. Please try again.";
             }
         }
         catch (Exception ex)
         {
-            // Catch any exceptions during the process
-            errorMessage = $"An error occurred: {ex.Message}";
-            Console.WriteLine(ex);
+            errorMessage = "Registration failed. Please try again.";
+            Console.WriteLine($"Registration exception: {ex.Message}");
         }
     }
 
     public class RegisterModel
     {
-        public string Email { get; set; }
-        public string Brugernavn { get; set; }
-        public string Fornavn { get; set; }
-        public string Efternavn { get; set; }
-        public string Brugerkode { get; set; }
-        public string Bæltegrad { get; set; }
-        public string Address { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 }
