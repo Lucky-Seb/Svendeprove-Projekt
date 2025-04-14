@@ -8,6 +8,11 @@ using AutoMapper.QueryableExtensions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BCrypt;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace TaekwondoOrchestration.ApiService.Repositories
 {
@@ -83,6 +88,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
 
         public async Task<Bruger> CreateBrugerAsync(Bruger bruger)
         {
+            // Hash the password before storing it in the database
+            bruger.Brugerkode = BCrypt.Net.BCrypt.HashPassword(bruger.Brugerkode);
+
             _context.Brugere.Add(bruger);
             await _context.SaveChangesAsync();
             return bruger;
@@ -90,6 +98,12 @@ namespace TaekwondoOrchestration.ApiService.Repositories
 
         public async Task<bool> UpdateBrugerAsync(Bruger bruger)
         {
+            // Hash the password if it is being updated
+            if (!string.IsNullOrEmpty(bruger.Brugerkode))
+            {
+                bruger.Brugerkode = BCrypt.Net.BCrypt.HashPassword(bruger.Brugerkode);
+            }
+
             _context.Brugere.Update(bruger);
             return await _context.SaveChangesAsync() > 0;
         }
@@ -102,17 +116,44 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             _context.Brugere.Remove(bruger);
             return await _context.SaveChangesAsync() > 0;
         }
-        public async Task<BrugerDTO?> AuthenticateBrugerAsync(LoginDTO loginDto)
+
+        public async Task<BrugerDTO?> AuthenticateBrugerAsync(string emailOrBrugernavn, string brugerkode)
         {
             var bruger = await _context.Brugere
-                .FirstOrDefaultAsync(b =>
-                    (b.Email == loginDto.EmailOrBrugernavn || b.Brugernavn == loginDto.EmailOrBrugernavn) &&
-                    b.Brugerkode == loginDto.Brugerkode);
+                .FirstOrDefaultAsync(b => (b.Email == emailOrBrugernavn || b.Brugernavn == emailOrBrugernavn));
 
-            if (bruger == null)
-                return null;
+            if (bruger == null) return null;
 
-            return _mapper.Map<BrugerDTO>(bruger);
+            // Check if the password matches using bcrypt
+            bool passwordMatch = BCrypt.Net.BCrypt.Verify(brugerkode, bruger.Brugerkode);
+            if (!passwordMatch) return null;
+
+            // Create JWT Token
+            var claims = new[]
+            {
+            new Claim(ClaimTypes.Name, bruger.Brugernavn),
+            new Claim(ClaimTypes.NameIdentifier, bruger.BrugerID.ToString()),
+            // Add other claims like roles or email if needed
+        };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key_here"));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: "YourIssuer",
+                audience: "YourAudience",
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: creds
+            );
+
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            // Map the user to the DTO and add the token to the DTO
+            var userDto = _mapper.Map<BrugerDTO>(bruger);
+            userDto.Token = jwt; // Store the JWT in the DTO
+
+            return userDto;
         }
     }
 }

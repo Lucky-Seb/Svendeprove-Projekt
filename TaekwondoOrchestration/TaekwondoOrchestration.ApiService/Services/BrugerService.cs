@@ -90,7 +90,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<BrugerDTO?> AuthenticateBrugerAsync(LoginDTO loginDto)
         {
-            return await _brugerRepository.AuthenticateBrugerAsync(loginDto);
+            return await _brugerRepository.AuthenticateBrugerAsync(loginDto.EmailOrBrugernavn, loginDto.Brugerkode);
         }
     }
 }
