@@ -1,0 +1,62 @@
+﻿@page "/register"
+@using TaekwondoApp.Shared.Models
+@using Microsoft.AspNetCore.Components
+@using System.Net.Http.Json
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+
+<h3>Register</h3>
+
+<EditForm Model="@registerModel" OnValidSubmit="@HandleRegister">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText @bind-Value="registerModel.Email" placeholder="Email" />
+    <InputText @bind-Value="registerModel.Username" placeholder="Username" />
+    <InputText @bind-Value="registerModel.Password" type="password" placeholder="Password" />
+    <InputText @bind-Value="registerModel.ConfirmPassword" type="password" placeholder="Confirm Password" />
+    <button type="submit">Register</button>
+</EditForm>
+
+@code {
+    private RegisterModel registerModel = new();
+
+    private async Task HandleRegister()
+    {
+        if (registerModel.Password != registerModel.ConfirmPassword)
+        {
+            // Handle password mismatch error
+            Console.WriteLine("Passwords do not match.");
+            return;
+        }
+
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync("api/auth/register", registerModel);
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                // Handle registration failure (invalid input, etc.)
+                Console.WriteLine("Registration failed.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during registration: {ex.Message}");
+        }
+    }
+
+    public class RegisterModel
+    {
+        public string Fornavn { get; set; }
+        public string Efternavn { get; set; }
+        public string Address { get; set; }
+        public string Email { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string ConfirmPassword { get; set; }
+    }
+}

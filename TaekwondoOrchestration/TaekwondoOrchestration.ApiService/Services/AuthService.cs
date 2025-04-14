@@ -3,6 +3,8 @@ using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using TaekwondoApp.Shared.DTO;
 using TaekwondoOrchestration.ApiService.Helpers;
+using Microsoft.AspNetCore.Mvc;
+using static TaekwondoApp.Shared.Pages.Registration;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -130,6 +132,50 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             await _brugerRepository.CreateBrugerAsync(bruger);
             return bruger;
+        }
+        public async Task<IActionResult> RegisterAsync(RegisterModel registerModel)
+        {
+            // Check if the user already exists by email or username
+            var existingUserByEmail = await _brugerRepository.GetBrugerByEmailAsync(registerModel.Email);
+            if (existingUserByEmail != null)
+            {
+                return new BadRequestObjectResult("User with this email already exists.");
+            }
+
+            var existingUserByUsername = await _brugerRepository.GetBrugerByBrugernavnAsync(registerModel.Username);
+            if (existingUserByUsername != null)
+            {
+                return new BadRequestObjectResult("User with this username already exists.");
+            }
+
+            // Create a new user and login
+            var newUser = new Bruger
+            {
+                BrugerID = Guid.NewGuid(),
+                Email = registerModel.Email,
+                Brugernavn = registerModel.Username,
+                Fornavn = registerModel.Fornavn,
+                Efternavn = registerModel.Efternavn,
+                Address = registerModel.Address,
+                Role = "User"  // default role, you can adjust as needed
+            };
+
+            // Hash the password before storing
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerModel.Password);
+
+            var newLogin = new BrugerLogin
+            {
+                LoginId = Guid.NewGuid(),
+                Provider = "local",  // Local login
+                ProviderKey = registerModel.Email,
+                PasswordHash = passwordHash,
+                BrugerID = newUser.BrugerID
+            };
+
+            // Save the user and login info
+            await _brugerRepository.CreateBrugerAsync(newUser, newLogin);
+
+            return new OkObjectResult("User registered successfully.");
         }
     }
 }

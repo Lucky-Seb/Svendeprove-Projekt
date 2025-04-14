@@ -104,5 +104,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             var user = await _authService.RegisterLocalAsync(dto.Brugernavn, dto.Password);
             return Ok(new { success = user != null });
         }
+
     }
 }

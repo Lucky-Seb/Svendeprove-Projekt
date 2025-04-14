@@ -3,8 +3,8 @@
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
 @using AutoMapper
-@using Microsoft.Maui.Storage;
-@using Microsoft.Maui.Authentication;
+@using Microsoft.Maui.Storage
+@using Microsoft.Maui.Authentication
 @inject NavigationManager NavigationManager
 @inject HttpClient HttpClient
 @inject IMapper _mapper
@@ -35,6 +35,7 @@ else
     private TwoFactorModel twoFactorModel = new();
     private bool requires2FA = false;
 
+    // Handle regular login (with username and password)
     private async Task HandleLogin()
     {
         try
@@ -49,6 +50,7 @@ else
                 }
                 else
                 {
+                    // Store the JWT securely
                     await SecureStorage.SetAsync("auth_token", result.Token);
                     NavigationManager.NavigateTo("/home");
                 }
@@ -65,6 +67,7 @@ else
         }
     }
 
+    // Handle 2FA verification
     private async Task Handle2FA()
     {
         try
@@ -88,6 +91,7 @@ else
         }
     }
 
+    // Login with Google (OAuth)
     private async Task LoginWithGoogle()
     {
         try
@@ -98,8 +102,14 @@ else
 
             if (authResult.Properties.TryGetValue("token", out var token))
             {
-                await SecureStorage.SetAsync("auth_token", token);
-                NavigationManager.NavigateTo("/home");
+                // Create or update user and login details
+                var userResponse = await HttpClient.PostAsJsonAsync("api/auth/login-google", new { Token = token });
+                if (userResponse.IsSuccessStatusCode)
+                {
+                    var result = await userResponse.Content.ReadFromJsonAsync<LoginResponse>();
+                    await SecureStorage.SetAsync("auth_token", result.Token);
+                    NavigationManager.NavigateTo("/home");
+                }
             }
         }
         catch (Exception ex)
@@ -108,6 +118,7 @@ else
         }
     }
 
+    // Login with Microsoft (OAuth)
     private async Task LoginWithMicrosoft()
     {
         try
@@ -118,8 +129,14 @@ else
 
             if (authResult.Properties.TryGetValue("token", out var token))
             {
-                await SecureStorage.SetAsync("auth_token", token);
-                NavigationManager.NavigateTo("/home");
+                // Create or update user and login details
+                var userResponse = await HttpClient.PostAsJsonAsync("api/auth/login-microsoft", new { Token = token });
+                if (userResponse.IsSuccessStatusCode)
+                {
+                    var result = await userResponse.Content.ReadFromJsonAsync<LoginResponse>();
+                    await SecureStorage.SetAsync("auth_token", result.Token);
+                    NavigationManager.NavigateTo("/home");
+                }
             }
         }
         catch (Exception ex)
@@ -128,6 +145,7 @@ else
         }
     }
 
+    // DTOs for handling user and authentication
     public class LoginModel
     {
         public string Username { get; set; }
