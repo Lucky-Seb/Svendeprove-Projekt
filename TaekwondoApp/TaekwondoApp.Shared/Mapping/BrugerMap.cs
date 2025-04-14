@@ -17,6 +17,8 @@ namespace TaekwondoApp.Shared.Mapping
             CreateMap<Bruger, BrugerDTO>();
             CreateMap<BrugerDTO, Bruger>();
             CreateMap<RegisterModel, BrugerDTO>();
+            CreateMap<Bruger, BrugerDTO>().ReverseMap();
+            CreateMap<Klub, KlubDTO>().ReverseMap();
             // Mapping from BrugerDTO to Bruger
             //CreateMap<BrugerDTO, Bruger>()
             //    .ForMember(dest => dest.BrugerID, opt => opt.MapFrom(src => src.BrugerID))

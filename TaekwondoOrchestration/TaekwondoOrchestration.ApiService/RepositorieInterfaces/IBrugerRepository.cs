@@ -21,5 +21,6 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
 
         // Add DeleteBrugerAsync method
         Task<bool> DeleteBrugerAsync(Guid brugerId);
+        Task<BrugerDTO?> AuthenticateBrugerAsync(LoginDTO loginDto);
     }
 }

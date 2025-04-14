@@ -120,5 +120,18 @@ namespace TaekwondoOrchestration.ApiService.Controllers
                 return NotFound();
             return NoContent();
         }
+        [HttpPost("login")]
+        public async Task<ActionResult<BrugerDTO>> Login([FromBody] LoginDTO loginDto)
+        {
+            if (string.IsNullOrWhiteSpace(loginDto.EmailOrBrugernavn) || string.IsNullOrWhiteSpace(loginDto.Brugerkode))
+                return BadRequest("Email/Username and password are required.");
+
+            var bruger = await _brugerService.AuthenticateBrugerAsync(loginDto);
+
+            if (bruger == null)
+                return Unauthorized("Invalid login credentials.");
+
+            return Ok(bruger);
+        }
     }
 }

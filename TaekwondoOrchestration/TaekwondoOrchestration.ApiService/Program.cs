@@ -26,7 +26,7 @@ foreach (var serviceType in serviceTypes)
 {
     builder.Services.AddScoped(serviceType);
 }
-
+builder.Services.AddAutoMapper(typeof(BrugerMap));
 builder.Services.AddAutoMapper(typeof(OrdbogMap));
 // Register repositories using reflection
 var repositoryTypes = typeof(IBrugerKlubRepository).Assembly
