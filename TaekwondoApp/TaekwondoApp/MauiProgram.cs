@@ -5,6 +5,7 @@ using TaekwondoApp.Shared.Mapping;
 using Microsoft.Maui.Storage;
 using System.IO;
 using Microsoft.AspNetCore.Components;
+using static TaekwondoApp.Services.AuthenticationService;
 
 namespace TaekwondoApp
 {
@@ -29,13 +30,15 @@ namespace TaekwondoApp
             builder.Services.AddAutoMapper(typeof(OrdbogMap)); // Register the profile
             // Configure SQLite service with the database path
             string dbPath = Path.Combine(FileSystem.AppDataDirectory, "ordbog.db");
-
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             // Register SQLiteService as a singleton with the database path
             builder.Services.AddSingleton<ISQLiteService>(new SQLiteService(dbPath));
 
             // Register HttpClientFactory to handle HttpClient instances
-            builder.Services.AddHttpClient();
-
+            builder.Services.AddScoped<JwtAuthMessageHandler>();
+            builder.Services.AddHttpClient("ApiClient")
+                .AddHttpMessageHandler<JwtAuthMessageHandler>()
+                .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://localhost:7478/"));
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
