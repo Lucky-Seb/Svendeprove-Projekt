@@ -13,22 +13,22 @@
 
     <div>
         <label for="email">Email:</label>
-        <InputText id="email" class="form-control" @bind-Value="registerModel.Email" />
+        <InputText id="email" class="form-control" @bind="registerModel.Email" />
     </div>
 
     <div>
         <label for="username">Username:</label>
-        <InputText id="username" class="form-control" @bind-Value="registerModel.Brugernavn" />
+        <InputText id="username" class="form-control" @bind="registerModel.Brugernavn" />
     </div>
 
     <div>
         <label for="firstName">First Name:</label>
-        <InputText id="firstName" class="form-control" @bind-Value="registerModel.Fornavn" />
+        <InputText id="firstName" class="form-control" @bind="registerModel.Fornavn" />
     </div>
 
     <div>
         <label for="lastName">Last Name:</label>
-        <InputText id="lastName" class="form-control" @bind-Value="registerModel.Efternavn" />
+        <InputText id="lastName" class="form-control" @bind="registerModel.Efternavn" />
     </div>
 
     <div>
@@ -38,36 +38,64 @@
 
     <div>
         <label for="belt">Belt Grade:</label>
-        <InputText id="belt" class="form-control" @bind-Value="registerModel.Bæltegrad" />
+        <InputText id="belt" class="form-control" @bind="registerModel.Bæltegrad" />
     </div>
 
     <div>
         <label for="address">Address:</label>
-        <InputText id="address" class="form-control" @bind-Value="registerModel.Address" />
+        <InputText id="address" class="form-control" @bind="registerModel.Address" />
     </div>
 
     <button type="submit" class="btn btn-primary">Register</button>
 </EditForm>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@if (successMessageVisible)
+{
+    <div class="alert alert-success mt-3">Registration successful! Redirecting to login...</div>
+}
+
 @code {
     private RegisterModel registerModel = new RegisterModel();
+    private string errorMessage;
+    private bool successMessageVisible = false;
 
     private async Task HandleRegister()
     {
-        // Map RegisterModel to BrugerDTO using AutoMapper
-        var brugerDTO = Mapper.Map<BrugerDTO>(registerModel);
-
-        var response = await Http.PostAsJsonAsync<BrugerDTO>("api/bruger", brugerDTO);
-
-        if (response.IsSuccessStatusCode)
+        if (string.IsNullOrWhiteSpace(registerModel.Email) ||
+            string.IsNullOrWhiteSpace(registerModel.Brugernavn) ||
+            string.IsNullOrWhiteSpace(registerModel.Fornavn) ||
+            string.IsNullOrWhiteSpace(registerModel.Efternavn) ||
+            string.IsNullOrWhiteSpace(registerModel.Brugerkode))
         {
-            // On successful registration, navigate to the login page
-            Navigation.NavigateTo("/login");
+            errorMessage = "Please fill in all required fields.";
+            return;
         }
-        else
+
+        try
         {
-            // Handle registration failure (display an error message)
-            Console.WriteLine("Registration failed.");
+            var brugerDTO = Mapper.Map<BrugerDTO>(registerModel);
+            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/bruger", brugerDTO);
+
+            if (response.IsSuccessStatusCode)
+            {
+                successMessageVisible = true;
+                await Task.Delay(2000); // Optional delay for feedback
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                errorMessage = "Registration failed. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine(ex);
         }
     }
 
