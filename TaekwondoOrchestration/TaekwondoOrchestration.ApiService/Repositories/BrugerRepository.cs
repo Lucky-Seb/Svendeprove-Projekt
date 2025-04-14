@@ -1,22 +1,25 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoApp.Shared.Models;
+using TaekwondoApp.Shared.DTO;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TaekwondoApp.Shared.DTO;
-using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
-
 
 namespace TaekwondoOrchestration.ApiService.Repositories
 {
     public class BrugerRepository : IBrugerRepository
     {
         private readonly ApiDbContext _context;
+        private readonly IMapper _mapper;
 
-        public BrugerRepository(ApiDbContext context)
+        public BrugerRepository(ApiDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<List<Bruger>> GetAllBrugereAsync()
@@ -45,71 +48,24 @@ namespace TaekwondoOrchestration.ApiService.Repositories
 
         public async Task<List<BrugerDTO>> GetBrugereByKlubAsync(Guid klubId)
         {
-            var result = await _context.Brugere
-                .Join(_context.BrugerKlubber,
-                      b => b.BrugerID,
-                      bk => bk.BrugerID,
-                      (b, bk) => new { b, bk })
-                .Join(_context.Klubber,
-                      temp => temp.bk.KlubID,
-                      k => k.KlubID,
-                      (temp, k) => new { temp.b, temp.bk, k })
-                .Where(x => x.k.KlubID == klubId)
-                .Select(x => new BrugerDTO
-                {
-                    BrugerID = x.b.BrugerID,
-                    Email = x.b.Email,
-                    Brugernavn = x.b.Brugernavn,
-                    Fornavn = x.b.Fornavn,
-                    Efternavn = x.b.Efternavn,
-                    Brugerkode = x.b.Brugerkode,
-                    Bæltegrad = x.b.Bæltegrad,
-                    Address = x.b.Address,
-                    Role = x.b.Role,
-                    Klub = new KlubDTO
-                    {
-                        KlubID = x.k.KlubID,
-                        KlubNavn = x.k.KlubNavn
-                    }
-                })
+            return await _context.BrugerKlubber
+                .Where(bk => bk.KlubID == klubId)
+                .Select(bk => bk.Bruger)
+                .Include(b => b.BrugerKlubber)
+                .ThenInclude(bk => bk.Klub)
+                .ProjectTo<BrugerDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
-
-            return result;
         }
 
-        // Get all Brugere by KlubID and Bæltegrad
         public async Task<List<BrugerDTO>> GetBrugereByKlubAndBæltegradAsync(Guid klubId, string bæltegrad)
         {
-            var result = await _context.Brugere
-                .Join(_context.BrugerKlubber,
-                      b => b.BrugerID,
-                      bk => bk.BrugerID,
-                      (b, bk) => new { b, bk })
-                .Join(_context.Klubber,
-                      temp => temp.bk.KlubID,
-                      k => k.KlubID,
-                      (temp, k) => new { temp.b, temp.bk, k })
-                .Where(x => x.k.KlubID == klubId && x.b.Bæltegrad == bæltegrad)
-                .Select(x => new BrugerDTO
-                {
-                    BrugerID = x.b.BrugerID,
-                    Email = x.b.Email,
-                    Brugernavn = x.b.Brugernavn,
-                    Fornavn = x.b.Fornavn,
-                    Efternavn = x.b.Efternavn,
-                    Brugerkode = x.b.Brugerkode,
-                    Bæltegrad = x.b.Bæltegrad,
-                    Address = x.b.Address,
-                    Role = x.b.Role,
-                    Klub = new KlubDTO
-                    {
-                        KlubID = x.k.KlubID,
-                        KlubNavn = x.k.KlubNavn
-                    }
-                })
+            return await _context.BrugerKlubber
+                .Where(bk => bk.KlubID == klubId && bk.Bruger.Bæltegrad == bæltegrad)
+                .Select(bk => bk.Bruger)
+                .Include(b => b.BrugerKlubber)
+                .ThenInclude(bk => bk.Klub)
+                .ProjectTo<BrugerDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
-
-            return result;
         }
 
         public async Task<Bruger?> GetBrugerByBrugernavnAsync(string brugernavn)
@@ -145,6 +101,18 @@ namespace TaekwondoOrchestration.ApiService.Repositories
 
             _context.Brugere.Remove(bruger);
             return await _context.SaveChangesAsync() > 0;
+        }
+        public async Task<BrugerDTO?> AuthenticateBrugerAsync(LoginDTO loginDto)
+        {
+            var bruger = await _context.Brugere
+                .FirstOrDefaultAsync(b =>
+                    (b.Email == loginDto.EmailOrBrugernavn || b.Brugernavn == loginDto.EmailOrBrugernavn) &&
+                    b.Brugerkode == loginDto.Brugerkode);
+
+            if (bruger == null)
+                return null;
+
+            return _mapper.Map<BrugerDTO>(bruger);
         }
     }
 }

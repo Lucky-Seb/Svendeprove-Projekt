@@ -11,6 +11,6 @@
         public string Bæltegrad { get; set; }
         public string Address { get; set; }
         public string Role { get; set; }
-        public KlubDTO Klub { get; set; }
+        public KlubDTO? Klub { get; set; }
     }
 }

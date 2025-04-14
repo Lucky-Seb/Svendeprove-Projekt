@@ -1,0 +1,121 @@
+﻿@page "/login"
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+
+<h3>Login</h3>
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="emailOrUsername">Email or Username:</label>
+        <InputText id="emailOrUsername" @bind-Value="loginModel.EmailOrBrugernavn" class="form-control" />
+        <small class="form-text text-muted">Enter your registered email or username.</small>
+    </div>
+
+    <div>
+        <label for="password">Password:</label>
+        <InputText id="password" type="password" @bind-Value="loginModel.Brugerkode" class="form-control" />
+        <small class="form-text text-muted">Enter your password.</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2">Login</button>
+</EditForm>
+
+@if (validationErrors.Any())
+{
+    <div class="alert alert-danger mt-3">
+        <ul>
+            @foreach (var error in validationErrors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+}
+
+<!-- App Logs -->
+<div class="log-box mt-4" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+    <h5>App Logs</h5>
+    <button class="btn btn-sm btn-secondary mb-2" @onclick="() => logs.Clear()">Clear Logs</button>
+    @foreach (var log in logs)
+    {
+        <div>@log</div>
+    }
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private List<string> validationErrors = new();
+    private List<string> logs = new();
+
+    private async Task HandleLogin()
+    {
+        validationErrors.Clear();
+
+        if (string.IsNullOrWhiteSpace(loginModel.EmailOrBrugernavn) || string.IsNullOrWhiteSpace(loginModel.Brugerkode))
+        {
+            validationErrors.Add("Email/Username and password are required.");
+            return;
+        }
+
+        try
+        {
+            LogAction("Attempting login with:");
+            LogAction($"Email/Username: {loginModel.EmailOrBrugernavn}");
+
+            // Posting the login data to the API
+            var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger/login", loginModel);
+            LogAction($"Response status code: {response.StatusCode}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                LogAction("Login successful.");
+                NavigationManager.NavigateTo("/"); // redirect to home or dashboard
+            }
+            else
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                LogAction($"Error Response: {responseContent}");
+
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    validationErrors.Add("Invalid email or password.");
+                }
+                else
+                {
+                    validationErrors.Add("Login failed. Please try again.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            validationErrors.Add($"Login failed. Error: {ex.Message}");
+            LogAction($"Login exception: {ex.Message}");
+        }
+    }
+
+    private void LogAction(string message)
+    {
+        if (logs.Count > 50)
+        {
+            logs.RemoveAt(logs.Count - 1);
+        }
+
+        logs.Insert(0, $"{DateTime.Now:HH:mm:ss}: {message}");
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        return email.Contains("@") && email.Contains(".");
+    }
+
+    public class LoginModel
+    {
+        // These properties match what the backend expects in LoginDTO
+        public string EmailOrBrugernavn { get; set; } = string.Empty;
+        public string Brugerkode { get; set; } = string.Empty;
+    }
+}

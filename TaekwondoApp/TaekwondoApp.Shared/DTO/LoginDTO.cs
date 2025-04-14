@@ -8,7 +8,7 @@ namespace TaekwondoApp.Shared.DTO
 {
     public class LoginDTO
     {
-        public string Username { get; set; }
-        public string Password { get; set; }
+        public string EmailOrBrugernavn { get; set; } = string.Empty;
+        public string Brugerkode { get; set; } = string.Empty;
     }
 }
