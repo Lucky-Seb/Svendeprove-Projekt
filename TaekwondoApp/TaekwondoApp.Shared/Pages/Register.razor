@@ -13,37 +13,37 @@
 
     <div>
         <label for="email">Email:</label>
-        <InputText id="email" class="form-control" @bind="registerModel.Email" />
+        <InputText id="email" class="form-control" @bind-Value="registerModel.Email" />
     </div>
 
     <div>
         <label for="username">Username:</label>
-        <InputText id="username" class="form-control" @bind="registerModel.Brugernavn" />
+        <InputText id="username" class="form-control" @bind-Value="registerModel.Brugernavn" />
     </div>
 
     <div>
         <label for="firstName">First Name:</label>
-        <InputText id="firstName" class="form-control" @bind="registerModel.Fornavn" />
+        <InputText id="firstName" class="form-control" @bind-Value="registerModel.Fornavn" />
     </div>
 
     <div>
         <label for="lastName">Last Name:</label>
-        <InputText id="lastName" class="form-control" @bind="registerModel.Efternavn" />
+        <InputText id="lastName" class="form-control" @bind-Value="registerModel.Efternavn" />
     </div>
 
     <div>
         <label for="password">Password:</label>
-        <InputPassword id="password" class="form-control" @bind="registerModel.Brugerkode" />
+        <InputPassword id="password" class="form-control" @bind-Value="registerModel.Brugerkode" />
     </div>
 
     <div>
         <label for="belt">Belt Grade:</label>
-        <InputText id="belt" class="form-control" @bind="registerModel.Bæltegrad" />
+        <InputText id="belt" class="form-control" @bind-Value="registerModel.Bæltegrad" />
     </div>
 
     <div>
         <label for="address">Address:</label>
-        <InputText id="address" class="form-control" @bind="registerModel.Address" />
+        <InputText id="address" class="form-control" @bind-Value="registerModel.Address" />
     </div>
 
     <button type="submit" class="btn btn-primary">Register</button>
@@ -78,22 +78,29 @@
 
         try
         {
+            // Map RegisterModel to BrugerDTO
             var brugerDTO = Mapper.Map<BrugerDTO>(registerModel);
+
+            // Post data to the backend
             var response = await Http.PostAsJsonAsync("https://localhost:7478/api/bruger", brugerDTO);
 
             if (response.IsSuccessStatusCode)
             {
+                // On success, show success message
                 successMessageVisible = true;
                 await Task.Delay(2000); // Optional delay for feedback
                 Navigation.NavigateTo("/login");
             }
             else
             {
-                errorMessage = "Registration failed. Please try again.";
+                // Handle registration failure based on the API response
+                var errorResponse = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Registration failed: {errorResponse}";
             }
         }
         catch (Exception ex)
         {
+            // Catch any exceptions during the process
             errorMessage = $"An error occurred: {ex.Message}";
             Console.WriteLine(ex);
         }
