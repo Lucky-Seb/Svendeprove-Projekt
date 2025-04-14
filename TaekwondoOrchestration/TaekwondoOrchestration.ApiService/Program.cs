@@ -5,6 +5,9 @@ using TaekwondoOrchestration.ApiService.Services;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using TaekwondoOrchestration.ApiService.NotificationHubs;
 using TaekwondoApp.Shared.Mapping;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,7 @@ foreach (var serviceType in serviceTypes)
 {
     builder.Services.AddScoped(serviceType);
 }
+
 builder.Services.AddAutoMapper(typeof(OrdbogMap));
 // Register repositories using reflection
 var repositoryTypes = typeof(IBrugerKlubRepository).Assembly
@@ -30,6 +34,21 @@ var repositoryTypes = typeof(IBrugerKlubRepository).Assembly
     .Where(t => t.Name.EndsWith("Repository") && !t.IsInterface)
     .ToList();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(opt =>
+    {
+        opt.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes("supersecretkey12345")) // Secure this!
+        };
+    });
+
+builder.Services.AddAuthorization();
 foreach (var repo in repositoryTypes)
 {
     var interfaceType = repo.GetInterfaces().FirstOrDefault(i => i.Name == "I" + repo.Name);
