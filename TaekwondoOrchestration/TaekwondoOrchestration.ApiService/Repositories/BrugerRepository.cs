@@ -127,7 +127,9 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             // Check if the password matches using bcrypt
             bool passwordMatch = BCrypt.Net.BCrypt.Verify(brugerkode, bruger.Brugerkode);
             if (!passwordMatch) return null;
-
+            Console.WriteLine($"Plain: {brugerkode}");
+            Console.WriteLine($"Hashed: {bruger.Brugerkode}");
+            Console.WriteLine($"Match: {passwordMatch}");
             // Create JWT Token
             var claims = new[]
             {

@@ -68,6 +68,7 @@
         {
             LogAction("Attempting login with:");
             LogAction($"Email/Username: {loginModel.EmailOrBrugernavn}");
+            LogAction($"Password being sent: {loginModel.Brugerkode}");
 
             // Send the login request
             var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger/login", loginModel);
