@@ -138,7 +138,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             // Add other claims like roles or email if needed
         };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key_here"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("HalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEy"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(

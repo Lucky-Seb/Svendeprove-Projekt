@@ -135,12 +135,8 @@
             LogAction($"Address: {registerModel.Address}");
             LogAction($"Role: {registerModel.Role}");
 
-            // Hash the password before sending it to the server
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(registerModel.Password);
-
-            // Map RegisterModel to BrugerDTO and add the hashed password
+            // Map RegisterModel to BrugerDTO (don't hash the password here)
             var brugerDTO = Mapper.Map<BrugerDTO>(registerModel);
-            brugerDTO.Brugerkode = hashedPassword;
 
             LogAction("Mapped BrugerDTO:");
             LogAction($"Email: {brugerDTO.Email}");
@@ -150,7 +146,7 @@
             LogAction($"Belt Level: {brugerDTO.Bæltegrad}");
             LogAction($"Address: {brugerDTO.Address}");
             LogAction($"Role: {brugerDTO.Role}");
-
+            brugerDTO.Brugerkode = registerModel.ConfirmPassword;
             // Send the registration request to the backend
             var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger", brugerDTO);
             LogAction($"Response status code: {response.StatusCode}");
