@@ -55,6 +55,10 @@ namespace TaekwondoOrchestration.ApiService.Data
                 }
             }
 
+            // Define primary key explicitly
+            modelBuilder.Entity<BrugerLogin>()
+                .HasKey(bl => bl.LoginId);
+
             // Configuring the relationship between Bruger and BrugerLogin
             modelBuilder.Entity<BrugerLogin>()
                 .HasOne(bl => bl.Bruger)  // BrugerLogin has one Bruger
@@ -409,64 +413,69 @@ namespace TaekwondoOrchestration.ApiService.Data
             var ordbogID8 = Guid.Parse("10efa19d-6353-4373-b455-414131376826");  // Generated GUID 79
             var ordbogID9 = Guid.Parse("0fd1ec97-6cee-4e0f-a032-0a3f3020d5be");  // Generated GUID 80
             var ordbogID10 = Guid.Parse("a61b1f2a-3236-4af5-90aa-3483b96a5666");  // Generated GUID 81
-            
             modelBuilder.Entity<Bruger>().HasData(
-                new Bruger
-                {
-                    BrugerID = brugerID1,
-                    Email = "john.doe@example.com",
-                    Brugernavn = "johndoe123",
-                    Fornavn = "John",
-                    Efternavn = "Doe",
-                    Address = "123 Taekwondo St.",
-                    Bæltegrad = "Hvidt Bælte",
-                    Role = "Bruger"
-                },
-                new Bruger
-                {
-                    BrugerID = brugerID2,
-                    Email = "jane.doe@example.com",
-                    Brugernavn = "janedoe456",
-                    Fornavn = "Jane",
-                    Efternavn = "Doe",
-                    Address = "456 Taekwondo St.",
-                    Bæltegrad = "Gult Bælte",
-                    Role = "Bruger"
-                },
-                new Bruger
-                {
-                    BrugerID = brugerID3,
-                    Email = "mark.smith@example.com",
-                    Brugernavn = "marksmith789",
-                    Fornavn = "Mark",
-                    Efternavn = "Smith",
-                    Address = "789 Taekwondo St.",
-                    Bæltegrad = "Blåt Bælte",
-                    Role = "Bruger"
-                },
-                new Bruger
-                {
-                    BrugerID = brugerID4,
-                    Email = "lucy.jones@example.com",
-                    Brugernavn = "lucyjones321",
-                    Fornavn = "Lucy",
-                    Efternavn = "Jones",
-                    Address = "321 Taekwondo St.",
-                    Bæltegrad = "Grønt Bælte",
-                    Role = "Bruger"
-                },
-                new Bruger
-                {
-                    BrugerID = brugerID5,
-                    Email = "robert.brown@example.com",
-                    Brugernavn = "robertbrown654",
-                    Fornavn = "Robert",
-                    Efternavn = "Brown",
-                    Address = "654 Taekwondo St.",
-                    Bæltegrad = "Brunt Bælte",
-                    Role = "Bruger"
-                }
-            );
+               new Bruger
+               {
+                   BrugerID = brugerID1,
+                   Email = "john.doe@example.com",
+                   Brugernavn = "johndoe123",
+                   Fornavn = "John",
+                   Efternavn = "Doe",
+                   Address = "123 Taekwondo St.",
+                   Bæltegrad = "Hvidt Bælte",
+                   Role = "Bruger",
+                   TwoFactorSecret = "TestSecret1"  // Include the TwoFactorSecret
+               },
+               new Bruger
+               {
+                   BrugerID = brugerID2,
+                   Email = "jane.doe@example.com",
+                   Brugernavn = "janedoe456",
+                   Fornavn = "Jane",
+                   Efternavn = "Doe",
+                   Address = "456 Taekwondo St.",
+                   Bæltegrad = "Gult Bælte",
+                   Role = "Bruger",
+                   TwoFactorSecret = "TestSecret2"  // Include the TwoFactorSecret
+               },
+               new Bruger
+               {
+                   BrugerID = brugerID3,
+                   Email = "mark.smith@example.com",
+                   Brugernavn = "marksmith789",
+                   Fornavn = "Mark",
+                   Efternavn = "Smith",
+                   Address = "789 Taekwondo St.",
+                   Bæltegrad = "Blåt Bælte",
+                   Role = "Bruger",
+                   TwoFactorSecret = "TestSecret3"  // Include the TwoFactorSecret
+               },
+               new Bruger
+               {
+                   BrugerID = brugerID4,
+                   Email = "lucy.jones@example.com",
+                   Brugernavn = "lucyjones321",
+                   Fornavn = "Lucy",
+                   Efternavn = "Jones",
+                   Address = "321 Taekwondo St.",
+                   Bæltegrad = "Grønt Bælte",
+                   Role = "Bruger",
+                   TwoFactorSecret = "TestSecret4"  // Include the TwoFactorSecret
+               },
+               new Bruger
+               {
+                   BrugerID = brugerID5,
+                   Email = "robert.brown@example.com",
+                   Brugernavn = "robertbrown654",
+                   Fornavn = "Robert",
+                   Efternavn = "Brown",
+                   Address = "654 Taekwondo St.",
+                   Bæltegrad = "Brunt Bælte",
+                   Role = "Bruger",
+                   TwoFactorSecret = "TestSecret5"  // Include the TwoFactorSecret
+               }
+           );
+
 
             // Seed for Klub
             modelBuilder.Entity<Klub>().HasData(
