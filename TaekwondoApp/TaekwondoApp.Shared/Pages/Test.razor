@@ -1,0 +1,40 @@
+﻿@page "/testpage"
+@using TaekwondoApp.Shared.Services
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager NavigationManager
+
+<h3>Secure Page</h3>
+
+@if (isAuthenticated)
+{
+    <p>You are logged in and can view this page!</p>
+    <button @onclick="Logout" class="btn btn-danger">Log Out</button>
+}
+else
+{
+    <p>You need to be logged in to view this page.</p>
+}
+
+@code {
+    private bool isAuthenticated;
+
+    // OnInitializedAsync is invoked when the component is initialized
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await AuthenticationService.GetTokenAsync();
+        isAuthenticated = !string.IsNullOrEmpty(token);
+
+        if (!isAuthenticated)
+        {
+            // If not authenticated, navigate to the login page
+            NavigationManager.NavigateTo("/login", true); // The 'true' ensures a forced navigation
+        }
+    }
+
+    // Logout method to remove the JWT token and redirect
+    private async Task Logout()
+    {
+        await AuthenticationService.RemoveTokenAsync();
+        NavigationManager.NavigateTo("/login"); // Redirect to login page after logout
+    }
+}
