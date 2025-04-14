@@ -1,0 +1,55 @@
+﻿@page "/login"
+@using TaekwondoApp.Shared.DTO
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3>Login</h3>
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="email">Email:</label>
+        <InputText id="email" class="form-control" @bind-Value="loginModel.Email" />
+    </div>
+
+    <div>
+        <label for="password">Password:</label>
+        <InputPassword id="password" class="form-control" @bind-Value="loginModel.Brugerkode" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Login</button>
+</EditForm>
+
+<p>
+    Don't have an account? <a href="/register">Register</a>
+</p>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+
+    private async Task HandleLogin()
+    {
+        // Since no dedicated login endpoint, you might try to get the user by email or username
+        var response = await Http.GetFromJsonAsync<BrugerDTO>($"api/bruger/brugernavn/{loginModel.Email}");
+
+        if (response != null && response.Brugerkode == loginModel.Brugerkode) // Basic password check (should ideally be hashed comparison)
+        {
+            // For now, we navigate to the home page (adjust this as per your requirements)
+            Navigation.NavigateTo("/home");
+        }
+        else
+        {
+            // Show an error if login fails
+            // You can show an alert, or error message in the UI
+            Console.WriteLine("Invalid login credentials.");
+        }
+    }
+
+    public class LoginModel
+    {
+        public string Email { get; set; }
+        public string Brugerkode { get; set; }
+    }
+}
