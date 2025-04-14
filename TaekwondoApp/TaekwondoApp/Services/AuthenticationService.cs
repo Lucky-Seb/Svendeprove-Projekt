@@ -1,25 +1,16 @@
 ﻿using Microsoft.AspNetCore.Components;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Maui.Storage; // <-- Make sure this is included
+using System.Net.Http.Headers;
 using TaekwondoApp.Shared.Services;
 
 namespace TaekwondoApp.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
-        //private readonly ILocalStorageService _localStorageService; // For WebAssembly
-        private readonly ISecureStorage _secureStorageService; // For .NET MAUI
         private readonly NavigationManager _navigationManager;
 
-        public AuthenticationService(/*ILocalStorageService localStorageService,*/
-                                     ISecureStorage secureStorageService,
-                                     NavigationManager navigationManager)
+        public AuthenticationService(NavigationManager navigationManager)
         {
-            //_localStorageService = localStorageService;
-            _secureStorageService = secureStorageService;
             _navigationManager = navigationManager;
         }
 
@@ -27,11 +18,11 @@ namespace TaekwondoApp.Services
         {
             if (OperatingSystem.IsBrowser())
             {
-                //await _localStorageService.SetItemAsync("jwt_token", token);
+                // Add local storage logic if needed for Blazor WASM
             }
             else
             {
-                await _secureStorageService.SetAsync("jwt_token", token);
+                await SecureStorage.SetAsync("jwt_token", token);
             }
         }
 
@@ -39,26 +30,22 @@ namespace TaekwondoApp.Services
         {
             if (OperatingSystem.IsBrowser())
             {
-                //return await _localStorageService.GetItemAsync<string>("jwt_token");
-                return null; // Placeholder for local storage retrieval
+                return null; // Add local storage logic if needed
             }
             else
             {
-                return await _secureStorageService.GetAsync("jwt_token");
+                return await SecureStorage.GetAsync("jwt_token");
             }
         }
 
         public async Task RemoveTokenAsync()
         {
-            if (OperatingSystem.IsBrowser())
+            if (!OperatingSystem.IsBrowser())
             {
-                //await _localStorageService.RemoveItemAsync("jwt_token");
-            }
-            else
-            {
-                //await _secureStorageService.RemoveAsync("jwt_token");
+                SecureStorage.Remove("jwt_token");
             }
         }
+
         public class JwtAuthMessageHandler : DelegatingHandler
         {
             private readonly IAuthenticationService _authenticationService;
@@ -73,7 +60,7 @@ namespace TaekwondoApp.Services
                 var token = await _authenticationService.GetTokenAsync();
                 if (!string.IsNullOrEmpty(token))
                 {
-                    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 }
 
                 return await base.SendAsync(request, cancellationToken);
