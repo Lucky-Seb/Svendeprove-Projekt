@@ -19,16 +19,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             _ordbogService = ordbogService;
             _hubContext = hubContext;
         }
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
-        {
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Username == dto.Username);
-            if (user == null || !VerifyPassword(user.PasswordHash, dto.Password))
-                return Unauthorized();
-
-            var token = GenerateJwtToken(user);
-            return Ok(new { token });
-        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrdbogDTO>>> GetOrdboger()

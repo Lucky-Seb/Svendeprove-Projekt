@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TaekwondoApp.Shared.DTO;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 
 namespace TaekwondoOrchestration.ApiService.Repositories
@@ -62,7 +63,6 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                     Brugernavn = x.b.Brugernavn,
                     Fornavn = x.b.Fornavn,
                     Efternavn = x.b.Efternavn,
-                    Brugerkode = x.b.Brugerkode,
                     Bæltegrad = x.b.Bæltegrad,
                     Address = x.b.Address,
                     Role = x.b.Role,
@@ -97,7 +97,6 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                     Brugernavn = x.b.Brugernavn,
                     Fornavn = x.b.Fornavn,
                     Efternavn = x.b.Efternavn,
-                    Brugerkode = x.b.Brugerkode,
                     Bæltegrad = x.b.Bæltegrad,
                     Address = x.b.Address,
                     Role = x.b.Role,
@@ -146,5 +145,45 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             _context.Brugere.Remove(bruger);
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<Bruger> GetUserByUsernameAsync(string brugernavn)
+        {
+            return await _context.Brugere.FirstOrDefaultAsync(u => u.Brugernavn == brugernavn);
+        }
+
+        public async Task<Bruger> GetUserByEmailAsync(string email)
+        {
+            return await _context.Brugere.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task AddUserAsync(Bruger bruger)
+        {
+            _context.Brugere.Add(bruger);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateUserAsync(Bruger bruger)
+        {
+            _context.Brugere.Update(bruger);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<BrugerLogin> GetUserLoginAsync(string provider, string providerKey)
+        {
+            return await _context.BrugereLogins
+                .Include(ul => ul.Bruger)
+                .FirstOrDefaultAsync(ul => ul.Provider == provider && ul.ProviderKey == providerKey);
+        }
+        public async Task<Bruger> GetBrugerByEmailAsync(string email)
+        {
+            return await _context.Brugere
+                .Include(b => b.Logins)
+                .FirstOrDefaultAsync(b => b.Email == email);
+        }
+        public async Task<BrugerLogin> GetBrugerLoginAsync(string provider, string providerKey)
+        {
+            return await _context.BrugereLogins
+                .Include(l => l.Bruger)
+                .FirstOrDefaultAsync(l => l.Provider == provider && l.ProviderKey == providerKey);
+        }
+
     }
 }

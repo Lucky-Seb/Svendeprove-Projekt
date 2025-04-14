@@ -1,0 +1,104 @@
+﻿@page "/enable-2fa"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h3>Enable Two-Factor Authentication</h3>
+
+@if (string.IsNullOrEmpty(qrCodeImageUrl))
+{
+    <button @onclick="GenerateQRCode">Generate QR Code</button>
+}
+else
+{
+    <h4>Scan the QR code with your authenticator app</h4>
+    <img src="@qrCodeImageUrl" alt="QR Code" />
+
+    <EditForm Model="@verificationModel" OnValidSubmit="@Verify2FA">
+        <InputText @bind-Value="verificationModel.Code" placeholder="Enter Code from Authenticator App" />
+        <button type="submit">Verify</button>
+    </EditForm>
+}
+
+@if (isError)
+{
+    <div class="alert alert-danger">There was an error. Please try again.</div>
+}
+
+@code {
+    private string qrCodeImageUrl;
+    private VerificationModel verificationModel = new();
+    private bool isError = false;
+
+    // Generate the QR Code
+    private async Task GenerateQRCode()
+    {
+        try
+        {
+            var response = await Http.GetAsync("api/auth/generate-2fa-qr");
+
+            if (response.IsSuccessStatusCode)
+            {
+                qrCodeImageUrl = await response.Content.ReadAsStringAsync(); // URL of the QR code image
+                isError = false;
+            }
+            else
+            {
+                isError = true;
+                Console.WriteLine("Failed to generate QR code");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error generating QR code: {ex.Message}");
+            isError = true;
+        }
+    }
+
+    // Verify the 2FA code entered by the user
+    private async Task Verify2FA()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/auth/verify-2fa-setup", verificationModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<Verify2FAResponse>();
+
+                if (result.IsSuccess)
+                {
+                    // Notify user success, navigate to home page or update UI
+                    NavigationManager.NavigateTo("/home");
+                }
+                else
+                {
+                    isError = true;
+                    Console.WriteLine("Failed to verify 2FA code");
+                }
+            }
+            else
+            {
+                isError = true;
+                Console.WriteLine("Failed to verify 2FA code");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error verifying 2FA code: {ex.Message}");
+            isError = true;
+        }
+    }
+
+    // Model for the 2FA verification
+    public class VerificationModel
+    {
+        public string Code { get; set; }
+    }
+
+    // Response model for 2FA verification
+    public class Verify2FAResponse
+    {
+        public bool IsSuccess { get; set; }
+        public string Message { get; set; }
+    }
+}

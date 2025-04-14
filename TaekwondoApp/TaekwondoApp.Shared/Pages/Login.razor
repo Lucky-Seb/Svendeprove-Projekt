@@ -1,0 +1,147 @@
+﻿@page "/login"
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using AutoMapper
+@using Microsoft.Maui.Storage;
+@using Microsoft.Maui.Authentication;
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+@inject IMapper _mapper
+
+<h3>Login</h3>
+
+@if (!requires2FA)
+{
+    <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+        <InputText @bind-Value="loginModel.Username" placeholder="Username" />
+        <InputText @bind-Value="loginModel.Password" type="password" placeholder="Password" />
+        <button type="submit">Login</button>
+    </EditForm>
+}
+else
+{
+    <EditForm Model="@twoFactorModel" OnValidSubmit="@Handle2FA">
+        <InputText @bind-Value="twoFactorModel.Code" placeholder="Enter 2FA Code" />
+        <button type="submit">Verify</button>
+    </EditForm>
+}
+
+<button @onclick="LoginWithGoogle">Login with Google</button>
+<button @onclick="LoginWithMicrosoft">Login with Microsoft</button>
+
+@code {
+    private LoginModel loginModel = new();
+    private TwoFactorModel twoFactorModel = new();
+    private bool requires2FA = false;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync("api/auth/login", loginModel);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                if (result.Requires2FA)
+                {
+                    requires2FA = true;
+                }
+                else
+                {
+                    await SecureStorage.SetAsync("auth_token", result.Token);
+                    NavigationManager.NavigateTo("/home");
+                }
+            }
+            else
+            {
+                // Handle invalid login (wrong credentials, etc.)
+                Console.WriteLine("Login failed");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during login: {ex.Message}");
+        }
+    }
+
+    private async Task Handle2FA()
+    {
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync("api/auth/verify-2fa", twoFactorModel);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                await SecureStorage.SetAsync("auth_token", result.Token);
+                NavigationManager.NavigateTo("/home");
+            }
+            else
+            {
+                // Handle 2FA error
+                Console.WriteLine("Invalid 2FA code");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during 2FA verification: {ex.Message}");
+        }
+    }
+
+    private async Task LoginWithGoogle()
+    {
+        try
+        {
+            var authResult = await WebAuthenticator.AuthenticateAsync(
+                new Uri("https://yourapi.com/api/auth/externallogin-google"),
+                new Uri("myapp://oauth2redirect"));
+
+            if (authResult.Properties.TryGetValue("token", out var token))
+            {
+                await SecureStorage.SetAsync("auth_token", token);
+                NavigationManager.NavigateTo("/home");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Google Login failed: {ex.Message}");
+        }
+    }
+
+    private async Task LoginWithMicrosoft()
+    {
+        try
+        {
+            var authResult = await WebAuthenticator.AuthenticateAsync(
+                new Uri("https://yourapi.com/api/auth/externallogin-microsoft"),
+                new Uri("myapp://oauth2redirect"));
+
+            if (authResult.Properties.TryGetValue("token", out var token))
+            {
+                await SecureStorage.SetAsync("auth_token", token);
+                NavigationManager.NavigateTo("/home");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Microsoft Login failed: {ex.Message}");
+        }
+    }
+
+    public class LoginModel
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class TwoFactorModel
+    {
+        public string Code { get; set; }
+    }
+
+    public class LoginResponse
+    {
+        public bool Requires2FA { get; set; }
+        public string Token { get; set; }
+    }
+}

@@ -10,6 +10,7 @@ namespace TaekwondoOrchestration.ApiService.Data
         { }
 
         // DbSet properties for each model
+        public DbSet<BrugerLogin> BrugereLogins { get; set; } // 👈 This is the missing one
         public DbSet<Bruger> Brugere { get; set; }
         public DbSet<Klub> Klubber { get; set; }
         public DbSet<Ordbog> Ordboger { get; set; }
@@ -395,7 +396,6 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Brugernavn = "johndoe123",
                     Fornavn = "John",
                     Efternavn = "Doe",
-                    Brugerkode = "hashed_password",  // This should be a hashed password
                     Address = "123 Taekwondo St.",
                     Bæltegrad = "Hvidt Bælte",
                     Role = "Bruger"
@@ -407,7 +407,6 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Brugernavn = "janedoe456",
                     Fornavn = "Jane",
                     Efternavn = "Doe",
-                    Brugerkode = "hashed_password2",  // This should be a hashed password
                     Address = "456 Taekwondo St.",
                     Bæltegrad = "Gult Bælte",
                     Role = "Bruger"
@@ -419,7 +418,6 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Brugernavn = "marksmith789",
                     Fornavn = "Mark",
                     Efternavn = "Smith",
-                    Brugerkode = "hashed_password3",  // This should be a hashed password
                     Address = "789 Taekwondo St.",
                     Bæltegrad = "Blåt Bælte",
                     Role = "Bruger"
@@ -431,7 +429,6 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Brugernavn = "lucyjones321",
                     Fornavn = "Lucy",
                     Efternavn = "Jones",
-                    Brugerkode = "hashed_password4",  // This should be a hashed password
                     Address = "321 Taekwondo St.",
                     Bæltegrad = "Grønt Bælte",
                     Role = "Bruger"
@@ -443,7 +440,6 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Brugernavn = "robertbrown654",
                     Fornavn = "Robert",
                     Efternavn = "Brown",
-                    Brugerkode = "hashed_password5",  // This should be a hashed password
                     Address = "654 Taekwondo St.",
                     Bæltegrad = "Brunt Bælte",
                     Role = "Bruger"

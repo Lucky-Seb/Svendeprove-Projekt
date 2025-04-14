@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TaekwondoApp.Shared.DTO
 {
-    public class LoginDTO
+    public class RegisterDTO
     {
         public string Brugernavn { get; set; }
         public string Password { get; set; }
