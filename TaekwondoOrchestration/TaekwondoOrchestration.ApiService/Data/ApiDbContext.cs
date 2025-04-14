@@ -54,6 +54,28 @@ namespace TaekwondoOrchestration.ApiService.Data
                     method.Invoke(null, new object[] { modelBuilder });
                 }
             }
+
+            // Configuring the relationship between Bruger and BrugerLogin
+            modelBuilder.Entity<BrugerLogin>()
+                .HasOne(bl => bl.Bruger)  // BrugerLogin has one Bruger
+                .WithMany()  // Bruger can have many BrugerLogins
+                .HasForeignKey(bl => bl.BrugerID)  // Foreign key in BrugerLogin
+                .OnDelete(DeleteBehavior.Cascade);  // Delete BrugerLogins when Bruger is deleted
+
+            // Additional configurations for BrugerLogin if needed
+            modelBuilder.Entity<BrugerLogin>()
+                .Property(bl => bl.Provider)
+                .IsRequired();
+
+            modelBuilder.Entity<BrugerLogin>()
+                .Property(bl => bl.ProviderKey)
+                .IsRequired();
+
+            // PasswordHash is optional, only required for local login provider
+            modelBuilder.Entity<BrugerLogin>()
+                .Property(bl => bl.PasswordHash)
+                .IsRequired(false);
+
             // Configure properties for each derived class
             modelBuilder.Entity<Ordbog>()
                 .Property(o => o.CreatedAt)
