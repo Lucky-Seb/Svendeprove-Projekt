@@ -7,12 +7,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Exception Handler\**" />
+    <Compile Remove="Validator\**" />
+    <Content Remove="Exception Handler\**" />
+    <Content Remove="Validator\**" />
+    <EmbeddedResource Remove="Exception Handler\**" />
+    <EmbeddedResource Remove="Validator\**" />
+    <None Remove="Exception Handler\**" />
+    <None Remove="Validator\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\TaekwondoApp\TaekwondoApp.Shared\TaekwondoApp.Shared.csproj" />
     <ProjectReference Include="..\TaekwondoOrchestration.ServiceDefaults\TaekwondoOrchestration.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
@@ -36,9 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Exception Handler\" />
     <Folder Include="Security\" />
-    <Folder Include="Validator\" />
   </ItemGroup>
 
 </Project>

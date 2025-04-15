@@ -10,6 +10,13 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using FluentValidation.AspNetCore;
+using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
+using TaekwondoOrchestration.ApiService.Validators;
+using TaekwondoOrchestration.ApiService.Middlewares;
+using FluentValidation;
+using TaekwondoOrchestration.ApiService.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +62,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //{
 //    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 //});
+builder.Services.AddValidatorsFromAssemblyContaining<PensumDTOValidator>();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddControllers(opt => opt.Filters.Add<ValidationFilter>());
 
 builder.Services.AddAuthorization();
 foreach (var repo in repositoryTypes)
@@ -101,10 +111,17 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+});
+
+builder.Services.AddValidatorsFromAssemblyContaining<OrdbogDTOValidator>();
+builder.Services.AddFluentValidationAutoValidation();
 
 
 var app = builder.Build();
-
+app.UseMiddleware<GlobalExceptionMiddleware>();
 // Configure database context and seed data
 //using (var scope = app.Services.CreateScope())
 //{
