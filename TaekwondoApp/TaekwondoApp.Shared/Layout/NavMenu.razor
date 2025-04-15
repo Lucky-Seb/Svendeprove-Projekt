@@ -1,5 +1,7 @@
 ﻿@using TaekwondoApp.Shared.Services
-@inject IAuthenticationService AuthenticationService
+@inject AuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@implements IDisposable
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -108,19 +110,36 @@
                 </NavLink>
             </div>
         }
+        <div class="nav-item px-3">
+                <a class="nav-link" href="" @onclick="Logout">Logout</a>
+        </div>
     </nav>
 </div>
-@code{
-    private string token = "";
-    private string role = "";
-    protected override async Task OnInitializedAsync()
+@code {
+    private bool isAuthenticated;
+    private string? role;
+
+    protected override void OnInitialized()
     {
-        var token = await AuthenticationService.GetTokenAsync();
-        if (!string.IsNullOrEmpty(token))
-        {
-            role = JwtParser.GetRole(token);
-        }
+        AuthStateProvider.OnChange += StateChanged;
+        StateChanged(); // Initialize state
     }
 
-}
+    private void StateChanged()
+    {
+        isAuthenticated = AuthStateProvider.IsAuthenticated;
+        role = AuthStateProvider.Role;
+        InvokeAsync(StateHasChanged); // Refresh UI
+    }
 
+    private async Task Logout()
+    {
+        AuthStateProvider.ClearAuth();
+        NavigationManager.NavigateTo("/login", forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.OnChange -= StateChanged;
+    }
+}

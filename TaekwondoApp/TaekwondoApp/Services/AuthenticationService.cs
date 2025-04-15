@@ -8,34 +8,31 @@ namespace TaekwondoApp.Services
     public class AuthenticationService : IAuthenticationService
     {
         private readonly NavigationManager _navigationManager;
+        private readonly AuthStateProvider _authStateProvider;
 
-        public AuthenticationService(NavigationManager navigationManager)
+        public AuthenticationService(NavigationManager navigationManager, AuthStateProvider authStateProvider)
         {
             _navigationManager = navigationManager;
+            _authStateProvider = authStateProvider;
         }
 
         public async Task SetTokenAsync(string token)
         {
-            if (OperatingSystem.IsBrowser())
-            {
-                // Add local storage logic if needed for Blazor WASM
-            }
-            else
+            if (!OperatingSystem.IsBrowser())
             {
                 await SecureStorage.SetAsync("jwt_token", token);
             }
+
+            _authStateProvider.SetAuth(token);
         }
 
         public async Task<string?> GetTokenAsync()
         {
             if (OperatingSystem.IsBrowser())
             {
-                return null; // Add local storage logic if needed
+                return null;
             }
-            else
-            {
-                return await SecureStorage.GetAsync("jwt_token");
-            }
+            return await SecureStorage.GetAsync("jwt_token");
         }
 
         public async Task RemoveTokenAsync()
@@ -44,27 +41,8 @@ namespace TaekwondoApp.Services
             {
                 SecureStorage.Remove("jwt_token");
             }
-        }
 
-        public class JwtAuthMessageHandler : DelegatingHandler
-        {
-            private readonly IAuthenticationService _authenticationService;
-
-            public JwtAuthMessageHandler(IAuthenticationService authenticationService)
-            {
-                _authenticationService = authenticationService;
-            }
-
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                var token = await _authenticationService.GetTokenAsync();
-                if (!string.IsNullOrEmpty(token))
-                {
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                }
-
-                return await base.SendAsync(request, cancellationToken);
-            }
+            _authStateProvider.ClearAuth();
         }
     }
 }

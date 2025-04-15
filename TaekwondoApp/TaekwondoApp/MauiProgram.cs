@@ -39,6 +39,7 @@ namespace TaekwondoApp
                 .AddHttpMessageHandler<JwtAuthMessageHandler>()
                 .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://localhost:7478/"));
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddSingleton<AuthStateProvider>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
