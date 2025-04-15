@@ -48,7 +48,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = "YourIssuer",
             ValidAudience = "YourAudience",
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("your_super_secure_key_here"))
+                Encoding.UTF8.GetBytes("HalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEy"))
         };
     });
 //builder.Services.AddAuthorization(options =>

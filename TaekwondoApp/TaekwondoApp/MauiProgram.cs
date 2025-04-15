@@ -14,6 +14,7 @@ namespace TaekwondoApp
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
+
             builder
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
@@ -21,23 +22,36 @@ namespace TaekwondoApp
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
-            // Add device-specific services used by the TaekwondoApp.Shared project
+            // Device-specific services
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
-            builder.Services.AddHttpClient();  // Register IHttpClientFactory
-            // Register OrdbogSyncService and pass IHttpClientFactory to it
+
+            // HttpClientFactory registration
+            builder.Services.AddHttpClient(); // fallback/default client
+
+            // Scoped auth service
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+            // Register JWT Auth message handler
+            builder.Services.AddScoped<JwtAuthMessageHandler>();
+
+            // Authenticated HttpClient (named "ApiClient")
+            builder.Services.AddHttpClient("ApiClient", client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7478/");
+            }).AddHttpMessageHandler<JwtAuthMessageHandler>();
+
+            // AutoMapper
+            builder.Services.AddAutoMapper(typeof(OrdbogMap));
+
+            // SQLite
+            string dbPath = Path.Combine(FileSystem.AppDataDirectory, "ordbog.db");
+            builder.Services.AddSingleton<ISQLiteService>(new SQLiteService(dbPath));
+
+            // Sync services
             builder.Services.AddSingleton<IGenericSyncService, GenericSyncService>();
             builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
-            builder.Services.AddAutoMapper(typeof(OrdbogMap)); // Register the profile
-            // Configure SQLite service with the database path
-            string dbPath = Path.Combine(FileSystem.AppDataDirectory, "ordbog.db");
-            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-            // Register SQLiteService as a singleton with the database path
-            builder.Services.AddSingleton<ISQLiteService>(new SQLiteService(dbPath));
-            // Register HttpClientFactory to handle HttpClient instances
-            builder.Services.AddScoped<JwtAuthMessageHandler>();
-            builder.Services.AddHttpClient("ApiClient")
-                .AddHttpMessageHandler<JwtAuthMessageHandler>()
-                .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://localhost:7478/"));
+
+            // Blazor
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<AuthStateProvider>();
 
