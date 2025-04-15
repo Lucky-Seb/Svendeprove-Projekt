@@ -49,7 +49,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="NewFolder\" />
     <Folder Include="Security\" />
   </ItemGroup>
 
