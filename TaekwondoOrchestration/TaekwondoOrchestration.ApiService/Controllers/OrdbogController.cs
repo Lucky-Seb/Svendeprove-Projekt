@@ -4,6 +4,7 @@ using TaekwondoApp.Shared.DTO;
 using Microsoft.AspNetCore.SignalR;
 using TaekwondoOrchestration.ApiService.NotificationHubs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -38,6 +39,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
                 return NotFound();
             return Ok(ordbog);
         }
+        [Authorize(Roles = "Admin")]
         // This is your restore endpoint
         [HttpPut("restore/{id}")]
         public async Task<IActionResult> Restore(Guid id, [FromBody] OrdbogDTO ordbogDto)
@@ -88,7 +90,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
             return Ok(updatedOrdbog);
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrdbog(Guid id)
         {

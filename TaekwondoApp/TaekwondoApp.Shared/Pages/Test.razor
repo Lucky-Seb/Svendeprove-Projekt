@@ -1,24 +1,41 @@
 ﻿@page "/testpage"
 @using TaekwondoApp.Shared.Services
+@using System.Text.Json
 @inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
 
 <h3>Secure Page</h3>
 
-@if (isAuthenticated)
+@if (!isAuthenticated)
 {
-    <p>You are logged in and can view this page!</p>
-    <button @onclick="Logout" class="btn btn-danger">Log Out</button>
+    <p>You need to be logged in to view this page.</p>
 }
 else
 {
-    <p>You need to be logged in to view this page.</p>
+    <p>You are logged in and can view this page!</p>
+    <button @onclick="Logout" class="btn btn-danger">Log Out</button>
+
+    @if (ordbogEntries != null)
+    {
+        <h4>Ordbog Entries:</h4>
+        <ul>
+            @foreach (var entry in ordbogEntries)
+            {
+                <li>@entry.Titel - @entry.Beskrivelse</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>Loading ordbog entries...</p>
+    }
 }
 
 @code {
     private bool isAuthenticated;
+    private List<OrdbogDTO>? ordbogEntries;
 
-    // OnInitializedAsync is invoked when the component is initialized
     protected override async Task OnInitializedAsync()
     {
         var token = await AuthenticationService.GetTokenAsync();
@@ -26,15 +43,40 @@ else
 
         if (!isAuthenticated)
         {
-            // If not authenticated, navigate to the login page
-            NavigationManager.NavigateTo("/login", true); // The 'true' ensures a forced navigation
+            NavigationManager.NavigateTo("/login", true);
+        }
+        else
+        {
+            try
+            {
+                var response = await HttpClient.GetAsync("https://localhost:7478/api/test/debug");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    ordbogEntries = JsonSerializer.Deserialize<List<OrdbogDTO>>(content, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching data: {ex.Message}");
+            }
         }
     }
 
-    // Logout method to remove the JWT token and redirect
     private async Task Logout()
     {
         await AuthenticationService.RemoveTokenAsync();
-        NavigationManager.NavigateTo("/login"); // Redirect to login page after logout
+        NavigationManager.NavigateTo("/login", true);
+    }
+
+    // Simple DTO for example (update based on your actual DTO)
+    public class OrdbogDTO
+    {
+        public string Titel { get; set; } = string.Empty;
+        public string Beskrivelse { get; set; } = string.Empty;
     }
 }
