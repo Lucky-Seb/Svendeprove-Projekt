@@ -3,38 +3,46 @@
 @inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
 
-<h3>Secure Page</h3>
+<h3>Admin Page</h3>
 
-@if (isAuthenticated)
+@if (isCheckingAuth)
 {
-    <p>You are logged in and can view this page!</p>
+    <p>Checking authorization...</p>
+}
+else if (isAuthorized)
+{
+    <p>Welcome Admin! This is a restricted area.</p>
     <button @onclick="Logout" class="btn btn-danger">Log Out</button>
 }
 else
 {
-    <p>You need to be logged in to view this page.</p>
+    <p>You are not authorized to view this page.</p>
 }
 
 @code {
-    private bool isAuthenticated;
+    private bool isAuthorized;
+    private bool isCheckingAuth = true;
 
-    // OnInitializedAsync is invoked when the component is initialized
     protected override async Task OnInitializedAsync()
     {
         var token = await AuthenticationService.GetTokenAsync();
-        isAuthenticated = !string.IsNullOrEmpty(token);
-
-        if (!isAuthenticated)
+        if (!string.IsNullOrEmpty(token))
         {
-            // If not authenticated, navigate to the login page
-            NavigationManager.NavigateTo("/login", true); // The 'true' ensures a forced navigation
+            var role = JwtParser.GetRole(token);
+            isAuthorized = role == "Instruktør"; // 🔐 Only Admins allowed
+        }
+
+        isCheckingAuth = false;
+
+        if (!isAuthorized)
+        {
+            NavigationManager.NavigateTo("/unauthorized", true);
         }
     }
 
-    // Logout method to remove the JWT token and redirect
     private async Task Logout()
     {
         await AuthenticationService.RemoveTokenAsync();
-        NavigationManager.NavigateTo("/login"); // Redirect to login page after logout
+        NavigationManager.NavigateTo("/login");
     }
 }
