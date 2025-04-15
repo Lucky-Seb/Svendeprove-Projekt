@@ -268,11 +268,12 @@ else
                 try
                 {
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)); // add timeout
-                    var response = await _apiClient.GetFromJsonAsync<List<Ordbog>>("api/ordbog/including-deleted", cts.Token);
+                    var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<Ordbog>>>("api/ordbog/including-deleted", cts.Token);
 
-                    if (response != null)
+                    if (response != null && response.Success)
                     {
-                        var allEntries = _mapper.Map<List<OrdbogDTO>>(response);
+                        // Map the response data if the call is successful
+                        var allEntries = _mapper.Map<List<OrdbogDTO>>(response.Data);
                         filteredWords = allEntries
                             .Where(e => showDeleted || !e.IsDeleted)
                             .ToArray();
@@ -280,7 +281,15 @@ else
                     }
                     else
                     {
-                        LogAction("Server returned null or invalid data.");
+                        // Handle failure or invalid response
+                        LogAction("Server returned null, invalid data, or an error occurred.");
+                        if (response?.Errors != null)
+                        {
+                            foreach (var error in response.Errors)
+                            {
+                                LogAction($"Error: {error}");
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)

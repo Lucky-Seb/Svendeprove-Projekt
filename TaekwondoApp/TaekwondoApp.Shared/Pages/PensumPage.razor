@@ -64,16 +64,8 @@ else
     private string? errorMessage;
     private string apiUrl = "https://localhost:7478/api/Pensum"; // Replace with your API URL
 
-    // private HttpClient HttpClient;
-
     protected override async Task OnInitializedAsync()
     {
-        // Use HttpClient with custom handler for bypassing SSL validation
-        // var handler = new HttpClientHandler();
-        // handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true; // Disable SSL validation for testing
-        // HttpClient = new HttpClient(handler);
-        // HttpClient.BaseAddress = new Uri(apiUrl);
-
         await LoadPensums();
     }
 
@@ -81,7 +73,23 @@ else
     {
         try
         {
-            pensums = await Http.GetFromJsonAsync<PensumData[]>(apiUrl);
+            // Call the API and handle the response as ApiResponse<List<PensumData>>
+            var response = await Http.GetFromJsonAsync<ApiResponse<List<PensumData>>>(apiUrl);
+
+            // Check if the response is successful
+            if (response != null && response.Success)
+            {
+                pensums = response.Data.ToArray(); // Use the Data property to get the list of pensums
+            }
+            else
+            {
+                // Handle any error messages
+                errorMessage = "Failed to load data from the server.";
+                if (response?.Errors != null)
+                {
+                    errorMessage += " Errors: " + string.Join(", ", response.Errors);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -103,6 +111,7 @@ else
                 response = await Http.PutAsJsonAsync($"{apiUrl}/{editingPensum.PensumID}", editingPensum);
             }
 
+            // Reset form and reload data after submission
             ResetForm();
             await LoadPensums();
         }
@@ -139,5 +148,14 @@ else
     {
         public int PensumID { get; set; }
         public string PensumGrad { get; set; }
+    }
+
+    private class ApiResponse<T>
+    {
+        public bool Success { get; set; }
+        public T Data { get; set; }
+        public List<string> Errors { get; set; }
+        public int StatusCode { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 }
