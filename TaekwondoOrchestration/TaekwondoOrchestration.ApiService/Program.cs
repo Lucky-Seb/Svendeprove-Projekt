@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using TaekwondoOrchestration.ApiService.ExceptionMiddleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -114,7 +115,7 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
-
+app.UseMiddleware<CustomExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseAuthentication();
