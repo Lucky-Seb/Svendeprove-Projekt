@@ -8,6 +8,8 @@ using TaekwondoApp.Shared.Mapping;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,18 +37,24 @@ var repositoryTypes = typeof(IBrugerKlubRepository).Assembly
     .ToList();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(opt =>
+    .AddJwtBearer(options =>
     {
-        opt.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+            ValidIssuer = "YourIssuer",
+            ValidAudience = "YourAudience",
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("supersecretkey12345")) // Secure this!
+                Encoding.UTF8.GetBytes("HalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEy"))
         };
     });
+//builder.Services.AddAuthorization(options =>
+//{
+//    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+//});
 
 builder.Services.AddAuthorization();
 foreach (var repo in repositoryTypes)
@@ -77,7 +85,14 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1"
     });
 });
+//builder.Services.AddControllers(options =>
+//{
+//    var policy = new AuthorizationPolicyBuilder()
+//        .RequireAuthenticatedUser()
+//        .Build();
 
+//    options.Filters.Add(new AuthorizeFilter(policy));
+//});
 // Add services to the container.
 builder.Services.AddProblemDetails();
 
@@ -102,6 +117,8 @@ app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseAuthentication();
+    app.UseAuthorization();
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI(c =>

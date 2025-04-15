@@ -1,0 +1,97 @@
+﻿@page "/testpage"
+@using TaekwondoApp.Shared.Services
+@using System.Text.Json
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory HttpClientFactory
+
+<h3>Secure Page</h3>
+
+@if (!isAuthenticated)
+{
+    <p>You need to be logged in to view this page.</p>
+}
+else
+{
+    <p>You are logged in and can view this page!</p>
+    <button @onclick="Logout" class="btn btn-danger">Log Out</button>
+
+    <h4>Frontend (JWT Parsed)</h4>
+    <p><strong>Role:</strong> @frontendRole</p>
+    <p><strong>Token:</strong> @fronttoken</p>
+
+    <h4>Backend (Claims from /debug)</h4>
+    @if (debugInfo != null)
+    {
+        <ul>
+            <li><strong>Name:</strong> @debugInfo.Name</li>
+            <li><strong>Is Authenticated:</strong> @debugInfo.IsAuthenticated</li>
+            <li>
+                <strong>Roles:</strong>
+                <ul>
+                    @foreach (var role in debugInfo.Roles)
+                    {
+                        <li>@role</li>
+                    }
+                </ul>
+            </li>
+        </ul>
+    }
+    else
+    {
+        <p>Loading user info...</p>
+    }
+}
+
+@code {
+    private bool isAuthenticated;
+    private DebugResponse? debugInfo;
+    private string frontendRole = "null";
+    private string fronttoken = "null";
+
+    protected override async Task OnInitializedAsync()
+    {
+        fronttoken = await AuthenticationService.GetTokenAsync();
+        isAuthenticated = !string.IsNullOrEmpty(fronttoken);
+
+        if (!isAuthenticated)
+        {
+            NavigationManager.NavigateTo("/login", true);
+            return;
+        }
+
+        frontendRole = JwtParser.GetRole(fronttoken);
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("ApiClient");
+            var response = await client.GetAsync("api/test/debug");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                debugInfo = JsonSerializer.Deserialize<DebugResponse>(json, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to fetch debug info: {ex.Message}");
+        }
+    }
+
+    private async Task Logout()
+    {
+        await AuthenticationService.RemoveTokenAsync();
+        NavigationManager.NavigateTo("/login", true);
+    }
+
+    public class DebugResponse
+    {
+        public string? Name { get; set; }
+        public bool IsAuthenticated { get; set; }
+        public List<string> Roles { get; set; } = new();
+    }
+}

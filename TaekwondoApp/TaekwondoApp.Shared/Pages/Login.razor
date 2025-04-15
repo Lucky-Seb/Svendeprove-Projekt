@@ -1,7 +1,10 @@
 ﻿@page "/login"
 @using Microsoft.AspNetCore.Components.Forms
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Services
 @inject NavigationManager NavigationManager
 @inject HttpClient HttpClient
+@inject IAuthenticationService AuthenticationService
 
 <h3>Login</h3>
 
@@ -65,29 +68,45 @@
         {
             LogAction("Attempting login withs:");
             LogAction($"Email/Username: {loginModel.EmailOrBrugernavn}");
+            LogAction($"Password being sent: {loginModel.Brugerkode}");
 
-            // Posting the login data to the API
+            // Send the login request
             var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger/login", loginModel);
             LogAction($"Response status code: {response.StatusCode}");
 
             if (response.IsSuccessStatusCode)
             {
-                LogAction("Login successful.");
-                NavigationManager.NavigateTo("/"); // redirect to home or dashboard
-            }
-            else
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                LogAction($"Error Response: {responseContent}");
-
-                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                // Try to deserialize the response
+                LoginResponseDTO? loginResponse = null;
+                try
                 {
-                    validationErrors.Add("Invalid email or password.");
+                    loginResponse = await response.Content.ReadFromJsonAsync<LoginResponseDTO>();
+                }
+                catch (Exception ex)
+                {
+                    validationErrors.Add($"Error deserializing login response: {ex.Message}");
+                    LogAction($"Error deserializing login response: {ex.Message}");
+                }
+
+                if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
+                {
+                    // Store the token using AuthenticationService
+                    await AuthenticationService.SetTokenAsync(loginResponse.Token);
+
+                    LogAction("Login successful and token stored.");
+                    // Redirect to the dashboard or home page
+                    NavigationManager.NavigateTo("/testpage");
                 }
                 else
                 {
-                    validationErrors.Add("Login failed. Please try again.");
+                    validationErrors.Add("Invalid credentials.");
+                    LogAction("Invalid credentials.");
                 }
+            }
+            else
+            {
+                validationErrors.Add("Login failed.");
+                LogAction("Login failed.");
             }
         }
         catch (Exception ex)
@@ -107,15 +126,15 @@
         logs.Insert(0, $"{DateTime.Now:HH:mm:ss}: {message}");
     }
 
-    private bool IsValidEmail(string email)
-    {
-        return email.Contains("@") && email.Contains(".");
-    }
-
     public class LoginModel
     {
-        // These properties match what the backend expects in LoginDTO
         public string EmailOrBrugernavn { get; set; } = string.Empty;
         public string Brugerkode { get; set; } = string.Empty;
+    }
+
+    // DTO to map the response from the backend API
+    public class LoginResponseDTO
+    {
+        public string Token { get; set; } = string.Empty;
     }
 }

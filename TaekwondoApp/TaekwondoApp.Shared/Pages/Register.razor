@@ -4,6 +4,7 @@
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Mapping
 @using AutoMapper
+@using BCrypt;
 @inject NavigationManager NavigationManager
 @inject HttpClient HttpClient
 @inject IMapper Mapper
@@ -102,6 +103,7 @@
     {
         validationErrors.Clear();
 
+        // Validate input fields
         if (string.IsNullOrWhiteSpace(registerModel.Email) || string.IsNullOrWhiteSpace(registerModel.Password) || string.IsNullOrWhiteSpace(registerModel.ConfirmPassword))
         {
             validationErrors.Add("Email, password, and confirm password are required.");
@@ -133,6 +135,7 @@
             LogAction($"Address: {registerModel.Address}");
             LogAction($"Role: {registerModel.Role}");
 
+            // Map RegisterModel to BrugerDTO (don't hash the password here)
             var brugerDTO = Mapper.Map<BrugerDTO>(registerModel);
 
             LogAction("Mapped BrugerDTO:");
@@ -144,6 +147,7 @@
             LogAction($"Address: {brugerDTO.Address}");
             LogAction($"Role: {brugerDTO.Role}");
             brugerDTO.Brugerkode = registerModel.ConfirmPassword;
+            // Send the registration request to the backend
             var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger", brugerDTO);
             LogAction($"Response status code: {response.StatusCode}");
 
@@ -156,6 +160,7 @@
                 var responseContent = await response.Content.ReadAsStringAsync();
                 LogAction($"Error Response: {responseContent}");
 
+                // Handle different types of errors based on the status code
                 if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
                     var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();

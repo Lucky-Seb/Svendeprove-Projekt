@@ -16,5 +16,6 @@
         public ICollection<BrugerProgram>? BrugerProgrammer { get; set; }
         public ICollection<BrugerQuiz>? BrugerQuizzer { get; set; }
         public ICollection<BrugerØvelse>? BrugerØvelser { get; set; }
+        public string? Token { get; set; }  // Nullable since it will only be populated after successful authentication
     }
 }

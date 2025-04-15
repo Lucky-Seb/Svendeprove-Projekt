@@ -1,0 +1,48 @@
+﻿@page "/acount"
+@using TaekwondoApp.Shared.Services
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager NavigationManager
+
+<h3>Admin Page</h3>
+
+@if (isCheckingAuth)
+{
+    <p>Checking authorization...</p>
+}
+else if (isAuthorized)
+{
+    <p>Welcome Admin! This is a restricted area.</p>
+    <button @onclick="Logout" class="btn btn-danger">Log Out</button>
+}
+else
+{
+    <p>You are not authorized to view this page.</p>
+}
+
+@code {
+    private bool isAuthorized;
+    private bool isCheckingAuth = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await AuthenticationService.GetTokenAsync();
+        if (!string.IsNullOrEmpty(token))
+        {
+            var role = JwtParser.GetRole(token);
+            isAuthorized = role == "Elev" || role == "Instructor";
+        }
+
+        isCheckingAuth = false;
+
+        if (!isAuthorized)
+        {
+            NavigationManager.NavigateTo("/unauthorized", true);
+        }
+    }
+
+    private async Task Logout()
+    {
+        await AuthenticationService.RemoveTokenAsync();
+        NavigationManager.NavigateTo("/login");
+    }
+}

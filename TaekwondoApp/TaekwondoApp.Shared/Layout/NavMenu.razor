@@ -1,4 +1,9 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using TaekwondoApp.Shared.Services
+@inject AuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">TaekwondoApp</a>
     </div>
@@ -80,6 +85,61 @@
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Register
             </NavLink>
         </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="testpage">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Test
+            </NavLink>
+        </div>
+        @if (role == "Admin")
+        {
+            <NavLink href="/admin" Match="NavLinkMatch.All">Admin Panel</NavLink>
+        }
+        @if (role == "Instructor")
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="instructor">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Instructor Page
+                </NavLink>
+            </div>
+        }
+        @if (role == "Instructor" || role == "Elev")
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="acount">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Konto Side
+                </NavLink>
+            </div>
+        }
+        <div class="nav-item px-3">
+                <a class="nav-link" href="" @onclick="Logout">Logout</a>
+        </div>
     </nav>
 </div>
+@code {
+    private bool isAuthenticated;
+    private string? role;
 
+    protected override void OnInitialized()
+    {
+        AuthStateProvider.OnChange += StateChanged;
+        StateChanged(); // Initialize state
+    }
+
+    private void StateChanged()
+    {
+        isAuthenticated = AuthStateProvider.IsAuthenticated;
+        role = AuthStateProvider.Role;
+        InvokeAsync(StateHasChanged); // Refresh UI
+    }
+
+    private async Task Logout()
+    {
+        AuthStateProvider.ClearAuth();
+        NavigationManager.NavigateTo("/login", forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.OnChange -= StateChanged;
+    }
+}
