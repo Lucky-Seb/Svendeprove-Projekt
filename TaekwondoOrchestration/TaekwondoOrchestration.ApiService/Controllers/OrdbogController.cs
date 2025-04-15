@@ -87,7 +87,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
             var updated = await _ordbogService.UpdateOrdbogAsync(id, ordbogDto);
             await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
-
             return Ok(ApiResponse<OrdbogDTO>.Ok(updated));
         }
 
