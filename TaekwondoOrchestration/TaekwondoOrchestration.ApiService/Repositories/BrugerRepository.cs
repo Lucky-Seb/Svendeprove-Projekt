@@ -135,6 +135,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             {
             new Claim(ClaimTypes.Name, bruger.Brugernavn),
             new Claim(ClaimTypes.NameIdentifier, bruger.BrugerID.ToString()),
+                new Claim(ClaimTypes.Role, bruger.Role) // Add the role claim here
             // Add other claims like roles or email if needed
         };
 
