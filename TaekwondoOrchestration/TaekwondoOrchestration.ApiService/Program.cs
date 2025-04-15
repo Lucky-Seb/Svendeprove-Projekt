@@ -10,6 +10,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using FluentValidation.AspNetCore;
+using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
+using TaekwondoOrchestration.ApiService.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -101,7 +105,12 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddControllers()
+    .AddFluentValidation(config =>
+    {
+        config.RegisterValidatorsFromAssemblyContaining<OrdbogDTOValidator>();
+        config.DisableDataAnnotationsValidation = true;
+    });
 
 var app = builder.Build();
 
