@@ -1,62 +1,54 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoOrchestration.ApiService.Services;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoOrchestration.ApiService.MediatR.Pensum.Commands;
+using TaekwondoOrchestration.ApiService.MediatR.Pensum.Queries;
 
-namespace TaekwondoOrchestration.ApiService.Controllers
+namespace TaekwondoOrchestration.ApiService.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class PensumController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class PensumController : ControllerBase
+    private readonly IMediator _mediator;
+
+    public PensumController(IMediator mediator)
     {
-        private readonly PensumService _pensumService;
+        _mediator = mediator;
+    }
 
-        public PensumController(PensumService pensumService)
-        {
-            _pensumService = pensumService;
-        }
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<PensumDTO>>> GetPensum()
+    {
+        var result = await _mediator.Send(new GetAllPensumQuery());
+        return Ok(result);
+    }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<PensumDTO>>> GetPensum()
-        {
-            var pensumList = await _pensumService.GetAllPensumAsync();
-            return Ok(pensumList);
-        }
+    [HttpGet("{id}")]
+    public async Task<ActionResult<PensumDTO>> GetPensum(Guid id)
+    {
+        var result = await _mediator.Send(new GetPensumByIdQuery(id));
+        return Ok(result);
+    }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<PensumDTO>> GetPensum(Guid id)
-        {
-            var pensum = await _pensumService.GetPensumByIdAsync(id);
-            if (pensum == null)
-                return NotFound();
-            return Ok(pensum);
-        }
+    [HttpPost]
+    public async Task<ActionResult<PensumDTO>> PostPensum(PensumDTO dto)
+    {
+        var result = await _mediator.Send(new CreatePensumCommand(dto));
+        return CreatedAtAction(nameof(GetPensum), new { id = result.PensumID }, result);
+    }
 
-        [HttpPost]
-        public async Task<ActionResult<PensumDTO>> PostPensum([FromBody] PensumDTO pensumDTO)
-        {
-            if (pensumDTO == null)
-                return BadRequest("Invalid data.");
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutPensum(Guid id, PensumDTO dto)
+    {
+        await _mediator.Send(new UpdatePensumCommand(id, dto));
+        return NoContent();
+    }
 
-            var createdPensum = await _pensumService.CreatePensumAsync(pensumDTO);
-            return CreatedAtAction(nameof(GetPensum), new { id = createdPensum.PensumID }, createdPensum);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPensum(Guid id, [FromBody] PensumDTO pensumDTO)
-        {
-            var success = await _pensumService.UpdatePensumAsync(id, pensumDTO);
-            if (!success)
-                return BadRequest();
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePensum(Guid id)
-        {
-            var success = await _pensumService.DeletePensumAsync(id);
-            if (!success)
-                return NotFound();
-            return NoContent();
-        }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeletePensum(Guid id)
+    {
+        await _mediator.Send(new DeletePensumCommand(id));
+        return NoContent();
     }
 }
