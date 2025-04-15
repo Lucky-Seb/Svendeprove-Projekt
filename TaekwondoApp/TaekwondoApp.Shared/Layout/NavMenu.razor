@@ -1,4 +1,7 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using TaekwondoApp.Shared.Services
+@inject IAuthenticationService AuthenticationService
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">TaekwondoApp</a>
     </div>
@@ -85,6 +88,27 @@
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Test
             </NavLink>
         </div>
+        @if (role == "Admin")
+        {
+            <NavLink href="/admin" Match="NavLinkMatch.All">Admin Panel</NavLink>
+        }
+        @if (role == "Instructor")
+        {
+            <NavLink href="/instructor">Instructor Page</NavLink>
+        }
     </nav>
 </div>
+@code{
+    private string token;
+    private string role;
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await AuthenticationService.GetTokenAsync();
+        if (!string.IsNullOrEmpty(token))
+        {
+            role = JwtParser.GetRole(token);
+        }
+    }
+
+}
 
