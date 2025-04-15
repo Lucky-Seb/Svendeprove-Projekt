@@ -62,6 +62,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //{
 //    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 //});
+builder.Services.AddValidatorsFromAssemblyContaining<PensumDTOValidator>();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddControllers(opt => opt.Filters.Add<ValidationFilter>());
 
 builder.Services.AddAuthorization();
 foreach (var repo in repositoryTypes)

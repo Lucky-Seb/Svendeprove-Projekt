@@ -1,5 +1,4 @@
-﻿// File: Validators/OrdbogDTOValidator.cs
-using FluentValidation;
+﻿using FluentValidation;
 using TaekwondoApp.Shared.DTO;
 
 namespace TaekwondoOrchestration.ApiService.Validators
