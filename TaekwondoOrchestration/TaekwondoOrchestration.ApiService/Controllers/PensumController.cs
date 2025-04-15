@@ -20,7 +20,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         public async Task<ActionResult<ApiResponse<IEnumerable<PensumDTO>>>> GetPensum()
         {
             var pensumList = await _pensumService.GetAllPensumAsync();
-            return OkResponse(pensumList);
+            return Ok(ApiResponse<IEnumerable<PensumDTO>>.Ok(pensumList.AsEnumerable()));
         }
 
         [HttpGet("{id}")]
