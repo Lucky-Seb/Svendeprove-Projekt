@@ -7,6 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Exception Handler\**" />
+    <Compile Remove="Validator\**" />
+    <Content Remove="Exception Handler\**" />
+    <Content Remove="Validator\**" />
+    <EmbeddedResource Remove="Exception Handler\**" />
+    <EmbeddedResource Remove="Validator\**" />
+    <None Remove="Exception Handler\**" />
+    <None Remove="Validator\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\TaekwondoApp\TaekwondoApp.Shared\TaekwondoApp.Shared.csproj" />
     <ProjectReference Include="..\TaekwondoOrchestration.ServiceDefaults\TaekwondoOrchestration.ServiceDefaults.csproj" />
   </ItemGroup>
@@ -36,9 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Exception Handler\" />
     <Folder Include="Security\" />
-    <Folder Include="Validator\" />
   </ItemGroup>
 
 </Project>
