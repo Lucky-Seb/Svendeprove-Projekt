@@ -6,8 +6,8 @@
 @inject IOrdbogSyncService OrdbogSyncService
 @inject ISQLiteService SQLiteService
 @inject NavigationManager NavigationManager
-@inject HttpClient HttpClient
 @inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
 
 <h1>Ordbog</h1>
 
@@ -219,11 +219,13 @@ else
     private string errorMessage = string.Empty;
     private string searchTerm = string.Empty;
     private bool showDeleted = false;
+    private HttpClient _apiClient; // <--- This must be declared at the class level
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            _apiClient = HttpClientFactory.CreateClient("ApiClient");
             LogAction("App initializing...");
 
             if (internet)
@@ -266,14 +268,14 @@ else
                 try
                 {
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)); // add timeout
-                    var response = await HttpClient.GetFromJsonAsync<List<Ordbog>>("https://localhost:7478/api/ordbog/including-deleted", cts.Token);
+                    var response = await _apiClient.GetFromJsonAsync<List<Ordbog>>("api/ordbog/including-deleted", cts.Token);
 
                     if (response != null)
                     {
                         var allEntries = _mapper.Map<List<OrdbogDTO>>(response);
                         filteredWords = allEntries
                             .Where(e => showDeleted || !e.IsDeleted)
-                            .ToArray(); 
+                            .ToArray();
                         LogAction($"{filteredWords.Length} entries loaded from the server.");
                     }
                     else
@@ -299,7 +301,7 @@ else
                         var allEntries = _mapper.Map<List<OrdbogDTO>>(response);
                         filteredWords = allEntries
                             .Where(e => showDeleted || !e.IsDeleted)
-                            .ToArray(); 
+                            .ToArray();
                         LogAction($"{filteredWords.Length} entries loaded from the Local Database.");
                     }
                     else
@@ -341,8 +343,7 @@ else
                 // Ensure ETag is set before saving
                 entryModelMapped.ETag = entryModel.DanskOrd + entryModel.KoranskOrd;
                 entryModelMapped.ModifiedBy = "user123";  // Replace with actual user/device ID
-
-                var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/ordbog", entryModelMapped);
+                var response = await _apiClient.PostAsJsonAsync("api/ordbog", entryModelMapped);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -390,7 +391,7 @@ else
                 entry.ETag = GenerateETag(entry);  // Generate the ETag for the updated entry
                 entry.ModifiedBy = "user123";  // Replace with actual user/device ID
 
-                var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/including-deleted/{entry.OrdbogId}", entry);
+                var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{entry.OrdbogId}", entry);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -437,8 +438,7 @@ else
                     wordToDelete.Status = SyncStatus.Deleted;
 
                     // Send update to server
-                    var response = await HttpClient.PutAsJsonAsync(
-                        $"https://localhost:7478/api/ordbog/including-deleted/{wordToDelete.OrdbogId}",
+                    var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{wordToDelete.OrdbogId}",
                         wordToDelete
                     );
 
@@ -589,8 +589,8 @@ else
                     LogAction($"Word restored locally: {wordToRestore.DanskOrd}, Status set to {wordToRestore.Status}, IsDeleted set to {wordToRestore.IsDeleted}");
 
                     // Send a PUT request to restore the entry on the server
-                    LogAction($"Sending PUT request to restore entry on server. URL: https://localhost:7478/api/ordbog/restore/{wordToRestore.OrdbogId}");
-                    var response = await HttpClient.PutAsJsonAsync($"https://localhost:7478/api/ordbog/restore/{wordToRestore.OrdbogId}", wordToRestore);
+                    LogAction($"Sending PUT request to restore entry on server. URL: api/ordbog/restore/{wordToRestore.OrdbogId}");
+                    var response = await _apiClient.PutAsJsonAsync($"api/ordbog/restore/{wordToRestore.OrdbogId}", wordToRestore);
 
                     // Log the response status code and the outcome of the request
                     if (response.IsSuccessStatusCode)
