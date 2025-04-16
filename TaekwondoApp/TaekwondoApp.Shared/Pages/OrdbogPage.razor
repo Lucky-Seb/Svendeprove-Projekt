@@ -583,7 +583,14 @@ else
     }
 
     // ========== Helpers ==========
-    private string GenerateETag(Ordbog entry) => $"{entry.DanskOrd}-{entry.KoranskOrd}";
+    private string GenerateETag(Ordbog entry)
+    {
+        // Combine all relevant properties to generate a unique ETag
+        var etagSource = $"{entry.OrdbogId}-{entry.DanskOrd}-{entry.KoranskOrd}-{entry.Beskrivelse}-{entry.BilledeLink}-{entry.LydLink}-{entry.VideoLink}";
+
+        // Return a hash of the combined properties to generate the ETag
+        return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(etagSource));
+    }
 
     private void LogAction(string message)
     {
