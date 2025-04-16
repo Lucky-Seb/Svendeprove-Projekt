@@ -15,8 +15,7 @@ using Microsoft.Maui.Essentials
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
 @inject AuthStateProvider AuthStateProvider
-@inject AuthenticationService AuthenticationService
-
+@inject IAuthenticationService AuthenticationService
 @implements IAsyncDisposable
 
 <h1>Ordbog</h1>
@@ -239,7 +238,7 @@ else
         StateChanged();
         try
         {
-            var token = await AuthenticationService.GetTokenAsync();
+            token = await AuthenticationService.GetTokenAsync(); // assign to the class field!
 
         }
         catch (Exception ex)
