@@ -63,9 +63,23 @@ namespace TaekwondoOrchestration.Tests
         public async Task CreateOrdbogAsync_ShouldReturnCreatedDto()
         {
             // Arrange
-            var dto = new OrdbogDTO { DanskOrd = "Hej", KoranskOrd = "안녕", Beskrivelse = "Hello" };
-            var created = _mapper.Map<OrdbogDTO>(dto);
-            created.OrdbogId = Guid.NewGuid();
+            var dto = new OrdbogDTO
+            {
+                DanskOrd = "Hej",
+                KoranskOrd = "안녕",
+                Beskrivelse = "Hello"
+            };
+
+            // ❌ If this throws: dto might be null or you're accessing a property of a null object
+            var created = new OrdbogDTO
+            {
+                OrdbogId = Guid.NewGuid(),
+                DanskOrd = dto.DanskOrd,
+                KoranskOrd = dto.KoranskOrd,
+                Beskrivelse = dto.Beskrivelse
+            };
+
+            // ✅ This must be set up before calling
             _mockOrdbogService.Setup(s => s.CreateOrdbogAsync(dto)).ReturnsAsync(created);
 
             // Act
