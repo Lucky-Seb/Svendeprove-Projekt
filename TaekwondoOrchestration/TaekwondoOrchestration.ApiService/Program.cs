@@ -17,6 +17,7 @@ using TaekwondoOrchestration.ApiService.Validators;
 using TaekwondoOrchestration.ApiService.Middlewares;
 using FluentValidation;
 using TaekwondoOrchestration.ApiService.Filters;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +66,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddValidatorsFromAssemblyContaining<PensumDTOValidator>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddControllers(opt => opt.Filters.Add<ValidationFilter>());
+builder.Services.AddScoped<IOrdbogService, OrdbogService>();
 
 builder.Services.AddAuthorization();
 foreach (var repo in repositoryTypes)

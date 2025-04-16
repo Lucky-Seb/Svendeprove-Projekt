@@ -2,10 +2,7 @@
 using TaekwondoApp.Services;
 using TaekwondoApp.Shared.Services;
 using TaekwondoApp.Shared.Mapping;
-using Microsoft.Maui.Storage;
-using System.IO;
-using Microsoft.AspNetCore.Components;
-using static TaekwondoApp.Services.AuthenticationService;
+
 
 namespace TaekwondoApp
 {

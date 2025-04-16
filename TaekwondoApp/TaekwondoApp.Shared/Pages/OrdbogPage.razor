@@ -1,22 +1,30 @@
 ﻿@page "/ordbog"
+
+@* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
 @using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+using Microsoft.Maui.Essentials
+
+@* --- Dependency Injection --- *@
 @inject IOrdbogSyncService OrdbogSyncService
 @inject ISQLiteService SQLiteService
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+@implements IAsyncDisposable
 
 <h1>Ordbog</h1>
 
-<!-- Online/Offline Indicator -->
+@* --- Status & Internet Controls --- *@
 <div class="alert @(internet ? "alert-success" : "alert-warning")">
     Status: @(internet ? "Online - Changes will sync automatically." : "Offline - Changes are stored locally and will sync when you're back online.")
 </div>
 
-<!-- Sync Status UI -->
 @if (syncFailed)
 {
     <div class="alert alert-danger d-flex justify-content-between align-items-center">
@@ -34,19 +42,19 @@
     </div>
 }
 
-<!-- Simulated Internet Toggle -->
 <div class="mb-3">
     <button class="btn @(internet ? "btn-outline-danger" : "btn-outline-success")" @onclick="ToggleInternet">
         @(internet ? "Go Offline (Simulated)" : "Go Online (Simulated)")
     </button>
 </div>
-<!-- Show Deleted Entries Toggle -->
+
+@* --- Show Deleted Toggle --- *@
 <div class="form-check mb-3">
     <InputCheckbox class="form-check-input" @bind-Value="showDeleted" />
     <label class="form-check-label">Show Deleted Entries</label>
 </div>
 
-<!-- Search -->
+@* --- Search Section --- *@
 <div class="mb-3 row">
     <div class="col-md-4">
         <label>Search (Dansk/Koransk):</label>
@@ -58,7 +66,7 @@
     </div>
 </div>
 
-<!-- App Logs -->
+@* --- App Logs --- *@
 <div class="log-box" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-top: 20px;">
     <h4>App Logs</h4>
     @foreach (var log in logs.Reverse<string>())
@@ -67,7 +75,7 @@
     }
 </div>
 
-<!-- List -->
+@* --- Word List Table --- *@
 @if (filteredWords == null || !filteredWords.Any())
 {
     <p><em>Loading entries...</em></p>
@@ -140,14 +148,9 @@ else
                     <td>@word.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                     <td>@word.ETag</td>
                     <td>
-                        @if (word.IsDeleted)
-                        {
-                            <span class="text-danger">Yes</span>
-                        }
-                        else
-                        {
-                            <span class="text-success">No</span>
-                        }
+                        <span class="@(word.IsDeleted ? "text-danger" : "text-success")">
+                            @(word.IsDeleted ? "Yes" : "No")
+                        </span>
                     </td>
                     <td>
                         <button class="btn btn-sm btn-primary" @onclick="() => EditEntry(word)">Edit</button>
@@ -162,6 +165,7 @@ else
 
 <hr />
 
+@* --- Add/Edit Form --- *@
 <h3>@(isEditing ? "Edit Entry" : "Add New Entry")</h3>
 
 <EditForm Model="entryModel" OnValidSubmit="HandleSubmit">
@@ -209,20 +213,40 @@ else
 
 
 @code {
+    // ========== Fields & State ==========
     private OrdbogDTO[] filteredWords = Array.Empty<OrdbogDTO>();
-    private List<string> logs = new List<string>();
-    private OrdbogDTO entryModel = new OrdbogDTO();  // Already initialized
+    private List<string> logs = new();
+    private OrdbogDTO entryModel = new();
     private bool isEditing = false;
     private bool isSyncing = false;
     private bool syncFailed = false;
-    private bool internet = true; // Simulate the internet status for the app
-    private string errorMessage = string.Empty;
+    private bool internet = true;
+    private bool isAuthenticated;
+    private string? role;
     private string searchTerm = string.Empty;
+    private string errorMessage = string.Empty;
     private bool showDeleted = false;
-    private HttpClient _apiClient; // <--- This must be declared at the class level
+    private string token = "";
 
+    private HttpClient _apiClient;
+    private HubConnection _hubConnection;
+
+    // ========== Lifecycle ==========
     protected override async Task OnInitializedAsync()
     {
+        AuthStateProvider.OnChange += StateChanged;
+        StateChanged();
+        try
+        {
+            token = await AuthenticationService.GetTokenAsync(); // assign to the class field!
+
+        }
+        catch (Exception ex)
+        {
+            LogAction($"❌ No Auth Token: {ex.Message}");
+            errorMessage = $"Could not get Auth Token: {ex.Message}\n{ex.StackTrace}";
+        }
+
         try
         {
             _apiClient = HttpClientFactory.CreateClient("ApiClient");
@@ -230,32 +254,61 @@ else
 
             if (internet)
             {
-                LogAction("App Has internet...");
+                LogAction("App has internet. Trying to sync...");
                 try
                 {
-                    LogAction("App Try to Sync...");
                     await TrySyncIfOnline();
                     LogAction("✅ Synced from server to local.");
                 }
                 catch (Exception ex)
                 {
-                    LogAction("❌ Error syncing from server to local: " + ex.Message);
-                    Console.WriteLine(ex);
+                    LogAction("❌ Error syncing: " + ex.Message);
                 }
             }
 
             await LoadEntries();
             LogAction("✅ Entries loaded.");
+
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl("https://localhost:7478/ordboghub") // Directly specify the URL
+                .WithAutomaticReconnect()
+                .Build();
+
+            _hubConnection.On("OrdbogUpdated", async () =>
+            {
+                LogAction("🔄 Received OrdbogUpdated from server.");
+                await LoadEntries();
+                await InvokeAsync(StateHasChanged); // Use InvokeAsync for Blazor-specific updates
+            });
+
+            await _hubConnection.StartAsync();
+            LogAction("✅ SignalR connection established.");
         }
         catch (Exception ex)
         {
-            LogAction($"❌ Error during OnInitializedAsync: {ex.Message}");
-            Console.WriteLine(ex);
+            LogAction($"❌ Initialization error: {ex.Message}");
             errorMessage = $"Error during initialization: {ex.Message}\n{ex.StackTrace}";
-            LogAction(errorMessage);
         }
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        AuthStateProvider.OnChange -= StateChanged;
+
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+
+    private void StateChanged()
+    {
+        isAuthenticated = AuthStateProvider.IsAuthenticated;
+        role = AuthStateProvider.Role;
+        InvokeAsync(StateHasChanged);
+    }
+
+    // ========== Data Loading ==========
     private async Task LoadEntries()
     {
         try
@@ -264,377 +317,296 @@ else
             {
                 await TrySyncIfOnline();
                 LogAction("Loading entries from the server...");
-                isSyncing = false;
+
                 try
                 {
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)); // add timeout
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                     var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<Ordbog>>>("api/ordbog/including-deleted", cts.Token);
 
-                    if (response != null && response.Success)
+                    if (response?.Success == true)
                     {
-                        // Map the response data if the call is successful
                         var allEntries = _mapper.Map<List<OrdbogDTO>>(response.Data);
-                        filteredWords = allEntries
-                            .Where(e => showDeleted || !e.IsDeleted)
-                            .ToArray();
+                        filteredWords = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
                         LogAction($"{filteredWords.Length} entries loaded from the server.");
                     }
                     else
                     {
-                        // Handle failure or invalid response
-                        LogAction("Server returned null, invalid data, or an error occurred.");
-                        if (response?.Errors != null)
-                        {
-                            foreach (var error in response.Errors)
-                            {
-                                LogAction($"Error: {error}");
-                            }
-                        }
+                        LogAction("❌ Server returned invalid data.");
+                        response?.Errors?.ForEach(e => LogAction($"Error: {e}"));
                     }
                 }
                 catch (Exception ex)
                 {
-                    LogAction($"Error fetching from server: {ex.Message}");
-                    errorMessage = $"Error fetching from server: {ex.Message}";
-                    Console.WriteLine(ex); // For stacktrace visibility
+                    LogAction($"❌ Server fetch error: {ex.Message}");
+                    errorMessage = $"Server fetch error: {ex.Message}";
                 }
             }
             else
             {
-                try
-                {
-                    var response = await SQLiteService.GetAllEntriesAsync();
-
-                    if (response != null)
-                    {
-                        var allEntries = _mapper.Map<List<OrdbogDTO>>(response);
-                        filteredWords = allEntries
-                            .Where(e => showDeleted || !e.IsDeleted)
-                            .ToArray();
-                        LogAction($"{filteredWords.Length} entries loaded from the Local Database.");
-                    }
-                    else
-                    {
-                        LogAction("Local Database returned null or invalid data.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogAction($"Error fetching from Local Database: {ex.Message}");
-                    errorMessage = $"Error fetching from Local Database: {ex.Message}";
-                    Console.WriteLine(ex); // For stacktrace visibility
-                }
+                var response = await SQLiteService.GetAllEntriesAsync();
+                var source = response != null ? response.ToList() : new List<Ordbog>();
+                var allEntries = _mapper.Map<List<OrdbogDTO>>(source);
+                filteredWords = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
+                LogAction($"{filteredWords.Length} entries loaded from local DB.");
             }
+            await InvokeAsync(StateHasChanged); // Use InvokeAsync for Blazor-specific updates
         }
         catch (Exception ex)
         {
-            LogAction($"Error loading entries: {ex.Message}");
-            errorMessage = $"Error loading entries: {ex.Message}";  // Display the error in the UI
+            LogAction($"❌ Loading error: {ex.Message}");
+            errorMessage = $"Error loading entries: {ex.Message}";
         }
     }
 
-    private async Task ToggleInternet()
+    private async Task TrySyncIfOnline()
     {
-        internet = !internet;
-        LogAction($"Internet toggled {(internet ? "ON" : "OFF")}.");
-        await LoadEntries();
+        if (!internet)
+        {
+            syncFailed = true;
+            LogAction("❌ Cannot sync: No internet.");
+            return;
+        }
+
+        LogAction("🔁 Attempting sync...");
+        isSyncing = true;
+
+        try
+        {
+            await OrdbogSyncService.SyncDataAsync();
+            syncFailed = false;
+            LogAction("✅ Data synced.");
+        }
+        catch (Exception ex)
+        {
+            syncFailed = true;
+            LogAction($"❌ Sync failed: {ex.Message}");
+        }
+
+        isSyncing = false;
     }
 
+    // ========== CRUD ==========
     private async Task CreateEntry()
     {
         try
         {
+            Ordbog entry = _mapper.Map<Ordbog>(entryModel);
+            entry.ETag = GenerateETag(entry);
+            entry.ModifiedBy = JwtParser.GetBruger(token);
+
             if (internet)
             {
-                // Convert OrdbogDTO to Ordbog
-                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel);  // AutoMapper will convert DTO to model
-
-                // Ensure ETag is set before saving
-                entryModelMapped.ETag = entryModel.DanskOrd + entryModel.KoranskOrd;
-                entryModelMapped.ModifiedBy = "user123";  // Replace with actual user/device ID
-                var response = await _apiClient.PostAsJsonAsync("api/ordbog", entryModelMapped);
+                var response = await _apiClient.PostAsJsonAsync("api/ordbog", entry);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    LogAction("Entry created on the server.");
+                    LogAction("✅ Entry created on server.");
                     await LoadEntries();
                     await SQLiteService.MarkAsSyncedAsync(entryModel.OrdbogId);
                 }
                 else
                 {
-                    string responseContent = await response.Content.ReadAsStringAsync();
-                    LogAction($"Failed to create entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}");
-                    errorMessage = $"Failed to create entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}";
+                    var details = await response.Content.ReadAsStringAsync();
+                    LogAction($"❌ Server create failed: {details}");
+                    errorMessage = $"Server error: {details}";
                 }
             }
             else
             {
-                // Save the DTO entry locally (Offline scenario)
-                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel); // Convert DTO to model for local storage
-                entryModelMapped.ETag = GenerateETag(entryModelMapped);  // Set ETag
-                await SQLiteService.AddEntryAsync(entryModelMapped);  // Save locally
-                LogAction("Entry created locally.");
+                await SQLiteService.AddEntryAsync(entry);
+                LogAction("✅ Entry created locally.");
                 await LoadEntries();
             }
+
             await TrySyncIfOnline();
         }
         catch (Exception ex)
         {
-            LogAction($"Error creating entry: {ex.Message}");
-            errorMessage = $"Error creating entry: {ex.Message}";
+            errorMessage = $"Create error: {ex.Message}";
+            LogAction(errorMessage);
         }
-    }
-
-    private string GenerateETag(Ordbog entry)
-    {
-        return $"{entry.DanskOrd}-{entry.KoranskOrd}";
     }
 
     private async Task UpdateEntry(Ordbog entry)
     {
         try
         {
+            entry.ModifiedBy = JwtParser.GetBruger(token);
+
             if (internet)
             {
-                // Ensure the entry has the required fields for syncing with the server
-                entry.ETag = GenerateETag(entry);  // Generate the ETag for the updated entry
-                entry.ModifiedBy = "user123";  // Replace with actual user/device ID
-
                 var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{entry.OrdbogId}", entry);
-
                 if (response.IsSuccessStatusCode)
                 {
-                    LogAction("Entry updated on the server.");
+                    LogAction("✅ Entry updated on server.");
                     await LoadEntries();
-                    // After successful sync, update the status to Synced
                     await SQLiteService.MarkAsSyncedAsync(entry.OrdbogId);
                 }
                 else
                 {
-                    string responseContent = await response.Content.ReadAsStringAsync();
-                    LogAction($"Failed to update entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}");
-                    errorMessage = $"Failed to update entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}";
+                    var details = await response.Content.ReadAsStringAsync();
+                    LogAction($"❌ Update failed: {details}");
+                    errorMessage = $"Update failed: {details}";
                 }
             }
             else
             {
-                // Handle offline update logic here, e.g., update locally
                 await SQLiteService.UpdateEntryAsync(entry);
-                LogAction("Entry updated locally.");
+                LogAction("✅ Entry updated locally.");
                 await LoadEntries();
             }
+
             await TrySyncIfOnline();
         }
         catch (Exception ex)
         {
-            LogAction($"Error updating entry: {ex.Message}");
-            errorMessage = $"Error updating entry: {ex.Message}";
+            errorMessage = $"Update error: {ex.Message}";
+            LogAction(errorMessage);
         }
     }
 
-    private async Task DeleteEntry(Guid OrdbogId)
+    private async Task DeleteEntry(Guid ordbogId)
     {
         try
         {
             if (internet)
             {
-                var wordToDelete = filteredWords.FirstOrDefault(w => w.OrdbogId == OrdbogId);
-
-                if (wordToDelete != null)
+                var word = filteredWords.FirstOrDefault(w => w.OrdbogId == ordbogId);
+                if (word != null)
                 {
-                    // Mark entry as deleted for sync
-                    wordToDelete.IsDeleted = true;
-                    wordToDelete.Status = SyncStatus.Deleted;
+                    word.IsDeleted = true;
+                    word.Status = SyncStatus.Deleted;
 
-                    // Send update to server
-                    var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{wordToDelete.OrdbogId}",
-                        wordToDelete
-                    );
+                    var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{word.OrdbogId}", word);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        LogAction("✅ Entry marked as deleted on server.");
+                        LogAction("✅ Entry deleted on server.");
                     }
                     else
                     {
                         var details = await response.Content.ReadAsStringAsync();
-                        LogAction($"❌ Failed to mark as deleted on server. Status: {response.StatusCode}, Details: {details}");
+                        LogAction($"❌ Server delete failed: {details}");
                     }
                 }
             }
 
-            // Mark entry as deleted in local database
-            await SQLiteService.MarkAsDeletedAsync(OrdbogId);
-            LogAction("✅ Entry marked as deleted locally.");
+            await SQLiteService.MarkAsDeletedAsync(ordbogId);
+            LogAction("✅ Entry deleted locally.");
+            await LoadEntries();
         }
         catch (Exception ex)
         {
-            LogAction($"❌ Error deleting entry: {ex.Message}");
-            errorMessage = $"Error deleting entry: {ex.Message}";
-            Console.WriteLine(ex);
+            errorMessage = $"Delete error: {ex.Message}";
+            LogAction(errorMessage);
         }
-
-        await LoadEntries();
     }
 
-    private async Task TrySyncIfOnline()
+    private async Task RestoreEntry(Guid ordbogId)
     {
-        if (internet)
+        try
         {
-            LogAction("Attempting to sync data from server...");
-            isSyncing = true;
-            try
+            var word = filteredWords.FirstOrDefault(w => w.OrdbogId == ordbogId);
+            if (word != null)
             {
-                await OrdbogSyncService.SyncDataAsync(); // New method to sync
+                word.IsDeleted = false;
+                word.Status = SyncStatus.Synced;
 
-                syncFailed = false;
-                LogAction("Data sync from server completed successfully.");
+                if (internet)
+                {
+                    var response = await _apiClient.PutAsJsonAsync($"api/ordbog/restore/{word.OrdbogId}", word);
+                    if (response.IsSuccessStatusCode)
+                        LogAction("✅ Restored on server.");
+                    else
+                        LogAction($"❌ Restore failed: {response.ReasonPhrase}");
+                }
+
+                await SQLiteService.MarkAsRestoredAsync(ordbogId);
+                LogAction("✅ Restored locally.");
+                await LoadEntries();
             }
-            catch (Exception ex)
-            {
-                syncFailed = true;
-                LogAction($"Data sync from server failed: {ex.Message}");
-            }
-            isSyncing = false;
         }
-        else
+        catch (Exception ex)
         {
-            syncFailed = true;
-            LogAction("Cannot sync: Internet is offline.");
+            errorMessage = $"Restore error: {ex.Message}";
+            LogAction(errorMessage);
         }
     }
 
-    private void CancelEdit()
-    {
-        entryModel = new OrdbogDTO();
-        isEditing = false;
-        LogAction("Edit canceled.");
-    }
-
+    // ========== UI Interaction ==========
     private Task EditEntry(OrdbogDTO entry)
     {
         entryModel = entry;
         isEditing = true;
-        LogAction($"Editing entry: {entry.OrdbogId}");
+        LogAction($"✏️ Editing: {entry.OrdbogId}");
         return Task.CompletedTask;
+    }
+
+    private void CancelEdit()
+    {
+        entryModel = new();
+        isEditing = false;
+        LogAction("✋ Edit cancelled.");
+    }
+
+    private async Task HandleSubmit()
+    {
+        Ordbog entry = _mapper.Map<Ordbog>(entryModel);
+        if (isEditing)
+            await UpdateEntry(entry);
+        else
+            await CreateEntry();
+    }
+
+    private async Task ToggleInternet()
+    {
+        internet = !internet;
+        LogAction($"🌐 Internet {(internet ? "enabled" : "disabled")}.");
+        await LoadEntries();
     }
 
     private async Task ApplyFilter()
     {
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            LogAction($"Applying search filter: {searchTerm}");
+            LogAction($"🔍 Filtering for: {searchTerm}");
 
-            // Filter the words based on search term (matching in Dansk or Koransk)
             filteredWords = filteredWords
                 .Where(w =>
                     (!string.IsNullOrEmpty(w.DanskOrd) && w.DanskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrEmpty(w.KoranskOrd) && w.KoranskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                )
+                    (!string.IsNullOrEmpty(w.KoranskOrd) && w.KoranskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
 
-            LogAction($"{filteredWords.Length} entries matched the search term.");
+            LogAction($"{filteredWords.Length} match found.");
         }
         else
         {
-            LogAction("Search term is empty. Showing all entries.");
+            LogAction("Filter cleared.");
             await LoadEntries();
         }
     }
 
     private async void ClearSearch()
     {
-        LogAction("Clearing search filter...");
         searchTerm = string.Empty;
+        LogAction("🔄 Search cleared.");
         await LoadEntries();
+    }
+
+    // ========== Helpers ==========
+    private string GenerateETag(Ordbog entry)
+    {
+        // Combine all relevant properties to generate a unique ETag
+        var etagSource = $"{entry.OrdbogId}-{entry.DanskOrd}-{entry.KoranskOrd}-{entry.Beskrivelse}-{entry.BilledeLink}-{entry.LydLink}-{entry.VideoLink}";
+
+        // Return a hash of the combined properties to generate the ETag
+        return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(etagSource));
     }
 
     private void LogAction(string message)
     {
-        if (logs.Count > 50)  // Limit logs to 50 entries
-        {
-            logs.RemoveAt(logs.Count - 1);  // Remove the oldest entry
-        }
-        logs.Insert(0, $"{DateTime.Now}: {message}");
+        if (logs.Count > 50)
+            logs.RemoveAt(logs.Count - 1);
+        logs.Insert(0, $"{DateTime.Now:HH:mm:ss}: {message}");
     }
-
-    private async Task HandleSubmit()
-    {
-        // If the model is in edit mode
-        if (isEditing)
-        {
-            // Map OrdbogDTO to Ordbog
-            Ordbog entry = _mapper.Map<Ordbog>(entryModel);
-            await UpdateEntry(entry);  // Update existing entry
-        }
-        else
-        {
-            // Map OrdbogDTO to Ordbog
-            Ordbog entry = _mapper.Map<Ordbog>(entryModel);
-            await CreateEntry();  // Create new entry
-        }
-    }
-
-    private async Task RestoreEntry(Guid OrdbogId)
-    {
-        try
-        {
-            // Log initial parameters and conditions
-            LogAction($"Starting RestoreEntry for OrdbogId: {OrdbogId}, internet status: {internet}");
-
-            if (internet)
-            {
-                // Find the word in filteredWords collection
-                var wordToRestore = filteredWords.FirstOrDefault(w => w.OrdbogId == OrdbogId);
-
-                // Log if the word is found or not
-                if (wordToRestore != null)
-                {
-                    LogAction($"Word found: {wordToRestore.DanskOrd} ({wordToRestore.OrdbogId}), Status: {wordToRestore.Status}, IsDeleted: {wordToRestore.IsDeleted}");
-
-                    // Set IsDeleted to false to restore the word
-                    wordToRestore.IsDeleted = false;
-                    wordToRestore.Status = SyncStatus.Synced;
-                    LogAction($"Word restored locally: {wordToRestore.DanskOrd}, Status set to {wordToRestore.Status}, IsDeleted set to {wordToRestore.IsDeleted}");
-
-                    // Send a PUT request to restore the entry on the server
-                    LogAction($"Sending PUT request to restore entry on server. URL: api/ordbog/restore/{wordToRestore.OrdbogId}");
-                    var response = await _apiClient.PutAsJsonAsync($"api/ordbog/restore/{wordToRestore.OrdbogId}", wordToRestore);
-
-                    // Log the response status code and the outcome of the request
-                    if (response.IsSuccessStatusCode)
-                    {
-                        LogAction($"✅ Entry restored on server successfully. Status Code: {response.StatusCode}");
-                    }
-                    else
-                    {
-                        LogAction($"❌ Failed to restore entry on server. Status Code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
-                        errorMessage = $"Failed to restore entry on server. Status Code: {response.StatusCode}, Reason: {response.ReasonPhrase}";
-                    }
-                }
-                else
-                {
-                    LogAction($"❌ Word to restore not found in filteredWords collection. OrdbogId: {OrdbogId}");
-                }
-            }
-            else
-            {
-                LogAction("❌ No internet connection. Cannot restore entry on the server.");
-            }
-
-            // Log the attempt to restore locally
-            LogAction($"Attempting to restore entry locally in SQLite database for OrdbogId: {OrdbogId}");
-            await SQLiteService.MarkAsRestoredAsync(OrdbogId);
-            LogAction($"✅ Entry restored locally in SQLite database for OrdbogId: {OrdbogId}");
-            LoadEntries();
-        }
-        catch (Exception ex)
-        {
-            // Log error details
-            LogAction($"Error restoring entry for OrdbogId: {OrdbogId}, Exception: {ex.Message}, StackTrace: {ex.StackTrace}");
-            errorMessage = $"Error restoring entry: {ex.Message}";
-            Console.WriteLine(ex);
-        }
-    }
-
 }
