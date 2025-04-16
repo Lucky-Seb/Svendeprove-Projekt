@@ -337,6 +337,7 @@ else
                 filteredWords = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
                 LogAction($"{filteredWords.Length} entries loaded from local DB.");
             }
+            StateHasChanged(); // Ensure UI refresh after entries are loaded
         }
         catch (Exception ex)
         {
