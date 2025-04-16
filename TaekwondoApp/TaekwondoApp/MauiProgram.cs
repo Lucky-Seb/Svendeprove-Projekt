@@ -29,7 +29,13 @@ namespace TaekwondoApp
             builder.Services.AddHttpClient(); // fallback/default client
 
             // Scoped auth service
+
+<<<<<<< TODO: Unmerged change from project 'TaekwondoApp (net9.0-android)', Before:
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+=======
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationServices>();
+>>>>>>> After
+            builder.Services.AddScoped<IAuthenticationService, Services.AuthenticationService>();
 
             // Register JWT Auth message handler
             builder.Services.AddScoped<JwtAuthMessageHandler>();

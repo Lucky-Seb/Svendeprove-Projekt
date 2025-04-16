@@ -3,7 +3,7 @@ using Microsoft.Maui.Storage; // <-- Make sure this is included
 using System.Net.Http.Headers;
 using TaekwondoApp.Shared.Services;
 
-namespace TaekwondoApp.Services
+namespace TaekwondoApp.Shared.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
