@@ -4,8 +4,6 @@ using TaekwondoApp.Shared.DTO;
 using Microsoft.AspNetCore.SignalR;
 using TaekwondoOrchestration.ApiService.NotificationHubs;
 using Microsoft.AspNetCore.Authorization;
-using TaekwondoApp.Shared.Models;
-using static SQLite.SQLite3;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {

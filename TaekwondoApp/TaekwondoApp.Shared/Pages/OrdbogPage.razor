@@ -8,6 +8,8 @@
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@implements IDisposable
 
 <h1>Ordbog</h1>
 
@@ -220,9 +222,14 @@ else
     private string searchTerm = string.Empty;
     private bool showDeleted = false;
     private HttpClient _apiClient; // <--- This must be declared at the class level
+    private bool isAuthenticated;
+    private string? role;
 
     protected override async Task OnInitializedAsync()
     {
+        AuthStateProvider.OnChange += StateChanged;
+        StateChanged(); // Initialize state
+
         try
         {
             _apiClient = HttpClientFactory.CreateClient("ApiClient");
@@ -636,5 +643,14 @@ else
             Console.WriteLine(ex);
         }
     }
-
+    private void StateChanged()
+    {
+        isAuthenticated = AuthStateProvider.IsAuthenticated;
+        role = AuthStateProvider.Role;
+        InvokeAsync(StateHasChanged); // Refresh UI
+    }
+    public void Dispose()
+    {
+        AuthStateProvider.OnChange -= StateChanged;
+    }
 }
