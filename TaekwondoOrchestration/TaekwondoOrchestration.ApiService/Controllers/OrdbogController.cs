@@ -103,7 +103,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             if (!success)
                 return NotFoundResponse<string>("Delete failed. Ordbog not found.");
 
-            await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
+            await _hubContext.Clients.All.SendAsync("Ordbog Deleted");
             return OkResponse("Deleted successfully.");
         }
 
