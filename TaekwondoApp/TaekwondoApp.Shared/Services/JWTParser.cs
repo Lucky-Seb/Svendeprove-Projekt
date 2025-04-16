@@ -23,5 +23,10 @@ namespace TaekwondoApp.Shared.Services
             var claims = ParseClaimsFromJwt(jwt);
             return claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
         }
+        public static string? GetBruger(string jwt)
+        {
+            var claims = ParseClaimsFromJwt(jwt);
+            return claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        }
     }
 }

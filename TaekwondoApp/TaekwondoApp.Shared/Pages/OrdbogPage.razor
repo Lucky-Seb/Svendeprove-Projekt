@@ -6,6 +6,7 @@
 @using TaekwondoApp.Shared.Services
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
+using Microsoft.Maui.Essentials
 
 @* --- Dependency Injection --- *@
 @inject IOrdbogSyncService OrdbogSyncService
@@ -14,6 +15,7 @@
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
 @inject AuthStateProvider AuthStateProvider
+@inject AuthenticationService AuthenticationService
 
 @implements IAsyncDisposable
 
@@ -225,6 +227,7 @@ else
     private string searchTerm = string.Empty;
     private string errorMessage = string.Empty;
     private bool showDeleted = false;
+    private string token = "";
 
     private HttpClient _apiClient;
     private HubConnection _hubConnection;
@@ -234,6 +237,16 @@ else
     {
         AuthStateProvider.OnChange += StateChanged;
         StateChanged();
+        try
+        {
+            var token = await AuthenticationService.GetTokenAsync();
+
+        }
+        catch (Exception ex)
+        {
+            LogAction($"❌ No Auth Token: {ex.Message}");
+            errorMessage = $"Could not get Auth Token: {ex.Message}\n{ex.StackTrace}";
+        }
 
         try
         {
@@ -419,8 +432,7 @@ else
     {
         try
         {
-            entry.ETag = GenerateETag(entry);
-            entry.ModifiedBy = "user123";
+            entry.ModifiedBy = JwtParser.GetBruger(token);
 
             if (internet)
             {
