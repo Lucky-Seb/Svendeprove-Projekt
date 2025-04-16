@@ -3,13 +3,15 @@
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
 @using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
 @inject IOrdbogSyncService OrdbogSyncService
 @inject ISQLiteService SQLiteService
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
 @inject AuthStateProvider AuthStateProvider
-@implements IDisposable
+@implements IAsyncDisposable
+
 
 <h1>Ordbog</h1>
 
@@ -224,11 +226,12 @@ else
     private HttpClient _apiClient; // <--- This must be declared at the class level
     private bool isAuthenticated;
     private string? role;
+    private HubConnection _hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
         AuthStateProvider.OnChange += StateChanged;
-        StateChanged(); // Initialize state
+        StateChanged();
 
         try
         {
@@ -247,19 +250,32 @@ else
                 catch (Exception ex)
                 {
                     LogAction("❌ Error syncing from server to local: " + ex.Message);
-                    Console.WriteLine(ex);
                 }
             }
 
             await LoadEntries();
             LogAction("✅ Entries loaded.");
+
+            // 🔄 SignalR connection setup
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/ordboghub"))
+                .WithAutomaticReconnect()
+                .Build();
+
+            _hubConnection.On("OrdbogUpdated", async () =>
+            {
+                LogAction("🔄 Received EntriesUpdated event from server.");
+                await LoadEntries();
+                StateHasChanged();
+            });
+
+            await _hubConnection.StartAsync();
+            LogAction("✅ SignalR connection established.");
         }
         catch (Exception ex)
         {
             LogAction($"❌ Error during OnInitializedAsync: {ex.Message}");
-            Console.WriteLine(ex);
             errorMessage = $"Error during initialization: {ex.Message}\n{ex.StackTrace}";
-            LogAction(errorMessage);
         }
     }
 
@@ -353,12 +369,10 @@ else
         {
             if (internet)
             {
-                // Convert OrdbogDTO to Ordbog
-                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel);  // AutoMapper will convert DTO to model
-
-                // Ensure ETag is set before saving
+                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel);
                 entryModelMapped.ETag = entryModel.DanskOrd + entryModel.KoranskOrd;
-                entryModelMapped.ModifiedBy = "user123";  // Replace with actual user/device ID
+                entryModelMapped.ModifiedBy = "user123";
+
                 var response = await _apiClient.PostAsJsonAsync("api/ordbog", entryModelMapped);
 
                 if (response.IsSuccessStatusCode)
@@ -369,28 +383,29 @@ else
                 }
                 else
                 {
-                    string responseContent = await response.Content.ReadAsStringAsync();
-                    LogAction($"Failed to create entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}");
-                    errorMessage = $"Failed to create entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}";
+                    var content = await response.Content.ReadAsStringAsync();
+                    errorMessage = $"Failed to create entry on the server: {response.StatusCode} - {content}";
+                    LogAction(errorMessage);
                 }
             }
             else
             {
-                // Save the DTO entry locally (Offline scenario)
-                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel); // Convert DTO to model for local storage
-                entryModelMapped.ETag = GenerateETag(entryModelMapped);  // Set ETag
-                await SQLiteService.AddEntryAsync(entryModelMapped);  // Save locally
+                Ordbog entryModelMapped = _mapper.Map<Ordbog>(entryModel);
+                entryModelMapped.ETag = GenerateETag(entryModelMapped);
+                await SQLiteService.AddEntryAsync(entryModelMapped);
                 LogAction("Entry created locally.");
                 await LoadEntries();
             }
+
             await TrySyncIfOnline();
         }
         catch (Exception ex)
         {
-            LogAction($"Error creating entry: {ex.Message}");
             errorMessage = $"Error creating entry: {ex.Message}";
+            LogAction(errorMessage);
         }
     }
+
 
     private string GenerateETag(Ordbog entry)
     {
@@ -403,9 +418,8 @@ else
         {
             if (internet)
             {
-                // Ensure the entry has the required fields for syncing with the server
-                entry.ETag = GenerateETag(entry);  // Generate the ETag for the updated entry
-                entry.ModifiedBy = "user123";  // Replace with actual user/device ID
+                entry.ETag = GenerateETag(entry);
+                entry.ModifiedBy = "user123";
 
                 var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{entry.OrdbogId}", entry);
 
@@ -413,29 +427,28 @@ else
                 {
                     LogAction("Entry updated on the server.");
                     await LoadEntries();
-                    // After successful sync, update the status to Synced
                     await SQLiteService.MarkAsSyncedAsync(entry.OrdbogId);
                 }
                 else
                 {
-                    string responseContent = await response.Content.ReadAsStringAsync();
-                    LogAction($"Failed to update entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}");
-                    errorMessage = $"Failed to update entry on the server. Status Code: {response.StatusCode}, Response: {responseContent}";
+                    var content = await response.Content.ReadAsStringAsync();
+                    errorMessage = $"Failed to update entry: {response.StatusCode} - {content}";
+                    LogAction(errorMessage);
                 }
             }
             else
             {
-                // Handle offline update logic here, e.g., update locally
                 await SQLiteService.UpdateEntryAsync(entry);
                 LogAction("Entry updated locally.");
                 await LoadEntries();
             }
+
             await TrySyncIfOnline();
         }
         catch (Exception ex)
         {
-            LogAction($"Error updating entry: {ex.Message}");
             errorMessage = $"Error updating entry: {ex.Message}";
+            LogAction(errorMessage);
         }
     }
 
@@ -449,14 +462,10 @@ else
 
                 if (wordToDelete != null)
                 {
-                    // Mark entry as deleted for sync
                     wordToDelete.IsDeleted = true;
                     wordToDelete.Status = SyncStatus.Deleted;
 
-                    // Send update to server
-                    var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{wordToDelete.OrdbogId}",
-                        wordToDelete
-                    );
+                    var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{wordToDelete.OrdbogId}", wordToDelete);
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -465,20 +474,18 @@ else
                     else
                     {
                         var details = await response.Content.ReadAsStringAsync();
-                        LogAction($"❌ Failed to mark as deleted on server. Status: {response.StatusCode}, Details: {details}");
+                        LogAction($"❌ Failed to delete: {details}");
                     }
                 }
             }
 
-            // Mark entry as deleted in local database
             await SQLiteService.MarkAsDeletedAsync(OrdbogId);
             LogAction("✅ Entry marked as deleted locally.");
         }
         catch (Exception ex)
         {
-            LogAction($"❌ Error deleting entry: {ex.Message}");
             errorMessage = $"Error deleting entry: {ex.Message}";
-            Console.WriteLine(ex);
+            LogAction(errorMessage);
         }
 
         await LoadEntries();
@@ -490,24 +497,25 @@ else
         {
             LogAction("Attempting to sync data from server...");
             isSyncing = true;
+
             try
             {
-                await OrdbogSyncService.SyncDataAsync(); // New method to sync
-
+                await OrdbogSyncService.SyncDataAsync();
                 syncFailed = false;
-                LogAction("Data sync from server completed successfully.");
+                LogAction("✅ Data synced.");
             }
             catch (Exception ex)
             {
                 syncFailed = true;
-                LogAction($"Data sync from server failed: {ex.Message}");
+                LogAction($"❌ Sync failed: {ex.Message}");
             }
+
             isSyncing = false;
         }
         else
         {
             syncFailed = true;
-            LogAction("Cannot sync: Internet is offline.");
+            LogAction("❌ Cannot sync: No internet.");
         }
     }
 
@@ -649,8 +657,13 @@ else
         role = AuthStateProvider.Role;
         InvokeAsync(StateHasChanged); // Refresh UI
     }
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         AuthStateProvider.OnChange -= StateChanged;
+
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
     }
 }
