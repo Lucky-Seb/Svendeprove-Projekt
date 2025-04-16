@@ -172,8 +172,13 @@ namespace TaekwondoApp.Services
         // Generate ETag based on entity versioning and other fields
         private string GenerateETag(Ordbog entry)
         {
-            return $"{entry.DanskOrd}-{entry.KoranskOrd}";
+            // Combine all relevant properties to generate a unique ETag
+            var etagSource = $"{entry.OrdbogId}-{entry.DanskOrd}-{entry.KoranskOrd}-{entry.Beskrivelse}-{entry.BilledeLink}-{entry.LydLink}-{entry.VideoLink}";
+
+            // Return a hash of the combined properties to generate the ETag
+            return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(etagSource));
         }
+
 
         // Get entries with unsynced status (Pending or Failed)
         public Task<Ordbog[]> GetUnsyncedEntriesAsync()
