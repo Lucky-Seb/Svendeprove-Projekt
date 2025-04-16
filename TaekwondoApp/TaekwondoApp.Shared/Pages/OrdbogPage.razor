@@ -258,7 +258,7 @@ else
             LogAction("✅ Entries loaded.");
 
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl(NavigationManager.ToAbsoluteUri("/ordboghub"))
+                .WithUrl("https://localhost:7478/ordboghub") // Directly specify the URL
                 .WithAutomaticReconnect()
                 .Build();
 
