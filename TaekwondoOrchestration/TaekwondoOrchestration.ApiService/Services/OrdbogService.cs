@@ -55,26 +55,36 @@ namespace TaekwondoOrchestration.ApiService.Services
             var existingOrdbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
             if (existingOrdbog == null) return false;
 
-            // Map the editable properties using AutoMapper
+            // Preserve non-editable fields before mapping
+            var preservedChangeHistory = existingOrdbog.ChangeHistory ?? new List<ChangeRecord>();
+
+            // Use AutoMapper to map from DTO to the existing Ordbog entity
             _mapper.Map(ordbogDto, existingOrdbog);
 
-            // Preserve non-editable fields
-            existingOrdbog.CreatedAt = existingOrdbog.CreatedAt;
-            existingOrdbog.LastModified = DateTime.UtcNow;
-            existingOrdbog.ETag = GenerateETag(existingOrdbog);
-            existingOrdbog.ModifiedBy = ordbogDto.ModifiedBy;
-            existingOrdbog.LastSyncedVersion++;
-
-            existingOrdbog.ChangeHistory.Add(new ChangeRecord
-            {
-                ChangedAt = DateTime.UtcNow,
-                ChangedBy = ordbogDto.ModifiedBy,
-                ChangeDescription = $"Updated Ordbog entry with ID: {existingOrdbog.OrdbogId}"
-            });
-
-            existingOrdbog.ChangeHistoryJson = JsonConvert.SerializeObject(existingOrdbog.ChangeHistory);
+            // Now call the helper to update common fields and Change History
+            UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);  // You can replace "System" with current user
 
             return await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
+        }
+
+        // Update Ordbog Entry, including soft-deleted entries
+        public async Task<OrdbogDTO> UpdateOrdbogIncludingDeletedByIdAsync(Guid id, OrdbogDTO ordbogDto)
+        {
+            // Validate and retrieve the existing Ordbog entity
+            var existingOrdbog = await _ordbogRepository.GetOrdbogByIdIncludingDeletedAsync(id);
+            if (existingOrdbog == null) return null;  // Return null if not found
+
+            // Map the DTO to the existing Ordbog
+            _mapper.Map(ordbogDto, existingOrdbog);
+
+            // Update the Ordbog fields
+            UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);
+
+            // Save the updated Ordbog entity
+            var updatedOrdbog = await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
+
+            // Return the updated Ordbog as DTO
+            return _mapper.Map<OrdbogDTO>(updatedOrdbog);
         }
 
         // Delete Ordbog Entry (Soft-Delete)
@@ -180,6 +190,26 @@ namespace TaekwondoOrchestration.ApiService.Services
             ordbog.ETag = GenerateETag(ordbog);
         }
 
+        public void UpdateCommonFields(Ordbog existingOrdbog, string modifiedBy)
+        {
+            // Preserve and restore fields
+            existingOrdbog.CreatedAt = existingOrdbog.CreatedAt; // Ensure CreatedAt is not overwritten
+            existingOrdbog.LastModified = DateTime.UtcNow;
+            existingOrdbog.ETag = GenerateETag(existingOrdbog); // Static method call
+            existingOrdbog.ModifiedBy = modifiedBy;  // Set the user who made the modification
+            existingOrdbog.LastSyncedVersion++;       // Increment sync version after update
+            existingOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
+
+            // Update Change History
+            existingOrdbog.ChangeHistory.Add(new ChangeRecord
+            {
+                ChangedAt = DateTime.UtcNow,
+                ChangedBy = existingOrdbog.ModifiedBy,
+                ChangeDescription = $"Updated Ordbog entry with ID: {existingOrdbog.OrdbogId}"
+            });
+
+            existingOrdbog.ChangeHistoryJson = JsonConvert.SerializeObject(existingOrdbog.ChangeHistory);
+        }
         #endregion
     }
 }

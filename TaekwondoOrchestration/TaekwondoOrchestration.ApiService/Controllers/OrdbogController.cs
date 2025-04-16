@@ -24,7 +24,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         public async Task<ActionResult<ApiResponse<IEnumerable<OrdbogDTO>>>> GetOrdboger()
         {
             var result = await _ordbogService.GetAllOrdbogAsync();
-            return Ok(ApiResponse<IEnumerable<OrdbogDTO>>.Ok(result.AsEnumerable()));
+            return OkResponse(result.AsEnumerable());
         }
 
         [HttpGet("including-deleted")]
@@ -60,7 +60,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         {
             var created = await _ordbogService.CreateOrdbogAsync(ordbogDto);
             await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
-
             return CreatedResponse(nameof(GetOrdbog), new { id = created.OrdbogId }, created);
         }
 
@@ -72,8 +71,9 @@ namespace TaekwondoOrchestration.ApiService.Controllers
                 return NotFoundResponse<OrdbogDTO>("Ordbog not found.");
 
             await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
-            return OkResponse(updated);
+            return OkResponse(updated); // Return the updated DTO, not the input one
         }
+
 
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<OrdbogDTO>>> UpdateOrdbog(Guid id, OrdbogDTO ordbogDto)
@@ -82,15 +82,12 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             if (existing == null)
                 return NotFoundResponse<OrdbogDTO>("Ordbog not found.");
 
-            var updated = await _ordbogService.UpdateOrdbogAsync(id, ordbogDto);
-
-            if (!updated)
-                return BadRequest(ApiResponse<OrdbogDTO>.Fail("Update failed"));
+            var success = await _ordbogService.UpdateOrdbogAsync(id, ordbogDto);
+            if (!success)
+                return BadRequestResponse<OrdbogDTO>("Update failed");
 
             await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
-
-            // Return the updated OrdbogDTO as part of the ApiResponse
-            return Ok(ApiResponse<OrdbogDTO>.Ok(ordbogDto)); // Return the ordbogDto as a result
+            return OkResponse(ordbogDto);
         }
 
         [Authorize(Roles = "Admin")]
@@ -101,7 +98,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             if (!success)
                 return NotFoundResponse<string>("Delete failed. Ordbog not found.");
 
-            await _hubContext.Clients.All.SendAsync("Ordbog Deleted");
+            await _hubContext.Clients.All.SendAsync("OrdbogDeleted");
             return OkResponse("Deleted successfully.");
         }
 
