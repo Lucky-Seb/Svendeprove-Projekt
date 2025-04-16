@@ -332,7 +332,8 @@ else
             else
             {
                 var response = await SQLiteService.GetAllEntriesAsync();
-                var allEntries = _mapper.Map<List<OrdbogDTO>>(response ?? new List<Ordbog>());
+                var source = response != null ? response.ToList() : new List<Ordbog>();
+                var allEntries = _mapper.Map<List<OrdbogDTO>>(source);
                 filteredWords = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
                 LogAction($"{filteredWords.Length} entries loaded from local DB.");
             }
