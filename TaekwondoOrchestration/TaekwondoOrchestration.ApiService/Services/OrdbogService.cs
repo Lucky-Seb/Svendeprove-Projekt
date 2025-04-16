@@ -62,13 +62,13 @@ namespace TaekwondoOrchestration.ApiService.Services
             existingOrdbog.CreatedAt = existingOrdbog.CreatedAt;
             existingOrdbog.LastModified = DateTime.UtcNow;
             existingOrdbog.ETag = GenerateETag(existingOrdbog);
-            existingOrdbog.ModifiedBy = "System";
+            existingOrdbog.ModifiedBy = ordbogDto.ModifiedBy;
             existingOrdbog.LastSyncedVersion++;
 
             existingOrdbog.ChangeHistory.Add(new ChangeRecord
             {
                 ChangedAt = DateTime.UtcNow,
-                ChangedBy = existingOrdbog.ModifiedBy,
+                ChangedBy = ordbogDto.ModifiedBy,
                 ChangeDescription = $"Updated Ordbog entry with ID: {existingOrdbog.OrdbogId}"
             });
 
@@ -95,7 +95,7 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             ordbog.IsDeleted = false;
             ordbog.Status = SyncStatus.Synced;
-            ordbog.ModifiedBy = dto?.ModifiedBy ?? "System";
+            ordbog.ModifiedBy = dto.ModifiedBy ;
             ordbog.LastSyncedVersion++;
             SetDeletedOrRestoredProperties(ordbog, "Restored Ordbog entry");
             return await _ordbogRepository.UpdateAsync(ordbog);
@@ -149,7 +149,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             newOrdbog.Status = SyncStatus.Synced;
             newOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
             newOrdbog.LastSyncedVersion = 0;
-            newOrdbog.ModifiedBy = "System";
+            newOrdbog.ModifiedBy = newOrdbog.ModifiedBy;
             newOrdbog.IsDeleted = false;
             newOrdbog.ChangeHistory = new List<ChangeRecord>
             {
@@ -167,7 +167,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         private void SetDeletedOrRestoredProperties(Ordbog ordbog, string changeDescription)
         {
             ordbog.LastModified = DateTime.UtcNow;
-            ordbog.ModifiedBy = "System";  // Can be changed to current user if necessary
+            ordbog.ModifiedBy = ordbog.ModifiedBy;  // Can be changed to current user if necessary
             ordbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
             ordbog.LastSyncedVersion++;
             ordbog.ChangeHistory.Add(new ChangeRecord

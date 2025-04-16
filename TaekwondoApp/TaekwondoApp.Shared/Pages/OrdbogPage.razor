@@ -393,7 +393,7 @@ else
         {
             Ordbog entry = _mapper.Map<Ordbog>(entryModel);
             entry.ETag = GenerateETag(entry);
-            entry.ModifiedBy = "user123";
+            entry.ModifiedBy = JwtParser.GetBruger(token);
 
             if (internet)
             {

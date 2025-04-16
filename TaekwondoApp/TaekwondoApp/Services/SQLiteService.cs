@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TaekwondoApp.Shared.Services;
 using Newtonsoft.Json;
+using TaekwondoApp.Shared.DTO;
 
 namespace TaekwondoApp.Services
 {
@@ -87,7 +88,7 @@ namespace TaekwondoApp.Services
                     }
 
                     // Set the 'ModifiedBy' field (replace with actual user/device ID)
-                    entry.ModifiedBy = "System";  // You can dynamically replace this with user/device ID
+                    entry.ModifiedBy = entry.ModifiedBy;  // You can dynamically replace this with user/device ID
 
                     // Log the initial change (first entry creation)
                     LogChange(entry, "Initial entry creation");
@@ -120,7 +121,7 @@ namespace TaekwondoApp.Services
                 entry.ETag = GenerateETag(entry);
 
                 // Set the 'ModifiedBy' field (replace with actual logic to track user/device)
-                entry.ModifiedBy = "System"; // You can replace this with actual user or device ID
+                entry.ModifiedBy = entry.ModifiedBy; // You can replace this with actual user or device ID
 
                 // Set ConflictStatus (no conflict by default)
                 entry.ConflictStatus = ConflictResolutionStatus.NoConflict;
