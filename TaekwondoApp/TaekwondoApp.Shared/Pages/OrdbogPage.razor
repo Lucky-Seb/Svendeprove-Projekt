@@ -266,7 +266,7 @@ else
             {
                 LogAction("🔄 Received OrdbogUpdated from server.");
                 await LoadEntries();
-                StateHasChanged();
+                await InvokeAsync(StateHasChanged); // Use InvokeAsync for Blazor-specific updates
             });
 
             await _hubConnection.StartAsync();
@@ -337,7 +337,7 @@ else
                 filteredWords = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
                 LogAction($"{filteredWords.Length} entries loaded from local DB.");
             }
-            StateHasChanged(); // Ensure UI refresh after entries are loaded
+            await InvokeAsync(StateHasChanged); // Use InvokeAsync for Blazor-specific updates
         }
         catch (Exception ex)
         {
