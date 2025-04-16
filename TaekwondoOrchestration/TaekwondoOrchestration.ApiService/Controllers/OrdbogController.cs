@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoOrchestration.ApiService.Services;
 using TaekwondoApp.Shared.DTO;
 using Microsoft.AspNetCore.SignalR;
-using TaekwondoOrchestration.ApiService.NotificationHubs;
 using Microsoft.AspNetCore.Authorization;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces; // <-- Import the interface namespace
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -11,10 +11,10 @@ namespace TaekwondoOrchestration.ApiService.Controllers
     [ApiController]
     public class OrdbogController : ApiBaseController
     {
-        private readonly OrdbogService _ordbogService;
+        private readonly IOrdbogService _ordbogService; // <-- Use the interface
         private readonly IHubContext<OrdbogHub> _hubContext;
 
-        public OrdbogController(OrdbogService ordbogService, IHubContext<OrdbogHub> hubContext)
+        public OrdbogController(IOrdbogService ordbogService, IHubContext<OrdbogHub> hubContext)
         {
             _ordbogService = ordbogService;
             _hubContext = hubContext;
@@ -71,9 +71,8 @@ namespace TaekwondoOrchestration.ApiService.Controllers
                 return NotFoundResponse<OrdbogDTO>("Ordbog not found.");
 
             await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
-            return OkResponse(updated); // Return the updated DTO, not the input one
+            return OkResponse(updated);
         }
-
 
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<OrdbogDTO>>> UpdateOrdbog(Guid id, OrdbogDTO ordbogDto)

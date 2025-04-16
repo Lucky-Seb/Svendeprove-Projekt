@@ -5,10 +5,11 @@ using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using AutoMapper;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class OrdbogService
+    public class OrdbogService : IOrdbogService
     {
         private readonly IOrdbogRepository _ordbogRepository;
         private readonly IMapper _mapper;
