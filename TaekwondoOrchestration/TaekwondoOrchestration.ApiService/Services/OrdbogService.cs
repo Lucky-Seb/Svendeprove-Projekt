@@ -47,7 +47,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         public async Task<Result<OrdbogDTO>> CreateOrdbogAsync(OrdbogDTO ordbogDto)
         {
             var newOrdbog = _mapper.Map<Ordbog>(ordbogDto);
-            InitializeOrdbog(newOrdbog, "Created new Ordbog entry.");
+            EntityHelper.InitializeEntity(newOrdbog, ordbogDto.ModifiedBy, "Created new Ordbog entry.");
             var createdOrdbog = await _ordbogRepository.CreateOrdbogAsync(newOrdbog);
 
             var mapped = _mapper.Map<OrdbogDTO>(createdOrdbog);
@@ -67,7 +67,7 @@ namespace TaekwondoOrchestration.ApiService.Services
                 return Result<bool>.Fail("Ordbog not found.");
 
             _mapper.Map(ordbogDto, existingOrdbog);
-            UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);
+            EntityHelper.UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);
             var updateSuccess = await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
 
             if (!updateSuccess)
@@ -84,7 +84,7 @@ namespace TaekwondoOrchestration.ApiService.Services
                 return Result<OrdbogDTO>.Fail("Ordbog not found.");
 
             _mapper.Map(ordbogDto, existingOrdbog);
-            UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);
+            EntityHelper.UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);
             var updatedOrdbog = await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
 
             var mapped = _mapper.Map<OrdbogDTO>(updatedOrdbog);
@@ -98,7 +98,12 @@ namespace TaekwondoOrchestration.ApiService.Services
             if (ordbog == null || ordbog.IsDeleted)
                 return Result<bool>.Fail("Ordbog not found or already deleted.");
 
-            SetDeletedOrRestoredProperties(ordbog, "Soft-deleted Ordbog entry");
+            // Assuming `ModifiedBy` is coming from the current context or user, you can also pass it explicitly.
+            string modifiedBy = ordbog.ModifiedBy; // or get it from context if available
+
+            // Pass the modifiedBy to the helper method
+            EntityHelper.SetDeletedOrRestoredProperties(ordbog, "Soft-deleted Ordbog entry", modifiedBy);
+
             var success = await _ordbogRepository.UpdateOrdbogAsync(ordbog);
 
             return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Ordbog.");
@@ -111,11 +116,15 @@ namespace TaekwondoOrchestration.ApiService.Services
             if (ordbog == null || !ordbog.IsDeleted)
                 return Result<bool>.Fail("Ordbog not found or not deleted.");
 
+            // Set properties for the restored entry
             ordbog.IsDeleted = false;
             ordbog.Status = SyncStatus.Synced;
             ordbog.ModifiedBy = dto.ModifiedBy;
             ordbog.LastSyncedVersion++;
-            SetDeletedOrRestoredProperties(ordbog, "Restored Ordbog entry");
+
+            // Pass the modifiedBy along with changeDescription to the helper method
+            EntityHelper.SetDeletedOrRestoredProperties(ordbog, "Restored Ordbog entry", dto.ModifiedBy);
+
             var success = await _ordbogRepository.UpdateAsync(ordbog);
 
             return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore Ordbog.");
@@ -155,75 +164,6 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<IEnumerable<OrdbogDTO>>.Ok(mapped);
         }
 
-        #endregion
-
-        #region Helper Methods
-
-        // Generate ETag based on Dansk and Koran Ord
-        private string GenerateETag(Ordbog entry)
-        {
-            var etagSource = $"{entry.OrdbogId}-{entry.DanskOrd}-{entry.KoranskOrd}-{entry.Beskrivelse}-{entry.BilledeLink}-{entry.LydLink}-{entry.VideoLink}";
-            return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(etagSource));
-        }
-
-        // Initialize Ordbog Entry (common setup)
-        private void InitializeOrdbog(Ordbog newOrdbog, string changeDescription)
-        {
-            newOrdbog.ETag = GenerateETag(newOrdbog);
-            newOrdbog.CreatedAt = DateTime.UtcNow;
-            newOrdbog.LastModified = DateTime.UtcNow;
-            newOrdbog.Status = SyncStatus.Synced;
-            newOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
-            newOrdbog.LastSyncedVersion = 0;
-            newOrdbog.ModifiedBy = newOrdbog.ModifiedBy;
-            newOrdbog.IsDeleted = false;
-            newOrdbog.ChangeHistory = new List<ChangeRecord>
-            {
-                new ChangeRecord
-                {
-                    ChangedAt = DateTime.UtcNow,
-                    ChangedBy = newOrdbog.ModifiedBy,
-                    ChangeDescription = changeDescription
-                }
-            };
-            newOrdbog.ChangeHistoryJson = JsonConvert.SerializeObject(newOrdbog.ChangeHistory);
-        }
-
-        // Set properties for deleted or restored entries
-        private void SetDeletedOrRestoredProperties(Ordbog ordbog, string changeDescription)
-        {
-            ordbog.LastModified = DateTime.UtcNow;
-            ordbog.ModifiedBy = ordbog.ModifiedBy;
-            ordbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
-            ordbog.LastSyncedVersion++;
-            ordbog.ChangeHistory.Add(new ChangeRecord
-            {
-                ChangedAt = DateTime.UtcNow,
-                ChangedBy = ordbog.ModifiedBy,
-                ChangeDescription = changeDescription
-            });
-            ordbog.ChangeHistoryJson = JsonConvert.SerializeObject(ordbog.ChangeHistory);
-            ordbog.ETag = GenerateETag(ordbog);
-        }
-
-        public void UpdateCommonFields(Ordbog existingOrdbog, string modifiedBy)
-        {
-            existingOrdbog.CreatedAt = existingOrdbog.CreatedAt;
-            existingOrdbog.LastModified = DateTime.UtcNow;
-            existingOrdbog.ETag = GenerateETag(existingOrdbog);
-            existingOrdbog.ModifiedBy = modifiedBy;
-            existingOrdbog.LastSyncedVersion++;
-            existingOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
-
-            existingOrdbog.ChangeHistory.Add(new ChangeRecord
-            {
-                ChangedAt = DateTime.UtcNow,
-                ChangedBy = existingOrdbog.ModifiedBy,
-                ChangeDescription = $"Updated Ordbog entry with ID: {existingOrdbog.OrdbogId}"
-            });
-
-            existingOrdbog.ChangeHistoryJson = JsonConvert.SerializeObject(existingOrdbog.ChangeHistory);
-        }
         #endregion
     }
 }
