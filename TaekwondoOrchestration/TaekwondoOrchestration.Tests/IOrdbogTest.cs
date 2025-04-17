@@ -226,5 +226,38 @@ namespace TaekwondoOrchestration.Tests
 
             result.Value.Should().BeFalse();
         }
+        [Fact]
+        public async Task GetOrdbogByDanskOrdAsync_ShouldReturnDto_WhenExists()
+        {
+            // Arrange
+            var danskOrd = "Hej";
+            var expected = new OrdbogDTO { DanskOrd = danskOrd, KoranskOrd = "안녕", Beskrivelse = "Hello" };
+
+            _mockOrdbogService.Setup(s => s.GetOrdbogByDanskOrdAsync(danskOrd))
+                              .ReturnsAsync(Result<OrdbogDTO>.Ok(expected));
+
+            // Act
+            var result = await _mockOrdbogService.Object.GetOrdbogByDanskOrdAsync(danskOrd);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.Value.Should().BeEquivalentTo(expected);
+        }
+        [Fact]
+        public async Task GetOrdbogByDanskOrdAsync_ShouldReturnNotFound_WhenNotExists()
+        {
+            // Arrange
+            var danskOrd = "NonExistent";
+            _mockOrdbogService.Setup(s => s.GetOrdbogByDanskOrdAsync(danskOrd))
+                              .ReturnsAsync(Result<OrdbogDTO>.Fail("Ordbog not found"));
+
+            // Act
+            var result = await _mockOrdbogService.Object.GetOrdbogByDanskOrdAsync(danskOrd);
+
+            // Assert
+            result.Failure.Should().BeTrue();
+            result.Errors.Should().Contain("Ordbog not found");
+        }
+
     }
 }
