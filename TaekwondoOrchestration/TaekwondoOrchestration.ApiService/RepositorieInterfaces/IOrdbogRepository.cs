@@ -9,7 +9,6 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
         Task<Ordbog> CreateOrdbogAsync(Ordbog ordbog);
         Task<bool> UpdateOrdbogAsync(Ordbog ordbog);
         Task<bool> DeleteOrdbogAsync(Guid ordbogId);
-        Task<bool> UpdateAsync(Ordbog ordbog);
 
         Task<List<Ordbog>> GetAllOrdbogIncludingDeletedAsync();
 
@@ -17,6 +16,7 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
         Task<Ordbog?> GetOrdbogByDanskOrdAsync(string danskOrd);
         Task<Ordbog?> GetOrdbogByKoranskOrdAsync(string koranOrd);
         Task<Ordbog?> UpdateOrdbogIncludingDeletedAsync(Guid id, Ordbog ordbog);
+        Task<bool> UpdateAsync(Ordbog ordbog);
         Task<Ordbog?> GetOrdbogByIdIncludingDeletedAsync(Guid id);
 
     }
