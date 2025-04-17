@@ -1,4 +1,4 @@
-﻿@page "/brugere"
+﻿@page "/bruger"
 
 @* --- Using Statements --- *@
 @using AutoMapper
@@ -9,7 +9,7 @@
 @using TaekwondoApp.Shared.ServiceInterfaces
 @using TaekwondoApp.Shared.Services
 @inject IBrugerSyncService BrugerSyncService
-@inject ISQLiteService SQLiteService
+@inject IBrugerSQLiteService SQLiteService
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
@@ -95,7 +95,7 @@ else
             @foreach (var bruger in filteredBrugere)
             {
                 <tr>
-                    <td>@bruger.BrugerId</td>
+                    <td>@bruger.BrugerID</td>
                     <td>@bruger.Fornavn</td>
                     <td>@bruger.Efternavn</td>
                     <td>@bruger.Email</td>
@@ -116,8 +116,8 @@ else
                     </td>
                     <td>
                         <button class="btn btn-sm btn-primary" @onclick="() => EditEntry(bruger)">Edit</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteEntry(bruger.BrugerId)">Delete</button>
-                        <button class="btn btn-sm btn-warning" @onclick="() => RestoreEntry(bruger.BrugerId)">Restore</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteEntry(bruger.BrugerID)">Delete</button>
+                        <button class="btn btn-sm btn-warning" @onclick="() => RestoreEntry(bruger.BrugerID)">Restore</button>
                     </td>
                 </tr>
             }
@@ -276,250 +276,133 @@ else
                     }
                     else
                     {
-                        LogAction("❌ Server returned invalid data.");
-                        response?.Errors?.ForEach(e => LogAction($"Error: {e}"));
+                        LogAction("Failed to load entries from the server.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    LogAction($"❌ Server fetch error: {ex.Message}");
-                    errorMessage = $"Server fetch error: {ex.Message}";
+                    LogAction($"Error loading data from server: {ex.Message}");
                 }
             }
             else
             {
-                var response = await SQLiteService.GetAllEntriesAsync();
-                var source = response?.ToList() ?? new();
-                var allEntries = _mapper.Map<List<BrugerDTO>>(source);
-                filteredBrugere = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
-                LogAction($"{filteredBrugere.Length} entries loaded from local DB.");
+                // Load from local SQLite database
+                LogAction("No internet. Loading entries from SQLite database.");
+                filteredBrugere = _mapper.Map<BrugerDTO[]>(await SQLiteService.GetAllEntriesAsync());
+                LogAction($"{filteredBrugere.Length} entries loaded from local database.");
             }
-
-            await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
-            LogAction($"❌ Loading error: {ex.Message}");
-            errorMessage = $"Error loading entries: {ex.Message}";
+            LogAction($"❌ Error loading entries: {ex.Message}");
         }
     }
 
+    // ========== Sync & Offline Handling ==========
     private async Task TrySyncIfOnline()
     {
-        if (!internet)
+        if (internet)
         {
-            syncFailed = true;
-            LogAction("❌ Cannot sync: No internet.");
-            return;
-        }
-
-        LogAction("🔁 Attempting sync...");
-        isSyncing = true;
-
-        try
-        {
-            await BrugerSyncService.SyncDataAsync();
-            syncFailed = false;
-            LogAction("✅ Data synced.");
-        }
-        catch (Exception ex)
-        {
-            syncFailed = true;
-            LogAction($"❌ Sync failed: {ex.Message}");
-        }
-
-        isSyncing = false;
-    }
-    // ========== CRUD Operations ==========
-    private async Task CreateEntry()
-    {
-        try
-        {
-            Bruger entry = _mapper.Map<Bruger>(brugerModel);
-            entry.ETag = GenerateETag(entry);
-            entry.ModifiedBy = JwtParser.GetBruger(token);
-
-            if (internet)
+            try
             {
-                var response = await _apiClient.PostAsJsonAsync("api/bruger", entry);
+                isSyncing = true;
+                syncFailed = false;
 
-                if (response.IsSuccessStatusCode)
-                {
-                    LogAction("✅ Entry created on server.");
-                    await LoadEntries();
-                    await SQLiteService.MarkAsSyncedAsync(brugerModel.BrugerId);
-                }
-                else
-                {
-                    var details = await response.Content.ReadAsStringAsync();
-                    LogAction($"❌ Server create failed: {details}");
-                    errorMessage = $"Server error: {details}";
-                }
+                await BrugerSyncService.SyncAsync();
+                LogAction("✅ Sync completed.");
             }
-            else
+            catch (Exception ex)
             {
-                await SQLiteService.AddEntryAsync(entry);
-                LogAction("✅ Entry created locally.");
-                await LoadEntries();
+                syncFailed = true;
+                LogAction($"❌ Sync failed: {ex.Message}");
             }
-
-            await TrySyncIfOnline();
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Create error: {ex.Message}";
-            LogAction(errorMessage);
+            finally
+            {
+                isSyncing = false;
+            }
         }
     }
 
-    private async Task UpdateEntry(Bruger entry)
+    // ========== CRUD Handling ==========
+    private async Task EditEntry(BrugerDTO bruger)
     {
-        try
+        brugerModel = _mapper.Map<BrugerDTO, BrugerDTO>(bruger);
+        isEditing = true;
+        StateHasChanged();
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (isEditing)
         {
-            entry.ModifiedBy = JwtParser.GetBruger(token);
+            // Update existing
+            // Map BrugerDTO to Bruger
+            var brugerToUpdate = _mapper.Map<Bruger>(brugerModel);
 
-            if (internet)
-            {
-                var response = await _apiClient.PutAsJsonAsync($"api/bruger/including-deleted/{entry.BrugerId}", entry);
-                if (response.IsSuccessStatusCode)
-                {
-                    LogAction("✅ Entry updated on server.");
-                    await LoadEntries();
-                    await SQLiteService.MarkAsSyncedAsync(entry.BrugerId);
-                }
-                else
-                {
-                    var details = await response.Content.ReadAsStringAsync();
-                    LogAction($"❌ Update failed: {details}");
-                    errorMessage = $"Update failed: {details}";
-                }
-            }
-            else
-            {
-                await SQLiteService.UpdateEntryAsync(entry);
-                LogAction("✅ Entry updated locally.");
-                await LoadEntries();
-            }
+            // Now you can update the entry
+            await SQLiteService.UpdateEntryAsync(brugerToUpdate);
+            LogAction("Bruger updated locally.");
 
+            // Try to sync
             await TrySyncIfOnline();
         }
-        catch (Exception ex)
+        else
         {
-            errorMessage = $"Update error: {ex.Message}";
-            LogAction(errorMessage);
+            var brugerToUpdate = _mapper.Map<Bruger>(brugerModel);
+            // Create new
+            await SQLiteService.AddEntryAsync(brugerToUpdate);
+            LogAction("New bruger added locally.");
+
+            // Try to sync
+            await TrySyncIfOnline();
         }
+
+        // Reload data
+        await LoadEntries();
+        CancelEdit();
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+        brugerModel = new BrugerDTO();
     }
 
     private async Task DeleteEntry(Guid brugerId)
     {
-        try
-        {
-            if (internet)
-            {
-                var bruger = filteredBrugere.FirstOrDefault(b => b.BrugerId == brugerId);
-                if (bruger != null)
-                {
-                    bruger.IsDeleted = true;
-                    bruger.Status = SyncStatus.Deleted;
-
-                    var response = await _apiClient.PutAsJsonAsync($"api/bruger/including-deleted/{bruger.BrugerId}", bruger);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        LogAction("✅ Entry deleted on server.");
-                    }
-                    else
-                    {
-                        var details = await response.Content.ReadAsStringAsync();
-                        LogAction($"❌ Server delete failed: {details}");
-                    }
-                }
-            }
-
-            await SQLiteService.MarkAsDeletedAsync(brugerId);
-            LogAction("✅ Entry deleted locally.");
-            await LoadEntries();
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Delete error: {ex.Message}";
-            LogAction(errorMessage);
-        }
+        var result = await SQLiteService.DeleteEntryAsync(brugerId);
+        LogAction($"Bruger {brugerId} marked as deleted locally.");
+        await LoadEntries();
     }
 
     private async Task RestoreEntry(Guid brugerId)
     {
-        try
-        {
-            var bruger = filteredBrugere.FirstOrDefault(b => b.BrugerId == brugerId);
-            if (bruger != null)
-            {
-                bruger.IsDeleted = false;
-                bruger.Status = SyncStatus.Synced;
-
-                if (internet)
-                {
-                    var response = await _apiClient.PutAsJsonAsync($"api/bruger/restore/{bruger.BrugerId}", bruger);
-                    if (response.IsSuccessStatusCode)
-                        LogAction("✅ Restored on server.");
-                    else
-                        LogAction($"❌ Restore failed: {response.ReasonPhrase}");
-                }
-
-                await SQLiteService.MarkAsRestoredAsync(brugerId);
-                LogAction("✅ Restored locally.");
-                await LoadEntries();
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Restore error: {ex.Message}";
-            LogAction(errorMessage);
-        }
-    }
-
-    // ========== UI Interaction + Helpers ==========
-    private void LogAction(string message)
-    {
-        if (logs.Count > 50)
-            logs.RemoveAt(logs.Count - 1);
-        logs.Insert(0, $"{DateTime.Now:HH:mm:ss}: {message}");
-    }
-
-    private async Task ApplyFilter()
-    {
-        if (!string.IsNullOrEmpty(searchTerm))
-        {
-            LogAction($"🔍 Filtering for: {searchTerm}");
-
-            filteredBrugere = filteredBrugere
-                .Where(w =>
-                    (!string.IsNullOrEmpty(w.Fornavn) && w.Fornavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrEmpty(w.Efternavn) && w.Efternavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrEmpty(w.Email) && w.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
-                .ToArray();
-
-            LogAction($"{filteredBrugere.Length} match found.");
-        }
-        else
-        {
-            LogAction("Filter cleared.");
-            await LoadEntries();
-        }
-    }
-
-    private async void ClearSearch()
-    {
-        searchTerm = string.Empty;
-        LogAction("🔄 Search cleared.");
+        var result = await SQLiteService.MarkAsRestoredAsync(brugerId);
+        LogAction($"Bruger {brugerId} restored locally.");
         await LoadEntries();
     }
-    private string GenerateETag(Bruger entry)
-    {
-        // Combine all relevant properties to generate a unique ETag
-        var etagSource = $"{entry.BrugerId}-{entry.Fornavn}-{entry.Efternavn}-{entry.Email}";
 
-        // Return a hash of the combined properties to generate the ETag
-        return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(etagSource));
+    private void ApplyFilter()
+    {
+        filteredBrugere = filteredBrugere
+            .Where(b => b.Fornavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                || b.Efternavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                || b.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = string.Empty;
+        ApplyFilter();
+    }
+
+    private void LogAction(string message)
+    {
+        logs.Insert(0, message);
+        if (logs.Count > 50)
+        {
+            logs.RemoveAt(logs.Count - 1);
+        }
     }
 }
