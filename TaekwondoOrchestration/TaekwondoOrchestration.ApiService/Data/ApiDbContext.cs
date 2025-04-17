@@ -35,7 +35,7 @@ namespace TaekwondoOrchestration.ApiService.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            ConfigureSyncableEntityDefaults(modelBuilder);
             // Ignore SyncableEntity itself, since it's abstract
             modelBuilder.Ignore<SyncableEntity>();
 
@@ -53,42 +53,6 @@ namespace TaekwondoOrchestration.ApiService.Data
                     method.Invoke(null, new object[] { modelBuilder });
                 }
             }
-            // Configure properties for each derived class
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.CreatedAt)
-                .IsRequired();
-
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.LastModified)
-                .IsRequired();
-
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.ConflictStatus)
-                .HasDefaultValue(ConflictResolutionStatus.NoConflict);
-
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.Status)
-                .HasDefaultValue(SyncStatus.Pending);
-
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.LastSyncedVersion)
-                .HasDefaultValue(0);
-
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.ETag)
-                .HasMaxLength(255);
-
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.ModifiedBy)
-                .HasMaxLength(255);
-
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.IsDeleted)
-                .HasDefaultValue(false);
-
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.ChangeHistoryJson)
-                .HasColumnType("nvarchar(max)");  // Use the appropriate type for your DB (nvarchar, text, etc.)
 
             // Define primary keys and sequential GUID generation
             modelBuilder.Entity<Bruger>().HasKey(b => b.BrugerID);
@@ -386,69 +350,115 @@ namespace TaekwondoOrchestration.ApiService.Data
             var ordbogID8 = Guid.Parse("10efa19d-6353-4373-b455-414131376826");  // Generated GUID 79
             var ordbogID9 = Guid.Parse("0fd1ec97-6cee-4e0f-a032-0a3f3020d5be");  // Generated GUID 80
             var ordbogID10 = Guid.Parse("a61b1f2a-3236-4af5-90aa-3483b96a5666");  // Generated GUID 81
-            
+
             modelBuilder.Entity<Bruger>().HasData(
-                new Bruger
-                {
-                    BrugerID = brugerID1,
-                    Email = "john.doe@example.com",
-                    Brugernavn = "johndoe123",
-                    Fornavn = "John",
-                    Efternavn = "Doe",
-                    Brugerkode = "hashed_password",  // This should be a hashed password
-                    Address = "123 Taekwondo St.",
-                    Bæltegrad = "Hvidt Bælte",
-                    Role = "Bruger"
-                },
-                new Bruger
-                {
-                    BrugerID = brugerID2,
-                    Email = "jane.doe@example.com",
-                    Brugernavn = "janedoe456",
-                    Fornavn = "Jane",
-                    Efternavn = "Doe",
-                    Brugerkode = "hashed_password2",  // This should be a hashed password
-                    Address = "456 Taekwondo St.",
-                    Bæltegrad = "Gult Bælte",
-                    Role = "Bruger"
-                },
-                new Bruger
-                {
-                    BrugerID = brugerID3,
-                    Email = "mark.smith@example.com",
-                    Brugernavn = "marksmith789",
-                    Fornavn = "Mark",
-                    Efternavn = "Smith",
-                    Brugerkode = "hashed_password3",  // This should be a hashed password
-                    Address = "789 Taekwondo St.",
-                    Bæltegrad = "Blåt Bælte",
-                    Role = "Bruger"
-                },
-                new Bruger
-                {
-                    BrugerID = brugerID4,
-                    Email = "lucy.jones@example.com",
-                    Brugernavn = "lucyjones321",
-                    Fornavn = "Lucy",
-                    Efternavn = "Jones",
-                    Brugerkode = "hashed_password4",  // This should be a hashed password
-                    Address = "321 Taekwondo St.",
-                    Bæltegrad = "Grønt Bælte",
-                    Role = "Bruger"
-                },
-                new Bruger
-                {
-                    BrugerID = brugerID5,
-                    Email = "robert.brown@example.com",
-                    Brugernavn = "robertbrown654",
-                    Fornavn = "Robert",
-                    Efternavn = "Brown",
-                    Brugerkode = "hashed_password5",  // This should be a hashed password
-                    Address = "654 Taekwondo St.",
-                    Bæltegrad = "Brunt Bælte",
-                    Role = "Bruger"
-                }
-            );
+            new Bruger
+            {
+                BrugerID = brugerID1,
+                Email = "john.doe@example.com",
+                Brugernavn = "johndoe123",
+                Fornavn = "John",
+                Efternavn = "Doe",
+                Brugerkode = "hashed_password",
+                Address = "123 Taekwondo St.",
+                Bæltegrad = "Hvidt Bælte",
+                Role = "Bruger",
+                CreatedAt = new DateTime(2024, 1, 1),
+                LastModified = new DateTime(2024, 1, 1),
+                ConflictStatus = ConflictResolutionStatus.NoConflict,
+                Status = SyncStatus.Pending,
+                LastSyncedVersion = 0,
+                ETag = "etag_001",
+                ModifiedBy = "system",
+                IsDeleted = false,
+                ChangeHistoryJson = "[]"
+            },
+            new Bruger
+            {
+                BrugerID = brugerID2,
+                Email = "jane.doe@example.com",
+                Brugernavn = "janedoe456",
+                Fornavn = "Jane",
+                Efternavn = "Doe",
+                Brugerkode = "hashed_password2",
+                Address = "456 Taekwondo St.",
+                Bæltegrad = "Gult Bælte",
+                Role = "Bruger",
+                CreatedAt = new DateTime(2024, 1, 2),
+                LastModified = new DateTime(2024, 1, 2),
+                ConflictStatus = ConflictResolutionStatus.NoConflict,
+                Status = SyncStatus.Pending,
+                LastSyncedVersion = 0,
+                ETag = "etag_002",
+                ModifiedBy = "system",
+                IsDeleted = false,
+                ChangeHistoryJson = "[]"
+            },
+            new Bruger
+            {
+                BrugerID = brugerID3,
+                Email = "mark.smith@example.com",
+                Brugernavn = "marksmith789",
+                Fornavn = "Mark",
+                Efternavn = "Smith",
+                Brugerkode = "hashed_password3",
+                Address = "789 Taekwondo St.",
+                Bæltegrad = "Blåt Bælte",
+                Role = "Bruger",
+                CreatedAt = new DateTime(2024, 1, 3),
+                LastModified = new DateTime(2024, 1, 3),
+                ConflictStatus = ConflictResolutionStatus.NoConflict,
+                Status = SyncStatus.Pending,
+                LastSyncedVersion = 0,
+                ETag = "etag_003",
+                ModifiedBy = "system",
+                IsDeleted = false,
+                ChangeHistoryJson = "[]"
+            },
+            new Bruger
+            {
+                BrugerID = brugerID4,
+                Email = "lucy.jones@example.com",
+                Brugernavn = "lucyjones321",
+                Fornavn = "Lucy",
+                Efternavn = "Jones",
+                Brugerkode = "hashed_password4",
+                Address = "321 Taekwondo St.",
+                Bæltegrad = "Grønt Bælte",
+                Role = "Bruger",
+                CreatedAt = new DateTime(2024, 1, 4),
+                LastModified = new DateTime(2024, 1, 4),
+                ConflictStatus = ConflictResolutionStatus.NoConflict,
+                Status = SyncStatus.Pending,
+                LastSyncedVersion = 0,
+                ETag = "etag_004",
+                ModifiedBy = "system",
+                IsDeleted = false,
+                ChangeHistoryJson = "[]"
+            },
+            new Bruger
+            {
+                BrugerID = brugerID5,
+                Email = "robert.brown@example.com",
+                Brugernavn = "robertbrown654",
+                Fornavn = "Robert",
+                Efternavn = "Brown",
+                Brugerkode = "hashed_password5",
+                Address = "654 Taekwondo St.",
+                Bæltegrad = "Brunt Bælte",
+                Role = "Bruger",
+                CreatedAt = new DateTime(2024, 1, 5),
+                LastModified = new DateTime(2024, 1, 5),
+                ConflictStatus = ConflictResolutionStatus.NoConflict,
+                Status = SyncStatus.Pending,
+                LastSyncedVersion = 0,
+                ETag = "etag_005",
+                ModifiedBy = "system",
+                IsDeleted = false,
+                ChangeHistoryJson = "[]"
+            }
+        );
+
 
             // Seed for Klub
             modelBuilder.Entity<Klub>().HasData(
@@ -1374,6 +1384,28 @@ namespace TaekwondoOrchestration.ApiService.Data
         {
             builder.Entity<T>().HasQueryFilter(e => !e.IsDeleted);  // Soft delete filter
         }
+        private void ConfigureSyncableEntityDefaults(ModelBuilder modelBuilder)
+        {
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                var clrType = entityType.ClrType;
+                if (typeof(SyncableEntity).IsAssignableFrom(clrType) && !clrType.IsAbstract)
+                {
+                    var entity = modelBuilder.Entity(clrType);
+
+                    entity.Property(nameof(SyncableEntity.CreatedAt)).IsRequired();
+                    entity.Property(nameof(SyncableEntity.LastModified)).IsRequired();
+                    entity.Property(nameof(SyncableEntity.ConflictStatus)).HasDefaultValue(ConflictResolutionStatus.NoConflict);
+                    entity.Property(nameof(SyncableEntity.Status)).HasDefaultValue(SyncStatus.Pending);
+                    entity.Property(nameof(SyncableEntity.LastSyncedVersion)).HasDefaultValue(0);
+                    entity.Property(nameof(SyncableEntity.ETag)).HasMaxLength(255);
+                    entity.Property(nameof(SyncableEntity.ModifiedBy)).HasMaxLength(255);
+                    entity.Property(nameof(SyncableEntity.IsDeleted)).HasDefaultValue(false);
+                    entity.Property(nameof(SyncableEntity.ChangeHistoryJson)).HasColumnType("nvarchar(max)");
+                }
+            }
+        }
+
     }
 }
 

@@ -1,8 +1,10 @@
-﻿namespace TaekwondoApp.Shared.Models
+﻿using SQLite;
+
+namespace TaekwondoApp.Shared.Models
 {
     public class Bruger : SyncableEntity
     {
-        public Guid BrugerID { get; set; }
+        [PrimaryKey] public Guid BrugerID { get; set; }
         public string Email { get; set; }
         public string Brugernavn { get; set; }
         public string Fornavn { get; set; }

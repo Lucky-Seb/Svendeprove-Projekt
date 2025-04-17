@@ -238,16 +238,16 @@ else
     {
         AuthStateProvider.OnChange += StateChanged;
         StateChanged();
-        try
-        {
-            token = await AuthenticationService.GetTokenAsync(); // assign to the class field!
+        // try
+        // {
+        //     token = await AuthenticationService.GetTokenAsync(); // assign to the class field!
 
-        }
-        catch (Exception ex)
-        {
-            LogAction($"❌ No Auth Token: {ex.Message}");
-            errorMessage = $"Could not get Auth Token: {ex.Message}\n{ex.StackTrace}";
-        }
+        // }
+        // catch (Exception ex)
+        // {
+        //     LogAction($"❌ No Auth Token: {ex.Message}");
+        //     errorMessage = $"Could not get Auth Token: {ex.Message}\n{ex.StackTrace}";
+        // }
 
         try
         {
