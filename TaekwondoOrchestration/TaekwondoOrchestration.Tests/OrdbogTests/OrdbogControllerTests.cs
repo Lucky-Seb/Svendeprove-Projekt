@@ -44,7 +44,10 @@ namespace TaekwondoOrchestration.Tests.OrdbogTests
             OrdbogId = FixedGuid,  // Use the predefined GUID
             DanskOrd = "Hej",
             KoranskOrd = "안녕",
-            Beskrivelse = "Hello"
+            Beskrivelse = "Hello",
+            BilledeLink = "https://example.com/image.jpg",  // Add a non-null value
+            LydLink = "https://example.com/audio.mp3",      // Add a non-null value
+            VideoLink = "https://example.com/video.mp4"     // Add a non-null value
         };
 
         // GetOrdboger
@@ -68,6 +71,43 @@ namespace TaekwondoOrchestration.Tests.OrdbogTests
 
             var result = await _controller.GetOrdboger();
 
+            var badRequest = result as BadRequestObjectResult;
+            badRequest.Should().NotBeNull();
+            badRequest!.StatusCode.Should().Be(400);
+        }
+        // GetOrdbogerIncludingDeleted
+        [Fact]
+        public async Task GetOrdbogerIncludingDeleted_ShouldReturnOk_WhenSuccess()
+        {
+            // Arrange: Prepare the expected result that will be returned by the service
+            var dtos = new List<OrdbogDTO> { SampleDTO };
+
+            // Mock the service call to return a successful Result with a list of OrdbogDTO
+            _mockService.Setup(s => s.GetAllOrdbogIncludingDeletedAsync())
+                        .ReturnsAsync(Result<IEnumerable<OrdbogDTO>>.Ok(dtos));
+
+            // Act: Call the controller method
+            var result = await _controller.GetOrdbogerIncludingDeleted();
+
+            // Assert: Verify that the result is Ok and the status code is 200
+            var okResult = result as OkObjectResult;
+            okResult.Should().NotBeNull();
+            okResult!.StatusCode.Should().Be(200);
+
+            // Verify the result is OK
+            okResult.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task GetOrdbogerIncludingDeleted_ShouldReturnBadRequest_WhenFailure()
+        {
+            // Arrange: Mock service to return a failure result
+            _mockService.Setup(s => s.GetAllOrdbogIncludingDeletedAsync()).ReturnsAsync(Result<IEnumerable<OrdbogDTO>>.Fail("Database error"));
+
+            // Act: Call the controller method
+            var result = await _controller.GetOrdbogerIncludingDeleted();
+
+            // Assert: Verify that the result is BadRequest and the status code is 400
             var badRequest = result as BadRequestObjectResult;
             badRequest.Should().NotBeNull();
             badRequest!.StatusCode.Should().Be(400);
