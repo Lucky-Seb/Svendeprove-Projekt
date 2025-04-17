@@ -1,1 +1,525 @@
-﻿
+﻿@page "/brugere"
+
+@* --- Using Statements --- *@
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Helper
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.ServiceInterfaces
+@using TaekwondoApp.Shared.Services
+@inject IBrugerSyncService BrugerSyncService
+@inject ISQLiteService SQLiteService
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+@implements IAsyncDisposable
+
+<h1>Brugere</h1>
+
+@* --- Status & Internet Controls --- *@
+<div class="alert @(internet ? "alert-success" : "alert-warning")">
+    Status: @(internet ? "Online - Changes will sync automatically." : "Offline - Changes are stored locally and will sync when you're back online.")
+</div>
+
+@if (syncFailed)
+{
+    <div class="alert alert-danger d-flex justify-content-between align-items-center">
+        <span>Last sync attempt failed.</span>
+        <button class="btn btn-sm btn-danger" @onclick="TrySyncIfOnline">Retry Sync</button>
+    </div>
+}
+@if (isSyncing)
+{
+    <div class="d-flex align-items-center mb-3">
+        <div class="spinner-border text-primary me-2" role="status">
+            <span class="visually-hidden">Syncing...</span>
+        </div>
+        <span>Syncing local changes...</span>
+    </div>
+}
+
+@* --- Show Deleted Toggle --- *@
+<div class="form-check mb-3">
+    <InputCheckbox class="form-check-input" @bind-Value="showDeleted" />
+    <label class="form-check-label">Show Deleted Entries</label>
+</div>
+
+@* --- Search Section --- *@
+<div class="mb-3 row">
+    <div class="col-md-4">
+        <label>Search (First Name, Last Name, Email):</label>
+        <InputText class="form-control" @bind-Value="searchTerm" />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-primary me-2" @onclick="ApplyFilter">Search</button>
+        <button class="btn btn-secondary" @onclick="ClearSearch">Clear</button>
+    </div>
+</div>
+
+@* --- App Logs --- *@
+<div class="log-box" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-top: 20px;">
+    <h4>App Logs</h4>
+    @foreach (var log in logs.Reverse<string>())
+    {
+        <div>@log</div>
+    }
+</div>
+
+@* --- User List Table --- *@
+@if (filteredBrugere == null || !filteredBrugere.Any())
+{
+    <p><em>Loading entries...</em></p>
+}
+else if (!filteredBrugere.Any())
+{
+    <p><em>No matching entries found.</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Is Deleted</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bruger in filteredBrugere)
+            {
+                <tr>
+                    <td>@bruger.BrugerId</td>
+                    <td>@bruger.Fornavn</td>
+                    <td>@bruger.Efternavn</td>
+                    <td>@bruger.Email</td>
+                    <td>
+                        <span class="badge @(bruger.Status switch
+                        {
+                            SyncStatus.Pending => "bg-success",
+                            SyncStatus.Synced => "bg-warning text-dark",
+                            SyncStatus.Failed => "bg-danger",
+                            SyncStatus.Deleted => "bg-secondary",
+                            _ => "bg-light"
+                        })">@bruger.Status</span>
+                    </td>
+                    <td>
+                        <span class="@(bruger.IsDeleted ? "text-danger" : "text-success")">
+                            @(bruger.IsDeleted ? "Yes" : "No")
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" @onclick="() => EditEntry(bruger)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteEntry(bruger.BrugerId)">Delete</button>
+                        <button class="btn btn-sm btn-warning" @onclick="() => RestoreEntry(bruger.BrugerId)">Restore</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+
+@* --- Add/Edit Form --- *@
+<h3>@(isEditing ? "Edit User" : "Add New User")</h3>
+
+<EditForm Model="brugerModel" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group mb-2">
+        <label>First Name:</label>
+        <InputText class="form-control" @bind-Value="brugerModel.Fornavn" required />
+    </div>
+
+    <div class="form-group mb-2">
+        <label>Last Name:</label>
+        <InputText class="form-control" @bind-Value="brugerModel.Efternavn" required />
+    </div>
+
+    <div class="form-group mb-2">
+        <label>Email:</label>
+        <InputText class="form-control" @bind-Value="brugerModel.Email" required />
+    </div>
+
+    <button type="submit" class="btn btn-success">@((isEditing ? "Update" : "Create"))</button>
+    <button type="button" class="btn btn-secondary ms-2" @onclick="CancelEdit">Cancel</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    // ========== Fields & State ==========
+    private BrugerDTO[] filteredBrugere = Array.Empty<BrugerDTO>();
+    private List<string> logs = new();
+    private BrugerDTO brugerModel = new();
+    private bool isEditing = false;
+    private bool isSyncing = false;
+    private bool syncFailed = false;
+    private bool internet = true;
+    private bool isAuthenticated;
+    private string? role;
+    private string searchTerm = string.Empty;
+    private string errorMessage = string.Empty;
+    private bool showDeleted = false;
+    private string token = "";
+
+    private HttpClient _apiClient;
+    private HubConnection _hubConnection;
+
+    // ========== Lifecycle ==========
+    protected override async Task OnInitializedAsync()
+    {
+        AuthStateProvider.OnChange += StateChanged;
+        StateChanged();
+
+        try
+        {
+            token = await AuthenticationService.GetTokenAsync();
+        }
+        catch (Exception ex)
+        {
+            LogAction($"❌ No Auth Token: {ex.Message}");
+            errorMessage = $"Could not get Auth Token: {ex.Message}\n{ex.StackTrace}";
+        }
+
+        try
+        {
+            _apiClient = HttpClientFactory.CreateClient("ApiClient");
+            LogAction("App initializing...");
+
+            if (internet)
+            {
+                LogAction("App has internet. Trying to sync...");
+                try
+                {
+                    await TrySyncIfOnline();
+                    LogAction("✅ Synced from server to local.");
+                }
+                catch (Exception ex)
+                {
+                    LogAction("❌ Error syncing: " + ex.Message);
+                }
+            }
+
+            await LoadEntries();
+            LogAction("✅ Entries loaded.");
+
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl("https://localhost:7478/brugerhub")
+                .WithAutomaticReconnect()
+                .Build();
+
+            _hubConnection.On("BrugerUpdated", async () =>
+            {
+                LogAction("🔄 Received BrugerUpdated from server.");
+                await LoadEntries();
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await _hubConnection.StartAsync();
+            LogAction("✅ SignalR connection established.");
+        }
+        catch (Exception ex)
+        {
+            LogAction($"❌ Initialization error: {ex.Message}");
+            errorMessage = $"Error during initialization: {ex.Message}\n{ex.StackTrace}";
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        AuthStateProvider.OnChange -= StateChanged;
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+
+    private void StateChanged()
+    {
+        isAuthenticated = AuthStateProvider.IsAuthenticated;
+        role = AuthStateProvider.Role;
+        InvokeAsync(StateHasChanged);
+    }
+
+    // ========== Data Loading ==========
+    private async Task LoadEntries()
+    {
+        try
+        {
+            if (internet)
+            {
+                await TrySyncIfOnline();
+                LogAction("Loading entries from the server...");
+
+                try
+                {
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                    var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<Bruger>>>("api/bruger/including-deleted", cts.Token);
+
+                    if (response?.Success == true)
+                    {
+                        var allEntries = _mapper.Map<List<BrugerDTO>>(response.Data);
+                        filteredBrugere = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
+                        LogAction($"{filteredBrugere.Length} entries loaded from the server.");
+                    }
+                    else
+                    {
+                        LogAction("❌ Server returned invalid data.");
+                        response?.Errors?.ForEach(e => LogAction($"Error: {e}"));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogAction($"❌ Server fetch error: {ex.Message}");
+                    errorMessage = $"Server fetch error: {ex.Message}";
+                }
+            }
+            else
+            {
+                var response = await SQLiteService.GetAllEntriesAsync();
+                var source = response?.ToList() ?? new();
+                var allEntries = _mapper.Map<List<BrugerDTO>>(source);
+                filteredBrugere = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
+                LogAction($"{filteredBrugere.Length} entries loaded from local DB.");
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            LogAction($"❌ Loading error: {ex.Message}");
+            errorMessage = $"Error loading entries: {ex.Message}";
+        }
+    }
+
+    private async Task TrySyncIfOnline()
+    {
+        if (!internet)
+        {
+            syncFailed = true;
+            LogAction("❌ Cannot sync: No internet.");
+            return;
+        }
+
+        LogAction("🔁 Attempting sync...");
+        isSyncing = true;
+
+        try
+        {
+            await BrugerSyncService.SyncDataAsync();
+            syncFailed = false;
+            LogAction("✅ Data synced.");
+        }
+        catch (Exception ex)
+        {
+            syncFailed = true;
+            LogAction($"❌ Sync failed: {ex.Message}");
+        }
+
+        isSyncing = false;
+    }
+    // ========== CRUD Operations ==========
+    private async Task CreateEntry()
+    {
+        try
+        {
+            Bruger entry = _mapper.Map<Bruger>(brugerModel);
+            entry.ETag = GenerateETag(entry);
+            entry.ModifiedBy = JwtParser.GetBruger(token);
+
+            if (internet)
+            {
+                var response = await _apiClient.PostAsJsonAsync("api/bruger", entry);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    LogAction("✅ Entry created on server.");
+                    await LoadEntries();
+                    await SQLiteService.MarkAsSyncedAsync(brugerModel.BrugerId);
+                }
+                else
+                {
+                    var details = await response.Content.ReadAsStringAsync();
+                    LogAction($"❌ Server create failed: {details}");
+                    errorMessage = $"Server error: {details}";
+                }
+            }
+            else
+            {
+                await SQLiteService.AddEntryAsync(entry);
+                LogAction("✅ Entry created locally.");
+                await LoadEntries();
+            }
+
+            await TrySyncIfOnline();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Create error: {ex.Message}";
+            LogAction(errorMessage);
+        }
+    }
+
+    private async Task UpdateEntry(Bruger entry)
+    {
+        try
+        {
+            entry.ModifiedBy = JwtParser.GetBruger(token);
+
+            if (internet)
+            {
+                var response = await _apiClient.PutAsJsonAsync($"api/bruger/including-deleted/{entry.BrugerId}", entry);
+                if (response.IsSuccessStatusCode)
+                {
+                    LogAction("✅ Entry updated on server.");
+                    await LoadEntries();
+                    await SQLiteService.MarkAsSyncedAsync(entry.BrugerId);
+                }
+                else
+                {
+                    var details = await response.Content.ReadAsStringAsync();
+                    LogAction($"❌ Update failed: {details}");
+                    errorMessage = $"Update failed: {details}";
+                }
+            }
+            else
+            {
+                await SQLiteService.UpdateEntryAsync(entry);
+                LogAction("✅ Entry updated locally.");
+                await LoadEntries();
+            }
+
+            await TrySyncIfOnline();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Update error: {ex.Message}";
+            LogAction(errorMessage);
+        }
+    }
+
+    private async Task DeleteEntry(Guid brugerId)
+    {
+        try
+        {
+            if (internet)
+            {
+                var bruger = filteredBrugere.FirstOrDefault(b => b.BrugerId == brugerId);
+                if (bruger != null)
+                {
+                    bruger.IsDeleted = true;
+                    bruger.Status = SyncStatus.Deleted;
+
+                    var response = await _apiClient.PutAsJsonAsync($"api/bruger/including-deleted/{bruger.BrugerId}", bruger);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        LogAction("✅ Entry deleted on server.");
+                    }
+                    else
+                    {
+                        var details = await response.Content.ReadAsStringAsync();
+                        LogAction($"❌ Server delete failed: {details}");
+                    }
+                }
+            }
+
+            await SQLiteService.MarkAsDeletedAsync(brugerId);
+            LogAction("✅ Entry deleted locally.");
+            await LoadEntries();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Delete error: {ex.Message}";
+            LogAction(errorMessage);
+        }
+    }
+
+    private async Task RestoreEntry(Guid brugerId)
+    {
+        try
+        {
+            var bruger = filteredBrugere.FirstOrDefault(b => b.BrugerId == brugerId);
+            if (bruger != null)
+            {
+                bruger.IsDeleted = false;
+                bruger.Status = SyncStatus.Synced;
+
+                if (internet)
+                {
+                    var response = await _apiClient.PutAsJsonAsync($"api/bruger/restore/{bruger.BrugerId}", bruger);
+                    if (response.IsSuccessStatusCode)
+                        LogAction("✅ Restored on server.");
+                    else
+                        LogAction($"❌ Restore failed: {response.ReasonPhrase}");
+                }
+
+                await SQLiteService.MarkAsRestoredAsync(brugerId);
+                LogAction("✅ Restored locally.");
+                await LoadEntries();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Restore error: {ex.Message}";
+            LogAction(errorMessage);
+        }
+    }
+
+    // ========== UI Interaction + Helpers ==========
+    private void LogAction(string message)
+    {
+        if (logs.Count > 50)
+            logs.RemoveAt(logs.Count - 1);
+        logs.Insert(0, $"{DateTime.Now:HH:mm:ss}: {message}");
+    }
+
+    private async Task ApplyFilter()
+    {
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            LogAction($"🔍 Filtering for: {searchTerm}");
+
+            filteredBrugere = filteredBrugere
+                .Where(w =>
+                    (!string.IsNullOrEmpty(w.Fornavn) && w.Fornavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(w.Efternavn) && w.Efternavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(w.Email) && w.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
+                .ToArray();
+
+            LogAction($"{filteredBrugere.Length} match found.");
+        }
+        else
+        {
+            LogAction("Filter cleared.");
+            await LoadEntries();
+        }
+    }
+
+    private async void ClearSearch()
+    {
+        searchTerm = string.Empty;
+        LogAction("🔄 Search cleared.");
+        await LoadEntries();
+    }
+    private string GenerateETag(Bruger entry)
+    {
+        // Combine all relevant properties to generate a unique ETag
+        var etagSource = $"{entry.BrugerId}-{entry.Fornavn}-{entry.Efternavn}-{entry.Email}";
+
+        // Return a hash of the combined properties to generate the ETag
+        return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(etagSource));
+    }
+}
