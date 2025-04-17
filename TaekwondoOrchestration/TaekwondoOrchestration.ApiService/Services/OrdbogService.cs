@@ -6,7 +6,7 @@ using AutoMapper;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
-using TaekwondoOrchestration.ApiService.Helpers; 
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -29,7 +29,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         {
             var ordboger = await _ordbogRepository.GetAllOrdbogAsync();
             var mapped = _mapper.Map<IEnumerable<OrdbogDTO>>(ordboger);
-            return Result<IEnumerable<OrdbogDTO>>.Success(mapped);
+            return Result<IEnumerable<OrdbogDTO>>.Ok(mapped);
         }
 
         // Get Ordbog by ID
@@ -37,10 +37,10 @@ namespace TaekwondoOrchestration.ApiService.Services
         {
             var ordbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
             if (ordbog == null)
-                return Result<OrdbogDTO>.Failure("Ordbog not found.");
+                return Result<OrdbogDTO>.Fail("Ordbog not found.");
 
             var mapped = _mapper.Map<OrdbogDTO>(ordbog);
-            return Result<OrdbogDTO>.Success(mapped);
+            return Result<OrdbogDTO>.Ok(mapped);
         }
 
         // Create New Ordbog Entry
@@ -51,7 +51,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             var createdOrdbog = await _ordbogRepository.CreateOrdbogAsync(newOrdbog);
 
             var mapped = _mapper.Map<OrdbogDTO>(createdOrdbog);
-            return Result<OrdbogDTO>.Success(mapped);
+            return Result<OrdbogDTO>.Ok(mapped);
         }
 
         // Update Existing Ordbog Entry
@@ -60,20 +60,20 @@ namespace TaekwondoOrchestration.ApiService.Services
             if (string.IsNullOrEmpty(ordbogDto.DanskOrd) ||
                 string.IsNullOrEmpty(ordbogDto.KoranskOrd) ||
                 string.IsNullOrEmpty(ordbogDto.Beskrivelse))
-                return Result<bool>.Failure("Invalid input data.");
+                return Result<bool>.Fail("Invalid input data.");
 
             var existingOrdbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
             if (existingOrdbog == null)
-                return Result<bool>.Failure("Ordbog not found.");
+                return Result<bool>.Fail("Ordbog not found.");
 
             _mapper.Map(ordbogDto, existingOrdbog);
             UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);
             var updateSuccess = await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
 
             if (!updateSuccess)
-                return Result<bool>.Failure("Failed to update Ordbog.");
+                return Result<bool>.Fail("Failed to update Ordbog.");
 
-            return Result<bool>.Success(true);
+            return Result<bool>.Ok(true);
         }
 
         // Update Ordbog Entry, including soft-deleted entries
@@ -81,14 +81,14 @@ namespace TaekwondoOrchestration.ApiService.Services
         {
             var existingOrdbog = await _ordbogRepository.GetOrdbogByIdIncludingDeletedAsync(id);
             if (existingOrdbog == null)
-                return Result<OrdbogDTO>.Failure("Ordbog not found.");
+                return Result<OrdbogDTO>.Fail("Ordbog not found.");
 
             _mapper.Map(ordbogDto, existingOrdbog);
             UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);
             var updatedOrdbog = await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
 
             var mapped = _mapper.Map<OrdbogDTO>(updatedOrdbog);
-            return Result<OrdbogDTO>.Success(mapped);
+            return Result<OrdbogDTO>.Ok(mapped);
         }
 
         // Delete Ordbog Entry (Soft-Delete)
@@ -96,12 +96,12 @@ namespace TaekwondoOrchestration.ApiService.Services
         {
             var ordbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
             if (ordbog == null || ordbog.IsDeleted)
-                return Result<bool>.Failure("Ordbog not found or already deleted.");
+                return Result<bool>.Fail("Ordbog not found or already deleted.");
 
             SetDeletedOrRestoredProperties(ordbog, "Soft-deleted Ordbog entry");
             var success = await _ordbogRepository.UpdateOrdbogAsync(ordbog);
 
-            return success ? Result<bool>.Success(true) : Result<bool>.Failure("Failed to delete Ordbog.");
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Ordbog.");
         }
 
         // Restore Ordbog Entry from Soft-Delete
@@ -109,7 +109,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         {
             var ordbog = await _ordbogRepository.GetOrdbogByIdIncludingDeletedAsync(id);
             if (ordbog == null || !ordbog.IsDeleted)
-                return Result<bool>.Failure("Ordbog not found or not deleted.");
+                return Result<bool>.Fail("Ordbog not found or not deleted.");
 
             ordbog.IsDeleted = false;
             ordbog.Status = SyncStatus.Synced;
@@ -118,7 +118,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             SetDeletedOrRestoredProperties(ordbog, "Restored Ordbog entry");
             var success = await _ordbogRepository.UpdateAsync(ordbog);
 
-            return success ? Result<bool>.Success(true) : Result<bool>.Failure("Failed to restore Ordbog.");
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore Ordbog.");
         }
 
         #endregion
@@ -130,10 +130,10 @@ namespace TaekwondoOrchestration.ApiService.Services
         {
             var ordbog = await _ordbogRepository.GetOrdbogByDanskOrdAsync(danskOrd);
             if (ordbog == null)
-                return Result<OrdbogDTO>.Failure("Ordbog not found.");
+                return Result<OrdbogDTO>.Fail("Ordbog not found.");
 
             var mapped = _mapper.Map<OrdbogDTO>(ordbog);
-            return Result<OrdbogDTO>.Success(mapped);
+            return Result<OrdbogDTO>.Ok(mapped);
         }
 
         // Get Ordbog by Koran Ord
@@ -141,10 +141,10 @@ namespace TaekwondoOrchestration.ApiService.Services
         {
             var ordbog = await _ordbogRepository.GetOrdbogByKoranOrdAsync(koranOrd);
             if (ordbog == null)
-                return Result<OrdbogDTO>.Failure("Ordbog not found.");
+                return Result<OrdbogDTO>.Fail("Ordbog not found.");
 
             var mapped = _mapper.Map<OrdbogDTO>(ordbog);
-            return Result<OrdbogDTO>.Success(mapped);
+            return Result<OrdbogDTO>.Ok(mapped);
         }
 
         // Get All Ordbog Entries including Deleted Ones
@@ -152,7 +152,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         {
             var ordboger = await _ordbogRepository.GetAllOrdbogIncludingDeletedAsync();
             var mapped = _mapper.Map<IEnumerable<OrdbogDTO>>(ordboger);
-            return Result<IEnumerable<OrdbogDTO>>.Success(mapped);
+            return Result<IEnumerable<OrdbogDTO>>.Ok(mapped);
         }
 
         #endregion
