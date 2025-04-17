@@ -148,7 +148,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         // Get Ordbog by Koran Ord
         public async Task<Result<OrdbogDTO>> GetOrdbogByKoranOrdAsync(string koranOrd)
         {
-            var ordbog = await _ordbogRepository.GetOrdbogByKoranOrdAsync(koranOrd);
+            var ordbog = await _ordbogRepository.GetOrdbogByKoranskOrdAsync(koranOrd);
             if (ordbog == null)
                 return Result<OrdbogDTO>.Fail("Ordbog not found.");
 
