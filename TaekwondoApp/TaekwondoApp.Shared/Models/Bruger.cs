@@ -1,6 +1,6 @@
 ﻿namespace TaekwondoApp.Shared.Models
 {
-    public class Bruger
+    public class Bruger : SyncableEntity
     {
         public Guid BrugerID { get; set; }
         public string Email { get; set; }

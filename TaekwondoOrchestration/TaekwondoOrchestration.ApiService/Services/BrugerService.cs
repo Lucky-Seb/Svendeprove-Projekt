@@ -2,9 +2,6 @@
 using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 using TaekwondoOrchestration.ApiService.Helpers;
@@ -22,13 +19,10 @@ namespace TaekwondoOrchestration.ApiService.Services
             _mapper = mapper;
         }
 
-        #region CRUD Operations
-
         public async Task<Result<IEnumerable<BrugerDTO>>> GetAllBrugereAsync()
         {
             var brugere = await _brugerRepository.GetAllBrugereAsync();
-            var mapped = _mapper.Map<IEnumerable<BrugerDTO>>(brugere);
-            return Result<IEnumerable<BrugerDTO>>.Ok(mapped);
+            return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
         }
 
         public async Task<Result<BrugerDTO>> GetBrugerByIdAsync(Guid id)
@@ -42,10 +36,10 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<Result<BrugerDTO>> CreateBrugerAsync(BrugerDTO brugerDto)
         {
-            var entity = _mapper.Map<Bruger>(brugerDto);
-            EntityHelper.InitializeEntity(entity, brugerDto.ModifiedBy, "Created new Bruger entry.");
+            var brugerEntity = _mapper.Map<Bruger>(brugerDto);
+            EntityHelper.InitializeEntity(brugerEntity, brugerDto.ModifiedBy, "Created new Bruger.");
+            var created = await _brugerRepository.CreateBrugerAsync(brugerEntity);
 
-            var created = await _brugerRepository.CreateBrugerAsync(entity);
             return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(created));
         }
 
@@ -65,11 +59,12 @@ namespace TaekwondoOrchestration.ApiService.Services
         public async Task<Result<bool>> DeleteBrugerAsync(Guid id)
         {
             var bruger = await _brugerRepository.GetBrugerByIdAsync(id);
-            if (bruger == null)
-                return Result<bool>.Fail("Bruger not found.");
+            if (bruger == null || bruger.IsDeleted)
+                return Result<bool>.Fail("Bruger not found or already deleted.");
 
-            EntityHelper.SetDeletedOrRestoredProperties(bruger, "Soft-deleted Bruger", bruger.ModifiedBy);
+            EntityHelper.SetDeletedOrRestoredProperties(bruger, bruger.ModifiedBy ?? "system", "Soft-deleted Bruger");
             var success = await _brugerRepository.UpdateBrugerAsync(bruger);
+
             return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Bruger.");
         }
 
@@ -84,15 +79,11 @@ namespace TaekwondoOrchestration.ApiService.Services
             bruger.ModifiedBy = dto.ModifiedBy;
             bruger.LastSyncedVersion++;
 
-            EntityHelper.SetDeletedOrRestoredProperties(bruger, "Restored Bruger", dto.ModifiedBy);
-
+            EntityHelper.SetDeletedOrRestoredProperties(bruger, dto.ModifiedBy, "Restored Bruger");
             var success = await _brugerRepository.UpdateBrugerAsync(bruger);
+
             return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore Bruger.");
         }
-
-        #endregion
-
-        #region Search Operations
 
         public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByRoleAsync(string role)
         {
@@ -109,21 +100,22 @@ namespace TaekwondoOrchestration.ApiService.Services
         public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugereByKlubAsync(Guid klubId)
         {
             var brugere = await _brugerRepository.GetBrugereByKlubAsync(klubId);
-            return Result<IEnumerable<BrugerDTO>>.Ok(brugere); // Assuming already mapped
+            return Result<IEnumerable<BrugerDTO>>.Ok(brugere); // Assuming already DTOs
         }
 
         public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugereByKlubAndBæltegradAsync(Guid klubId, string bæltegrad)
         {
             var brugere = await _brugerRepository.GetBrugereByKlubAndBæltegradAsync(klubId, bæltegrad);
-            return Result<IEnumerable<BrugerDTO>>.Ok(brugere); // Assuming already mapped
+            return Result<IEnumerable<BrugerDTO>>.Ok(brugere); // Assuming already DTOs
         }
 
         public async Task<Result<BrugerDTO>> GetBrugerByBrugernavnAsync(string brugernavn)
         {
             var bruger = await _brugerRepository.GetBrugerByBrugernavnAsync(brugernavn);
-            return bruger == null
-                ? Result<BrugerDTO>.Fail("Bruger not found.")
-                : Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
+            if (bruger == null)
+                return Result<BrugerDTO>.Fail("Bruger not found.");
+
+            return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
         }
 
         public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByFornavnEfternavnAsync(string fornavn, string efternavn)
@@ -135,11 +127,10 @@ namespace TaekwondoOrchestration.ApiService.Services
         public async Task<Result<BrugerDTO>> AuthenticateBrugerAsync(LoginDTO loginDto)
         {
             var bruger = await _brugerRepository.AuthenticateBrugerAsync(loginDto.EmailOrBrugernavn, loginDto.Brugerkode);
-            return bruger == null
-                ? Result<BrugerDTO>.Fail("Invalid credentials.")
-                : Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
-        }
+            if (bruger == null)
+                return Result<BrugerDTO>.Fail("Invalid credentials.");
 
-        #endregion
+            return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
+        }
     }
 }

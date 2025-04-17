@@ -36,6 +36,12 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         {
             return await _context.Brugere.FindAsync(brugerId);
         }
+        public async Task<Bruger?> GetBrugerByIdIncludingDeletedAsync(Guid id)
+        {
+            return await _context.Brugere
+                .IgnoreQueryFilters() // Ensures global query filters like IsDeleted are ignored
+                .FirstOrDefaultAsync(b => b.BrugerID == id);
+        }
 
         public async Task<List<Bruger>> GetBrugerByRoleAsync(string role)
         {
