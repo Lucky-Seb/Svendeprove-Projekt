@@ -19,7 +19,7 @@ namespace TaekwondoApp
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
-            // Device-specific services
+            // Device-specific services do not use @ in git commets
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
 
             // HttpClientFactory registration

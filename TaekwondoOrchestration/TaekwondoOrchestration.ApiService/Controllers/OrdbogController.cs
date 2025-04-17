@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoApp.Shared.DTO;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
+using TaekwondoApp.Shared.DTO;
 using TaekwondoOrchestration.ApiService.NotificationHubs;
-using TaekwondoOrchestration.ApiService.ServiceInterfaces; // <-- Import the interface namespace
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -11,7 +12,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
     [ApiController]
     public class OrdbogController : ApiBaseController
     {
-        private readonly IOrdbogService _ordbogService; // <-- Use the interface
+        private readonly IOrdbogService _ordbogService;
         private readonly IHubContext<OrdbogHub> _hubContext;
 
         public OrdbogController(IOrdbogService ordbogService, IHubContext<OrdbogHub> hubContext)
@@ -21,104 +22,87 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<IEnumerable<OrdbogDTO>>>> GetOrdboger()
+        public async Task<IActionResult> GetOrdboger()
         {
             var result = await _ordbogService.GetAllOrdbogAsync();
-            return OkResponse(result.AsEnumerable());
+            return result.ToApiResponse();
         }
 
         [HttpGet("including-deleted")]
-        public async Task<ActionResult<ApiResponse<IEnumerable<OrdbogDTO>>>> GetOrdbogerIncludingDeleted()
+        public async Task<IActionResult> GetOrdbogerIncludingDeleted()
         {
             var result = await _ordbogService.GetAllOrdbogIncludingDeletedAsync();
-            return OkResponse(result);
+            return result.ToApiResponse();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<OrdbogDTO>>> GetOrdbog(Guid id)
+        public async Task<IActionResult> GetOrdbog(Guid id)
         {
             var result = await _ordbogService.GetOrdbogByIdAsync(id);
-            if (result == null)
-                return NotFoundResponse<OrdbogDTO>("Ordbog not found.");
-
-            return OkResponse(result);
+            return result.ToApiResponse();
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPut("restore/{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> Restore(Guid id, [FromBody] OrdbogDTO ordbogDto)
+        public async Task<IActionResult> Restore(Guid id, [FromBody] OrdbogDTO dto)
         {
-            var success = await _ordbogService.RestoreOrdbogAsync(id, ordbogDto);
-            if (!success)
-                return NotFoundResponse<string>("Restore failed, item not found.");
-
-            return OkResponse("Ordbog restored successfully.");
+            var result = await _ordbogService.RestoreOrdbogAsync(id, dto);
+            return result.ToApiResponse();
         }
 
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<OrdbogDTO>>> PostOrdbog(OrdbogDTO ordbogDto)
+        public async Task<IActionResult> PostOrdbog(OrdbogDTO dto)
         {
-            var created = await _ordbogService.CreateOrdbogAsync(ordbogDto);
-            await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
-            return CreatedResponse(nameof(GetOrdbog), new { id = created.OrdbogId }, created);
+            var result = await _ordbogService.CreateOrdbogAsync(dto);
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
+
+            return result.ToApiResponse();
         }
 
         [HttpPut("including-deleted/{id}")]
-        public async Task<ActionResult<ApiResponse<OrdbogDTO>>> UpdateOrdbogIncludingDeleted(Guid id, OrdbogDTO ordbogDto)
+        public async Task<IActionResult> UpdateOrdbogIncludingDeleted(Guid id, OrdbogDTO dto)
         {
-            var updated = await _ordbogService.UpdateOrdbogIncludingDeletedByIdAsync(id, ordbogDto);
-            if (updated == null)
-                return NotFoundResponse<OrdbogDTO>("Ordbog not found.");
+            var result = await _ordbogService.UpdateOrdbogIncludingDeletedByIdAsync(id, dto);
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
 
-            await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
-            return OkResponse(updated);
+            return result.ToApiResponse();
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<OrdbogDTO>>> UpdateOrdbog(Guid id, OrdbogDTO ordbogDto)
+        public async Task<IActionResult> UpdateOrdbog(Guid id, OrdbogDTO dto)
         {
-            var existing = await _ordbogService.GetOrdbogByIdAsync(id);
-            if (existing == null)
-                return NotFoundResponse<OrdbogDTO>("Ordbog not found.");
+            var result = await _ordbogService.UpdateOrdbogAsync(id, dto);
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
 
-            var success = await _ordbogService.UpdateOrdbogAsync(id, ordbogDto);
-            if (!success)
-                return BadRequestResponse<OrdbogDTO>("Update failed");
-
-            await _hubContext.Clients.All.SendAsync("OrdbogUpdated");
-            return OkResponse(ordbogDto);
+            return result.ToApiResponse();
         }
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> DeleteOrdbog(Guid id)
+        public async Task<IActionResult> DeleteOrdbog(Guid id)
         {
-            var success = await _ordbogService.DeleteOrdbogAsync(id);
-            if (!success)
-                return NotFoundResponse<string>("Delete failed. Ordbog not found.");
+            var result = await _ordbogService.DeleteOrdbogAsync(id);
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("OrdbogDeleted");
 
-            await _hubContext.Clients.All.SendAsync("OrdbogDeleted");
-            return OkResponse("Deleted successfully.");
+            return result.ToApiResponse();
         }
 
         [HttpGet("by-danskord/{danskOrd}")]
-        public async Task<ActionResult<ApiResponse<OrdbogDTO>>> GetOrdbogByDanskOrd(string danskOrd)
+        public async Task<IActionResult> GetOrdbogByDanskOrd(string danskOrd)
         {
             var result = await _ordbogService.GetOrdbogByDanskOrdAsync(danskOrd);
-            if (result == null)
-                return NotFoundResponse<OrdbogDTO>("Ordbog not found.");
-
-            return OkResponse(result);
+            return result.ToApiResponse();
         }
 
         [HttpGet("by-koranord/{koranOrd}")]
-        public async Task<ActionResult<ApiResponse<OrdbogDTO>>> GetOrdbogByKoranOrd(string koranOrd)
+        public async Task<IActionResult> GetOrdbogByKoranOrd(string koranOrd)
         {
             var result = await _ordbogService.GetOrdbogByKoranOrdAsync(koranOrd);
-            if (result == null)
-                return NotFoundResponse<OrdbogDTO>("Ordbog not found.");
-
-            return OkResponse(result);
+            return result.ToApiResponse();
         }
     }
 }
