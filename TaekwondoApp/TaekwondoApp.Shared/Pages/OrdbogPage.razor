@@ -394,7 +394,8 @@ else
         {
             Ordbog entry = _mapper.Map<Ordbog>(entryModel);
             entry.ETag = GenerateETag(entry);
-            entry.ModifiedBy = JwtParser.GetBruger(token);
+            // entry.ModifiedBy = JwtParser.GetBruger(token);
+            entry.ModifiedBy = "windows";
 
             if (internet)
             {
@@ -433,8 +434,8 @@ else
     {
         try
         {
-            entry.ModifiedBy = JwtParser.GetBruger(token);
-
+            // entry.ModifiedBy = JwtParser.GetBruger(token);
+            entry.ModifiedBy = "windows";
             if (internet)
             {
                 var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{entry.OrdbogId}", entry);
