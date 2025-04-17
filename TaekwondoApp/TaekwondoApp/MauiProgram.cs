@@ -4,6 +4,7 @@ using TaekwondoApp.Shared.Services;
 using TaekwondoApp.Shared.Mapping;
 using TaekwondoApp.Shared.ServiceInterfaces;
 using TaekwondoApp.Shared.Models;
+using TaekwondoApp.Shared.DTO;
 
 
 namespace TaekwondoApp
@@ -48,6 +49,8 @@ namespace TaekwondoApp
             builder.Services.AddSingleton<ISQLiteService>(new SQLiteService(dbPath));
             builder.Services.AddSingleton(typeof(IGenericSQLiteService<>), typeof(GenericSQLiteService<>));
             builder.Services.AddSingleton<IBrugerSQLiteService, BrugerSQLiteService>();
+            builder.Services.AddSingleton<IGenericSQLiteService<Bruger>, GenericSQLiteService<Bruger>>();
+            builder.Services.AddSingleton<IGenericSyncService<Bruger, BrugerDTO>, GenericSyncService<Bruger, BrugerDTO>>();
 
             // Sync services
             builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
