@@ -1,4 +1,5 @@
-﻿namespace TaekwondoOrchestration.ApiService.Middlewares
+﻿using TaekwondoApp.Shared.Helper;
+namespace TaekwondoOrchestration.ApiService.Middlewares
 {
     public class GlobalExceptionMiddleware
     {
