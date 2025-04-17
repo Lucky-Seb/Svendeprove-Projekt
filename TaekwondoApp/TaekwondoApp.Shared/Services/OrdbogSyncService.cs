@@ -10,12 +10,10 @@ namespace TaekwondoApp.Shared.Services
     {
         private readonly ISQLiteService _sqliteService;
         private readonly HttpClient _httpClient;
-        private readonly IGenericSyncService _syncService;
         private readonly IMapper _mapper;
 
-        public OrdbogSyncService(IGenericSyncService syncService, ISQLiteService sqliteService, IHttpClientFactory httpClientFactory, IMapper mapper)
+        public OrdbogSyncService(ISQLiteService sqliteService, IHttpClientFactory httpClientFactory, IMapper mapper)
         {
-            _syncService = syncService;
             _sqliteService = sqliteService;
             _httpClient = httpClientFactory.CreateClient();
             _mapper = mapper;

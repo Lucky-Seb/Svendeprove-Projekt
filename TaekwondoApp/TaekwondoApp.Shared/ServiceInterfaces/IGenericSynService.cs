@@ -7,9 +7,10 @@ using TaekwondoApp.Shared.Models;
 
 namespace TaekwondoApp.Shared.ServiceInterfaces
 {
-    public interface IGenericSyncService
+    public interface IGenericSyncService<T, TDto>
+        where T : SyncableEntity, new()
+        where TDto : class
     {
-        Task SyncDataFromServerAsync<T>(Func<Task<List<T>>> getServerData, Func<T, Task<T>> getLocalData, Func<T, Task> saveLocalData, Func<T, Task> updateLocalData) where T : SyncableEntity;
-        Task SyncLocalChangesToServerAsync<T>(Func<Task<List<T>>> getUnsyncedEntries, Func<T, Task> postToServer, Func<T, Task> markAsSynced) where T : SyncableEntity;
+        Task SyncDataAsync(string apiEndpoint);
     }
 }

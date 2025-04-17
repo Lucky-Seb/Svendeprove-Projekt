@@ -46,7 +46,6 @@ namespace TaekwondoApp
             builder.Services.AddSingleton<ISQLiteService>(new SQLiteService(dbPath));
 
             // Sync services
-            builder.Services.AddSingleton<IGenericSyncService, GenericSyncService>();
             builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
 
             // Blazor
