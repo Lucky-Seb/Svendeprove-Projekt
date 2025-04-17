@@ -1,4 +1,4 @@
-using TaekwondoApp.Shared.Services;
+using TaekwondoApp.Shared.ServiceInterfaces;
 using TaekwondoApp.Web.Components;
 using TaekwondoApp.Web.Services;
 

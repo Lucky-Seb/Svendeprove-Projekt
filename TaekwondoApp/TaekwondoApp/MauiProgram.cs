@@ -2,6 +2,7 @@
 using TaekwondoApp.Services;
 using TaekwondoApp.Shared.Services;
 using TaekwondoApp.Shared.Mapping;
+using TaekwondoApp.Shared.ServiceInterfaces;
 
 
 namespace TaekwondoApp
@@ -19,7 +20,7 @@ namespace TaekwondoApp
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
-            // Device-specific services do not use @ in git commets
+            // Device-specific services
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
 
             // HttpClientFactory registration

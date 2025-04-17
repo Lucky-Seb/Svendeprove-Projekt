@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using TaekwondoApp.Shared.Models;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.ServiceInterfaces;
 
 namespace TaekwondoApp.Shared.Services
 {

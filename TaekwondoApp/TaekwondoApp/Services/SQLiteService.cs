@@ -3,9 +3,9 @@ using TaekwondoApp.Shared.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using TaekwondoApp.Shared.Services;
 using Newtonsoft.Json;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.ServiceInterfaces;
 
 namespace TaekwondoApp.Services
 {

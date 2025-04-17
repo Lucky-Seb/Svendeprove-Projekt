@@ -1,4 +1,4 @@
-using TaekwondoApp.Shared.Services;
+using TaekwondoApp.Shared.ServiceInterfaces;
 
 namespace TaekwondoApp.Web.Client.Services
 {
