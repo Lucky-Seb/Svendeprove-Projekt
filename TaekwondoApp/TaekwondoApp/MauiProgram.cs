@@ -41,15 +41,19 @@ namespace TaekwondoApp
 
             // AutoMapper
             builder.Services.AddAutoMapper(typeof(OrdbogMap));
+            builder.Services.AddAutoMapper(typeof(BrugerMap));
 
             // SQLite
             string dbPath = Path.Combine(FileSystem.AppDataDirectory, "ordbog.db");
             builder.Services.AddSingleton<ISQLiteService>(new SQLiteService(dbPath));
             builder.Services.AddSingleton(typeof(IGenericSQLiteService<>), typeof(GenericSQLiteService<>));
+            builder.Services.AddSingleton<IBrugerSQLiteService, BrugerSQLiteService>();
 
             // Sync services
             builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
             builder.Services.AddSingleton(typeof(IGenericSyncService<,>), typeof(GenericSyncService<,>));
+            builder.Services.AddSingleton<IBrugerSyncService, BrugerSyncService>();
+
             // Blazor
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<AuthStateProvider>();
