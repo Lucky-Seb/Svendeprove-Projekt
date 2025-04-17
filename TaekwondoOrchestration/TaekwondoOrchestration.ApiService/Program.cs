@@ -78,6 +78,8 @@ foreach (var serviceType in serviceTypes)
 
 // Optional: Register a specific service using an interface
 builder.Services.AddScoped<IOrdbogService, OrdbogService>();
+// Optional: Register a specific service using an interface
+builder.Services.AddScoped<IBrugerService, BrugerService>();
 
 // ---------------------
 // 🧭 Middleware & Filters
