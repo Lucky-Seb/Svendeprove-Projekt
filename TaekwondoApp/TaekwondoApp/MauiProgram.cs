@@ -3,6 +3,7 @@ using TaekwondoApp.Services;
 using TaekwondoApp.Shared.Services;
 using TaekwondoApp.Shared.Mapping;
 using TaekwondoApp.Shared.ServiceInterfaces;
+using TaekwondoApp.Shared.Models;
 
 
 namespace TaekwondoApp
@@ -44,10 +45,11 @@ namespace TaekwondoApp
             // SQLite
             string dbPath = Path.Combine(FileSystem.AppDataDirectory, "ordbog.db");
             builder.Services.AddSingleton<ISQLiteService>(new SQLiteService(dbPath));
+            builder.Services.AddSingleton(typeof(IGenericSQLiteService<>), typeof(GenericSQLiteService<>));
 
             // Sync services
             builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
-
+            builder.Services.AddSingleton(typeof(IGenericSyncService<,>), typeof(GenericSyncService<,>));
             // Blazor
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<AuthStateProvider>();
