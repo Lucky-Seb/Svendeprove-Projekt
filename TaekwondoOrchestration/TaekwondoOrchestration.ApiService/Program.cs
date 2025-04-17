@@ -1,49 +1,29 @@
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using TaekwondoOrchestration.ApiService.Data;
-using TaekwondoOrchestration.ApiService.Services;
-using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
-using TaekwondoOrchestration.ApiService.NotificationHubs;
-using TaekwondoApp.Shared.Mapping;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using FluentValidation.AspNetCore;
-using TaekwondoApp.Shared.DTO;
-using TaekwondoApp.Shared.Models;
-using TaekwondoOrchestration.ApiService.Validators;
-using TaekwondoOrchestration.ApiService.Middlewares;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using FluentValidation;
+using FluentValidation.AspNetCore;
+using System.Text;
+using System.Text.Json;
+using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Mapping;
+using TaekwondoApp.Shared.Models;
+using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoOrchestration.ApiService.Filters;
+using TaekwondoOrchestration.ApiService.Middlewares;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Services;
+using TaekwondoOrchestration.ApiService.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register services using reflection
-var serviceTypes = new[]
-{
-    typeof(BrugerKlubService), typeof(Bruger�velseService), typeof(BrugerProgramService),
-    typeof(BrugerQuizService), typeof(BrugerService), typeof(KlubService),
-    typeof(KlubProgramService), typeof(KlubQuizService), typeof(Klub�velseService),
-    typeof(OrdbogService), typeof(�velseService), typeof(PensumService),
-    typeof(ProgramPlanService), typeof(QuizService), typeof(Sp�rgsm�lService),
-    typeof(TeknikService), typeof(TeoriService), typeof(Tr�ningService)
-};
-
-foreach (var serviceType in serviceTypes)
-{
-    builder.Services.AddScoped(serviceType);
-}
-builder.Services.AddAutoMapper(typeof(BrugerMap));
-builder.Services.AddAutoMapper(typeof(OrdbogMap));
-// Register repositories using reflection
-var repositoryTypes = typeof(IBrugerKlubRepository).Assembly
-    .GetTypes()
-    .Where(t => t.Name.EndsWith("Repository") && !t.IsInterface)
-    .ToList();
-
+// ---------------------
+// 🔐 Authentication
+// ---------------------
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -59,35 +39,86 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 Encoding.UTF8.GetBytes("HalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEy"))
         };
     });
-//builder.Services.AddAuthorization(options =>
-//{
-//    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-//});
-builder.Services.AddValidatorsFromAssemblyContaining<PensumDTOValidator>();
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddControllers(opt => opt.Filters.Add<ValidationFilter>());
-builder.Services.AddScoped<IOrdbogService, OrdbogService>();
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(); // Add custom policies here if needed
+
+// ---------------------
+// 🗂 Repositories
+// ---------------------
+var repositoryTypes = typeof(IBrugerKlubRepository).Assembly
+    .GetTypes()
+    .Where(t => t.Name.EndsWith("Repository") && !t.IsInterface);
+
 foreach (var repo in repositoryTypes)
 {
-    var interfaceType = repo.GetInterfaces().FirstOrDefault(i => i.Name == "I" + repo.Name);
+    var interfaceType = repo.GetInterfaces().FirstOrDefault(i => i.Name == $"I{repo.Name}");
     if (interfaceType != null)
     {
         builder.Services.AddScoped(interfaceType, repo);
     }
 }
+
+// ---------------------
+// 🧠 Services
+// ---------------------
+var serviceTypes = new[]
+{
+    typeof(BrugerKlubService), typeof(BrugerØvelseService), typeof(BrugerProgramService),
+    typeof(BrugerQuizService), typeof(BrugerService), typeof(KlubService),
+    typeof(KlubProgramService), typeof(KlubQuizService), typeof(KlubØvelseService),
+    typeof(OrdbogService), typeof(ØvelseService), typeof(PensumService),
+    typeof(ProgramPlanService), typeof(QuizService), typeof(SpørgsmålService),
+    typeof(TeknikService), typeof(TeoriService), typeof(TræningService)
+};
+
+foreach (var serviceType in serviceTypes)
+{
+    builder.Services.AddScoped(serviceType);
+}
+
+// Optional: Register a specific service using an interface
+builder.Services.AddScoped<IOrdbogService, OrdbogService>();
+
+// ---------------------
+// 🧭 Middleware & Filters
+// ---------------------
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+}).AddJsonOptions(opt =>
+{
+    opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
+
+// ---------------------
+// 🧰 Utility & AutoMapper
+// ---------------------
+builder.Services.AddAutoMapper(typeof(BrugerMap));
+builder.Services.AddAutoMapper(typeof(OrdbogMap));
+
+// ---------------------
+// ✅ FluentValidation
+// ---------------------
+builder.Services.AddValidatorsFromAssemblyContaining<BrugerDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<PensumDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<OrdbogDTOValidator>();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters(); // Optional
+
+// ---------------------
+// 🧠 EF Core & DB Context
+// ---------------------
+builder.Services.AddDbContext<ApiDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ---------------------
+// 📡 SignalR
+// ---------------------
 builder.Services.AddSignalR();
 
-// Add services to the container.
-builder.Services.AddControllers()
-        .AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        });
-
-// Add service defaults & Aspire client integrations.
-builder.AddServiceDefaults();
+// ---------------------
+// 🔎 Swagger / OpenAPI
+// ---------------------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -97,77 +128,61 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1"
     });
 });
-//builder.Services.AddControllers(options =>
-//{
-//    var policy = new AuthorizationPolicyBuilder()
-//        .RequireAuthenticatedUser()
-//        .Build();
 
-//    options.Filters.Add(new AuthorizeFilter(policy));
-//});
-// Add services to the container.
-builder.Services.AddProblemDetails();
-
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
+builder.AddServiceDefaults();
 
-builder.Services.AddDbContext<ApiDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<ValidationFilter>();
-});
-
-builder.Services.AddValidatorsFromAssemblyContaining<OrdbogDTOValidator>();
-builder.Services.AddFluentValidationAutoValidation();
-
-
+// ---------------------
+// 🔧 Build App
+// ---------------------
 var app = builder.Build();
-app.UseMiddleware<GlobalExceptionMiddleware>();
-// Configure database context and seed data
-//using (var scope = app.Services.CreateScope())
-//{
-//    var context = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
-//    DbInitializer.Seed(context);
-//}
 
-// Configure the HTTP request pipeline.
+// ---------------------
+// 🔥 Middleware
+// ---------------------
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseAuthentication();
-    app.UseAuthorization();
-    app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Taekwondo Orchestration API V1");
-        c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
+        c.RoutePrefix = string.Empty;
     });
-    app.MapHub<OrdbogHub>("/ordbogHub");
 
+    app.MapHub<OrdbogHub>("/ordbogHub");
 }
 
-// Map controllers
-app.MapControllers(); // This line maps your controllers to their respective routes
+// ---------------------
+// 🔐 Auth & Routing
+// ---------------------
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
+// ---------------------
+// 🌤 Test Endpoint
+// ---------------------
 string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
 
 app.MapGet("/weatherforecast", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
+        new WeatherForecast(
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
         .ToArray();
+
     return forecast;
 })
 .WithName("GetWeatherForecast");
 
+// ---------------------
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
