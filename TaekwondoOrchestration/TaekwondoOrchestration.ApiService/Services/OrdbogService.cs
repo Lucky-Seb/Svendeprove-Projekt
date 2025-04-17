@@ -98,7 +98,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             if (ordbog == null || ordbog.IsDeleted)
                 return Result<bool>.Fail("Ordbog not found or already deleted.");
 
-            // Assuming `ModifiedBy` is coming from the current context or user, you can also pass it explicitly.
+            // Assuming ModifiedBy is coming from the current context or user, you can also pass it explicitly.
             string modifiedBy = ordbog.ModifiedBy; // or get it from context if available
 
             // Pass the modifiedBy to the helper method

@@ -1,6 +1,6 @@
 ﻿namespace TaekwondoApp.Shared.DTO
 {
-    public class BrugerDTO
+    public class BrugerDTO : SyncableEntityDTO
     {
         public Guid BrugerID { get; set; }
         public string Email { get; set; }

@@ -6,10 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class BrugerService
+    public class BrugerService : IBrugerService
     {
         private readonly IBrugerRepository _brugerRepository;
         private readonly IMapper _mapper;
@@ -20,77 +22,124 @@ namespace TaekwondoOrchestration.ApiService.Services
             _mapper = mapper;
         }
 
-        public async Task<List<BrugerDTO>> GetAllBrugereAsync()
+        #region CRUD Operations
+
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetAllBrugereAsync()
         {
             var brugere = await _brugerRepository.GetAllBrugereAsync();
-            return _mapper.Map<List<BrugerDTO>>(brugere);
+            var mapped = _mapper.Map<IEnumerable<BrugerDTO>>(brugere);
+            return Result<IEnumerable<BrugerDTO>>.Ok(mapped);
         }
 
-        public async Task<BrugerDTO?> GetBrugerByIdAsync(Guid id)
+        public async Task<Result<BrugerDTO>> GetBrugerByIdAsync(Guid id)
         {
             var bruger = await _brugerRepository.GetBrugerByIdAsync(id);
-            return bruger == null ? null : _mapper.Map<BrugerDTO>(bruger);
+            if (bruger == null)
+                return Result<BrugerDTO>.Fail("Bruger not found.");
+
+            return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
         }
 
-        public async Task<List<BrugerDTO>> GetBrugerByRoleAsync(string role)
+        public async Task<Result<BrugerDTO>> CreateBrugerAsync(BrugerDTO brugerDto)
+        {
+            var entity = _mapper.Map<Bruger>(brugerDto);
+            EntityHelper.InitializeEntity(entity, brugerDto.ModifiedBy, "Created new Bruger entry.");
+
+            var created = await _brugerRepository.CreateBrugerAsync(entity);
+            return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(created));
+        }
+
+        public async Task<Result<bool>> UpdateBrugerAsync(Guid id, BrugerDTO brugerDto)
+        {
+            var existing = await _brugerRepository.GetBrugerByIdAsync(id);
+            if (existing == null)
+                return Result<bool>.Fail("Bruger not found.");
+
+            _mapper.Map(brugerDto, existing);
+            EntityHelper.UpdateCommonFields(existing, brugerDto.ModifiedBy);
+
+            var success = await _brugerRepository.UpdateBrugerAsync(existing);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to update Bruger.");
+        }
+
+        public async Task<Result<bool>> DeleteBrugerAsync(Guid id)
+        {
+            var bruger = await _brugerRepository.GetBrugerByIdAsync(id);
+            if (bruger == null)
+                return Result<bool>.Fail("Bruger not found.");
+
+            EntityHelper.SetDeletedOrRestoredProperties(bruger, "Soft-deleted Bruger", bruger.ModifiedBy);
+            var success = await _brugerRepository.UpdateBrugerAsync(bruger);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Bruger.");
+        }
+
+        public async Task<Result<bool>> RestoreBrugerAsync(Guid id, BrugerDTO dto)
+        {
+            var bruger = await _brugerRepository.GetBrugerByIdIncludingDeletedAsync(id);
+            if (bruger == null || !bruger.IsDeleted)
+                return Result<bool>.Fail("Bruger not found or not deleted.");
+
+            bruger.IsDeleted = false;
+            bruger.Status = SyncStatus.Synced;
+            bruger.ModifiedBy = dto.ModifiedBy;
+            bruger.LastSyncedVersion++;
+
+            EntityHelper.SetDeletedOrRestoredProperties(bruger, "Restored Bruger", dto.ModifiedBy);
+
+            var success = await _brugerRepository.UpdateBrugerAsync(bruger);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore Bruger.");
+        }
+
+        #endregion
+
+        #region Search Operations
+
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByRoleAsync(string role)
         {
             var brugere = await _brugerRepository.GetBrugerByRoleAsync(role);
-            return _mapper.Map<List<BrugerDTO>>(brugere);
+            return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
         }
 
-        public async Task<List<BrugerDTO>> GetBrugerByBælteAsync(string bæltegrad)
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByBælteAsync(string bæltegrad)
         {
             var brugere = await _brugerRepository.GetBrugerByBælteAsync(bæltegrad);
-            return _mapper.Map<List<BrugerDTO>>(brugere);
+            return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
         }
 
-        public async Task<List<BrugerDTO>> GetBrugereByKlubAsync(Guid klubId)
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugereByKlubAsync(Guid klubId)
         {
-            return await _brugerRepository.GetBrugereByKlubAsync(klubId);
+            var brugere = await _brugerRepository.GetBrugereByKlubAsync(klubId);
+            return Result<IEnumerable<BrugerDTO>>.Ok(brugere); // Assuming already mapped
         }
 
-        public async Task<List<BrugerDTO>> GetBrugereByKlubAndBæltegradAsync(Guid klubId, string bæltegrad)
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugereByKlubAndBæltegradAsync(Guid klubId, string bæltegrad)
         {
-            return await _brugerRepository.GetBrugereByKlubAndBæltegradAsync(klubId, bæltegrad);
+            var brugere = await _brugerRepository.GetBrugereByKlubAndBæltegradAsync(klubId, bæltegrad);
+            return Result<IEnumerable<BrugerDTO>>.Ok(brugere); // Assuming already mapped
         }
 
-        public async Task<BrugerDTO?> GetBrugerByBrugernavnAsync(string brugernavn)
+        public async Task<Result<BrugerDTO>> GetBrugerByBrugernavnAsync(string brugernavn)
         {
             var bruger = await _brugerRepository.GetBrugerByBrugernavnAsync(brugernavn);
-            return bruger == null ? null : _mapper.Map<BrugerDTO>(bruger);
+            return bruger == null
+                ? Result<BrugerDTO>.Fail("Bruger not found.")
+                : Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
         }
 
-        public async Task<List<BrugerDTO>> GetBrugerByFornavnEfternavnAsync(string fornavn, string efternavn)
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByFornavnEfternavnAsync(string fornavn, string efternavn)
         {
             var brugere = await _brugerRepository.GetBrugerByFornavnEfternavnAsync(fornavn, efternavn);
-            return _mapper.Map<List<BrugerDTO>>(brugere);
+            return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
         }
 
-        public async Task<BrugerDTO?> CreateBrugerAsync(BrugerDTO brugerDto)
+        public async Task<Result<BrugerDTO>> AuthenticateBrugerAsync(LoginDTO loginDto)
         {
-            var brugerEntity = _mapper.Map<Bruger>(brugerDto);
-            var createdBruger = await _brugerRepository.CreateBrugerAsync(brugerEntity);
-            return _mapper.Map<BrugerDTO>(createdBruger);
+            var bruger = await _brugerRepository.AuthenticateBrugerAsync(loginDto.EmailOrBrugernavn, loginDto.Brugerkode);
+            return bruger == null
+                ? Result<BrugerDTO>.Fail("Invalid credentials.")
+                : Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
         }
 
-        public async Task<bool> UpdateBrugerAsync(Guid id, BrugerDTO brugerDto)
-        {
-            var bruger = await _brugerRepository.GetBrugerByIdAsync(id);
-            if (bruger == null) return false;
-
-            _mapper.Map(brugerDto, bruger); // Updates the entity with the values from DTO
-
-            return await _brugerRepository.UpdateBrugerAsync(bruger);
-        }
-
-        public async Task<bool> DeleteBrugerAsync(Guid id)
-        {
-            return await _brugerRepository.DeleteBrugerAsync(id);
-        }
-
-        public async Task<BrugerDTO?> AuthenticateBrugerAsync(LoginDTO loginDto)
-        {
-            return await _brugerRepository.AuthenticateBrugerAsync(loginDto.EmailOrBrugernavn, loginDto.Brugerkode);
-        }
+        #endregion
     }
 }
