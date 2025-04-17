@@ -258,6 +258,72 @@ namespace TaekwondoOrchestration.Tests
             result.Failure.Should().BeTrue();
             result.Errors.Should().Contain("Ordbog not found");
         }
+        [Fact]
+        public async Task GetOrdbogByKoranOrdAsync_ShouldReturnDto_WhenExists()
+        {
+            // Arrange
+            var koranOrd = "감사";
+            var expected = new OrdbogDTO { KoranskOrd = koranOrd, DanskOrd = "Tak", Beskrivelse = "Thanks" };
+
+            _mockOrdbogService.Setup(s => s.GetOrdbogByKoranOrdAsync(koranOrd))
+                              .ReturnsAsync(Result<OrdbogDTO>.Ok(expected));
+
+            // Act
+            var result = await _mockOrdbogService.Object.GetOrdbogByKoranOrdAsync(koranOrd);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.Value.Should().BeEquivalentTo(expected);
+        }
+        [Fact]
+        public async Task GetOrdbogByKoranOrdAsync_ShouldReturnNotFound_WhenNotExists()
+        {
+            // Arrange
+            var koranOrd = "NonExistent";
+            _mockOrdbogService.Setup(s => s.GetOrdbogByKoranOrdAsync(koranOrd))
+                              .ReturnsAsync(Result<OrdbogDTO>.Fail("Ordbog not found"));
+
+            // Act
+            var result = await _mockOrdbogService.Object.GetOrdbogByKoranOrdAsync(koranOrd);
+
+            // Assert
+            result.Failure.Should().BeTrue();
+            result.Errors.Should().Contain("Ordbog not found");
+        }
+        [Fact]
+        public async Task GetAllOrdbogIncludingDeletedAsync_ShouldReturnList_WhenItemsExist()
+        {
+            // Arrange
+            var expected = new List<OrdbogDTO>
+            {
+                new OrdbogDTO { DanskOrd = "Hej", KoranskOrd = "안녕", Beskrivelse = "Hello" },
+                new OrdbogDTO { DanskOrd = "Tak", KoranskOrd = "감사", Beskrivelse = "Thanks" }
+            };
+
+            _mockOrdbogService.Setup(s => s.GetAllOrdbogIncludingDeletedAsync())
+                              .ReturnsAsync(Result<IEnumerable<OrdbogDTO>>.Ok(expected));
+
+            // Act
+            var result = await _mockOrdbogService.Object.GetAllOrdbogIncludingDeletedAsync();
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.Value.Should().BeEquivalentTo(expected);
+        }
+        [Fact]
+        public async Task GetAllOrdbogIncludingDeletedAsync_ShouldReturnEmpty_WhenNoItemsExist()
+        {
+            // Arrange
+            _mockOrdbogService.Setup(s => s.GetAllOrdbogIncludingDeletedAsync())
+                              .ReturnsAsync(Result<IEnumerable<OrdbogDTO>>.Ok(new List<OrdbogDTO>()));
+
+            // Act
+            var result = await _mockOrdbogService.Object.GetAllOrdbogIncludingDeletedAsync();
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.Value.Should().BeEmpty();
+        }
 
     }
 }
