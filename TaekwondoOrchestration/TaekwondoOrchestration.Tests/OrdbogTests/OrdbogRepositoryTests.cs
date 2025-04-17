@@ -7,7 +7,7 @@ using FluentAssertions;
 using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
-namespace TaekwondoOrchestration.Tests
+namespace TaekwondoOrchestration.Tests.OrdbogTests
 {
     public class OrdbogRepositoryTests
     {

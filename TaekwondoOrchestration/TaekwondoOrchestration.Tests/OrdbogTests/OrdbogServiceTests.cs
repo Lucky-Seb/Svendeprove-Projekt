@@ -8,7 +8,7 @@ using TaekwondoOrchestration.ApiService.Helpers;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 using Xunit;
 
-namespace TaekwondoOrchestration.Tests
+namespace TaekwondoOrchestration.Tests.OrdbogTests
 {
     public class IOrdbogServiceTests
     {
