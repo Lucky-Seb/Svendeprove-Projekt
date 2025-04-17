@@ -6,7 +6,6 @@ using TaekwondoApp.Shared.ServiceInterfaces;
 using TaekwondoApp.Shared.Models;
 using TaekwondoApp.Shared.DTO;
 
-
 namespace TaekwondoApp
 {
     public static class MauiProgram
@@ -47,15 +46,21 @@ namespace TaekwondoApp
             // SQLite
             string dbPath = Path.Combine(FileSystem.AppDataDirectory, "ordbog.db");
             builder.Services.AddSingleton<ISQLiteService>(new SQLiteService(dbPath));
-            builder.Services.AddSingleton(typeof(IGenericSQLiteService<>), typeof(GenericSQLiteService<>));
-            builder.Services.AddSingleton<IBrugerSQLiteService, BrugerSQLiteService>();
+
+            // Register the GenericSQLiteService<Bruger> specifically
             builder.Services.AddSingleton<IGenericSQLiteService<Bruger>, GenericSQLiteService<Bruger>>();
+
+            // Registering BrugerSyncService
+            builder.Services.AddSingleton<IBrugerSyncService, BrugerSyncService>();
+
+            // Registering BrugerSQLiteService
+            builder.Services.AddSingleton<IBrugerSQLiteService, BrugerSQLiteService>();
+
+            // Registering IGenericSyncService<Bruger, BrugerDTO>
             builder.Services.AddSingleton<IGenericSyncService<Bruger, BrugerDTO>, GenericSyncService<Bruger, BrugerDTO>>();
 
             // Sync services
             builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
-            builder.Services.AddSingleton(typeof(IGenericSyncService<,>), typeof(GenericSyncService<,>));
-            builder.Services.AddSingleton<IBrugerSyncService, BrugerSyncService>();
 
             // Blazor
             builder.Services.AddMauiBlazorWebView();

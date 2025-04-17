@@ -10,6 +10,8 @@
 @using TaekwondoApp.Shared.Services
 @inject IBrugerSyncService BrugerSyncService
 @inject IBrugerSQLiteService SQLiteService
+@inject IGenericSyncService<Bruger, BrugerDTO> BrugerSyncServiceGeneric
+@inject IGenericSQLiteService<Bruger> SQLiteServiceGeneric
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
