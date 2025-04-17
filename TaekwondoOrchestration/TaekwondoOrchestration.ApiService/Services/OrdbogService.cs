@@ -6,6 +6,7 @@ using AutoMapper;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers; 
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -24,92 +25,100 @@ namespace TaekwondoOrchestration.ApiService.Services
         #region CRUD Operations
 
         // Get All Ordbog Entries
-        public async Task<List<OrdbogDTO>> GetAllOrdbogAsync()
+        public async Task<Result<IEnumerable<OrdbogDTO>>> GetAllOrdbogAsync()
         {
             var ordboger = await _ordbogRepository.GetAllOrdbogAsync();
-            return _mapper.Map<List<OrdbogDTO>>(ordboger);
+            var mapped = _mapper.Map<IEnumerable<OrdbogDTO>>(ordboger);
+            return Result<IEnumerable<OrdbogDTO>>.Success(mapped);
         }
 
         // Get Ordbog by ID
-        public async Task<OrdbogDTO?> GetOrdbogByIdAsync(Guid id)
+        public async Task<Result<OrdbogDTO>> GetOrdbogByIdAsync(Guid id)
         {
             var ordbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
-            return _mapper.Map<OrdbogDTO>(ordbog);
+            if (ordbog == null)
+                return Result<OrdbogDTO>.Failure("Ordbog not found.");
+
+            var mapped = _mapper.Map<OrdbogDTO>(ordbog);
+            return Result<OrdbogDTO>.Success(mapped);
         }
 
         // Create New Ordbog Entry
-        public async Task<OrdbogDTO> CreateOrdbogAsync(OrdbogDTO ordbogDto)
+        public async Task<Result<OrdbogDTO>> CreateOrdbogAsync(OrdbogDTO ordbogDto)
         {
             var newOrdbog = _mapper.Map<Ordbog>(ordbogDto);
             InitializeOrdbog(newOrdbog, "Created new Ordbog entry.");
             var createdOrdbog = await _ordbogRepository.CreateOrdbogAsync(newOrdbog);
-            return _mapper.Map<OrdbogDTO>(createdOrdbog);
+
+            var mapped = _mapper.Map<OrdbogDTO>(createdOrdbog);
+            return Result<OrdbogDTO>.Success(mapped);
         }
 
         // Update Existing Ordbog Entry
-        public async Task<bool> UpdateOrdbogAsync(Guid id, OrdbogDTO ordbogDto)
+        public async Task<Result<bool>> UpdateOrdbogAsync(Guid id, OrdbogDTO ordbogDto)
         {
             if (string.IsNullOrEmpty(ordbogDto.DanskOrd) ||
                 string.IsNullOrEmpty(ordbogDto.KoranskOrd) ||
-                string.IsNullOrEmpty(ordbogDto.Beskrivelse)) return false;
+                string.IsNullOrEmpty(ordbogDto.Beskrivelse))
+                return Result<bool>.Failure("Invalid input data.");
 
             var existingOrdbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
-            if (existingOrdbog == null) return false;
+            if (existingOrdbog == null)
+                return Result<bool>.Failure("Ordbog not found.");
 
-            // Preserve non-editable fields before mapping
-            var preservedChangeHistory = existingOrdbog.ChangeHistory ?? new List<ChangeRecord>();
-
-            // Use AutoMapper to map from DTO to the existing Ordbog entity
             _mapper.Map(ordbogDto, existingOrdbog);
+            UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);
+            var updateSuccess = await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
 
-            // Now call the helper to update common fields and Change History
-            UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);  // You can replace "System" with current user
+            if (!updateSuccess)
+                return Result<bool>.Failure("Failed to update Ordbog.");
 
-            return await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
+            return Result<bool>.Success(true);
         }
 
         // Update Ordbog Entry, including soft-deleted entries
-        public async Task<OrdbogDTO> UpdateOrdbogIncludingDeletedByIdAsync(Guid id, OrdbogDTO ordbogDto)
+        public async Task<Result<OrdbogDTO>> UpdateOrdbogIncludingDeletedByIdAsync(Guid id, OrdbogDTO ordbogDto)
         {
-            // Validate and retrieve the existing Ordbog entity
             var existingOrdbog = await _ordbogRepository.GetOrdbogByIdIncludingDeletedAsync(id);
-            if (existingOrdbog == null) return null;  // Return null if not found
+            if (existingOrdbog == null)
+                return Result<OrdbogDTO>.Failure("Ordbog not found.");
 
-            // Map the DTO to the existing Ordbog
             _mapper.Map(ordbogDto, existingOrdbog);
-
-            // Update the Ordbog fields
             UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);
-
-            // Save the updated Ordbog entity
             var updatedOrdbog = await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
 
-            // Return the updated Ordbog as DTO
-            return _mapper.Map<OrdbogDTO>(updatedOrdbog);
+            var mapped = _mapper.Map<OrdbogDTO>(updatedOrdbog);
+            return Result<OrdbogDTO>.Success(mapped);
         }
 
         // Delete Ordbog Entry (Soft-Delete)
-        public async Task<bool> DeleteOrdbogAsync(Guid id)
+        public async Task<Result<bool>> DeleteOrdbogAsync(Guid id)
         {
             var ordbog = await _ordbogRepository.GetOrdbogByIdAsync(id);
-            if (ordbog == null || ordbog.IsDeleted) return false;
+            if (ordbog == null || ordbog.IsDeleted)
+                return Result<bool>.Failure("Ordbog not found or already deleted.");
 
             SetDeletedOrRestoredProperties(ordbog, "Soft-deleted Ordbog entry");
-            return await _ordbogRepository.UpdateOrdbogAsync(ordbog);
+            var success = await _ordbogRepository.UpdateOrdbogAsync(ordbog);
+
+            return success ? Result<bool>.Success(true) : Result<bool>.Failure("Failed to delete Ordbog.");
         }
 
         // Restore Ordbog Entry from Soft-Delete
-        public async Task<bool> RestoreOrdbogAsync(Guid id, OrdbogDTO dto)
+        public async Task<Result<bool>> RestoreOrdbogAsync(Guid id, OrdbogDTO dto)
         {
             var ordbog = await _ordbogRepository.GetOrdbogByIdIncludingDeletedAsync(id);
-            if (ordbog == null || !ordbog.IsDeleted) return false;
+            if (ordbog == null || !ordbog.IsDeleted)
+                return Result<bool>.Failure("Ordbog not found or not deleted.");
 
             ordbog.IsDeleted = false;
             ordbog.Status = SyncStatus.Synced;
-            ordbog.ModifiedBy = dto.ModifiedBy ;
+            ordbog.ModifiedBy = dto.ModifiedBy;
             ordbog.LastSyncedVersion++;
             SetDeletedOrRestoredProperties(ordbog, "Restored Ordbog entry");
-            return await _ordbogRepository.UpdateAsync(ordbog);
+            var success = await _ordbogRepository.UpdateAsync(ordbog);
+
+            return success ? Result<bool>.Success(true) : Result<bool>.Failure("Failed to restore Ordbog.");
         }
 
         #endregion
@@ -117,24 +126,33 @@ namespace TaekwondoOrchestration.ApiService.Services
         #region Search Operations
 
         // Get Ordbog by Dansk Ord
-        public async Task<OrdbogDTO?> GetOrdbogByDanskOrdAsync(string danskOrd)
+        public async Task<Result<OrdbogDTO>> GetOrdbogByDanskOrdAsync(string danskOrd)
         {
             var ordbog = await _ordbogRepository.GetOrdbogByDanskOrdAsync(danskOrd);
-            return _mapper.Map<OrdbogDTO>(ordbog);
+            if (ordbog == null)
+                return Result<OrdbogDTO>.Failure("Ordbog not found.");
+
+            var mapped = _mapper.Map<OrdbogDTO>(ordbog);
+            return Result<OrdbogDTO>.Success(mapped);
         }
 
         // Get Ordbog by Koran Ord
-        public async Task<OrdbogDTO?> GetOrdbogByKoranOrdAsync(string koranOrd)
+        public async Task<Result<OrdbogDTO>> GetOrdbogByKoranOrdAsync(string koranOrd)
         {
             var ordbog = await _ordbogRepository.GetOrdbogByKoranOrdAsync(koranOrd);
-            return _mapper.Map<OrdbogDTO>(ordbog);
+            if (ordbog == null)
+                return Result<OrdbogDTO>.Failure("Ordbog not found.");
+
+            var mapped = _mapper.Map<OrdbogDTO>(ordbog);
+            return Result<OrdbogDTO>.Success(mapped);
         }
 
         // Get All Ordbog Entries including Deleted Ones
-        public async Task<IEnumerable<OrdbogDTO>> GetAllOrdbogIncludingDeletedAsync()
+        public async Task<Result<IEnumerable<OrdbogDTO>>> GetAllOrdbogIncludingDeletedAsync()
         {
             var ordboger = await _ordbogRepository.GetAllOrdbogIncludingDeletedAsync();
-            return _mapper.Map<IEnumerable<OrdbogDTO>>(ordboger);
+            var mapped = _mapper.Map<IEnumerable<OrdbogDTO>>(ordboger);
+            return Result<IEnumerable<OrdbogDTO>>.Success(mapped);
         }
 
         #endregion
@@ -144,10 +162,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         // Generate ETag based on Dansk and Koran Ord
         private string GenerateETag(Ordbog entry)
         {
-            // Combine all relevant properties to generate a unique ETag
             var etagSource = $"{entry.OrdbogId}-{entry.DanskOrd}-{entry.KoranskOrd}-{entry.Beskrivelse}-{entry.BilledeLink}-{entry.LydLink}-{entry.VideoLink}";
-
-            // Return a hash of the combined properties to generate the ETag
             return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(etagSource));
         }
 
@@ -178,7 +193,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         private void SetDeletedOrRestoredProperties(Ordbog ordbog, string changeDescription)
         {
             ordbog.LastModified = DateTime.UtcNow;
-            ordbog.ModifiedBy = ordbog.ModifiedBy;  // Can be changed to current user if necessary
+            ordbog.ModifiedBy = ordbog.ModifiedBy;
             ordbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
             ordbog.LastSyncedVersion++;
             ordbog.ChangeHistory.Add(new ChangeRecord
@@ -193,15 +208,13 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public void UpdateCommonFields(Ordbog existingOrdbog, string modifiedBy)
         {
-            // Preserve and restore fields
-            existingOrdbog.CreatedAt = existingOrdbog.CreatedAt; // Ensure CreatedAt is not overwritten
+            existingOrdbog.CreatedAt = existingOrdbog.CreatedAt;
             existingOrdbog.LastModified = DateTime.UtcNow;
-            existingOrdbog.ETag = GenerateETag(existingOrdbog); // Static method call
-            existingOrdbog.ModifiedBy = modifiedBy;  // Set the user who made the modification
-            existingOrdbog.LastSyncedVersion++;       // Increment sync version after update
+            existingOrdbog.ETag = GenerateETag(existingOrdbog);
+            existingOrdbog.ModifiedBy = modifiedBy;
+            existingOrdbog.LastSyncedVersion++;
             existingOrdbog.ConflictStatus = ConflictResolutionStatus.NoConflict;
 
-            // Update Change History
             existingOrdbog.ChangeHistory.Add(new ChangeRecord
             {
                 ChangedAt = DateTime.UtcNow,
