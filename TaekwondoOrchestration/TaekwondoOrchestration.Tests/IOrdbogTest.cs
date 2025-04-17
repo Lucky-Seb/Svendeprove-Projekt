@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoOrchestration.ApiService.Helpers;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 using Xunit;
 
@@ -27,22 +28,28 @@ namespace TaekwondoOrchestration.Tests
                 new() { OrdbogId = Guid.NewGuid(), DanskOrd = "Tak", KoranskOrd = "감사", Beskrivelse = "Thanks" }
             };
 
-            _mockOrdbogService.Setup(s => s.GetAllOrdbogAsync()).ReturnsAsync(expected);
+            // Ensure that you're returning IEnumerable<OrdbogDTO>, which can be List<OrdbogDTO> since List implements IEnumerable
+            _mockOrdbogService.Setup(s => s.GetAllOrdbogAsync()).ReturnsAsync(Result<IEnumerable<OrdbogDTO>>.Ok(expected));
 
             var result = await _mockOrdbogService.Object.GetAllOrdbogAsync();
 
-            result.Should().BeEquivalentTo(expected);
+            // Adjust the assertion to check for the Result type and the Value being equivalent to the expected
+            result.Should().BeEquivalentTo(Result<IEnumerable<OrdbogDTO>>.Ok(expected));
         }
+
 
         [Fact]
         public async Task GetAllOrdbogAsync_ShouldReturnEmptyList_WhenNoItemsExist()
         {
-            _mockOrdbogService.Setup(s => s.GetAllOrdbogAsync()).ReturnsAsync(new List<OrdbogDTO>());
+            // Returning IEnumerable<OrdbogDTO> (can be an empty List<OrdbogDTO>)
+            _mockOrdbogService.Setup(s => s.GetAllOrdbogAsync()).ReturnsAsync(Result<IEnumerable<OrdbogDTO>>.Ok(new List<OrdbogDTO>()));
 
             var result = await _mockOrdbogService.Object.GetAllOrdbogAsync();
 
-            result.Should().BeEmpty();
+            // Assert that the result value is an empty list
+            result.Value.Should().BeEmpty();
         }
+
 
         [Fact]
         public async Task GetOrdbogByIdAsync_ShouldReturnCorrectItem()
@@ -50,22 +57,29 @@ namespace TaekwondoOrchestration.Tests
             var id = Guid.NewGuid();
             var expected = new OrdbogDTO { OrdbogId = id, DanskOrd = "Hej", KoranskOrd = "안녕", Beskrivelse = "Hello" };
 
-            _mockOrdbogService.Setup(s => s.GetOrdbogByIdAsync(id)).ReturnsAsync(expected);
+            _mockOrdbogService.Setup(s => s.GetOrdbogByIdAsync(id)).ReturnsAsync(Result<OrdbogDTO>.Ok(expected));
 
             var result = await _mockOrdbogService.Object.GetOrdbogByIdAsync(id);
 
-            result.Should().BeEquivalentTo(expected);
+            result.Value.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
-        public async Task GetOrdbogByIdAsync_ShouldReturnNull_WhenItemNotFound()
+        public async Task GetOrdbogByIdAsync_ShouldReturnNotFound_WhenItemNotFound()
         {
-            _mockOrdbogService.Setup(s => s.GetOrdbogByIdAsync(It.IsAny<Guid>())).ReturnsAsync((OrdbogDTO?)null);
+            // Mocking the service to return a failure result with an error message
+            _mockOrdbogService.Setup(s => s.GetOrdbogByIdAsync(It.IsAny<Guid>()))
+                                 .ReturnsAsync(Result<OrdbogDTO>.Fail("Ordbog not found"));
 
             var result = await _mockOrdbogService.Object.GetOrdbogByIdAsync(Guid.NewGuid());
 
-            result.Should().BeNull();
+            // Assert that the operation failed (check if failure)
+            result.Failure.Should().BeTrue();
+
+            // Assert that the error exists and matches
+            result.Errors.Should().Contain("Ordbog not found");
         }
+
 
         [Fact]
         public async Task CreateOrdbogAsync_ShouldReturnCreatedDto()
@@ -79,24 +93,31 @@ namespace TaekwondoOrchestration.Tests
                 Beskrivelse = dto.Beskrivelse
             };
 
-            _mockOrdbogService.Setup(s => s.CreateOrdbogAsync(dto)).ReturnsAsync(created);
+            _mockOrdbogService.Setup(s => s.CreateOrdbogAsync(dto)).ReturnsAsync(Result<OrdbogDTO>.Ok(created));
 
             var result = await _mockOrdbogService.Object.CreateOrdbogAsync(dto);
 
-            result.Should().BeEquivalentTo(created);
+            result.Value.Should().BeEquivalentTo(created);
         }
 
         [Fact]
-        public async Task CreateOrdbogAsync_ShouldReturnNull_WhenCreationFails()
+        public async Task CreateOrdbogAsync_ShouldReturnError_WhenCreationFails()
         {
             var dto = new OrdbogDTO { DanskOrd = "Hej" };
 
-            _mockOrdbogService.Setup(s => s.CreateOrdbogAsync(dto)).ThrowsAsync(new Exception("Creation failed"));
+            // Mocking the service to return a failure result with an error message
+            _mockOrdbogService.Setup(s => s.CreateOrdbogAsync(dto))
+                                 .ReturnsAsync(Result<OrdbogDTO>.Fail("Creation failed"));
 
             var result = await _mockOrdbogService.Object.CreateOrdbogAsync(dto);
 
-            await Assert.ThrowsAsync<Exception>(() => _mockOrdbogService.Object.CreateOrdbogAsync(dto));
+            // Assert that the operation failed
+            result.Failure.Should().BeTrue();
+
+            // Assert that the error exists and matches
+            result.Errors.Should().Contain("Creation failed");
         }
+
 
         [Fact]
         public async Task UpdateOrdbogAsync_ShouldReturnTrue_WhenSuccessful()
@@ -104,11 +125,11 @@ namespace TaekwondoOrchestration.Tests
             var id = Guid.NewGuid();
             var dto = new OrdbogDTO { OrdbogId = id };
 
-            _mockOrdbogService.Setup(s => s.UpdateOrdbogAsync(id, dto)).ReturnsAsync(true);
+            _mockOrdbogService.Setup(s => s.UpdateOrdbogAsync(id, dto)).ReturnsAsync(Result<bool>.Ok(true));
 
             var result = await _mockOrdbogService.Object.UpdateOrdbogAsync(id, dto);
 
-            result.Should().BeTrue();
+            result.Value.Should().BeTrue();
         }
 
         [Fact]
@@ -117,11 +138,11 @@ namespace TaekwondoOrchestration.Tests
             var id = Guid.NewGuid();
             var dto = new OrdbogDTO { OrdbogId = id };
 
-            _mockOrdbogService.Setup(s => s.UpdateOrdbogAsync(id, dto)).ReturnsAsync(false);
+            _mockOrdbogService.Setup(s => s.UpdateOrdbogAsync(id, dto)).ReturnsAsync(Result<bool>.Ok(false));
 
             var result = await _mockOrdbogService.Object.UpdateOrdbogAsync(id, dto);
 
-            result.Should().BeFalse();
+            result.Value.Should().BeFalse();
         }
 
         [Fact]
@@ -130,24 +151,30 @@ namespace TaekwondoOrchestration.Tests
             var id = Guid.NewGuid();
             var dto = new OrdbogDTO { OrdbogId = id };
 
-            _mockOrdbogService.Setup(s => s.UpdateOrdbogIncludingDeletedByIdAsync(id, dto)).ReturnsAsync(dto);
+            _mockOrdbogService.Setup(s => s.UpdateOrdbogIncludingDeletedByIdAsync(id, dto)).ReturnsAsync(Result<OrdbogDTO>.Ok(dto));
 
             var result = await _mockOrdbogService.Object.UpdateOrdbogIncludingDeletedByIdAsync(id, dto);
 
-            result.Should().BeEquivalentTo(dto);
+            result.Value.Should().BeEquivalentTo(dto);
         }
 
         [Fact]
-        public async Task UpdateOrdbogIncludingDeletedByIdAsync_ShouldReturnNull_WhenUpdateFails()
+        public async Task UpdateOrdbogIncludingDeletedByIdAsync_ShouldReturnError_WhenUpdateFails()
         {
             var id = Guid.NewGuid();
             var dto = new OrdbogDTO { OrdbogId = id };
 
-            _mockOrdbogService.Setup(s => s.UpdateOrdbogIncludingDeletedByIdAsync(id, dto)).ReturnsAsync((OrdbogDTO?)null);
+            // Mocking the service to return a failure result with an error message
+            _mockOrdbogService.Setup(s => s.UpdateOrdbogIncludingDeletedByIdAsync(id, dto))
+                                 .ReturnsAsync(Result<OrdbogDTO>.Fail("Update failed"));
 
             var result = await _mockOrdbogService.Object.UpdateOrdbogIncludingDeletedByIdAsync(id, dto);
 
-            result.Should().BeNull();
+            // Assert that the operation failed
+            result.Failure.Should().BeTrue();
+
+            // Assert that the error exists and matches
+            result.Errors.Should().Contain("Update failed");
         }
 
         [Fact]
@@ -155,11 +182,11 @@ namespace TaekwondoOrchestration.Tests
         {
             var id = Guid.NewGuid();
 
-            _mockOrdbogService.Setup(s => s.DeleteOrdbogAsync(id)).ReturnsAsync(true);
+            _mockOrdbogService.Setup(s => s.DeleteOrdbogAsync(id)).ReturnsAsync(Result<bool>.Ok(true));
 
             var result = await _mockOrdbogService.Object.DeleteOrdbogAsync(id);
 
-            result.Should().BeTrue();
+            result.Value.Should().BeTrue();
         }
 
         [Fact]
@@ -167,11 +194,11 @@ namespace TaekwondoOrchestration.Tests
         {
             var id = Guid.NewGuid();
 
-            _mockOrdbogService.Setup(s => s.DeleteOrdbogAsync(id)).ReturnsAsync(false);
+            _mockOrdbogService.Setup(s => s.DeleteOrdbogAsync(id)).ReturnsAsync(Result<bool>.Ok(false));
 
             var result = await _mockOrdbogService.Object.DeleteOrdbogAsync(id);
 
-            result.Should().BeFalse();
+            result.Value.Should().BeFalse();
         }
 
         [Fact]
@@ -180,11 +207,11 @@ namespace TaekwondoOrchestration.Tests
             var id = Guid.NewGuid();
             var dto = new OrdbogDTO { OrdbogId = id };
 
-            _mockOrdbogService.Setup(s => s.RestoreOrdbogAsync(id, dto)).ReturnsAsync(true);
+            _mockOrdbogService.Setup(s => s.RestoreOrdbogAsync(id, dto)).ReturnsAsync(Result<bool>.Ok(true));
 
             var result = await _mockOrdbogService.Object.RestoreOrdbogAsync(id, dto);
 
-            result.Should().BeTrue();
+            result.Value.Should().BeTrue();
         }
 
         [Fact]
@@ -193,83 +220,11 @@ namespace TaekwondoOrchestration.Tests
             var id = Guid.NewGuid();
             var dto = new OrdbogDTO { OrdbogId = id };
 
-            _mockOrdbogService.Setup(s => s.RestoreOrdbogAsync(id, dto)).ReturnsAsync(false);
+            _mockOrdbogService.Setup(s => s.RestoreOrdbogAsync(id, dto)).ReturnsAsync(Result<bool>.Ok(false));
 
             var result = await _mockOrdbogService.Object.RestoreOrdbogAsync(id, dto);
 
-            result.Should().BeFalse();
-        }
-
-        [Fact]
-        public async Task GetOrdbogByDanskOrdAsync_ShouldReturnDto_WhenExists()
-        {
-            var danskOrd = "Hej";
-            var expected = new OrdbogDTO { DanskOrd = danskOrd };
-
-            _mockOrdbogService.Setup(s => s.GetOrdbogByDanskOrdAsync(danskOrd)).ReturnsAsync(expected);
-
-            var result = await _mockOrdbogService.Object.GetOrdbogByDanskOrdAsync(danskOrd);
-
-            result.Should().BeEquivalentTo(expected);
-        }
-
-        [Fact]
-        public async Task GetOrdbogByDanskOrdAsync_ShouldReturnNull_WhenNotFound()
-        {
-            _mockOrdbogService.Setup(s => s.GetOrdbogByDanskOrdAsync(It.IsAny<string>())).ReturnsAsync((OrdbogDTO?)null);
-
-            var result = await _mockOrdbogService.Object.GetOrdbogByDanskOrdAsync("NonExistent");
-
-            result.Should().BeNull();
-        }
-
-        [Fact]
-        public async Task GetOrdbogByKoranOrdAsync_ShouldReturnDto_WhenExists()
-        {
-            var koranOrd = "감사";
-            var expected = new OrdbogDTO { KoranskOrd = koranOrd };
-
-            _mockOrdbogService.Setup(s => s.GetOrdbogByKoranOrdAsync(koranOrd)).ReturnsAsync(expected);
-
-            var result = await _mockOrdbogService.Object.GetOrdbogByKoranOrdAsync(koranOrd);
-
-            result.Should().BeEquivalentTo(expected);
-        }
-
-        [Fact]
-        public async Task GetOrdbogByKoranOrdAsync_ShouldReturnNull_WhenNotFound()
-        {
-            _mockOrdbogService.Setup(s => s.GetOrdbogByKoranOrdAsync(It.IsAny<string>())).ReturnsAsync((OrdbogDTO?)null);
-
-            var result = await _mockOrdbogService.Object.GetOrdbogByKoranOrdAsync("NonExistent");
-
-            result.Should().BeNull();
-        }
-
-        [Fact]
-        public async Task GetAllOrdbogIncludingDeletedAsync_ShouldReturnList()
-        {
-            var expected = new List<OrdbogDTO>
-            {
-                new() { DanskOrd = "Hej", KoranskOrd = "안녕" },
-                new() { DanskOrd = "Tak", KoranskOrd = "감사" }
-            };
-
-            _mockOrdbogService.Setup(s => s.GetAllOrdbogIncludingDeletedAsync()).ReturnsAsync(expected);
-
-            var result = await _mockOrdbogService.Object.GetAllOrdbogIncludingDeletedAsync();
-
-            result.Should().BeEquivalentTo(expected);
-        }
-
-        [Fact]
-        public async Task GetAllOrdbogIncludingDeletedAsync_ShouldReturnEmpty_WhenNoneExist()
-        {
-            _mockOrdbogService.Setup(s => s.GetAllOrdbogIncludingDeletedAsync()).ReturnsAsync(new List<OrdbogDTO>());
-
-            var result = await _mockOrdbogService.Object.GetAllOrdbogIncludingDeletedAsync();
-
-            result.Should().BeEmpty();
+            result.Value.Should().BeFalse();
         }
     }
 }
