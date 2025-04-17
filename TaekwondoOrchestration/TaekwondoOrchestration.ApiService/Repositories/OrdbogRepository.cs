@@ -67,7 +67,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                 .FirstOrDefaultAsync();  // No need to filter out IsDeleted
         }
 
-        public async Task<Ordbog?> GetOrdbogByKoranOrdAsync(string koranOrd)
+        public async Task<Ordbog?> GetOrdbogByKoranskOrdAsync(string koranOrd)
         {
             return await _context.Ordboger
                 .Where(o => o.KoranskOrd.Equals(koranOrd, StringComparison.OrdinalIgnoreCase))
