@@ -1,113 +1,140 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoOrchestration.ApiService.Services;
+using Microsoft.AspNetCore.SignalR;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class QuizController : ControllerBase
+    public class QuizController : ApiBaseController
     {
-        private readonly QuizService _quizService;
+        private readonly IQuizService _quizService;
+        private readonly IHubContext<QuizHub> _hubContext; // Assuming you have a QuizHub for real-time notifications
 
-        public QuizController(QuizService quizService)
+        public QuizController(IQuizService quizService, IHubContext<QuizHub> hubContext)
         {
             _quizService = quizService;
+            _hubContext = hubContext;
         }
 
         // GET: api/quiz
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<QuizDTO>>> GetQuizzes()
+        public async Task<IActionResult> GetQuizzes()
         {
-            var quizList = await _quizService.GetAllQuizzesAsync();
-            return Ok(quizList);
+            var result = await _quizService.GetAllQuizzesAsync();
+            return result.ToApiResponse(); // Assuming result is a Response object that has the ToApiResponse method
         }
 
         // GET: api/quiz/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<QuizDTO>> GetQuiz(Guid id)
+        public async Task<IActionResult> GetQuiz(Guid id)
         {
-            var quiz = await _quizService.GetQuizByIdAsync(id);
-            if (quiz == null)
-                return NotFound();
-            return Ok(quiz);
+            var result = await _quizService.GetQuizByIdAsync(id);
+            return result.ToApiResponse(); // Assuming result is a Response object that has the ToApiResponse method
         }
 
         // POST: api/quiz (Create Quiz with Bruger or Klub)
         [HttpPost]
-        public async Task<ActionResult<QuizDTO>> PostQuiz([FromBody] QuizDTO quizDto)
+        public async Task<IActionResult> PostQuiz([FromBody] QuizDTO quizDto)
         {
-            var createdQuiz = await _quizService.CreateQuizWithBrugerAndKlubAsync(quizDto);
-            return CreatedAtAction(nameof(GetQuiz), new { id = createdQuiz.QuizID }, createdQuiz);
+            if (quizDto == null)
+            {
+                return BadRequest("Invalid data");
+            }
+
+            var result = await _quizService.CreateQuizAsync(quizDto);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("QuizUpdated");
+
+            return result.ToApiResponse();
         }
 
         // PUT: api/quiz/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutQuiz(Guid id, QuizDTO quizDto)
+        public async Task<IActionResult> PutQuiz(Guid id, [FromBody] QuizDTO quizDto)
         {
-            var success = await _quizService.UpdateQuizAsync(id, quizDto);
-            if (!success)
-                return BadRequest();
-            return NoContent();
+            var result = await _quizService.UpdateQuizAsync(id, quizDto);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("QuizUpdated");
+
+            return result.ToApiResponse();
         }
 
         // DELETE: api/quiz/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteQuiz(Guid id)
         {
-            var success = await _quizService.DeleteQuizAsync(id);
-            if (!success)
-                return NotFound();
-            return NoContent();
-        }
-        [HttpPut("spørgsmål/{id}")]
-        public async Task<IActionResult> PutProgramPlanwithtræning(Guid id, QuizDTO quizDTO)
-        {
-            var updatedProgramPlan = await _quizService.UpdateQuizWithBrugerAndKlubAsync(id, quizDTO);
-            if (updatedProgramPlan == null)
-                return NotFound();
+            var result = await _quizService.DeleteQuizAsync(id);
 
-            // Return the updated ProgramPlanDTO with a 200 OK response
-            return Ok(updatedProgramPlan);
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("QuizDeleted");
+
+            return result.ToApiResponse();
         }
 
-        // Get all quizzes by bruger (user)
+        //// PUT: api/quiz/spørgsmål/5
+        //[HttpPut("spørgsmål/{id}")]
+        //public async Task<IActionResult> PutQuizWithSpørgsmål(Guid id, [FromBody] QuizDTO quizDto)
+        //{
+        //    var result = await _quizService.UpdateQuizAsync(id, quizDto);
+
+        //    // Optionally, trigger notifications if required
+        //    if (result.Success)
+        //        await _hubContext.Clients.All.SendAsync("QuizUpdated");
+
+        //    return result.ToApiResponse();
+        //}
+
+        // GET: api/quiz/by-bruger/{brugerId}
         [HttpGet("by-bruger/{brugerId}")]
         public async Task<IActionResult> GetAllByBrugerAsync(Guid brugerId)
         {
-            var quizzes = await _quizService.GetAllQuizzesByBrugerAsync(brugerId);
-            if (quizzes == null || !quizzes.Any())
-            {
-                return NotFound("No quizzes found for the specified user.");
-            }
-            return Ok(quizzes);
+            var result = await _quizService.GetAllQuizzesByBrugerIdAsync(brugerId);
+            return result.ToApiResponse();
         }
 
-        // Get all quizzes by klub (club)
+        // GET: api/quiz/by-klub/{klubId}
         [HttpGet("by-klub/{klubId}")]
         public async Task<IActionResult> GetAllByKlubAsync(Guid klubId)
         {
-            var quizzes = await _quizService.GetAllQuizzesByKlubAsync(klubId);
-            if (quizzes == null || !quizzes.Any())
-            {
-                return NotFound("No quizzes found for the specified club.");
-            }
-            return Ok(quizzes);
+            var result = await _quizService.GetAllQuizzesByKlubIdAsync(klubId);
+            return result.ToApiResponse();
         }
 
-        // Get all quizzes by pensum (curriculum)
+        // GET: api/quiz/by-pensum/{pensumId}
         [HttpGet("by-pensum/{pensumId}")]
         public async Task<IActionResult> GetAllByPensumAsync(Guid pensumId)
         {
-            var quizzes = await _quizService.GetAllQuizzesByPensumAsync(pensumId);
-            if (quizzes == null || !quizzes.Any())
-            {
-                return NotFound("No quizzes found for the specified curriculum.");
-            }
-            return Ok(quizzes);
+            var result = await _quizService.GetAllQuizzesByPensumIdAsync(pensumId);
+            return result.ToApiResponse();
         }
 
+        // GET: api/quiz/all
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllQuizzes()
+        {
+            var result = await _quizService.GetAllQuizzesIncludingDeletedAsync();
+            return result.ToApiResponse();
+        }
+
+        // GET: api/quiz/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetQuizByIdIncludingDeleted(Guid id)
+        {
+            var result = await _quizService.GetQuizByIdIncludingDeletedAsync(id);
+            return result.ToApiResponse();
+        }
     }
 }
