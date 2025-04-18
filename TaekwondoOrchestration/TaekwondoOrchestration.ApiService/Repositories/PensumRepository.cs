@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoApp.Shared.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TaekwondoOrchestration.ApiService.Repositories
 {
@@ -16,41 +17,68 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             _context = context;
         }
 
-        public async Task<List<Pensum>> GetAllAsync()
-        {
-            return await _context.Pensum.ToListAsync();
-        }
-
-        public async Task<Pensum?> GetByIdAsync(Guid pensumId)
+        public async Task<List<Pensum>> GetAllPensumAsync()
         {
             return await _context.Pensum
-                .Include(p => p.Teknikker)   // Eagerly load the Teknik related to Pensum
-                .Include(p => p.Teorier)    // Eagerly load the Teori related to Pensum
+                .ToListAsync();
+        }
+
+        public async Task<Pensum?> GetPensumByIdAsync(Guid pensumId)
+        {
+            return await _context.Pensum
                 .FirstOrDefaultAsync(p => p.PensumID == pensumId);
         }
 
-        public async Task<Pensum> CreateAsync(Pensum pensum)
+        public async Task<Pensum?> GetPensumByIdIncludingDeletedAsync(Guid pensumId)
+        {
+            return await _context.Pensum
+                .IgnoreQueryFilters()  // Ignore global filters (soft delete) for this query
+                .FirstOrDefaultAsync(p => p.PensumID == pensumId);
+        }
+
+        public async Task<List<Pensum>> GetAllPensumIncludingDeletedAsync()
+        {
+            return await _context.Pensum
+                .IgnoreQueryFilters()  // Ignore soft delete filter
+                .ToListAsync();
+        }
+
+        public async Task<Pensum> CreatePensumAsync(Pensum pensum)
         {
             _context.Pensum.Add(pensum);
             await _context.SaveChangesAsync();
             return pensum;
         }
 
-        public async Task<bool> UpdateAsync(Pensum pensum)
+        public async Task<bool> UpdatePensumAsync(Pensum pensum)
         {
             _context.Entry(pensum).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<bool> DeleteAsync(Guid pensumId)
+        public async Task<bool> DeletePensumAsync(Guid pensumId)
         {
             var pensum = await _context.Pensum.FindAsync(pensumId);
-            if (pensum == null) return false;
+            if (pensum == null)  // Check if already deleted
+                return false;
 
-            _context.Pensum.Remove(pensum);
+            _context.Entry(pensum).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<Pensum?> UpdatePensumIncludingDeletedAsync(Guid pensumId, Pensum pensum)
+        {
+            var existingPensum = await _context.Pensum
+                .IgnoreQueryFilters()  // Ignore soft delete filter
+                .FirstOrDefaultAsync(p => p.PensumID == pensumId);
+
+            if (existingPensum == null) return null;
+
+            _context.Entry(existingPensum).CurrentValues.SetValues(pensum);
+            await _context.SaveChangesAsync();
+            return existingPensum;
         }
     }
 }

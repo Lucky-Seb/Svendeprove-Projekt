@@ -6,10 +6,13 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
 {
     public interface IPensumRepository
     {
-        Task<List<Pensum>> GetAllAsync();
-        Task<Pensum?> GetByIdAsync(Guid pensumId);
-        Task<Pensum> CreateAsync(Pensum pensum);
-        Task<bool> UpdateAsync(Pensum pensum);
-        Task<bool> DeleteAsync(Guid pensumId);
+        Task<List<Pensum>> GetAllPensumAsync();
+        Task<Pensum?> GetPensumByIdAsync(Guid pensumId);
+        Task<List<Pensum>> GetAllPensumIncludingDeletedAsync();
+        Task<Pensum?> GetPensumByIdIncludingDeletedAsync(Guid pensumId);
+        Task<Pensum> CreatePensumAsync(Pensum pensum);
+        Task<bool> UpdatePensumAsync(Pensum pensum);
+        Task<bool> DeletePensumAsync(Guid pensumId);
+        Task<Pensum?> UpdatePensumIncludingDeletedAsync(Guid pensumId, Pensum pensum);
     }
 }
