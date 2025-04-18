@@ -6,14 +6,15 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
 {
     public interface IProgramPlanRepository
     {
-        Task<List<ProgramPlan>> GetAllAsync();
-        Task<ProgramPlan?> GetByIdAsync(Guid progrmaId);
-        Task<ProgramPlan> CreateAsync(ProgramPlan programPlan);
-        Task<bool> UpdateAsync(ProgramPlan programPlan);
-        Task<bool> DeleteAsync(Guid progrmaPlanId);
-        Task<List<ProgramPlan>> GetAllByBrugerIdAsync(Guid brugerId);
-
-        // Get all training sessions by Klub (Club)
-        Task<List<ProgramPlan>> GetAllByKlubIdAsync(Guid klubId);
+        Task<List<ProgramPlan>> GetAllProgramPlansAsync();
+        Task<ProgramPlan?> GetProgramPlanByIdAsync(Guid programPlanId);
+        Task<ProgramPlan?> GetProgramPlanByIdIncludingDeletedAsync(Guid programPlanId);
+        Task<List<ProgramPlan>> GetAllProgramPlansIncludingDeletedAsync();
+        Task<ProgramPlan> CreateProgramPlanAsync(ProgramPlan programPlan);
+        Task<bool> UpdateProgramPlanAsync(ProgramPlan programPlan);
+        Task<bool> DeleteProgramPlanAsync(Guid programPlanId);
+        Task<List<ProgramPlan>> GetAllProgramPlansByBrugerIdAsync(Guid brugerId);
+        Task<List<ProgramPlan>> GetAllProgramPlansByKlubIdAsync(Guid klubId);
+        Task<ProgramPlan?> UpdateProgramPlanIncludingDeletedAsync(Guid programPlanId, ProgramPlan programPlan);
     }
 }
