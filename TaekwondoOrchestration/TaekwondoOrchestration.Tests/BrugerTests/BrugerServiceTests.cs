@@ -446,6 +446,5 @@ namespace TaekwondoOrchestration.Tests.BrugerTests
             result.Success.Should().BeFalse(); // The result should be a failure
             result.Errors.Should().Contain("Bruger not found or not deleted.");
         }
-
     }
 }
