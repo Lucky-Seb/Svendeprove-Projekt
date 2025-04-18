@@ -13,6 +13,7 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
         Task<Result<bool>> UpdateBrugerAsync(Guid id, BrugerDTO brugerDto);
         Task<Result<bool>> DeleteBrugerAsync(Guid id);
         Task<Result<bool>> RestoreBrugerAsync(Guid id, BrugerDTO dto);
+        Task<Result<BrugerDTO>> AuthenticateBrugerAsync(LoginDTO loginDto);
 
         // Search
         Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByRoleAsync(string role);
@@ -21,6 +22,5 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
         Task<Result<IEnumerable<BrugerDTO>>> GetBrugereByKlubAndBæltegradAsync(Guid klubId, string bæltegrad);
         Task<Result<BrugerDTO>> GetBrugerByBrugernavnAsync(string brugernavn);
         Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByFornavnEfternavnAsync(string fornavn, string efternavn);
-        Task<Result<BrugerDTO>> AuthenticateBrugerAsync(LoginDTO loginDto);
     }
 }

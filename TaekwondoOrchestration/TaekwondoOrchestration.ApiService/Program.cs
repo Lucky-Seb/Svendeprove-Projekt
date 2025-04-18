@@ -18,6 +18,7 @@ using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 using TaekwondoOrchestration.ApiService.Services;
 using TaekwondoOrchestration.ApiService.Validators;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +37,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = "YourIssuer",
             ValidAudience = "YourAudience",
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("HalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEy"))
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]) // Using the key from configuration
+            )
         };
     });
 
@@ -76,9 +78,11 @@ foreach (var serviceType in serviceTypes)
     builder.Services.AddScoped(serviceType);
 }
 
+// Register IJwtHelper and JwtHelper for token generation
+builder.Services.AddSingleton<IJwtHelper>(new JwtHelper(builder.Configuration["Jwt:SecretKey"])); // Use the secret key from the configuration
+
 // Optional: Register a specific service using an interface
 builder.Services.AddScoped<IOrdbogService, OrdbogService>();
-// Optional: Register a specific service using an interface
 builder.Services.AddScoped<IBrugerService, BrugerService>();
 
 // ---------------------
