@@ -28,8 +28,23 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<Result<IEnumerable<BrugerDTO>>> GetAllBrugereAsync()
         {
-            var brugere = await _brugerRepository.GetAllBrugereAsync();
-            return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
+            try
+            {
+                var brugere = await _brugerRepository.GetAllBrugereAsync();
+
+                // If no users were returned, handle as failure
+                if (brugere == null || !brugere.Any())
+                {
+                    return Result<IEnumerable<BrugerDTO>>.Fail("No users found.");
+                }
+
+                return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (optional, depending on your logging strategy)
+                return Result<IEnumerable<BrugerDTO>>.Fail($"Error occurred: {ex.Message}");
+            }
         }
 
         public async Task<Result<BrugerDTO>> GetBrugerByIdAsync(Guid id)
@@ -40,12 +55,17 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
         }
-
         public async Task<Result<BrugerDTO>> CreateBrugerAsync(BrugerDTO brugerDto)
         {
             var brugerEntity = _mapper.Map<Bruger>(brugerDto);
             EntityHelper.InitializeEntity(brugerEntity, brugerDto.ModifiedBy, "Created new Bruger.");
             var created = await _brugerRepository.CreateBrugerAsync(brugerEntity);
+
+            // Check if creation failed (created is null)
+            if (created == null)
+            {
+                return Result<BrugerDTO>.Fail("Failed to create Bruger.");
+            }
 
             return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(created));
         }
@@ -133,26 +153,32 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<Result<BrugerDTO>> AuthenticateBrugerAsync(LoginDTO loginDto)
         {
-            // Get the user by email or username
             var bruger = await _brugerRepository.GetBrugerByEmailOrBrugernavnAsync(loginDto.EmailOrBrugernavn);
+
             if (bruger == null)
             {
                 return Result<BrugerDTO>.Fail("Invalid credentials.");
             }
 
-            // Verify the password using BCrypt
             bool passwordMatch = BCrypt.Net.BCrypt.Verify(loginDto.Brugerkode, bruger.Brugerkode);
             if (!passwordMatch)
             {
                 return Result<BrugerDTO>.Fail("Invalid credentials.");
             }
 
-            // Use the injected JwtHelper to create the JWT token
-            var jwt = _jwtHelper.GenerateToken(bruger);  // Now using the IJwtHelper to generate the token
+            var jwt = _jwtHelper.GenerateToken(bruger);
+            if (jwt == null)
+            {
+                return Result<BrugerDTO>.Fail("Failed to generate JWT token.");
+            }
 
-            // Map the Bruger to BrugerDTO and include the generated token
             var userDto = _mapper.Map<BrugerDTO>(bruger);
-            userDto.Token = jwt;
+            if (userDto == null)
+            {
+                return Result<BrugerDTO>.Fail("Failed to map Bruger to BrugerDTO.");
+            }
+
+            userDto.Token = jwt; // This is where it fails, ensure it's not null
 
             return Result<BrugerDTO>.Ok(userDto);
         }
