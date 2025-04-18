@@ -36,5 +36,6 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
 
         // GET Teknikker by PensumId including deleted records (for soft deletes)
         Task<List<Teknik>> GetByPensumIdIncludingDeletedAsync(Guid pensumId);
+
     }
 }

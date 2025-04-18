@@ -38,6 +38,10 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
 
         // Get Teknik by TeknikNavn
         Task<Result<TeknikDTO>> GetTeknikByTeknikNavnAsync(string teknikNavn);
+        // New methods for fetching Tekniks including deleted ones
+        Task<Result<IEnumerable<TeknikDTO>>> GetAllTeknikIncludingDeletedAsync();
+        Task<Result<TeknikDTO>> GetTeknikByIdIncludingDeletedAsync(Guid id);
+
 
         #endregion
     }

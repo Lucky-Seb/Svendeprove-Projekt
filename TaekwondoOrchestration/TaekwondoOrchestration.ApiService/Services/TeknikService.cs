@@ -134,6 +134,25 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<TeknikDTO>.Ok(mapped);
         }
 
+        // Get all Teknikker, including deleted ones
+        public async Task<Result<IEnumerable<TeknikDTO>>> GetAllTeknikIncludingDeletedAsync()
+        {
+            var teknikList = await _teknikRepository.GetAllIncludingDeletedAsync();
+            var mapped = _mapper.Map<IEnumerable<TeknikDTO>>(teknikList);
+            return Result<IEnumerable<TeknikDTO>>.Ok(mapped);
+        }
+
+        // Get Teknik by ID, including deleted ones
+        public async Task<Result<TeknikDTO>> GetTeknikByIdIncludingDeletedAsync(Guid id)
+        {
+            var teknik = await _teknikRepository.GetByIdIncludingDeletedAsync(id);
+            if (teknik == null)
+                return Result<TeknikDTO>.Fail("Teknik not found.");
+
+            var mapped = _mapper.Map<TeknikDTO>(teknik);
+            return Result<TeknikDTO>.Ok(mapped);
+        }
+
         #endregion
     }
 }
