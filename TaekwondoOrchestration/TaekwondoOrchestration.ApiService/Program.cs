@@ -78,12 +78,11 @@ foreach (var serviceType in serviceTypes)
     builder.Services.AddScoped(serviceType);
 }
 
+// Register IKlubService and KlubService explicitly for Dependency Injection
+builder.Services.AddScoped<IKlubService, KlubService>();
+
 // Register IJwtHelper and JwtHelper for token generation
 builder.Services.AddSingleton<IJwtHelper>(new JwtHelper(builder.Configuration["Jwt:SecretKey"])); // Use the secret key from the configuration
-
-// Optional: Register a specific service using an interface
-builder.Services.AddScoped<IOrdbogService, OrdbogService>();
-builder.Services.AddScoped<IBrugerService, BrugerService>();
 
 // ---------------------
 // 🧭 Middleware & Filters
@@ -101,6 +100,7 @@ builder.Services.AddControllers(options =>
 // ---------------------
 builder.Services.AddAutoMapper(typeof(BrugerMap));
 builder.Services.AddAutoMapper(typeof(OrdbogMap));
+builder.Services.AddAutoMapper(typeof(KlubMap)); // Make sure you add this for Klub mappings
 
 // ---------------------
 // ✅ FluentValidation

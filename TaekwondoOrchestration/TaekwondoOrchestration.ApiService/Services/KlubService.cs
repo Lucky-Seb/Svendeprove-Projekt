@@ -3,13 +3,16 @@ using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using AutoMapper;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class KlubService
+    public class KlubService : IKlubService
     {
         private readonly IKlubRepository _klubRepository;
         private readonly IMapper _mapper;
