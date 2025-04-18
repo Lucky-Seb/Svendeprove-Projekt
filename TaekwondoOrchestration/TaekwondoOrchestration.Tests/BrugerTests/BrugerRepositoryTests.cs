@@ -287,25 +287,40 @@ namespace TaekwondoOrchestration.Tests.BrugerTests
 
             result.Should().BeFalse();
         }
-
         [Fact]
-        public async Task AuthenticateBrugerAsync_ShouldReturnDTO_WhenAuthenticated()
+        public async Task GetBrugerByEmailOrBrugernavnAsync_ShouldReturnBruger_WhenExists()
         {
-            var dto = new BrugerDTO { Fornavn = "John" };
-            _mockRepo.Setup(repo => repo.AuthenticateBrugerAsync("email", "password")).ReturnsAsync(dto);
+            // Arrange
+            var emailOrBrugernavn = "john_doe@example.com";
+            var expectedBruger = new Bruger
+            {
+                BrugerID = Guid.NewGuid(),
+                Brugernavn = "john_doe",
+                Email = "john_doe@example.com",
+                Brugerkode = BCrypt.Net.BCrypt.HashPassword("password123")
+            };
 
-            var result = await _mockRepo.Object.AuthenticateBrugerAsync("email", "password");
+            _mockRepo.Setup(repo => repo.GetBrugerByEmailOrBrugernavnAsync(emailOrBrugernavn))
+                     .ReturnsAsync(expectedBruger);
 
-            result.Should().BeEquivalentTo(dto);
+            // Act
+            var result = await _mockRepo.Object.GetBrugerByEmailOrBrugernavnAsync(emailOrBrugernavn);
+
+            // Assert
+            result.Should().BeEquivalentTo(expectedBruger);
         }
 
         [Fact]
-        public async Task AuthenticateBrugerAsync_ShouldReturnNull_WhenAuthenticationFails()
+        public async Task GetBrugerByEmailOrBrugernavnAsync_ShouldReturnNull_WhenNotFound()
         {
-            _mockRepo.Setup(repo => repo.AuthenticateBrugerAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync((BrugerDTO?)null);
+            // Arrange
+            _mockRepo.Setup(repo => repo.GetBrugerByEmailOrBrugernavnAsync(It.IsAny<string>()))
+                     .ReturnsAsync((Bruger?)null);
 
-            var result = await _mockRepo.Object.AuthenticateBrugerAsync("wrong", "credentials");
+            // Act
+            var result = await _mockRepo.Object.GetBrugerByEmailOrBrugernavnAsync("nonexistent@example.com");
 
+            // Assert
             result.Should().BeNull();
         }
     }

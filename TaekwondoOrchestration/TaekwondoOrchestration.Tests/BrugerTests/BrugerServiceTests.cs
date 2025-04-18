@@ -1,329 +1,160 @@
-﻿using Moq;
-using Xunit;
-using FluentAssertions;
-using TaekwondoApp.Shared.Models;
+﻿using AutoMapper;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
-using TaekwondoOrchestration.ApiService.Services;
-using TaekwondoOrchestration.ApiService.Helpers;
-using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
-namespace TaekwondoOrchestration.Tests.BrugerTests
+namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class BrugerServiceTests
+    public class BrugerService : IBrugerService
     {
-        private readonly Mock<IBrugerRepository> _mockRepo;
-        private readonly Mock<IMapper> _mockMapper;
-        private readonly BrugerService _service;
+        private readonly IBrugerRepository _brugerRepository;
+        private readonly IMapper _mapper;
+        private readonly IJwtHelper _jwtHelper;
 
-        public BrugerServiceTests()
+        // Fixed constructor - assigning jwtHelper parameter correctly
+        public BrugerService(IBrugerRepository brugerRepository, IMapper mapper, IJwtHelper jwtHelper)
         {
-            _mockRepo = new Mock<IBrugerRepository>();
-            _mockMapper = new Mock<IMapper>();
-            _service = new BrugerService(_mockRepo.Object, _mockMapper.Object);
+            _brugerRepository = brugerRepository;
+            _mapper = mapper;
+            _jwtHelper = jwtHelper; // Correct assignment
         }
 
-        // GetAllBrugereAsync Tests
-        [Fact]
-        public async Task GetAllBrugereAsync_ShouldReturnBrugere_WhenFound()
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetAllBrugereAsync()
         {
-            var brugere = new List<Bruger> { new Bruger { Brugernavn = "john_doe" } };
-            _mockRepo.Setup(repo => repo.GetAllBrugereAsync()).ReturnsAsync(brugere);
-            _mockMapper.Setup(m => m.Map<IEnumerable<BrugerDTO>>(It.IsAny<IEnumerable<Bruger>>()))
-                       .Returns(new List<BrugerDTO> { new BrugerDTO { Brugernavn = "john_doe" } });
-
-            var result = await _service.GetAllBrugereAsync();
-
-            result.Success.Should().BeTrue();
-            result.Value.Should().HaveCount(1);
+            var brugere = await _brugerRepository.GetAllBrugereAsync();
+            return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
         }
 
-        [Fact]
-        public async Task GetAllBrugereAsync_ShouldReturnFail_WhenNoBrugereExist()
+        public async Task<Result<BrugerDTO>> GetBrugerByIdAsync(Guid id)
         {
-            _mockRepo.Setup(repo => repo.GetAllBrugereAsync()).ReturnsAsync(new List<Bruger>());
-            var result = await _service.GetAllBrugereAsync();
+            var bruger = await _brugerRepository.GetBrugerByIdAsync(id);
+            if (bruger == null)
+                return Result<BrugerDTO>.Fail("Bruger not found.");
 
-            result.Success.Should().BeFalse();
-            result.Errors.Should().Contain("No users found.");
+            return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
         }
 
-        // GetBrugerByIdAsync Tests
-        [Fact]
-        public async Task GetBrugerByIdAsync_ShouldReturnBruger_WhenFound()
+        public async Task<Result<BrugerDTO>> CreateBrugerAsync(BrugerDTO brugerDto)
         {
-            var id = Guid.NewGuid();
-            var bruger = new Bruger { BrugerID = id, Brugernavn = "john_doe" };
-            _mockRepo.Setup(repo => repo.GetBrugerByIdAsync(id)).ReturnsAsync(bruger);
-            _mockMapper.Setup(m => m.Map<BrugerDTO>(It.IsAny<Bruger>())).Returns(new BrugerDTO { Brugernavn = "john_doe" });
+            var brugerEntity = _mapper.Map<Bruger>(brugerDto);
+            EntityHelper.InitializeEntity(brugerEntity, brugerDto.ModifiedBy, "Created new Bruger.");
+            var created = await _brugerRepository.CreateBrugerAsync(brugerEntity);
 
-            var result = await _service.GetBrugerByIdAsync(id);
-
-            result.Success.Should().BeTrue();
-            result.Value.Brugernavn.Should().Be("john_doe");
+            return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(created));
         }
 
-        [Fact]
-        public async Task GetBrugerByIdAsync_ShouldReturnFail_WhenNotFound()
+        public async Task<Result<bool>> UpdateBrugerAsync(Guid id, BrugerDTO brugerDto)
         {
-            var id = Guid.NewGuid();
-            _mockRepo.Setup(repo => repo.GetBrugerByIdAsync(id)).ReturnsAsync((Bruger?)null);
+            var existing = await _brugerRepository.GetBrugerByIdAsync(id);
+            if (existing == null)
+                return Result<bool>.Fail("Bruger not found.");
 
-            var result = await _service.GetBrugerByIdAsync(id);
+            _mapper.Map(brugerDto, existing);
+            EntityHelper.UpdateCommonFields(existing, brugerDto.ModifiedBy);
 
-            result.Success.Should().BeFalse();
-            result.Errors.Should().Contain("Bruger not found.");
+            var success = await _brugerRepository.UpdateBrugerAsync(existing);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to update Bruger.");
         }
 
-        // CreateBrugerAsync Tests
-        [Fact]
-        public async Task CreateBrugerAsync_ShouldReturnCreatedBruger()
+        public async Task<Result<bool>> DeleteBrugerAsync(Guid id)
         {
-            var dto = new BrugerDTO { Brugernavn = "john_doe" };
-            var entity = new Bruger { Brugernavn = "john_doe" };
-            var createdBruger = new Bruger { Brugernavn = "john_doe" };
+            var bruger = await _brugerRepository.GetBrugerByIdAsync(id);
+            if (bruger == null || bruger.IsDeleted)
+                return Result<bool>.Fail("Bruger not found or already deleted.");
 
-            _mockMapper.Setup(m => m.Map<Bruger>(dto)).Returns(entity);
-            _mockRepo.Setup(repo => repo.CreateBrugerAsync(entity)).ReturnsAsync(createdBruger);
-            _mockMapper.Setup(m => m.Map<BrugerDTO>(createdBruger)).Returns(new BrugerDTO { Brugernavn = "john_doe" });
+            EntityHelper.SetDeletedOrRestoredProperties(bruger, bruger.ModifiedBy ?? "system", "Soft-deleted Bruger");
+            var success = await _brugerRepository.UpdateBrugerAsync(bruger);
 
-            var result = await _service.CreateBrugerAsync(dto);
-
-            result.Success.Should().BeTrue();
-            result.Value.Brugernavn.Should().Be("john_doe");
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Bruger.");
         }
 
-        [Fact]
-        public async Task CreateBrugerAsync_ShouldReturnFail_WhenCreationFails()
+        public async Task<Result<bool>> RestoreBrugerAsync(Guid id, BrugerDTO dto)
         {
-            var dto = new BrugerDTO { Brugernavn = "john_doe" };
-            _mockRepo.Setup(repo => repo.CreateBrugerAsync(It.IsAny<Bruger>())).ReturnsAsync((Bruger?)null);
+            var bruger = await _brugerRepository.GetBrugerByIdIncludingDeletedAsync(id);
+            if (bruger == null || !bruger.IsDeleted)
+                return Result<bool>.Fail("Bruger not found or not deleted.");
 
-            var result = await _service.CreateBrugerAsync(dto);
+            bruger.IsDeleted = false;
+            bruger.Status = SyncStatus.Synced;
+            bruger.ModifiedBy = dto.ModifiedBy;
+            bruger.LastSyncedVersion++;
 
-            result.Success.Should().BeFalse();
-            result.Errors.Should().Contain("Failed to create Bruger.");
+            EntityHelper.SetDeletedOrRestoredProperties(bruger, dto.ModifiedBy, "Restored Bruger");
+            var success = await _brugerRepository.UpdateBrugerAsync(bruger);
+
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore Bruger.");
         }
 
-        // UpdateBrugerAsync Tests
-        [Fact]
-        public async Task UpdateBrugerAsync_ShouldReturnSuccess_WhenUpdated()
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByRoleAsync(string role)
         {
-            var id = Guid.NewGuid();
-            var dto = new BrugerDTO { Brugernavn = "updated_doe" };
-            var existingBruger = new Bruger { BrugerID = id, Brugernavn = "john_doe" };
-
-            _mockRepo.Setup(repo => repo.GetBrugerByIdAsync(id)).ReturnsAsync(existingBruger);
-            _mockMapper.Setup(m => m.Map(dto, existingBruger)).Verifiable();
-            _mockRepo.Setup(repo => repo.UpdateBrugerAsync(existingBruger)).ReturnsAsync(true);
-
-            var result = await _service.UpdateBrugerAsync(id, dto);
-
-            result.Success.Should().BeTrue();
+            var brugere = await _brugerRepository.GetBrugerByRoleAsync(role);
+            return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
         }
 
-        [Fact]
-        public async Task UpdateBrugerAsync_ShouldReturnFail_WhenNotFound()
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByBælteAsync(string bæltegrad)
         {
-            var id = Guid.NewGuid();
-            var dto = new BrugerDTO { Brugernavn = "updated_doe" };
-            _mockRepo.Setup(repo => repo.GetBrugerByIdAsync(id)).ReturnsAsync((Bruger?)null);
-
-            var result = await _service.UpdateBrugerAsync(id, dto);
-
-            result.Success.Should().BeFalse();
-            result.Errors.Should().Contain("Bruger not found.");
+            var brugere = await _brugerRepository.GetBrugerByBælteAsync(bæltegrad);
+            return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
         }
 
-        [Fact]
-        public async Task UpdateBrugerAsync_ShouldReturnFail_WhenUpdateFails()
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugereByKlubAsync(Guid klubId)
         {
-            var id = Guid.NewGuid();
-            var dto = new BrugerDTO { Brugernavn = "updated_doe" };
-            var existingBruger = new Bruger { BrugerID = id, Brugernavn = "john_doe" };
-
-            _mockRepo.Setup(repo => repo.GetBrugerByIdAsync(id)).ReturnsAsync(existingBruger);
-            _mockMapper.Setup(m => m.Map(dto, existingBruger)).Verifiable();
-            _mockRepo.Setup(repo => repo.UpdateBrugerAsync(existingBruger)).ReturnsAsync(false);
-
-            var result = await _service.UpdateBrugerAsync(id, dto);
-
-            result.Success.Should().BeFalse();
-            result.Errors.Should().Contain("Failed to update Bruger.");
+            var brugere = await _brugerRepository.GetBrugereByKlubAsync(klubId);
+            return Result<IEnumerable<BrugerDTO>>.Ok(brugere); // Assuming already DTOs
         }
 
-        // DeleteBrugerAsync Tests
-        [Fact]
-        public async Task DeleteBrugerAsync_ShouldReturnSuccess_WhenDeleted()
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugereByKlubAndBæltegradAsync(Guid klubId, string bæltegrad)
         {
-            var id = Guid.NewGuid();
-            var bruger = new Bruger { BrugerID = id, IsDeleted = false };
-            _mockRepo.Setup(repo => repo.GetBrugerByIdAsync(id)).ReturnsAsync(bruger);
-            _mockRepo.Setup(repo => repo.UpdateBrugerAsync(bruger)).ReturnsAsync(true);
-
-            var result = await _service.DeleteBrugerAsync(id);
-
-            result.Success.Should().BeTrue();
+            var brugere = await _brugerRepository.GetBrugereByKlubAndBæltegradAsync(klubId, bæltegrad);
+            return Result<IEnumerable<BrugerDTO>>.Ok(brugere); // Assuming already DTOs
         }
 
-        [Fact]
-        public async Task DeleteBrugerAsync_ShouldReturnFail_WhenBrugerNotFound()
+        public async Task<Result<BrugerDTO>> GetBrugerByBrugernavnAsync(string brugernavn)
         {
-            var id = Guid.NewGuid();
-            _mockRepo.Setup(repo => repo.GetBrugerByIdAsync(id)).ReturnsAsync((Bruger?)null);
+            var bruger = await _brugerRepository.GetBrugerByBrugernavnAsync(brugernavn);
+            if (bruger == null)
+                return Result<BrugerDTO>.Fail("Bruger not found.");
 
-            var result = await _service.DeleteBrugerAsync(id);
-
-            result.Success.Should().BeFalse();
-            result.Errors.Should().Contain("Bruger not found or already deleted.");
+            return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
         }
 
-        // RestoreBrugerAsync Tests
-        [Fact]
-        public async Task RestoreBrugerAsync_ShouldReturnSuccess_WhenRestored()
+        public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByFornavnEfternavnAsync(string fornavn, string efternavn)
         {
-            var id = Guid.NewGuid();
-            var dto = new BrugerDTO { ModifiedBy = "admin" };
-            var deletedBruger = new Bruger { BrugerID = id, IsDeleted = true };
-
-            _mockRepo.Setup(repo => repo.GetBrugerByIdIncludingDeletedAsync(id)).ReturnsAsync(deletedBruger);
-            _mockRepo.Setup(repo => repo.UpdateBrugerAsync(deletedBruger)).ReturnsAsync(true);
-
-            var result = await _service.RestoreBrugerAsync(id, dto);
-
-            result.Success.Should().BeTrue();
+            var brugere = await _brugerRepository.GetBrugerByFornavnEfternavnAsync(fornavn, efternavn);
+            return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
         }
 
-        [Fact]
-        public async Task RestoreBrugerAsync_ShouldReturnFail_WhenBrugerNotFoundOrNotDeleted()
+        public async Task<Result<BrugerDTO>> AuthenticateBrugerAsync(LoginDTO loginDto)
         {
-            var id = Guid.NewGuid();
-            var dto = new BrugerDTO { ModifiedBy = "admin" };
-            _mockRepo.Setup(repo => repo.GetBrugerByIdIncludingDeletedAsync(id)).ReturnsAsync((Bruger?)null);
+            // Get the user by email or username
+            var bruger = await _brugerRepository.GetBrugerByEmailOrBrugernavnAsync(loginDto.EmailOrBrugernavn);
+            if (bruger == null)
+            {
+                return Result<BrugerDTO>.Fail("Invalid credentials.");
+            }
 
-            var result = await _service.RestoreBrugerAsync(id, dto);
+            // Verify the password using BCrypt
+            bool passwordMatch = BCrypt.Net.BCrypt.Verify(loginDto.Brugerkode, bruger.Brugerkode);
+            if (!passwordMatch)
+            {
+                return Result<BrugerDTO>.Fail("Invalid credentials.");
+            }
 
-            result.Success.Should().BeFalse();
-            result.Errors.Should().Contain("Bruger not found or not deleted.");
-        }
+            // Use the injected JwtHelper to create the JWT token
+            var jwt = _jwtHelper.GenerateToken(bruger);  // Now using the IJwtHelper to generate the token
 
-        // GetBrugerByRoleAsync Tests
-        [Fact]
-        public async Task GetBrugerByRoleAsync_ShouldReturnBrugere_WhenFound()
-        {
-            var role = "Admin";
-            var brugere = new List<Bruger> { new Bruger { Role = role } };
-            _mockRepo.Setup(repo => repo.GetBrugerByRoleAsync(role)).ReturnsAsync(brugere);
-            _mockMapper.Setup(m => m.Map<IEnumerable<BrugerDTO>>(brugere)).Returns(new List<BrugerDTO> { new BrugerDTO { Role = role } });
+            // Map the Bruger to BrugerDTO and include the generated token
+            var userDto = _mapper.Map<BrugerDTO>(bruger);
+            userDto.Token = jwt;
 
-            var result = await _service.GetBrugerByRoleAsync(role);
-
-            result.Success.Should().BeTrue();
-            result.Value.Should().HaveCount(1);
-        }
-
-        [Fact]
-        public async Task GetBrugerByRoleAsync_ShouldReturnFail_WhenNoBrugereFound()
-        {
-            _mockRepo.Setup(repo => repo.GetBrugerByRoleAsync(It.IsAny<string>())).ReturnsAsync(new List<Bruger>());
-            var result = await _service.GetBrugerByRoleAsync("NonexistentRole");
-
-            result.Success.Should().BeFalse();
-            result.Errors.Should().Contain("No users found.");
-        }
-
-        // GetBrugerByBælteAsync Tests
-        [Fact]
-        public async Task GetBrugerByBælteAsync_ShouldReturnBrugere_WhenFound()
-        {
-            var bæltegrad = "Black";
-            var brugere = new List<Bruger> { new Bruger { Bæltegrad = "Black" } };
-            _mockRepo.Setup(repo => repo.GetBrugerByBælteAsync(bæltegrad)).ReturnsAsync(brugere);
-            _mockMapper.Setup(m => m.Map<IEnumerable<BrugerDTO>>(brugere)).Returns(new List<BrugerDTO> { new BrugerDTO { Bæltegrad = "Black" } });
-
-            var result = await _service.GetBrugerByBælteAsync(bæltegrad);
-
-            result.Success.Should().BeTrue();
-            result.Value.Should().HaveCount(1);
-        }
-
-        [Fact]
-        public async Task GetBrugerByBælteAsync_ShouldReturnFail_WhenNoBrugereFound()
-        {
-            _mockRepo.Setup(repo => repo.GetBrugerByBælteAsync(It.IsAny<string>())).ReturnsAsync(new List<Bruger>());
-            var result = await _service.GetBrugerByBælteAsync("NonexistentBælte");
-
-            result.Success.Should().BeFalse();
-            result.Errors.Should().Contain("No users found.");
-        }
-
-        // GetBrugerByBrugernavnAsync Tests
-        [Fact]
-        public async Task GetBrugerByBrugernavnAsync_ShouldReturnBruger_WhenFound()
-        {
-            var brugernavn = "john_doe";
-            var bruger = new Bruger { Brugernavn = brugernavn };
-            _mockRepo.Setup(repo => repo.GetBrugerByBrugernavnAsync(brugernavn)).ReturnsAsync(bruger);
-            _mockMapper.Setup(m => m.Map<BrugerDTO>(bruger)).Returns(new BrugerDTO { Brugernavn = brugernavn });
-
-            var result = await _service.GetBrugerByBrugernavnAsync(brugernavn);
-
-            result.Success.Should().BeTrue();
-            result.Value.Brugernavn.Should().Be(brugernavn);
-        }
-
-        [Fact]
-        public async Task GetBrugerByBrugernavnAsync_ShouldReturnFail_WhenNotFound()
-        {
-            _mockRepo.Setup(repo => repo.GetBrugerByBrugernavnAsync(It.IsAny<string>())).ReturnsAsync((Bruger?)null);
-
-            var result = await _service.GetBrugerByBrugernavnAsync("nonexistent_username");
-
-            result.Success.Should().BeFalse();
-            result.Errors.Should().Contain("Bruger not found.");
-        }
-
-        // AuthenticateBrugerAsync Tests
-        [Fact]
-        public async Task AuthenticateBrugerAsync_ShouldReturnBrugerDTO_WhenCredentialsAreCorrect()
-        {
-            // Arrange
-            var loginDto = new LoginDTO { EmailOrBrugernavn = "user@example.com", Brugerkode = "correctPassword" };
-            var brugerDTO = new BrugerDTO { Brugernavn = "john_doe" }; // Assuming this is a correct login
-
-            // Set up the mock for AuthenticateBrugerAsync
-            _mockRepo.Setup(repo => repo.AuthenticateBrugerAsync(loginDto.EmailOrBrugernavn, loginDto.Brugerkode))
-                     .ReturnsAsync(brugerDTO);
-
-            // Act
-            var result = await _service.AuthenticateBrugerAsync(loginDto);
-
-            // Assert
-            result.Success.Should().BeTrue();
-            result.Value.Should().BeEquivalentTo(brugerDTO);
-        }
-
-        [Fact]
-        public async Task AuthenticateBrugerAsync_ShouldReturnFail_WhenInvalidCredentials()
-        {
-            // Arrange
-            var loginDto = new LoginDTO { EmailOrBrugernavn = "user@example.com", Brugerkode = "wrongPassword" };
-            var errorMessage = "Invalid credentials.";
-
-            // Set up the mock for AuthenticateBrugerAsync
-            _mockRepo.Setup(repo => repo.AuthenticateBrugerAsync(loginDto.EmailOrBrugernavn, loginDto.Brugerkode))
-                     .ReturnsAsync((BrugerDTO?)null); // Return null for invalid credentials
-
-            // Act
-            var result = await _service.AuthenticateBrugerAsync(loginDto);
-
-            // Assert
-            result.Success.Should().BeFalse();
-            result.Errors.Should().Contain(errorMessage);
+            return Result<BrugerDTO>.Ok(userDto);
         }
     }
 }

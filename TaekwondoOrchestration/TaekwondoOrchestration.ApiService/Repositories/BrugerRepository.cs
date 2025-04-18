@@ -91,7 +91,11 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                 .Where(b => b.Fornavn == fornavn && b.Efternavn == efternavn)
                 .ToListAsync();
         }
-
+        public async Task<Bruger?> GetBrugerByEmailOrBrugernavnAsync(string emailOrBrugernavn)
+        {
+            return await _context.Brugere
+                .FirstOrDefaultAsync(b => b.Email == emailOrBrugernavn || b.Brugernavn == emailOrBrugernavn);
+        }
         public async Task<Bruger> CreateBrugerAsync(Bruger bruger)
         {
             // Hash the password before storing it in the database
@@ -121,48 +125,6 @@ namespace TaekwondoOrchestration.ApiService.Repositories
 
             _context.Brugere.Remove(bruger);
             return await _context.SaveChangesAsync() > 0;
-        }
-
-        public async Task<BrugerDTO?> AuthenticateBrugerAsync(string emailOrBrugernavn, string brugerkode)
-        {
-            var bruger = await _context.Brugere
-                .FirstOrDefaultAsync(b => (b.Email == emailOrBrugernavn || b.Brugernavn == emailOrBrugernavn));
-
-            if (bruger == null) return null;
-
-            // Check if the password matches using bcrypt
-            bool passwordMatch = BCrypt.Net.BCrypt.Verify(brugerkode, bruger.Brugerkode);
-            if (!passwordMatch) return null;
-            Console.WriteLine($"Plain: {brugerkode}");
-            Console.WriteLine($"Hashed: {bruger.Brugerkode}");
-            Console.WriteLine($"Match: {passwordMatch}");
-            // Create JWT Token
-            var claims = new[]
-            {
-            new Claim(ClaimTypes.Name, bruger.Brugernavn),
-            new Claim(ClaimTypes.NameIdentifier, bruger.BrugerID.ToString()),
-            new Claim(ClaimTypes.Role, bruger.Role) // Add the role claim here
-            // Add other claims like roles or email if needed
-        };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("HalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEyHalloIamAPersonOfTheAGreatFamileWHichDOESNOTKNOWHOWTOBESTGETARandomKEy"));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: "YourIssuer",
-                audience: "YourAudience",
-                claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds
-            );
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            // Map the user to the DTO and add the token to the DTO
-            var userDto = _mapper.Map<BrugerDTO>(bruger);
-            userDto.Token = jwt; // Store the JWT in the DTO
-
-            return userDto;
         }
     }
 }

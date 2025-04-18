@@ -5,6 +5,10 @@ using TaekwondoOrchestration.ApiService.Repositories;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 using TaekwondoOrchestration.ApiService.Helpers;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -12,11 +16,14 @@ namespace TaekwondoOrchestration.ApiService.Services
     {
         private readonly IBrugerRepository _brugerRepository;
         private readonly IMapper _mapper;
+        private readonly IJwtHelper _jwtHelper;
 
-        public BrugerService(IBrugerRepository brugerRepository, IMapper mapper)
+        // Constructor should include the IJwtHelper parameter
+        public BrugerService(IBrugerRepository brugerRepository, IMapper mapper, IJwtHelper jwtHelper)
         {
             _brugerRepository = brugerRepository;
             _mapper = mapper;
+            _jwtHelper = jwtHelper; // Correct assignment
         }
 
         public async Task<Result<IEnumerable<BrugerDTO>>> GetAllBrugereAsync()
@@ -126,11 +133,28 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<Result<BrugerDTO>> AuthenticateBrugerAsync(LoginDTO loginDto)
         {
-            var bruger = await _brugerRepository.AuthenticateBrugerAsync(loginDto.EmailOrBrugernavn, loginDto.Brugerkode);
+            // Get the user by email or username
+            var bruger = await _brugerRepository.GetBrugerByEmailOrBrugernavnAsync(loginDto.EmailOrBrugernavn);
             if (bruger == null)
+            {
                 return Result<BrugerDTO>.Fail("Invalid credentials.");
+            }
 
-            return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
+            // Verify the password using BCrypt
+            bool passwordMatch = BCrypt.Net.BCrypt.Verify(loginDto.Brugerkode, bruger.Brugerkode);
+            if (!passwordMatch)
+            {
+                return Result<BrugerDTO>.Fail("Invalid credentials.");
+            }
+
+            // Use the injected JwtHelper to create the JWT token
+            var jwt = _jwtHelper.GenerateToken(bruger);  // Now using the IJwtHelper to generate the token
+
+            // Map the Bruger to BrugerDTO and include the generated token
+            var userDto = _mapper.Map<BrugerDTO>(bruger);
+            userDto.Token = jwt;
+
+            return Result<BrugerDTO>.Ok(userDto);
         }
     }
 }
