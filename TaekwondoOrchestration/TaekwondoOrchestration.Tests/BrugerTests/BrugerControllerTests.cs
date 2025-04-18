@@ -18,7 +18,7 @@ namespace TaekwondoOrchestration.Tests.BrugerTests
     public class BrugerControllerTests
     {
         private readonly Mock<IBrugerService> _mockBrugerService;
-        private readonly Mock<IHubContext<OrdbogHub>> _mockHubContext;
+        private readonly Mock<IHubContext<BrugerHub>> _mockHubContext;
         private readonly BrugerController _controller;
 
         // Fixed GUID for testing purposes
@@ -30,7 +30,7 @@ namespace TaekwondoOrchestration.Tests.BrugerTests
             _mockBrugerService = new Mock<IBrugerService>();
 
             // Mocking the HubContext to ensure Clients.All is not null
-            _mockHubContext = new Mock<IHubContext<OrdbogHub>>();
+            _mockHubContext = new Mock<IHubContext<BrugerHub>>();
 
             var mockClients = new Mock<IHubClients>();
             var mockAllClient = new Mock<IClientProxy>();
