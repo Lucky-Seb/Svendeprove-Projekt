@@ -20,28 +20,26 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         public async Task<List<Øvelse>> GetAllØvelserAsync()
         {
             return await _context.Øvelser
-                .Where(o => !o.IsDeleted)  // Make sure deleted Øvelser are not fetched
                 .ToListAsync();
         }
 
         public async Task<Øvelse?> GetØvelseByIdAsync(Guid øvelseId)
         {
             return await _context.Øvelser
-                .Where(o => !o.IsDeleted)  // Only return if not deleted
                 .FirstOrDefaultAsync(o => o.ØvelseID == øvelseId);
         }
 
         public async Task<List<Øvelse>> GetØvelserBySværhedAsync(string sværhed)
         {
             return await _context.Øvelser
-                .Where(o => o.ØvelseSværhed == sværhed && !o.IsDeleted)  // Exclude deleted ones
+                .Where(o => o.ØvelseSværhed == sværhed)  
                 .ToListAsync();
         }
 
         public async Task<List<Øvelse>> GetØvelserByBrugerAsync(Guid brugerId)
         {
             return await _context.Øvelser
-                .Where(o => o.BrugerØvelses.Any(b => b.BrugerID == brugerId) && !o.IsDeleted)
+                .Where(o => o.BrugerØvelses.Any(b => b.BrugerID == brugerId))
                 .Include(o => o.BrugerØvelses)
                 .ThenInclude(b => b.Bruger)
                 .ToListAsync();
@@ -50,7 +48,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         public async Task<List<Øvelse>> GetØvelserByKlubAsync(Guid klubId)
         {
             return await _context.Øvelser
-                .Where(o => o.KlubØvelses.Any(k => k.KlubID == klubId) && !o.IsDeleted)
+                .Where(o => o.KlubØvelses.Any(k => k.KlubID == klubId))
                 .Include(o => o.KlubØvelses)
                 .ThenInclude(k => k.Klub)
                 .ToListAsync();
@@ -59,7 +57,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         public async Task<List<Øvelse>> GetØvelserByNavnAsync(string navn)
         {
             return await _context.Øvelser
-                .Where(o => o.ØvelseNavn.Contains(navn) && !o.IsDeleted)  // Exclude deleted ones
+                .Where(o => o.ØvelseNavn.Contains(navn)) 
                 .ToListAsync();
         }
 
@@ -73,10 +71,8 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         public async Task<bool> DeleteØvelseAsync(Guid øvelseId)
         {
             var øvelse = await _context.Øvelser.FindAsync(øvelseId);
-            if (øvelse == null || øvelse.IsDeleted)  // Check if already deleted
+            if (øvelse == null) 
                 return false;
-
-            øvelse.IsDeleted = true;  // Mark as deleted (soft delete)
             _context.Entry(øvelse).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return true;
