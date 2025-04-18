@@ -2,86 +2,89 @@
 using TaekwondoApp.Shared.Models;
 using TaekwondoApp.Shared.DTO;
 
-public class MappingProfile : Profile
+namespace TaekwondoApp.Shared.Mapping
 {
-    public MappingProfile()
+    public class MappingProfile : Profile
     {
-        // Bruger and BrugerDTO Mapping
-        CreateMap<Bruger, BrugerDTO>()
-            .ForMember(dest => dest.Klub, opt => opt.MapFrom(src => src.BrugerKlubber.FirstOrDefault() != null ? src.BrugerKlubber.FirstOrDefault().Klub : null))
-            .ForMember(dest => dest.Token, opt => opt.Ignore()); // Token is not present in model but present in DTO
-        CreateMap<BrugerDTO, Bruger>(); // Reverse Mapping
+        public MappingProfile()
+        {
+            // Bruger and BrugerDTO Mapping
+            CreateMap<Bruger, BrugerDTO>()
+                .ForMember(dest => dest.Klub, opt => opt.MapFrom(src => src.BrugerKlubber.FirstOrDefault() != null ? src.BrugerKlubber.FirstOrDefault().Klub : null))
+                .ForMember(dest => dest.Token, opt => opt.Ignore()); // Token is not present in model but present in DTO
+            CreateMap<BrugerDTO, Bruger>(); // Reverse Mapping
 
-        // Klub and KlubDTO Mapping
-        CreateMap<Klub, KlubDTO>();
-        CreateMap<KlubDTO, Klub>(); // Reverse Mapping
+            // Klub and KlubDTO Mapping
+            CreateMap<Klub, KlubDTO>();
+            CreateMap<KlubDTO, Klub>(); // Reverse Mapping
 
-        // Ordbog and OrdbogDTO Mapping
-        CreateMap<Ordbog, OrdbogDTO>();
-        CreateMap<OrdbogDTO, Ordbog>(); // Reverse Mapping
+            // Ordbog and OrdbogDTO Mapping
+            CreateMap<Ordbog, OrdbogDTO>();
+            CreateMap<OrdbogDTO, Ordbog>(); // Reverse Mapping
 
-        // Øvelse and ØvelseDTO Mapping
-        CreateMap<Øvelse, ØvelseDTO>()
-            .ForMember(dest => dest.PensumID, opt => opt.MapFrom(src => src.Pensum.PensumID));
-        CreateMap<ØvelseDTO, Øvelse>(); // Reverse Mapping
+            // Øvelse and ØvelseDTO Mapping
+            CreateMap<Øvelse, ØvelseDTO>()
+                .ForMember(dest => dest.PensumID, opt => opt.MapFrom(src => src.Pensum.PensumID));
+            CreateMap<ØvelseDTO, Øvelse>(); // Reverse Mapping
 
-        // Pensum and PensumDTO Mapping
-        CreateMap<Pensum, PensumDTO>()
-            .ForMember(dest => dest.Teknik, opt => opt.MapFrom(src => src.Teknikker))
-            .ForMember(dest => dest.Teori, opt => opt.MapFrom(src => src.Teorier));
-        CreateMap<PensumDTO, Pensum>(); // Reverse Mapping
+            // Pensum and PensumDTO Mapping
+            CreateMap<Pensum, PensumDTO>()
+                .ForMember(dest => dest.Teknik, opt => opt.MapFrom(src => src.Teknikker))
+                .ForMember(dest => dest.Teori, opt => opt.MapFrom(src => src.Teorier));
+            CreateMap<PensumDTO, Pensum>(); // Reverse Mapping
 
-        // Teknik and TeknikDTO Mapping
-        CreateMap<Teknik, TeknikDTO>()
-            .ForMember(dest => dest.PensumID, opt => opt.MapFrom(src => src.Pensum.PensumID));
-        CreateMap<TeknikDTO, Teknik>(); // Reverse Mapping
+            // Teknik and TeknikDTO Mapping
+            CreateMap<Teknik, TeknikDTO>()
+                .ForMember(dest => dest.PensumID, opt => opt.MapFrom(src => src.Pensum.PensumID));
+            CreateMap<TeknikDTO, Teknik>(); // Reverse Mapping
 
-        // Teori and TeoriDTO Mapping
-        CreateMap<Teori, TeoriDTO>()
-            .ForMember(dest => dest.PensumID, opt => opt.MapFrom(src => src.Pensum.PensumID));
-        CreateMap<TeoriDTO, Teori>(); // Reverse Mapping
+            // Teori and TeoriDTO Mapping
+            CreateMap<Teori, TeoriDTO>()
+                .ForMember(dest => dest.PensumID, opt => opt.MapFrom(src => src.Pensum.PensumID));
+            CreateMap<TeoriDTO, Teori>(); // Reverse Mapping
 
-        // ProgramPlan and ProgramPlanDTO Mapping
-        CreateMap<ProgramPlan, ProgramPlanDTO>()
-            .ForMember(dest => dest.Træninger, opt => opt.MapFrom(src => src.Træninger));
-        CreateMap<ProgramPlanDTO, ProgramPlan>(); // Reverse Mapping
+            // ProgramPlan and ProgramPlanDTO Mapping
+            CreateMap<ProgramPlan, ProgramPlanDTO>()
+                .ForMember(dest => dest.Træninger, opt => opt.MapFrom(src => src.Træninger));
+            CreateMap<ProgramPlanDTO, ProgramPlan>(); // Reverse Mapping
 
-        // Quiz and QuizDTO Mapping
-        CreateMap<Quiz, QuizDTO>()
-            .ForMember(dest => dest.Spørgsmål, opt => opt.MapFrom(src => src.Spørgsmåls));
-        CreateMap<QuizDTO, Quiz>(); // Reverse Mapping
+            // Quiz and QuizDTO Mapping
+            CreateMap<Quiz, QuizDTO>()
+                .ForMember(dest => dest.Spørgsmål, opt => opt.MapFrom(src => src.Spørgsmåls));
+            CreateMap<QuizDTO, Quiz>(); // Reverse Mapping
 
-        // Spørgsmål and SpørgsmålDTO Mapping
-        CreateMap<Spørgsmål, SpørgsmålDTO>()
-            .ForMember(dest => dest.Teknik, opt => opt.MapFrom(src => src.Teknik))
-            .ForMember(dest => dest.Teori, opt => opt.MapFrom(src => src.Teori))
-            .ForMember(dest => dest.Øvelse, opt => opt.MapFrom(src => src.Øvelse));
-        CreateMap<SpørgsmålDTO, Spørgsmål>(); // Reverse Mapping
+            // Spørgsmål and SpørgsmålDTO Mapping
+            CreateMap<Spørgsmål, SpørgsmålDTO>()
+                .ForMember(dest => dest.Teknik, opt => opt.MapFrom(src => src.Teknik))
+                .ForMember(dest => dest.Teori, opt => opt.MapFrom(src => src.Teori))
+                .ForMember(dest => dest.Øvelse, opt => opt.MapFrom(src => src.Øvelse));
+            CreateMap<SpørgsmålDTO, Spørgsmål>(); // Reverse Mapping
 
-        // Træning and TræningDTO Mapping
-        CreateMap<Træning, TræningDTO>()
-            .ForMember(dest => dest.Quiz, opt => opt.MapFrom(src => src.Quiz))
-            .ForMember(dest => dest.Teori, opt => opt.MapFrom(src => src.Teori))
-            .ForMember(dest => dest.Teknik, opt => opt.MapFrom(src => src.Teknik))
-            .ForMember(dest => dest.Øvelse, opt => opt.MapFrom(src => src.Øvelse));
-        CreateMap<TræningDTO, Træning>(); // Reverse Mapping
+            // Træning and TræningDTO Mapping
+            CreateMap<Træning, TræningDTO>()
+                .ForMember(dest => dest.Quiz, opt => opt.MapFrom(src => src.Quiz))
+                .ForMember(dest => dest.Teori, opt => opt.MapFrom(src => src.Teori))
+                .ForMember(dest => dest.Teknik, opt => opt.MapFrom(src => src.Teknik))
+                .ForMember(dest => dest.Øvelse, opt => opt.MapFrom(src => src.Øvelse));
+            CreateMap<TræningDTO, Træning>(); // Reverse Mapping
 
-        // BrugerKlub, BrugerProgram, BrugerØvelse, BrugerQuiz
-        CreateMap<BrugerKlub, BrugerKlubDTO>();
-        CreateMap<BrugerKlubDTO, BrugerKlub>(); // Reverse Mapping
-        CreateMap<BrugerProgram, BrugerProgramDTO>();
-        CreateMap<BrugerProgramDTO, BrugerProgram>(); // Reverse Mapping
-        CreateMap<BrugerØvelse, BrugerØvelseDTO>();
-        CreateMap<BrugerØvelseDTO, BrugerØvelse>(); // Reverse Mapping
-        CreateMap<BrugerQuiz, BrugerQuizDTO>();
-        CreateMap<BrugerQuizDTO, BrugerQuiz>(); // Reverse Mapping
+            // BrugerKlub, BrugerProgram, BrugerØvelse, BrugerQuiz
+            CreateMap<BrugerKlub, BrugerKlubDTO>();
+            CreateMap<BrugerKlubDTO, BrugerKlub>(); // Reverse Mapping
+            CreateMap<BrugerProgram, BrugerProgramDTO>();
+            CreateMap<BrugerProgramDTO, BrugerProgram>(); // Reverse Mapping
+            CreateMap<BrugerØvelse, BrugerØvelseDTO>();
+            CreateMap<BrugerØvelseDTO, BrugerØvelse>(); // Reverse Mapping
+            CreateMap<BrugerQuiz, BrugerQuizDTO>();
+            CreateMap<BrugerQuizDTO, BrugerQuiz>(); // Reverse Mapping
 
-        // KlubProgram, KlubQuiz, KlubØvelse
-        CreateMap<KlubProgram, KlubProgramDTO>();
-        CreateMap<KlubProgramDTO, KlubProgram>(); // Reverse Mapping
-        CreateMap<KlubQuiz, KlubQuizDTO>();
-        CreateMap<KlubQuizDTO, KlubQuiz>(); // Reverse Mapping
-        CreateMap<KlubØvelse, KlubØvelseDTO>();
-        CreateMap<KlubØvelseDTO, KlubØvelse>(); // Reverse Mapping
+            // KlubProgram, KlubQuiz, KlubØvelse
+            CreateMap<KlubProgram, KlubProgramDTO>();
+            CreateMap<KlubProgramDTO, KlubProgram>(); // Reverse Mapping
+            CreateMap<KlubQuiz, KlubQuizDTO>();
+            CreateMap<KlubQuizDTO, KlubQuiz>(); // Reverse Mapping
+            CreateMap<KlubØvelse, KlubØvelseDTO>();
+            CreateMap<KlubØvelseDTO, KlubØvelse>(); // Reverse Mapping
+        }
     }
 }

@@ -38,7 +38,7 @@ namespace TaekwondoApp
             }).AddHttpMessageHandler<JwtAuthMessageHandler>();
 
             // AutoMapper
-            builder.Services.AddAutoMapper(typeof(OrdbogMap));
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
 
             // SQLite
             string dbPath = Path.Combine(FileSystem.AppDataDirectory, "ordbog.db");
