@@ -1,6 +1,6 @@
 ﻿namespace TaekwondoApp.Shared.DTO
 {
-    public class QuizDTO
+    public class QuizDTO : SyncableEntityDTO
     {
         public Guid QuizID { get; set; }
         public string QuizNavn { get; set; }

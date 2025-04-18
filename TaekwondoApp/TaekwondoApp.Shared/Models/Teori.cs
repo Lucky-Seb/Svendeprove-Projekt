@@ -1,6 +1,6 @@
 ﻿namespace TaekwondoApp.Shared.Models
 {
-    public class Teori
+    public class Teori : SyncableEntity
     {
         public Guid TeoriID { get; set; }
         public string TeoriNavn { get; set; }

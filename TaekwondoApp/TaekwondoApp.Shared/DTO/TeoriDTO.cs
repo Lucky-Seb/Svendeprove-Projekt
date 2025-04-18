@@ -1,6 +1,6 @@
 ﻿namespace TaekwondoApp.Shared.DTO
 {
-    public class TeoriDTO
+    public class TeoriDTO : SyncableEntityDTO
     {
         public Guid TeoriID { get; set; }
         public string TeoriNavn { get; set; }

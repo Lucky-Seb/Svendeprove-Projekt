@@ -1,6 +1,6 @@
 ﻿namespace TaekwondoApp.Shared.Models
 {
-    public class Træning
+    public class Træning : SyncableEntity
     {
         public Guid TræningID { get; set; }
         public int TræningRækkefølge { get; set; }

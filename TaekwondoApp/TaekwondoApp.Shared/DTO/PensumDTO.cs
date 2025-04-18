@@ -1,6 +1,6 @@
 ﻿namespace TaekwondoApp.Shared.DTO
 {
-    public class PensumDTO
+    public class PensumDTO : SyncableEntityDTO
     {
         public Guid PensumID { get; set; }
         public string PensumGrad { get; set; }

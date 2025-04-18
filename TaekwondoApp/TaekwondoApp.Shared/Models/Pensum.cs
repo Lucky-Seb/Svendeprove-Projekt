@@ -1,6 +1,6 @@
 ﻿namespace TaekwondoApp.Shared.Models
 {
-    public class Pensum
+    public class Pensum : SyncableEntity
     {
         public Guid PensumID { get; set; }
         public string PensumGrad { get; set; }
