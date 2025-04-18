@@ -1,6 +1,6 @@
 ﻿namespace TaekwondoApp.Shared.Models
 {
-    public class Teknik
+    public class Teknik : SyncableEntity
     {
         public Guid TeknikID { get; set; }
         public string TeknikNavn { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace TaekwondoApp.Shared.Models
 {
-    public class Øvelse
+    public class Øvelse : SyncableEntity
     {
         public Guid ØvelseID { get; set; }
         public string ØvelseNavn { get; set; }
