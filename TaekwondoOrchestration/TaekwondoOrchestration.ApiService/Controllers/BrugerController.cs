@@ -13,9 +13,9 @@ namespace TaekwondoOrchestration.ApiService.Controllers
     public class BrugerController : ApiBaseController
     {
         private readonly IBrugerService _brugerService;
-        private readonly IHubContext<OrdbogHub> _hubContext;
+        private readonly IHubContext<BrugerHub> _hubContext;
 
-        public BrugerController(IBrugerService brugerService, IHubContext<OrdbogHub> hubContext)
+        public BrugerController(IBrugerService brugerService, IHubContext<BrugerHub> hubContext)
         {
             _brugerService = brugerService;
             _hubContext = hubContext;

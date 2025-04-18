@@ -1,78 +1,80 @@
-﻿//// In KlubController.cs
-//using TaekwondoApp.Shared.DTO;
-//using TaekwondoOrchestration.ApiService.Services;
-//using Microsoft.AspNetCore.Mvc;
-//using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using TaekwondoApp.Shared.DTO;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
-//namespace TaekwondoOrchestration.ApiService.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    public class KlubController : ControllerBase
-//    {
-//        private readonly KlubService _klubService;
+namespace TaekwondoOrchestration.ApiService.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class KlubController : ApiBaseController
+    {
+        private readonly IKlubService _klubService;
+        private readonly IHubContext<KlubHub> _hubContext;
 
-//        public KlubController(KlubService klubService)
-//        {
-//            _klubService = klubService;
-//        }
+        public KlubController(IKlubService klubService, IHubContext<KlubHub> hubContext)
+        {
+            _klubService = klubService;
+            _hubContext = hubContext;
+        }
 
-//        [HttpGet]
-//        public async Task<ActionResult<List<KlubDTO>>> GetAllKlubber()
-//        {
-//            var klubber = await _klubService.GetAllKlubberAsync();
-//            return Ok(klubber);
-//        }
+        [HttpGet]
+        public async Task<IActionResult> GetAllKlubber()
+        {
+            var result = await _klubService.GetAllKlubberAsync();
+            return result.ToApiResponse();  // This uses your ToApiResponse extension
+        }
 
-//        [HttpGet("{id}")]
-//        public async Task<ActionResult<KlubDTO>> GetKlubById(Guid id)
-//        {
-//            var klub = await _klubService.GetKlubByIdAsync(id);
-//            if (klub == null)
-//                return NotFound();
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetKlubById(Guid id)
+        {
+            var result = await _klubService.GetKlubByIdAsync(id);
+            return result.ToApiResponse();
+        }
 
-//            return Ok(klub);
-//        }
+        [HttpGet("by-name/{klubNavn}")]
+        public async Task<IActionResult> GetKlubByNavn(string klubNavn)
+        {
+            var result = await _klubService.GetKlubByNavnAsync(klubNavn);
+            return result.ToApiResponse();
+        }
 
-//        // Add the new endpoint to get Klub by Navn
-//        [HttpGet("by-name/{klubNavn}")]
-//        public async Task<ActionResult<KlubDTO>> GetKlubByNavn(string klubNavn)
-//        {
-//            var klub = await _klubService.GetKlubByNavnAsync(klubNavn);
-//            if (klub == null)
-//                return NotFound();
+        [HttpPost]
+        public async Task<IActionResult> CreateKlub(KlubDTO klubDto)
+        {
+            var result = await _klubService.CreateKlubAsync(klubDto);
+            if (result.Success)
+            {
+                await _hubContext.Clients.All.SendAsync("KlubCreated", result.Value); // Optional: Notify clients
+                return CreatedAtAction(nameof(GetKlubById), new { id = result.Value.KlubID }, result.Value);
+            }
+            return result.ToApiResponse();  // Converts failure to BadRequest
+        }
 
-//            return Ok(klub);
-//        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateKlub(Guid id, KlubDTO klubDto)
+        {
+            var result = await _klubService.UpdateKlubAsync(id, klubDto);
+            if (result.Success)
+            {
+                await _hubContext.Clients.All.SendAsync("KlubUpdated", result.Value); // Optional: Notify clients
+                return NoContent();
+            }
+            return result.ToApiResponse();  // Converts failure to BadRequest
+        }
 
-//        [HttpPost]
-//        public async Task<ActionResult<KlubDTO>> CreateKlub(KlubDTO klubDto)
-//        {
-//            var createdKlub = await _klubService.CreateKlubAsync(klubDto);
-//            if (createdKlub == null)
-//                return BadRequest("Invalid data.");
-
-//            return CreatedAtAction(nameof(GetKlubById), new { id = createdKlub.KlubID }, createdKlub);
-//        }
-
-//        [HttpPut("{id}")]
-//        public async Task<ActionResult> UpdateKlub(Guid id, KlubDTO klubDto)
-//        {
-//            var (success, message) = await _klubService.UpdateKlubAsync(id, klubDto);
-//            if (!success)
-//                return BadRequest(message);
-
-//            return NoContent();
-//        }
-
-//        [HttpDelete("{id}")]
-//        public async Task<ActionResult> DeleteKlub(Guid id)
-//        {
-//            var success = await _klubService.DeleteKlubAsync(id);
-//            if (!success)
-//                return NotFound();
-
-//            return NoContent();
-//        }
-//    }
-//}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteKlub(Guid id)
+        {
+            var result = await _klubService.DeleteKlubAsync(id);
+            if (result.Success)
+            {
+                await _hubContext.Clients.All.SendAsync("KlubDeleted", id); // Optional: Notify clients
+                return NoContent();
+            }
+            return result.ToApiResponse();  // Converts failure to BadRequest
+        }
+    }
+}
