@@ -1,4 +1,5 @@
 ﻿using TaekwondoApp.Shared.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,25 +7,34 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
 {
     public interface ITeoriRepository
     {
-        // Get all Teori records
-        Task<List<Teori>> GetAllTeoriAsync();
+        // GET all Teori records with related data
+        Task<List<Teori>> GetAllAsync();
 
-        // Get a Teori by its ID
-        Task<Teori?> GetTeoriByIdAsync(Guid teoriId);
+        // GET a Teori by ID with related data
+        Task<Teori?> GetByIdAsync(Guid teoriId);
 
-        // Get all Teori records by Pensum ID
-        Task<List<Teori>> GetTeoriByPensumAsync(Guid pensumId);
+        // GET a Teori by ID including deleted records (for soft deletes)
+        Task<Teori?> GetByIdIncludingDeletedAsync(Guid teoriId);
 
-        // Get a Teori by its name
-        Task<Teori?> GetTeoriByTeoriNavnAsync(string teoriNavn);
+        // GET all Teori records including deleted ones (for soft deletes)
+        Task<List<Teori>> GetAllIncludingDeletedAsync();
 
-        // Create a new Teori record
-        Task CreateTeoriAsync(Teori teori);
+        // CREATE a new Teori
+        Task<Teori> CreateAsync(Teori teori);
 
-        // Delete a Teori record by its ID
-        Task<bool> DeleteTeoriAsync(Guid teoriId);
+        // UPDATE an existing Teori
+        Task<bool> UpdateAsync(Teori teori);
 
-        // Update an existing Teori record
-        Task<bool> UpdateTeoriAsync(Teori teori);
+        // DELETE a Teori
+        Task<bool> DeleteAsync(Guid teoriId);
+
+        // GET all Teori by PensumId (with related data)
+        Task<List<Teori>> GetByPensumIdAsync(Guid pensumId);
+
+        // GET Teori by TeoriNavn (for name search)
+        Task<Teori?> GetByTeoriNavnAsync(string teoriNavn);
+
+        // GET Teori by PensumId including deleted records (for soft deletes)
+        Task<List<Teori>> GetByPensumIdIncludingDeletedAsync(Guid pensumId);
     }
 }

@@ -1,10 +1,10 @@
-﻿using TaekwondoOrchestration.ApiService.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoApp.Shared.Models;
-using Microsoft.EntityFrameworkCore;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
 namespace TaekwondoOrchestration.ApiService.Repositories
 {
@@ -17,61 +17,92 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             _context = context;
         }
 
-
-        // Get all Teori records
-        public async Task<List<Teori>> GetAllTeoriAsync()
-        {
-            return await _context.Teorier.ToListAsync();
-        }
-
-        // Get a Teori by its ID
-        public async Task<Teori?> GetTeoriByIdAsync(Guid teoriId)
-        {
-            return await _context.Teorier.FindAsync(teoriId);
-        }
-
-        // Get all Teori records by Pensum ID
-        public async Task<List<Teori>> GetTeoriByPensumAsync(Guid pensumId)
+        // GET all Teori records with related data
+        public async Task<List<Teori>> GetAllAsync()
         {
             return await _context.Teorier
-                                 .Where(t => t.PensumID == pensumId)
-                                 .ToListAsync();
+                .Include(t => t.Pensum) // Example of related entity (you can add more includes as needed)
+                .ToListAsync();
         }
 
-        // Get a Teori by its name
-        public async Task<Teori?> GetTeoriByTeoriNavnAsync(string teoriNavn)
+        // GET a Teori by ID with related data
+        public async Task<Teori?> GetByIdAsync(Guid teoriId)
         {
             return await _context.Teorier
-                                 .FirstOrDefaultAsync(t => t.TeoriNavn.Equals(teoriNavn, StringComparison.OrdinalIgnoreCase));
+                .Include(t => t.Pensum) // Example of related entity
+                .FirstOrDefaultAsync(t => t.TeoriID == teoriId);
         }
 
-        // Create a new Teori record
-        public async Task CreateTeoriAsync(Teori teori)
+        // GET a Teori by ID including deleted records (for soft deletes)
+        public async Task<Teori?> GetByIdIncludingDeletedAsync(Guid teoriId)
         {
-            await _context.Teorier.AddAsync(teori);
+            return await _context.Teorier
+                .IgnoreQueryFilters() // Ignores the soft delete filter
+                .Include(t => t.Pensum) // Example of related entity
+                .FirstOrDefaultAsync(t => t.TeoriID == teoriId);
+        }
+
+        // GET all Teori records including deleted ones (for soft deletes)
+        public async Task<List<Teori>> GetAllIncludingDeletedAsync()
+        {
+            return await _context.Teorier
+                .IgnoreQueryFilters() // Ignores the soft delete filter
+                .Include(t => t.Pensum) // Example of related entity
+                .ToListAsync();
+        }
+
+        // CREATE a new Teori
+        public async Task<Teori> CreateAsync(Teori teori)
+        {
+            _context.Teorier.Add(teori);
             await _context.SaveChangesAsync();
+            return teori;
         }
 
-        // Delete a Teori record by its ID
-        public async Task<bool> DeleteTeoriAsync(Guid teoriId)
+        // UPDATE an existing Teori
+        public async Task<bool> UpdateAsync(Teori teori)
+        {
+            _context.Entry(teori).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // DELETE a Teori
+        public async Task<bool> DeleteAsync(Guid teoriId)
         {
             var teori = await _context.Teorier.FindAsync(teoriId);
-            if (teori == null) return false;
+            if (teori == null)
+                return false;
 
             _context.Teorier.Remove(teori);
             await _context.SaveChangesAsync();
             return true;
         }
 
-        // Update an existing Teori record
-        public async Task<bool> UpdateTeoriAsync(Teori teori)
+        // GET all Teori by PensumId (with related data)
+        public async Task<List<Teori>> GetByPensumIdAsync(Guid pensumId)
         {
-            var existingTeori = await _context.Teorier.FindAsync(teori.TeoriID);
-            if (existingTeori == null) return false;
+            return await _context.Teorier
+                .Where(t => t.PensumID == pensumId) // Filter by PensumID
+                .Include(t => t.Pensum) // Example related entity
+                .ToListAsync();
+        }
 
-            _context.Entry(existingTeori).CurrentValues.SetValues(teori);
-            await _context.SaveChangesAsync();
-            return true;
+        // GET Teori by TeoriNavn (for name search)
+        public async Task<Teori?> GetByTeoriNavnAsync(string teoriNavn)
+        {
+            return await _context.Teorier
+                .FirstOrDefaultAsync(t => t.TeoriNavn == teoriNavn);
+        }
+
+        // GET Teori by PensumId including deleted records (for soft deletes)
+        public async Task<List<Teori>> GetByPensumIdIncludingDeletedAsync(Guid pensumId)
+        {
+            return await _context.Teorier
+                .IgnoreQueryFilters() // Ignores the soft delete filter
+                .Where(t => t.PensumID == pensumId) // Filter by PensumID
+                .Include(t => t.Pensum) // Example related entity
+                .ToListAsync();
         }
     }
 }
