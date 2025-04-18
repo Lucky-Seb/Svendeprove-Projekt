@@ -14,13 +14,14 @@ namespace TaekwondoApp.Shared.Mapping
     {
         public PensumMap()
         {
-            CreateMap<ProgramPlan, ProgramPlanDTO>();
-            CreateMap<ProgramPlanDTO, ProgramPlan>();
+            CreateMap<Pensum, PensumDTO>();
+            CreateMap<PensumDTO, Pensum>();
 
-            CreateMap<ProgramPlan, ProgramPlanDTO>().ReverseMap();
-            CreateMap<KlubProgram, KlubProgramDTO>().ReverseMap();
-            CreateMap<BrugerProgram, BrugerProgramDTO>().ReverseMap();
-            CreateMap<Træning, TræningDTO>().ReverseMap();
+            CreateMap<Pensum, PensumDTO>().ReverseMap();
+            CreateMap<Quiz, QuizDTO>().ReverseMap();
+            CreateMap<Øvelse, ØvelseDTO>().ReverseMap();
+            CreateMap<Teori, TeoriDTO>().ReverseMap();
+            CreateMap<Teknik, TeknikDTO>().ReverseMap();
         }
     }
 }

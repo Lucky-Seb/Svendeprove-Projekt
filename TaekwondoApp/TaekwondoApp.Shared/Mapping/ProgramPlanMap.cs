@@ -10,18 +10,17 @@ using static TaekwondoApp.Shared.Pages.Register;
 
 namespace TaekwondoApp.Shared.Mapping
 {
-    public class PensumMap : Profile
+    public class ProgramPlanMap : Profile
     {
-        public PensumMap()
+        public ProgramPlanMap()
         {
-            CreateMap<Pensum, PensumDTO>();
-            CreateMap<PensumDTO, Pensum>();
+            CreateMap<ProgramPlan, ProgramPlanDTO>();
+            CreateMap<ProgramPlanDTO, ProgramPlan>();
 
-            CreateMap<Pensum, PensumDTO>().ReverseMap();
-            CreateMap<Quiz, QuizDTO>().ReverseMap();
-            CreateMap<Øvelse, ØvelseDTO>().ReverseMap();
-            CreateMap<Teori, TeoriDTO>().ReverseMap();
-            CreateMap<Teknik, TeknikDTO>().ReverseMap();
+            CreateMap<ProgramPlan, ProgramPlanDTO>().ReverseMap();
+            CreateMap<KlubProgram, KlubProgramDTO>().ReverseMap();
+            CreateMap<BrugerProgram, BrugerProgramDTO>().ReverseMap();
+            CreateMap<Træning, TræningDTO>().ReverseMap();
         }
     }
 }
