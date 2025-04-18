@@ -115,12 +115,24 @@ namespace TaekwondoOrchestration.ApiService.Services
         public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByRoleAsync(string role)
         {
             var brugere = await _brugerRepository.GetBrugerByRoleAsync(role);
+
+            if (brugere == null || !brugere.Any())
+            {
+                return Result<IEnumerable<BrugerDTO>>.Fail("No users found with this role.");
+            }
+
             return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
         }
 
         public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByBælteAsync(string bæltegrad)
         {
             var brugere = await _brugerRepository.GetBrugerByBælteAsync(bæltegrad);
+
+            if (brugere == null || !brugere.Any())
+            {
+                return Result<IEnumerable<BrugerDTO>>.Fail("No users found with this bæltegrad.");
+            }
+
             return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
         }
 
@@ -148,6 +160,12 @@ namespace TaekwondoOrchestration.ApiService.Services
         public async Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByFornavnEfternavnAsync(string fornavn, string efternavn)
         {
             var brugere = await _brugerRepository.GetBrugerByFornavnEfternavnAsync(fornavn, efternavn);
+
+            if (brugere == null || !brugere.Any())
+            {
+                return Result<IEnumerable<BrugerDTO>>.Fail("No users found with this name.");
+            }
+
             return Result<IEnumerable<BrugerDTO>>.Ok(_mapper.Map<IEnumerable<BrugerDTO>>(brugere));
         }
 

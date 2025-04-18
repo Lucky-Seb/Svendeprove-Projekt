@@ -262,5 +262,149 @@ namespace TaekwondoOrchestration.Tests.BrugerTests
             result.Success.Should().BeFalse();
             result.Errors.Should().Contain("Invalid credentials.");
         }
+        [Fact]
+        public async Task GetBrugerByRoleAsync_ShouldReturnSuccess_WhenBrugereWithRoleExist()
+        {
+            // Arrange
+            var role = "Admin";
+            var brugere = new List<Bruger> { new Bruger { BrugerID = Guid.NewGuid(), Brugernavn = "AdminUser" } };
+            _brugerRepositoryMock.Setup(repo => repo.GetBrugerByRoleAsync(role)).ReturnsAsync(brugere);
+            _mapperMock.Setup(mapper => mapper.Map<IEnumerable<BrugerDTO>>(It.IsAny<IEnumerable<Bruger>>()))
+                .Returns(new List<BrugerDTO> { new BrugerDTO { BrugerID = brugere[0].BrugerID } });
+
+            // Act
+            var result = await _brugerService.GetBrugerByRoleAsync(role);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.Value.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        public async Task GetBrugerByRoleAsync_ShouldReturnFail_WhenNoBrugereFoundForRole()
+        {
+            // Arrange
+            var role = "Admin";
+            _brugerRepositoryMock.Setup(repo => repo.GetBrugerByRoleAsync(role)).ReturnsAsync(new List<Bruger>()); // Simulate no users found for the role
+
+            // Act
+            var result = await _brugerService.GetBrugerByRoleAsync(role);
+
+            // Assert
+            result.Success.Should().BeFalse();
+            result.Errors.Should().Contain("No users found with this role.");
+        }
+        [Fact]
+        public async Task GetBrugerByBælteAsync_ShouldReturnSuccess_WhenBrugereWithBælteExist()
+        {
+            // Arrange
+            var bæltegrad = "Black Belt";
+            var brugere = new List<Bruger> { new Bruger { BrugerID = Guid.NewGuid(), Brugernavn = "TestUser", Bæltegrad = "Black Belt" } };
+            _brugerRepositoryMock.Setup(repo => repo.GetBrugerByBælteAsync(bæltegrad)).ReturnsAsync(brugere);
+            _mapperMock.Setup(mapper => mapper.Map<IEnumerable<BrugerDTO>>(It.IsAny<IEnumerable<Bruger>>()))
+                .Returns(new List<BrugerDTO> { new BrugerDTO { BrugerID = brugere[0].BrugerID } });
+
+            // Act
+            var result = await _brugerService.GetBrugerByBælteAsync(bæltegrad);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.Value.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        public async Task GetBrugerByBælteAsync_ShouldReturnFail_WhenNoBrugereFoundForBælte()
+        {
+            // Arrange
+            var bæltegrad = "Black";
+            _brugerRepositoryMock.Setup(repo => repo.GetBrugerByBælteAsync(bæltegrad))
+                .ReturnsAsync(new List<Bruger>()); // Simulate no users found
+
+            // Act
+            var result = await _brugerService.GetBrugerByBælteAsync(bæltegrad);
+
+            // Assert
+            result.Success.Should().BeFalse(); // The result should be a failure
+            result.Errors.Should().Contain("No users found with this bæltegrad.");
+        }
+
+        [Fact]
+        public async Task GetBrugerByBrugernavnAsync_ShouldReturnSuccess_WhenBrugerFound()
+        {
+            // Arrange
+            var brugernavn = "TestUser";
+            var bruger = new Bruger { BrugerID = Guid.NewGuid(), Brugernavn = brugernavn };
+            _brugerRepositoryMock.Setup(repo => repo.GetBrugerByBrugernavnAsync(brugernavn)).ReturnsAsync(bruger);
+            _mapperMock.Setup(mapper => mapper.Map<BrugerDTO>(It.IsAny<Bruger>())).Returns(new BrugerDTO { BrugerID = bruger.BrugerID });
+
+            // Act
+            var result = await _brugerService.GetBrugerByBrugernavnAsync(brugernavn);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task GetBrugerByBrugernavnAsync_ShouldReturnFail_WhenBrugerNotFound()
+        {
+            // Arrange
+            var brugernavn = "NonExistingUser";
+            _brugerRepositoryMock.Setup(repo => repo.GetBrugerByBrugernavnAsync(brugernavn)).ReturnsAsync((Bruger)null);
+
+            // Act
+            var result = await _brugerService.GetBrugerByBrugernavnAsync(brugernavn);
+
+            // Assert
+            result.Success.Should().BeFalse();
+            result.Errors.Should().Contain("Bruger not found.");
+        }
+        [Fact]
+        public async Task GetBrugerByFornavnEfternavnAsync_ShouldReturnSuccess_WhenBrugerExists()
+        {
+            // Arrange
+            var fornavn = "John";
+            var efternavn = "Doe";
+
+            var brugere = new List<Bruger>
+            {
+                new Bruger { BrugerID = Guid.NewGuid(), Brugernavn = "JohnDoe", Fornavn = fornavn, Efternavn = efternavn }
+            };
+
+            // Mock the repository to return the list of users when searching by first and last name
+            _brugerRepositoryMock.Setup(repo => repo.GetBrugerByFornavnEfternavnAsync(fornavn, efternavn))
+                .ReturnsAsync(brugere);
+
+            // Mock the mapper to map Bruger to BrugerDTO
+            _mapperMock.Setup(mapper => mapper.Map<IEnumerable<BrugerDTO>>(It.IsAny<IEnumerable<Bruger>>()))
+                .Returns(new List<BrugerDTO>
+                {
+            new BrugerDTO { BrugerID = brugere[0].BrugerID, Brugernavn = brugere[0].Brugernavn }
+                });
+
+            // Act
+            var result = await _brugerService.GetBrugerByFornavnEfternavnAsync(fornavn, efternavn);
+
+            // Assert
+            result.Success.Should().BeTrue(); // The result should be successful
+            result.Value.Should().NotBeEmpty(); // The result value should not be empty
+            result.Value.First().Brugernavn.Should().Be("JohnDoe"); // The Brugernavn should match the mocked data
+        }
+        [Fact]
+        public async Task GetBrugerByFornavnEfternavnAsync_ShouldReturnFail_WhenNoBrugereFound()
+        {
+            // Arrange
+            var fornavn = "NonExisting";
+            var efternavn = "User";
+            _brugerRepositoryMock.Setup(repo => repo.GetBrugerByFornavnEfternavnAsync(fornavn, efternavn))
+                .ReturnsAsync(new List<Bruger>()); // Simulate no users found
+
+            // Act
+            var result = await _brugerService.GetBrugerByFornavnEfternavnAsync(fornavn, efternavn);
+
+            // Assert
+            result.Success.Should().BeFalse();
+            result.Errors.Should().Contain("No users found with this name.");
+        }
     }
 }
