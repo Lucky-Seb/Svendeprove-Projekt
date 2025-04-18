@@ -1,12 +1,10 @@
-﻿using TaekwondoOrchestration.ApiService.Data;
-using TaekwondoApp.Shared.DTO;
+﻿using Microsoft.EntityFrameworkCore;
+using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoApp.Shared.Models;
-using TaekwondoOrchestration.ApiService.Repositories;
-using Microsoft.EntityFrameworkCore;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
 namespace TaekwondoOrchestration.ApiService.Repositories
 {
@@ -18,30 +16,63 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         {
             _context = context;
         }
-        public async Task<IEnumerable<Træning>> GetByProgramIdAsync(Guid træningId)
+
+        // GET all Træning records with related data
+        public async Task<List<Træning>> GetAllAsync()
         {
             return await _context.Træninger
-                .Where(t => t.ProgramID == træningId)
+                .Include(t => t.ProgramPlan) // Example of related entity (you can add more includes as needed)
                 .ToListAsync();
         }
-        public async Task<List<Træning>> GetAllTræningAsync()
+
+        // GET a Træning by ID with related data
+        public async Task<Træning?> GetByIdAsync(Guid træningId)
         {
-            return await _context.Træninger.ToListAsync();
+            return await _context.Træninger
+                .Include(t => t.ProgramPlan) // Example of related entity
+                .FirstOrDefaultAsync(t => t.TræningID == træningId);
         }
 
-        public async Task<Træning> GetTræningByIdAsync(Guid træningId)
+        // GET a Træning by ID including deleted records (for soft deletes)
+        public async Task<Træning?> GetByIdIncludingDeletedAsync(Guid træningId)
         {
-            return await _context.Træninger.FindAsync(træningId);
+            return await _context.Træninger
+                .IgnoreQueryFilters() // Ignores the soft delete filter
+                .Include(t => t.ProgramPlan) // Example of related entity
+                .FirstOrDefaultAsync(t => t.TræningID == træningId);
         }
-        public async Task<Træning> CreateTræningAsync(Træning træning)
+
+        // GET all Træning records including deleted ones (for soft deletes)
+        public async Task<List<Træning>> GetAllIncludingDeletedAsync()
+        {
+            return await _context.Træninger
+                .IgnoreQueryFilters() // Ignores the soft delete filter
+                .Include(t => t.ProgramPlan) // Example of related entity
+                .ToListAsync();
+        }
+
+        // CREATE a new Træning
+        public async Task<Træning> CreateAsync(Træning træning)
         {
             _context.Træninger.Add(træning);
             await _context.SaveChangesAsync();
-
-            return new Træning{};
+            return træning;
         }
 
-        public async Task<bool> DeleteTræningAsync(Guid træningId)
+        // UPDATE an existing Træning
+        public async Task<bool> UpdateAsync(Træning træning)
+        {
+            var existingTræning = await _context.Træninger.FindAsync(træning.TræningID);
+            if (existingTræning == null)
+                return false;
+
+            _context.Entry(existingTræning).CurrentValues.SetValues(træning);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // DELETE a Træning
+        public async Task<bool> DeleteAsync(Guid træningId)
         {
             var træning = await _context.Træninger.FindAsync(træningId);
             if (træning == null)
@@ -52,15 +83,13 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return true;
         }
 
-        public async Task<bool> UpdateTræningAsync(Træning træning)
+        // GET all Træning records by ProgramId (with related data)
+        public async Task<List<Træning>> GetByProgramIdAsync(Guid programId)
         {
-            var existingTræning = await _context.Træninger.FindAsync(træning.TræningID);
-            if (existingTræning == null)
-                return false;
-
-            _context.Entry(existingTræning).CurrentValues.SetValues(træning);
-            await _context.SaveChangesAsync();
-            return true;
+            return await _context.Træninger
+                .Where(t => t.ProgramID == programId) // Filter by ProgramID
+                .Include(t => t.ProgramPlan) // Example related entity
+                .ToListAsync();
         }
     }
 }
