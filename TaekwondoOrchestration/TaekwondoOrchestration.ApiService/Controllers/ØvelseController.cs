@@ -1,6 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoOrchestration.ApiService.Services;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,81 +13,89 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ØvelseController : ControllerBase
+    public class ØvelseController : ApiBaseController
     {
-        private readonly ØvelseService _øvelseService;
+        private readonly IØvelseService _øvelseService;
+        private readonly IHubContext<ØvelseHub> _hubContext;  // If you want real-time notifications
 
-        public ØvelseController(ØvelseService øvelseService)
+        public ØvelseController(IØvelseService øvelseService, IHubContext<ØvelseHub> hubContext)
         {
             _øvelseService = øvelseService;
+            _hubContext = hubContext;
         }
 
         // GET: api/Øvelse
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ØvelseDTO>>> GetØvelser()
+        public async Task<IActionResult> GetØvelser()
         {
-            var øvelser = await _øvelseService.GetAllØvelserAsync();
-            return Ok(øvelser);
+            var result = await _øvelseService.GetAllØvelserAsync();
+            return result.ToApiResponse();
         }
 
         // GET: api/Øvelse/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ØvelseDTO>> GetØvelse(Guid id)
+        public async Task<IActionResult> GetØvelse(Guid id)
         {
-            var øvelse = await _øvelseService.GetØvelseByIdAsync(id);
-            if (øvelse == null)
-                return NotFound();
-            return Ok(øvelse);
+            var result = await _øvelseService.GetØvelseByIdAsync(id);
+            return result.ToApiResponse();
         }
 
         // GET: api/Øvelse/sværhed/{sværhed}
         [HttpGet("sværhed/{sværhed}")]
-        public async Task<ActionResult<IEnumerable<ØvelseDTO>>> GetØvelserBySværhed(string sværhed)
+        public async Task<IActionResult> GetØvelserBySværhed(string sværhed)
         {
-            var øvelser = await _øvelseService.GetØvelserBySværhedAsync(sværhed);
-            return Ok(øvelser);
+            var result = await _øvelseService.GetØvelserBySværhedAsync(sværhed);
+            return result.ToApiResponse();
         }
 
         // GET: api/Øvelse/bruger/{brugerId}
         [HttpGet("bruger/{brugerId}")]
-        public async Task<ActionResult<IEnumerable<ØvelseDTO>>> GetØvelserByBruger(Guid brugerId)
+        public async Task<IActionResult> GetØvelserByBruger(Guid brugerId)
         {
-            var øvelser = await _øvelseService.GetØvelserByBrugerAsync(brugerId);
-            return Ok(øvelser);
+            var result = await _øvelseService.GetØvelserByBrugerAsync(brugerId);
+            return result.ToApiResponse();
         }
 
         // GET: api/Øvelse/klub/{klubId}
         [HttpGet("klub/{klubId}")]
-        public async Task<ActionResult<IEnumerable<ØvelseDTO>>> GetØvelserByKlub(Guid klubId)
+        public async Task<IActionResult> GetØvelserByKlub(Guid klubId)
         {
-            var øvelser = await _øvelseService.GetØvelserByKlubAsync(klubId);
-            return Ok(øvelser);
+            var result = await _øvelseService.GetØvelserByKlubAsync(klubId);
+            return result.ToApiResponse();
         }
 
         // GET: api/Øvelse/navn/{navn}
         [HttpGet("navn/{navn}")]
-        public async Task<ActionResult<IEnumerable<ØvelseDTO>>> GetØvelserByNavn(string navn)
+        public async Task<IActionResult> GetØvelserByNavn(string navn)
         {
-            var øvelser = await _øvelseService.GetØvelserByNavnAsync(navn);
-            return Ok(øvelser);
+            var result = await _øvelseService.GetØvelserByNavnAsync(navn);
+            return result.ToApiResponse();
         }
 
         // POST: api/Øvelse
         [HttpPost]
-        public async Task<ActionResult<ØvelseDTO>> PostØvelse(ØvelseDTO øvelseDto)
+        public async Task<IActionResult> PostØvelse(ØvelseDTO øvelseDto)
         {
-            var createdØvelse = await _øvelseService.CreateØvelseAsync(øvelseDto);
-            return CreatedAtAction(nameof(GetØvelse), new { id = createdØvelse.ØvelseID }, createdØvelse);
+            var result = await _øvelseService.CreateØvelseAsync(øvelseDto);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("ØvelseUpdated");
+
+            return result.ToApiResponse();
         }
 
         // DELETE: api/Øvelse/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteØvelse(Guid id)
         {
-            var success = await _øvelseService.DeleteØvelseAsync(id);
-            if (!success)
-                return NotFound();
-            return NoContent();
+            var result = await _øvelseService.DeleteØvelseAsync(id);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("ØvelseDeleted");
+
+            return result.ToApiResponse();
         }
     }
 }
