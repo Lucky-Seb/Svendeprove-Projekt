@@ -1,48 +1,123 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoOrchestration.ApiService.Services;
+using Microsoft.AspNetCore.SignalR;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SpørgsmålController : ControllerBase
+    public class SpørgsmålController : ApiBaseController
     {
-        private readonly SpørgsmålService _spørgsmålService;
+        private readonly ISpørgsmålService _spørgsmålService;
+        private readonly IHubContext<SpørgsmålHub> _hubContext; // Assuming you have a SpørgsmålHub for real-time notifications
 
-        public SpørgsmålController(SpørgsmålService spørgsmålService)
+        public SpørgsmålController(ISpørgsmålService spørgsmålService, IHubContext<SpørgsmålHub> hubContext)
         {
             _spørgsmålService = spørgsmålService;
+            _hubContext = hubContext;
         }
 
+        // GET: api/spørgsmål
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SpørgsmålDTO>>> GetSpørgsmål()
+        public async Task<IActionResult> GetSpørgsmål()
         {
-            return Ok(await _spørgsmålService.GetAllSpørgsmålAsync());
+            var result = await _spørgsmålService.GetAllSpørgsmålAsync();
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
+        // GET: api/spørgsmål/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<SpørgsmålDTO>> GetSpørgsmål(Guid id)
+        public async Task<IActionResult> GetSpørgsmål(Guid id)
         {
-            var spørgsmål = await _spørgsmålService.GetSpørgsmålByIdAsync(id);
-            if (spørgsmål == null)
-                return NotFound();
-            return Ok(spørgsmål);
+            var result = await _spørgsmålService.GetSpørgsmålByIdAsync(id);
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
+        // POST: api/spørgsmål
         [HttpPost]
-        public async Task<ActionResult<SpørgsmålDTO>> PostSpørgsmål(SpørgsmålDTO spørgsmålDto)
+        public async Task<IActionResult> PostSpørgsmål([FromBody] SpørgsmålDTO spørgsmålDto)
         {
-            var createdSpørgsmål = await _spørgsmålService.CreateSpørgsmålAsync(spørgsmålDto);
-            return CreatedAtAction(nameof(GetSpørgsmål), new { id = createdSpørgsmål.SpørgsmålID }, createdSpørgsmål);
+            if (spørgsmålDto == null)
+            {
+                return BadRequest("Invalid data");
+            }
+
+            var result = await _spørgsmålService.CreateSpørgsmålAsync(spørgsmålDto);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("SpørgsmålUpdated");
+
+            return result.ToApiResponse();
         }
 
+        // PUT: api/spørgsmål/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutSpørgsmål(Guid id, [FromBody] SpørgsmålDTO spørgsmålDto)
+        {
+            var result = await _spørgsmålService.UpdateSpørgsmålAsync(id, spørgsmålDto);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("SpørgsmålUpdated");
+
+            return result.ToApiResponse();
+        }
+
+        // DELETE: api/spørgsmål/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSpørgsmål(Guid id)
         {
-            var success = await _spørgsmålService.DeleteSpørgsmålAsync(id);
-            if (!success)
-                return NotFound();
-            return NoContent();
+            var result = await _spørgsmålService.DeleteSpørgsmålAsync(id);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("SpørgsmålDeleted");
+
+            return result.ToApiResponse();
+        }
+
+        // PUT: api/spørgsmål/restore/5
+        [HttpPut("restore/{id}")]
+        public async Task<IActionResult> RestoreSpørgsmål(Guid id, [FromBody] SpørgsmålDTO spørgsmålDto)
+        {
+            var result = await _spørgsmålService.RestoreSpørgsmålAsync(id, spørgsmålDto);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("SpørgsmålRestored");
+
+            return result.ToApiResponse();
+        }
+
+        // GET: api/spørgsmål/by-quiz/{quizId}
+        [HttpGet("by-quiz/{quizId}")]
+        public async Task<IActionResult> GetSpørgsmålByQuizId(Guid quizId)
+        {
+            var result = await _spørgsmålService.GetSpørgsmålByQuizIdAsync(quizId);
+            return result.ToApiResponse();
+        }
+
+        // GET: api/spørgsmål/all
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllSpørgsmålIncludingDeleted()
+        {
+            var result = await _spørgsmålService.GetAllSpørgsmålIncludingDeletedAsync();
+            return result.ToApiResponse();
+        }
+
+        // GET: api/spørgsmål/{id}/including-deleted
+        [HttpGet("{id}/including-deleted")]
+        public async Task<IActionResult> GetSpørgsmålByIdIncludingDeleted(Guid id)
+        {
+            var result = await _spørgsmålService.GetSpørgsmålByIdIncludingDeletedAsync(id);
+            return result.ToApiResponse();
         }
     }
 }
