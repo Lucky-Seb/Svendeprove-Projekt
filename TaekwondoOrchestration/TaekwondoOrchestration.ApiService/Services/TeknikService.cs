@@ -2,122 +2,138 @@
 using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using AutoMapper;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
-
-public class TeknikService
+namespace TaekwondoOrchestration.ApiService.Services
 {
-    private readonly ITeknikRepository _teknikRepository;
-
-    public TeknikService(ITeknikRepository teknikRepository)
+    public class TeknikService : ITeknikService
     {
-        _teknikRepository = teknikRepository;
-    }
+        private readonly ITeknikRepository _teknikRepository;
+        private readonly IMapper _mapper;
 
-    // Get all Tekniks as DTO
-    public async Task<List<TeknikDTO>> GetAllTekniksAsync()
-    {
-        var teknikList = await _teknikRepository.GetAllTekniksAsync();
-        return teknikList.Select(t => new TeknikDTO
+        public TeknikService(ITeknikRepository teknikRepository, IMapper mapper)
         {
-            TeknikID = t.TeknikID,
-            TeknikNavn = t.TeknikNavn,
-            TeknikBeskrivelse = t.TeknikBeskrivelse,
-            TeknikBillede = t.TeknikBillede,
-            TeknikVideo = t.TeknikVideo,
-            TeknikLyd = t.TeknikLyd,
-            PensumID = t.PensumID
-        }).ToList();
-    }
+            _teknikRepository = teknikRepository;
+            _mapper = mapper;
+        }
 
-    // Get Teknik by ID
-    public async Task<TeknikDTO?> GetTeknikByIdAsync(Guid id)
-    {
+        #region CRUD Operations
 
-        var teknik = await _teknikRepository.GetTeknikByIdAsync(id);
-        if (teknik == null) return null;
-
-        return MapToDto(teknik);
-    }
-
-    // Create Teknik
-    public async Task<TeknikDTO> CreateTeknikAsync(TeknikDTO teknikDto)
-    {
-        if (teknikDto == null)
-            return null;
-
-        var newTeknik = new Teknik
+        // Get All Teknikker
+        public async Task<Result<IEnumerable<TeknikDTO>>> GetAllTekniksAsync()
         {
-            TeknikNavn = teknikDto.TeknikNavn,
-            TeknikBeskrivelse = teknikDto.TeknikBeskrivelse,
-            TeknikBillede = teknikDto.TeknikBillede,
-            TeknikVideo = teknikDto.TeknikVideo,
-            TeknikLyd = teknikDto.TeknikLyd,
-            PensumID = teknikDto.PensumID
-        };
+            var teknikList = await _teknikRepository.GetAllAsync();
+            var mapped = _mapper.Map<IEnumerable<TeknikDTO>>(teknikList);
+            return Result<IEnumerable<TeknikDTO>>.Ok(mapped);
+        }
 
-        var createdTeknik = await _teknikRepository.CreateTeknikAsync(newTeknik);
-
-        return MapToDto(createdTeknik);
-    }
-
-    // Delete Teknik
-    public async Task<bool> DeleteTeknikAsync(Guid id)
-    {
-        return await _teknikRepository.DeleteTeknikAsync(id);
-    }
-
-    // Update Teknik
-    public async Task<bool> UpdateTeknikAsync(Guid id, TeknikDTO teknikDto)
-    {
-
-        var existingTeknik = await _teknikRepository.GetTeknikByIdAsync(id);
-        if (existingTeknik == null) return false;
-
-        var updatedTeknik = new Teknik
+        // Get Teknik by ID
+        public async Task<Result<TeknikDTO>> GetTeknikByIdAsync(Guid id)
         {
-            TeknikID = id,
-            TeknikNavn = teknikDto.TeknikNavn,
-            TeknikBeskrivelse = teknikDto.TeknikBeskrivelse,
-            TeknikBillede = teknikDto.TeknikBillede,
-            TeknikVideo = teknikDto.TeknikVideo,
-            TeknikLyd = teknikDto.TeknikLyd,
-            PensumID = teknikDto.PensumID
-        };
+            var teknik = await _teknikRepository.GetByIdAsync(id);
+            if (teknik == null)
+                return Result<TeknikDTO>.Fail("Teknik not found.");
 
-        return await _teknikRepository.UpdateTeknikAsync(updatedTeknik);
-    }
+            var mapped = _mapper.Map<TeknikDTO>(teknik);
+            return Result<TeknikDTO>.Ok(mapped);
+        }
 
-    // Get all Tekniks by Pensum ID
-    public async Task<List<TeknikDTO>> GetAllTeknikByPensumAsync(Guid pensumId)
-    {
-
-        var teknikList = await _teknikRepository.GetTekniksByPensumAsync(pensumId);
-        return teknikList.Select(t => MapToDto(t)).ToList();
-    }
-
-    // Get Teknik by TeknikNavn
-    public async Task<TeknikDTO?> GetTeknikByTeknikNavnAsync(string teknikNavn)
-    {
-        if (string.IsNullOrWhiteSpace(teknikNavn)) return null;
-
-        var teknik = await _teknikRepository.GetTeknikByTeknikNavnAsync(teknikNavn);
-        if (teknik == null) return null;
-
-        return MapToDto(teknik);
-    }
-
-    // Helper method for manual mapping
-    private TeknikDTO MapToDto(Teknik teknik)
-    {
-        return new TeknikDTO
+        // Create New Teknik
+        public async Task<Result<TeknikDTO>> CreateTeknikAsync(TeknikDTO teknikDto)
         {
-            TeknikID = teknik.TeknikID,
-            TeknikNavn = teknik.TeknikNavn,
-            TeknikBeskrivelse = teknik.TeknikBeskrivelse,
-            TeknikBillede = teknik.TeknikBillede,
-            TeknikVideo = teknik.TeknikVideo,
-            TeknikLyd = teknik.TeknikLyd,
-            PensumID = teknik.PensumID
-        };
+            if (teknikDto == null)
+            {
+                return Result<TeknikDTO>.Fail("Invalid Teknik data.");
+            }
+
+            var newTeknik = _mapper.Map<Teknik>(teknikDto);
+            EntityHelper.InitializeEntity(newTeknik, teknikDto.ModifiedBy, "Created new Teknik.");
+
+            var createdTeknik = await _teknikRepository.CreateAsync(newTeknik);
+            var mapped = _mapper.Map<TeknikDTO>(createdTeknik);
+
+            return Result<TeknikDTO>.Ok(mapped);
+        }
+
+        // Update Existing Teknik
+        public async Task<Result<TeknikDTO>> UpdateTeknikAsync(Guid id, TeknikDTO teknikDto)
+        {
+            if (teknikDto == null || id != teknikDto.TeknikID)
+                return Result<TeknikDTO>.Fail("Invalid Teknik data.");
+
+            var existingTeknik = await _teknikRepository.GetByIdAsync(id);
+            if (existingTeknik == null)
+                return Result<TeknikDTO>.Fail("Teknik not found.");
+
+            _mapper.Map(teknikDto, existingTeknik);
+            EntityHelper.UpdateCommonFields(existingTeknik, teknikDto.ModifiedBy);
+
+            var updateSuccess = await _teknikRepository.UpdateAsync(existingTeknik);
+            return updateSuccess ? Result<TeknikDTO>.Ok(_mapper.Map<TeknikDTO>(existingTeknik)) : Result<TeknikDTO>.Fail("Failed to update Teknik.");
+        }
+
+        // Soft Delete Teknik
+        public async Task<Result<bool>> DeleteTeknikAsync(Guid id)
+        {
+            var teknik = await _teknikRepository.GetByIdAsync(id);
+            if (teknik == null)
+                return Result<bool>.Fail("Teknik not found.");
+
+            // Soft delete logic
+            string modifiedBy = teknik.ModifiedBy; // Assuming user context
+            EntityHelper.SetDeletedOrRestoredProperties(teknik, "Soft-deleted Teknik", modifiedBy);
+
+            var success = await _teknikRepository.UpdateAsync(teknik);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Teknik.");
+        }
+
+        // Restore Teknik from Soft-Delete
+        public async Task<Result<bool>> RestoreTeknikAsync(Guid id, TeknikDTO teknikDto)
+        {
+            var teknik = await _teknikRepository.GetByIdIncludingDeletedAsync(id);
+            if (teknik == null || !teknik.IsDeleted)
+                return Result<bool>.Fail("Teknik not found or not deleted.");
+
+            teknik.IsDeleted = false;
+            teknik.Status = SyncStatus.Synced;
+            teknik.ModifiedBy = teknikDto.ModifiedBy;
+            teknik.LastSyncedVersion++;
+
+            // Set properties for restored entry
+            EntityHelper.SetDeletedOrRestoredProperties(teknik, "Restored Teknik", teknikDto.ModifiedBy);
+
+            var success = await _teknikRepository.UpdateAsync(teknik);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore Teknik.");
+        }
+
+        #endregion
+
+        #region Get Operations
+
+        // Get Teknikker by Pensum ID
+        public async Task<Result<IEnumerable<TeknikDTO>>> GetAllTeknikByPensumAsync(Guid pensumId)
+        {
+            var teknikList = await _teknikRepository.GetByPensumIdAsync(pensumId);
+            var mapped = _mapper.Map<IEnumerable<TeknikDTO>>(teknikList);
+            return Result<IEnumerable<TeknikDTO>>.Ok(mapped);
+        }
+
+        // Get Teknik by TeknikNavn
+        public async Task<Result<TeknikDTO>> GetTeknikByTeknikNavnAsync(string teknikNavn)
+        {
+            if (string.IsNullOrWhiteSpace(teknikNavn))
+                return Result<TeknikDTO>.Fail("Teknik name cannot be empty.");
+
+            var teknik = await _teknikRepository.GetByTeknikNavnAsync(teknikNavn);
+            if (teknik == null)
+                return Result<TeknikDTO>.Fail("Teknik not found.");
+
+            var mapped = _mapper.Map<TeknikDTO>(teknik);
+            return Result<TeknikDTO>.Ok(mapped);
+        }
+
+        #endregion
     }
 }
