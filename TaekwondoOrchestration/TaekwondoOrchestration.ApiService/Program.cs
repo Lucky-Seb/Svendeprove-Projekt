@@ -1,24 +1,23 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using System.Text;
-using System.Text.Json;
 using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Mapping;
 using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoOrchestration.ApiService.Filters;
-using TaekwondoOrchestration.ApiService.Middlewares;
 using TaekwondoOrchestration.ApiService.NotificationHubs;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 using TaekwondoOrchestration.ApiService.Services;
 using TaekwondoOrchestration.ApiService.Validators;
 using TaekwondoOrchestration.ApiService.Helpers;
+using System.Text.Json;
+using TaekwondoOrchestration.ApiService.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,7 +46,7 @@ builder.Services.AddAuthorization(); // Add custom policies here if needed
 // ---------------------
 // 🗂 Repositories
 // ---------------------
-var repositoryTypes = typeof(IBrugerKlubRepository).Assembly
+var repositoryTypes = typeof(IBrugerRepository).Assembly
     .GetTypes()
     .Where(t => t.Name.EndsWith("Repository") && !t.IsInterface);
 
@@ -63,26 +62,18 @@ foreach (var repo in repositoryTypes)
 // ---------------------
 // 🧠 Services
 // ---------------------
-var serviceTypes = new[]
-{
-    typeof(BrugerKlubService), typeof(BrugerØvelseService), typeof(BrugerProgramService),
-    typeof(BrugerQuizService), typeof(BrugerService), typeof(KlubService),
-    typeof(KlubProgramService), typeof(KlubQuizService), typeof(KlubØvelseService),
-    typeof(OrdbogService), typeof(ØvelseService), typeof(PensumService),
-    typeof(ProgramPlanService), typeof(QuizService), typeof(SpørgsmålService),
-    typeof(TeknikService), typeof(TeoriService), typeof(TræningService)
-};
+var serviceTypes = typeof(IBrugerService).Assembly
+    .GetTypes()
+    .Where(t => t.Name.EndsWith("Service") && !t.IsInterface);
 
-foreach (var serviceType in serviceTypes)
+foreach (var service in serviceTypes)
 {
-    builder.Services.AddScoped(serviceType);
+    var interfaceType = service.GetInterfaces().FirstOrDefault(i => i.Name == $"I{service.Name}");
+    if (interfaceType != null)
+    {
+        builder.Services.AddScoped(interfaceType, service);
+    }
 }
-
-// Register IKlubService and KlubService explicitly for Dependency Injection
-builder.Services.AddScoped<IKlubService, KlubService>();
-
-// Register IJwtHelper and JwtHelper for token generation
-builder.Services.AddSingleton<IJwtHelper>(new JwtHelper(builder.Configuration["Jwt:SecretKey"])); // Use the secret key from the configuration
 
 // ---------------------
 // 🧭 Middleware & Filters
@@ -100,7 +91,10 @@ builder.Services.AddControllers(options =>
 // ---------------------
 builder.Services.AddAutoMapper(typeof(BrugerMap));
 builder.Services.AddAutoMapper(typeof(OrdbogMap));
-builder.Services.AddAutoMapper(typeof(KlubMap)); // Make sure you add this for Klub mappings
+builder.Services.AddAutoMapper(typeof(KlubMap));
+builder.Services.AddAutoMapper(typeof(ProgramPlanMap));
+builder.Services.AddAutoMapper(typeof(PensumMap));
+builder.Services.AddAutoMapper(typeof(ØvelseMap));
 
 // ---------------------
 // ✅ FluentValidation
@@ -108,6 +102,10 @@ builder.Services.AddAutoMapper(typeof(KlubMap)); // Make sure you add this for K
 builder.Services.AddValidatorsFromAssemblyContaining<BrugerDTOValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<PensumDTOValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<OrdbogDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ØvelseDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ProgramPlanDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<KlubDTOValidator>();
+
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters(); // Optional
 
@@ -134,10 +132,6 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1"
     });
 });
-
-builder.Services.AddOpenApi();
-builder.Services.AddProblemDetails();
-builder.AddServiceDefaults();
 
 // ---------------------
 // 🔧 Build App
@@ -188,7 +182,6 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-// ---------------------
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
