@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoOrchestration.ApiService.Services;
+using Microsoft.AspNetCore.SignalR;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,82 +12,107 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TeoriController : ControllerBase
+    public class TeoriController : ApiBaseController
     {
-        private readonly TeoriService _teoriService;
+        private readonly ITeoriService _teoriService;
+        private readonly IHubContext<TeoriHub> _hubContext; // Assuming you have a TeoriHub for real-time notifications
 
-        public TeoriController(TeoriService teoriService)
+        public TeoriController(ITeoriService teoriService, IHubContext<TeoriHub> hubContext)
         {
             _teoriService = teoriService;
+            _hubContext = hubContext;
         }
 
-        // Get all Teori records
+        // GET: api/teori
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TeoriDTO>>> GetTeorier()
+        public async Task<IActionResult> GetTeorier()
         {
-            var teorier = await _teoriService.GetAllTeoriAsync();
-            return Ok(teorier);
+            var result = await _teoriService.GetAllTeoriAsync();
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
-        // Get Teori by ID
+        // GET: api/teori/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<TeoriDTO>> GetTeori(Guid id)
+        public async Task<IActionResult> GetTeori(Guid id)
         {
-            var teori = await _teoriService.GetTeoriByIdAsync(id);
-            if (teori == null)
-                return NotFound();
-            return Ok(teori);
+            var result = await _teoriService.GetTeoriByIdAsync(id);
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
-        // Get all Teori by Pensum ID
+        // GET: api/teori/pensum/{pensumId}
         [HttpGet("pensum/{pensumId}")]
-        public async Task<ActionResult<IEnumerable<TeoriDTO>>> GetTeorierByPensum(Guid pensumId)
+        public async Task<IActionResult> GetTeorierByPensum(Guid pensumId)
         {
-            var teorier = await _teoriService.GetTeoriByPensumAsync(pensumId);
-            if (teorier == null || teorier.Count == 0)
-                return NotFound();
-            return Ok(teorier);
+            var result = await _teoriService.GetTeoriByPensumAsync(pensumId);
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
-        // Get Teori by TeoriNavn
+        // GET: api/teori/navn/{teoriNavn}
         [HttpGet("navn/{teoriNavn}")]
-        public async Task<ActionResult<TeoriDTO>> GetTeoriByNavn(string teoriNavn)
+        public async Task<IActionResult> GetTeoriByNavn(string teoriNavn)
         {
-            var teori = await _teoriService.GetTeoriByTeoriNavnAsync(teoriNavn);
-            if (teori == null)
-                return NotFound();
-            return Ok(teori);
+            var result = await _teoriService.GetTeoriByTeoriNavnAsync(teoriNavn);
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
-        // Create a new Teori
+        // POST: api/teori
         [HttpPost]
-        public async Task<ActionResult<TeoriDTO>> PostTeori([FromBody] TeoriDTO teoriDTO)
+        public async Task<IActionResult> PostTeori([FromBody] TeoriDTO teoriDTO)
         {
             if (teoriDTO == null)
-                return BadRequest("Invalid data.");
+            {
+                return BadRequest("Invalid data");
+            }
 
-            var createdTeori = await _teoriService.CreateTeoriAsync(teoriDTO);
-            return CreatedAtAction(nameof(GetTeori), new { id = createdTeori.TeoriID }, createdTeori);
+            var result = await _teoriService.CreateTeoriAsync(teoriDTO);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("TeoriUpdated");
+
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
-        // Update an existing Teori
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTeori(Guid id, [FromBody] TeoriDTO teoriDTO)
-        {
-            var success = await _teoriService.UpdateTeoriAsync(id, teoriDTO);
-            if (!success)
-                return BadRequest();
-            return NoContent();
-        }
-
-        // Delete a Teori by ID
+        // DELETE: api/teori/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTeori(Guid id)
         {
-            var success = await _teoriService.DeleteTeoriAsync(id);
-            if (!success)
-                return NotFound();
-            return NoContent();
+            var result = await _teoriService.DeleteTeoriAsync(id);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("TeoriDeleted");
+
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
+        }
+
+        // PUT: api/teori/restore/{id}
+        [HttpPut("restore/{id}")]
+        public async Task<IActionResult> RestoreTeori(Guid id, [FromBody] TeoriDTO teoriDTO)
+        {
+            var result = await _teoriService.RestoreTeoriAsync(id, teoriDTO);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("TeoriRestored");
+
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
+        }
+
+        // GET: api/teori/all
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllTeoriIncludingDeleted()
+        {
+            var result = await _teoriService.GetAllTeoriIncludingDeletedAsync();
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
+        }
+
+        // GET: api/teori/{id}/including-deleted
+        [HttpGet("{id}/including-deleted")]
+        public async Task<IActionResult> GetTeoriByIdIncludingDeleted(Guid id)
+        {
+            var result = await _teoriService.GetTeoriByIdIncludingDeletedAsync(id);
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
     }
 }
