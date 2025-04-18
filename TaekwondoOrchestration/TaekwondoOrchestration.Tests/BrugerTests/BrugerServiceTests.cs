@@ -406,5 +406,46 @@ namespace TaekwondoOrchestration.Tests.BrugerTests
             result.Success.Should().BeFalse();
             result.Errors.Should().Contain("No users found with this name.");
         }
+        [Fact]
+        public async Task RestoreBrugerAsync_ShouldReturnSuccess_WhenBrugerExistsAndIsDeleted()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var brugerDto = new BrugerDTO { ModifiedBy = "Admin" };
+            var deletedBruger = new Bruger { BrugerID = id, IsDeleted = true, ModifiedBy = "Admin" };
+
+            // Mock the repository to return a deleted user
+            _brugerRepositoryMock.Setup(repo => repo.GetBrugerByIdIncludingDeletedAsync(id))
+                .ReturnsAsync(deletedBruger);
+
+            // Mock the repository to return success when updating the user
+            _brugerRepositoryMock.Setup(repo => repo.UpdateBrugerAsync(It.IsAny<Bruger>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _brugerService.RestoreBrugerAsync(id, brugerDto);
+
+            // Assert
+            result.Success.Should().BeTrue(); // The result should be successful
+        }
+        [Fact]
+        public async Task RestoreBrugerAsync_ShouldReturnFail_WhenBrugerNotFoundOrNotDeleted()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var brugerDto = new BrugerDTO { ModifiedBy = "Admin" };
+
+            // Mock the repository to return a non-deleted user
+            _brugerRepositoryMock.Setup(repo => repo.GetBrugerByIdIncludingDeletedAsync(id))
+                .ReturnsAsync((Bruger)null); // Simulate the user not being found
+
+            // Act
+            var result = await _brugerService.RestoreBrugerAsync(id, brugerDto);
+
+            // Assert
+            result.Success.Should().BeFalse(); // The result should be a failure
+            result.Errors.Should().Contain("Bruger not found or not deleted.");
+        }
+
     }
 }
