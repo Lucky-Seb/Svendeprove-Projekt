@@ -89,12 +89,7 @@ builder.Services.AddControllers(options =>
 // ---------------------
 // 🧰 Utility & AutoMapper
 // ---------------------
-builder.Services.AddAutoMapper(typeof(BrugerMap));
-builder.Services.AddAutoMapper(typeof(OrdbogMap));
-builder.Services.AddAutoMapper(typeof(KlubMap));
-builder.Services.AddAutoMapper(typeof(ProgramPlanMap));
-builder.Services.AddAutoMapper(typeof(PensumMap));
-builder.Services.AddAutoMapper(typeof(ØvelseMap));
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // ---------------------
 // ✅ FluentValidation
