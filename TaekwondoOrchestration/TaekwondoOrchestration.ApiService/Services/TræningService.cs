@@ -1,129 +1,151 @@
-﻿using TaekwondoApp.Shared.Models;
-using TaekwondoApp.Shared.DTO;
+﻿using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
-
+using AutoMapper;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class TræningService
+    public class TræningService : ITræningService
     {
         private readonly ITræningRepository _træningRepository;
+        private readonly IMapper _mapper;
 
-        public TræningService(ITræningRepository træningRepository)
+        public TræningService(ITræningRepository træningRepository, IMapper mapper)
         {
             _træningRepository = træningRepository;
+            _mapper = mapper;
         }
 
-        // Get all Træning as DTO
-        public async Task<List<TræningDTO>> GetAllTræningAsync()
-        {
-            var træningList = await _træningRepository.GetAllTræningAsync();
-            if (træningList == null || !træningList.Any()) return new List<TræningDTO>();
+        #region CRUD Operations
 
-            return træningList.Select(t => new TræningDTO
-            {
-                TræningID = t.TræningID,
-                TræningRækkefølge = t.TræningRækkefølge,
-                Tid = t.Tid,
-                ProgramID = t.ProgramID,
-                QuizID = t.QuizID,
-                TeoriID = t.TeoriID,
-                TeknikID = t.TeknikID,
-                ØvelseID = t.ØvelseID,
-                PensumID = t.PensumID
-            }).ToList();
+        // Get All Træninger
+        public async Task<Result<IEnumerable<TræningDTO>>> GetAllTræningAsync()
+        {
+            var træningList = await _træningRepository.GetAllAsync();
+            if (træningList == null || !træningList.Any())
+                return Result<IEnumerable<TræningDTO>>.Fail("No træning records found.");
+
+            var mapped = _mapper.Map<IEnumerable<TræningDTO>>(træningList);
+            return Result<IEnumerable<TræningDTO>>.Ok(mapped);
         }
 
         // Get Træning by ID
-        public async Task<TræningDTO?> GetTræningByIdAsync(Guid id)
+        public async Task<Result<TræningDTO>> GetTræningByIdAsync(Guid id)
         {
-            if (id <= null) return null;
+            var træning = await _træningRepository.GetByIdAsync(id);
+            if (træning == null)
+                return Result<TræningDTO>.Fail("Træning not found.");
 
-            var træning = await _træningRepository.GetTræningByIdAsync(id);
-            if (træning == null) return null;
-
-            return new TræningDTO
-            {
-                TræningID = træning.TræningID,
-                TræningRækkefølge = træning.TræningRækkefølge,
-                Tid = træning.Tid,
-                ProgramID = træning.ProgramID,
-                QuizID = træning.QuizID,
-                TeoriID = træning.TeoriID,
-                TeknikID = træning.TeknikID,
-                ØvelseID = træning.ØvelseID,
-                PensumID = træning.PensumID
-            };
+            var mapped = _mapper.Map<TræningDTO>(træning);
+            return Result<TræningDTO>.Ok(mapped);
         }
 
-        // Create Træning based on DTO
-        public async Task<TræningDTO?> CreateTræningAsync(TræningDTO træningDto)
+        // Create New Træning
+        public async Task<Result<TræningDTO>> CreateTræningAsync(TræningDTO træningDto)
         {
-            if (træningDto == null) return null;
-            if (træningDto.ProgramID <= null || træningDto.Tid <= 0) return null;
+            if (træningDto == null)
+                return Result<TræningDTO>.Fail("Invalid træning data.");
 
-            var newTræning = new Træning
-            {
-                TræningRækkefølge = træningDto.TræningRækkefølge,
-                Tid = træningDto.Tid,
-                ProgramID = træningDto.ProgramID,
-                QuizID = træningDto.QuizID,
-                TeoriID = træningDto.TeoriID,
-                TeknikID = træningDto.TeknikID,
-                ØvelseID = træningDto.ØvelseID,
-                PensumID = træningDto.PensumID
-            };
+            var newTræning = _mapper.Map<Træning>(træningDto);
+            EntityHelper.InitializeEntity(newTræning, træningDto.ModifiedBy, "Created new Træning.");
 
-            await _træningRepository.CreateTræningAsync(newTræning);
+            var createdTræning = await _træningRepository.CreateAsync(newTræning);
+            var mapped = _mapper.Map<TræningDTO>(createdTræning);
 
-            return new TræningDTO
-            {
-                TræningID = newTræning.TræningID,
-                TræningRækkefølge = newTræning.TræningRækkefølge,
-                Tid = newTræning.Tid,
-                ProgramID = newTræning.ProgramID,
-                QuizID = newTræning.QuizID,
-                TeoriID = newTræning.TeoriID,
-                TeknikID = newTræning.TeknikID,
-                ØvelseID = newTræning.ØvelseID,
-                PensumID = newTræning.PensumID
-            };
+            return Result<TræningDTO>.Ok(mapped);
         }
 
-        // Delete Træning by ID
-        public async Task<bool> DeleteTræningAsync(Guid id)
+        // Update Existing Træning
+        public async Task<Result<TræningDTO>> UpdateTræningAsync(Guid id, TræningDTO træningDto)
         {
-            if (id <= null) return false;
-            return await _træningRepository.DeleteTræningAsync(id);
+            if (træningDto == null || id != træningDto.TræningID)
+                return Result<TræningDTO>.Fail("Invalid træning data.");
+
+            var existingTræning = await _træningRepository.GetByIdAsync(id);
+            if (existingTræning == null)
+                return Result<TræningDTO>.Fail("Træning not found.");
+
+            _mapper.Map(træningDto, existingTræning);
+            EntityHelper.UpdateCommonFields(existingTræning, træningDto.ModifiedBy);
+
+            var updateSuccess = await _træningRepository.UpdateAsync(existingTræning);
+            return updateSuccess ? Result<TræningDTO>.Ok(_mapper.Map<TræningDTO>(existingTræning)) : Result<TræningDTO>.Fail("Failed to update træning.");
         }
 
-        // Update Træning by ID and DTO
-        public async Task<bool> UpdateTræningAsync(Guid id, TræningDTO træningDto)
+        // Soft Delete Træning
+        public async Task<Result<bool>> DeleteTræningAsync(Guid id)
         {
-            if (id <= null || træningDto == null || id != træningDto.TræningID) return false;
-            if (træningDto.ProgramID <= null || træningDto.Tid <= 0) return false;
+            var træning = await _træningRepository.GetByIdAsync(id);
+            if (træning == null)
+                return Result<bool>.Fail("Træning not found.");
 
-            var existingTræning = await _træningRepository.GetTræningByIdAsync(id);
-            if (existingTræning == null) return false;
+            // Soft delete logic
+            string modifiedBy = træning.ModifiedBy; // Assuming user context
+            EntityHelper.SetDeletedOrRestoredProperties(træning, "Soft-deleted træning", modifiedBy);
 
-            var updatedTræning = new Træning
-            {
-                TræningID = id,
-                TræningRækkefølge = træningDto.TræningRækkefølge,
-                Tid = træningDto.Tid,
-                ProgramID = træningDto.ProgramID,
-                QuizID = træningDto.QuizID,
-                TeoriID = træningDto.TeoriID,
-                TeknikID = træningDto.TeknikID,
-                ØvelseID = træningDto.ØvelseID,
-                PensumID = træningDto.PensumID
-            };
-
-            return await _træningRepository.UpdateTræningAsync(updatedTræning);
+            var success = await _træningRepository.UpdateAsync(træning);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete træning.");
         }
+
+        // Restore Træning from Soft-Delete
+        public async Task<Result<bool>> RestoreTræningAsync(Guid id, TræningDTO træningDto)
+        {
+            var træning = await _træningRepository.GetByIdIncludingDeletedAsync(id);
+            if (træning == null || !træning.IsDeleted)
+                return Result<bool>.Fail("Træning not found or not deleted.");
+
+            træning.IsDeleted = false;
+            træning.Status = SyncStatus.Synced;
+            træning.ModifiedBy = træningDto.ModifiedBy;
+            træning.LastSyncedVersion++;
+
+            // Set properties for restored entry
+            EntityHelper.SetDeletedOrRestoredProperties(træning, "Restored træning", træningDto.ModifiedBy);
+
+            var success = await _træningRepository.UpdateAsync(træning);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore træning.");
+        }
+
+        #endregion
+
+        #region Get Operations
+
+        // Get all Træning by Program ID
+        public async Task<Result<IEnumerable<TræningDTO>>> GetTræningByProgramIdAsync(Guid programId)
+        {
+            var træningList = await _træningRepository.GetByProgramIdAsync(programId);
+            if (træningList == null || !træningList.Any())
+                return Result<IEnumerable<TræningDTO>>.Fail("No træning records found for this program.");
+
+            var mapped = _mapper.Map<IEnumerable<TræningDTO>>(træningList);
+            return Result<IEnumerable<TræningDTO>>.Ok(mapped);
+        }
+
+        // Get all Træning, including deleted ones
+        public async Task<Result<IEnumerable<TræningDTO>>> GetAllTræningIncludingDeletedAsync()
+        {
+            var træningList = await _træningRepository.GetAllIncludingDeletedAsync();
+            if (træningList == null || !træningList.Any())
+                return Result<IEnumerable<TræningDTO>>.Fail("No træning records found, including deleted ones.");
+
+            var mapped = _mapper.Map<IEnumerable<TræningDTO>>(træningList);
+            return Result<IEnumerable<TræningDTO>>.Ok(mapped);
+        }
+
+        // Get Træning by ID, including deleted ones
+        public async Task<Result<TræningDTO>> GetTræningByIdIncludingDeletedAsync(Guid id)
+        {
+            var træning = await _træningRepository.GetByIdIncludingDeletedAsync(id);
+            if (træning == null)
+                return Result<TræningDTO>.Fail("Træning not found.");
+
+            var mapped = _mapper.Map<TræningDTO>(træning);
+            return Result<TræningDTO>.Ok(mapped);
+        }
+
+        #endregion
     }
 }
