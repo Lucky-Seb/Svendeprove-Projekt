@@ -2,73 +2,57 @@
 using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using AutoMapper;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class ØvelseService
+    public class ØvelseService : IØvelseService
     {
         private readonly IØvelseRepository _øvelseRepository;
         private readonly IBrugerØvelseRepository _brugerØvelseRepository;
         private readonly IKlubØvelseRepository _klubØvelseRepository;
+        private readonly IMapper _mapper;
 
-        public ØvelseService(IØvelseRepository øvelseRepository, IBrugerØvelseRepository brugerØvelseRepository, IKlubØvelseRepository klubØvelseRepository)
+        // Constructor: Dependency Injection of Repository, Mapper, and other services
+        public ØvelseService(IØvelseRepository øvelseRepository,
+                             IBrugerØvelseRepository brugerØvelseRepository,
+                             IKlubØvelseRepository klubØvelseRepository,
+                             IMapper mapper)
         {
             _øvelseRepository = øvelseRepository;
-            _brugerØvelseRepository = brugerØvelseRepository ?? throw new ArgumentNullException(nameof(brugerØvelseRepository));
-            _klubØvelseRepository = klubØvelseRepository ?? throw new ArgumentNullException(nameof(klubØvelseRepository));
+            _brugerØvelseRepository = brugerØvelseRepository;
+            _klubØvelseRepository = klubØvelseRepository;
+            _mapper = mapper;
         }
 
-        private static ØvelseDTO MapToDTO(Øvelse o)
-        {
-            return new ØvelseDTO
-            {
-                ØvelseID = o.ØvelseID,
-                ØvelseNavn = o.ØvelseNavn,
-                ØvelseBeskrivelse = o.ØvelseBeskrivelse,
-                ØvelseBillede = o.ØvelseBillede,
-                ØvelseVideo = o.ØvelseVideo,
-                ØvelseTid = o.ØvelseTid,
-                ØvelseSværhed = o.ØvelseSværhed,
-                PensumID = o.PensumID,
-                BrugerID = o.BrugerØvelses?.FirstOrDefault()?.BrugerID,  // Mapping user if available
-                KlubID = o.KlubØvelses?.FirstOrDefault()?.KlubID  // Mapping club if available
-            };
-        }
+        #region CRUD Operations
 
-        public async Task<List<ØvelseDTO>> GetAllØvelserAsync()
+        // Get All Øvelser
+        public async Task<Result<IEnumerable<ØvelseDTO>>> GetAllØvelserAsync()
         {
             var øvelser = await _øvelseRepository.GetAllØvelserAsync();
-            return øvelser.Select(MapToDTO).ToList();
+            var mapped = _mapper.Map<IEnumerable<ØvelseDTO>>(øvelser);
+            return Result<IEnumerable<ØvelseDTO>>.Ok(mapped);
         }
 
-        public async Task<ØvelseDTO?> GetØvelseByIdAsync(Guid id)
+        // Get Øvelse by ID
+        public async Task<Result<ØvelseDTO>> GetØvelseByIdAsync(Guid id)
         {
             var øvelse = await _øvelseRepository.GetØvelseByIdAsync(id);
-            return øvelse == null ? null : MapToDTO(øvelse);
+            if (øvelse == null)
+                return Result<ØvelseDTO>.Fail("Øvelse not found.");
+
+            var mapped = _mapper.Map<ØvelseDTO>(øvelse);
+            return Result<ØvelseDTO>.Ok(mapped);
         }
 
-        public async Task<ØvelseDTO?> CreateØvelseAsync(ØvelseDTO øvelseDto)
+        // Create New Øvelse
+        public async Task<Result<ØvelseDTO>> CreateØvelseAsync(ØvelseDTO øvelseDto)
         {
-            if (øvelseDto == null ||
-                string.IsNullOrEmpty(øvelseDto.ØvelseNavn) ||
-                string.IsNullOrEmpty(øvelseDto.ØvelseBeskrivelse) ||
-                øvelseDto.ØvelseTid <= 0 ||
-                string.IsNullOrEmpty(øvelseDto.ØvelseSværhed))
-            {
-                return null; // Validation failed
-            }
-
-            var newØvelse = new Øvelse
-            {
-                ØvelseNavn = øvelseDto.ØvelseNavn,
-                ØvelseBeskrivelse = øvelseDto.ØvelseBeskrivelse,
-                ØvelseBillede = øvelseDto.ØvelseBillede,
-                ØvelseVideo = øvelseDto.ØvelseVideo,
-                ØvelseTid = øvelseDto.ØvelseTid,
-                ØvelseSværhed = øvelseDto.ØvelseSværhed,
-                PensumID = øvelseDto.PensumID // Set PensumID
-            };
-
+            var newØvelse = _mapper.Map<Øvelse>(øvelseDto);
+            EntityHelper.InitializeEntity(newØvelse, øvelseDto.ModifiedBy, "Created new Øvelse.");
             var createdØvelse = await _øvelseRepository.CreateØvelseAsync(newØvelse);
 
             // Handle user relationship
@@ -93,76 +77,103 @@ namespace TaekwondoOrchestration.ApiService.Services
                 await _klubØvelseRepository.CreateKlubØvelseAsync(newKlubØvelse);
             }
 
-            return MapToDTO(createdØvelse);
+            var mapped = _mapper.Map<ØvelseDTO>(createdØvelse);
+            return Result<ØvelseDTO>.Ok(mapped);
         }
 
-        public async Task<bool> DeleteØvelseAsync(Guid id)
+        // Update Existing Øvelse
+        public async Task<Result<bool>> UpdateØvelseAsync(Guid id, ØvelseDTO øvelseDto)
         {
-            var result = await _øvelseRepository.DeleteØvelseAsync(id);
-            return result;
-        }
+            if (string.IsNullOrEmpty(øvelseDto.ØvelseNavn) ||
+                string.IsNullOrEmpty(øvelseDto.ØvelseBeskrivelse) ||
+                øvelseDto.ØvelseTid <= 0 ||
+                string.IsNullOrEmpty(øvelseDto.ØvelseSværhed))
+            {
+                return Result<bool>.Fail("Invalid input data.");
+            }
 
-        public async Task<bool> UpdateØvelseAsync(Guid id, ØvelseDTO øvelseDto)
-        {
             var existingØvelse = await _øvelseRepository.GetØvelseByIdAsync(id);
             if (existingØvelse == null)
-                return false;
+                return Result<bool>.Fail("Øvelse not found.");
 
-            existingØvelse.ØvelseNavn = øvelseDto.ØvelseNavn;
-            existingØvelse.ØvelseBeskrivelse = øvelseDto.ØvelseBeskrivelse;
-            existingØvelse.ØvelseBillede = øvelseDto.ØvelseBillede;
-            existingØvelse.ØvelseVideo = øvelseDto.ØvelseVideo;
-            existingØvelse.ØvelseTid = øvelseDto.ØvelseTid;
-            existingØvelse.ØvelseSværhed = øvelseDto.ØvelseSværhed;
-            existingØvelse.PensumID = øvelseDto.PensumID;
+            _mapper.Map(øvelseDto, existingØvelse);
+            EntityHelper.UpdateCommonFields(existingØvelse, øvelseDto.ModifiedBy);
+            var updateSuccess = await _øvelseRepository.UpdateØvelseAsync(existingØvelse);
 
-            return await _øvelseRepository.UpdateØvelseAsync(existingØvelse);
+            return updateSuccess ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to update Øvelse.");
         }
 
-        public async Task<List<ØvelseDTO>> GetØvelserBySværhedAsync(string sværhed)
+        // Delete Øvelse (Soft-Delete)
+        public async Task<Result<bool>> DeleteØvelseAsync(Guid id)
+        {
+            var øvelse = await _øvelseRepository.GetØvelseByIdAsync(id);
+            if (øvelse == null || øvelse.IsDeleted)
+                return Result<bool>.Fail("Øvelse not found or already deleted.");
+
+            // Soft delete
+            string modifiedBy = øvelse.ModifiedBy; // Pass user context for ModifiedBy
+            EntityHelper.SetDeletedOrRestoredProperties(øvelse, "Soft-deleted Øvelse entry", modifiedBy);
+
+            var success = await _øvelseRepository.UpdateØvelseAsync(øvelse);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Øvelse.");
+        }
+
+        // Restore Øvelse from Soft-Delete
+        public async Task<Result<bool>> RestoreØvelseAsync(Guid id, ØvelseDTO dto)
+        {
+            var øvelse = await _øvelseRepository.GetØvelseByIdIncludingDeletedAsync(id);
+            if (øvelse == null || !øvelse.IsDeleted)
+                return Result<bool>.Fail("Øvelse not found or not deleted.");
+
+            // Restore the Øvelse entry
+            øvelse.IsDeleted = false;
+            øvelse.Status = SyncStatus.Synced;
+            øvelse.ModifiedBy = dto.ModifiedBy;
+            øvelse.LastSyncedVersion++;
+
+            // Set properties for restored entry
+            EntityHelper.SetDeletedOrRestoredProperties(øvelse, "Restored Øvelse entry", dto.ModifiedBy);
+
+            var success = await _øvelseRepository.UpdateØvelseAsync(øvelse);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore Øvelse.");
+        }
+
+        #endregion
+
+        #region Search Operations
+
+        // Get Øvelser by Sværhed (Difficulty)
+        public async Task<Result<IEnumerable<ØvelseDTO>>> GetØvelserBySværhedAsync(string sværhed)
         {
             var øvelser = await _øvelseRepository.GetØvelserBySværhedAsync(sværhed);
-            return øvelser.Select(MapToDTO).ToList();
+            var mapped = _mapper.Map<IEnumerable<ØvelseDTO>>(øvelser);
+            return Result<IEnumerable<ØvelseDTO>>.Ok(mapped);
         }
 
-        public async Task<List<ØvelseDTO>> GetØvelserByBrugerAsync(Guid brugerId)
+        // Get Øvelser by Bruger (User)
+        public async Task<Result<IEnumerable<ØvelseDTO>>> GetØvelserByBrugerAsync(Guid brugerId)
         {
             var øvelser = await _øvelseRepository.GetØvelserByBrugerAsync(brugerId);
-
-            return øvelser.Select(o => new ØvelseDTO
-            {
-                ØvelseID = o.ØvelseID,
-                ØvelseNavn = o.ØvelseNavn,
-                ØvelseBeskrivelse = o.ØvelseBeskrivelse,
-                ØvelseBillede = o.ØvelseBillede,
-                ØvelseVideo = o.ØvelseVideo,
-                ØvelseTid = o.ØvelseTid,
-                ØvelseSværhed = o.ØvelseSværhed,
-                BrugerID = o.BrugerØvelses?.FirstOrDefault(b => b.BrugerID == brugerId)?.BrugerID
-            }).ToList();
+            var mapped = _mapper.Map<IEnumerable<ØvelseDTO>>(øvelser);
+            return Result<IEnumerable<ØvelseDTO>>.Ok(mapped);
         }
 
-        public async Task<List<ØvelseDTO>> GetØvelserByKlubAsync(Guid klubId)
+        // Get Øvelser by Klub (Club)
+        public async Task<Result<IEnumerable<ØvelseDTO>>> GetØvelserByKlubAsync(Guid klubId)
         {
             var øvelser = await _øvelseRepository.GetØvelserByKlubAsync(klubId);
-
-            return øvelser.Select(o => new ØvelseDTO
-            {
-                ØvelseID = o.ØvelseID,
-                ØvelseNavn = o.ØvelseNavn,
-                ØvelseBeskrivelse = o.ØvelseBeskrivelse,
-                ØvelseBillede = o.ØvelseBillede,
-                ØvelseVideo = o.ØvelseVideo,
-                ØvelseTid = o.ØvelseTid,
-                ØvelseSværhed = o.ØvelseSværhed,
-                KlubID = o.KlubØvelses?.FirstOrDefault(k => k.KlubID == klubId)?.KlubID
-            }).ToList();
+            var mapped = _mapper.Map<IEnumerable<ØvelseDTO>>(øvelser);
+            return Result<IEnumerable<ØvelseDTO>>.Ok(mapped);
         }
 
-        public async Task<List<ØvelseDTO>> GetØvelserByNavnAsync(string navn)
+        // Get Øvelser by Navn (Name)
+        public async Task<Result<IEnumerable<ØvelseDTO>>> GetØvelserByNavnAsync(string navn)
         {
             var øvelser = await _øvelseRepository.GetØvelserByNavnAsync(navn);
-            return øvelser.Select(MapToDTO).ToList();
+            var mapped = _mapper.Map<IEnumerable<ØvelseDTO>>(øvelser);
+            return Result<IEnumerable<ØvelseDTO>>.Ok(mapped);
         }
+
+        #endregion
     }
 }
