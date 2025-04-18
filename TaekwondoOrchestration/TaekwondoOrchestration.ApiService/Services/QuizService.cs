@@ -1,470 +1,168 @@
 ﻿using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
+using TaekwondoOrchestration.ApiService.Repositories;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using AutoMapper;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class QuizService
+    public class QuizService : IQuizService
     {
         private readonly IQuizRepository _quizRepository;
         private readonly ISpørgsmålRepository _spørgsmålRepository;
         private readonly IBrugerQuizRepository _brugerQuizRepository;
         private readonly IKlubQuizRepository _klubQuizRepository;
+        private readonly IMapper _mapper;
 
-        public QuizService(IQuizRepository quizRepository, ISpørgsmålRepository spørgsmålRepository, IBrugerQuizRepository brugerQuizRepository, IKlubQuizRepository klubQuizRepository)
+        public QuizService(IQuizRepository quizRepository, ISpørgsmålRepository spørgsmålRepository, IBrugerQuizRepository brugerQuizRepository, IKlubQuizRepository klubQuizRepository, IMapper mapper)
         {
             _quizRepository = quizRepository;
             _spørgsmålRepository = spørgsmålRepository;
             _brugerQuizRepository = brugerQuizRepository;
             _klubQuizRepository = klubQuizRepository;
+            _mapper = mapper;
         }
 
-        // Get all quizzes as DTO
-        public async Task<List<QuizDTO>> GetAllQuizzesAsync()
-        {
-            var quizzes = await _quizRepository.GetAllAsync();
+        #region CRUD Operations
 
-            return quizzes.Select(q => new QuizDTO
-            {
-                QuizID = q.QuizID,
-                QuizNavn = q.QuizNavn,
-                QuizBeskrivelse = q.QuizBeskrivelse,
-                PensumID = q.PensumID,
-                Spørgsmål = q.Spørgsmåls.Select(s => new SpørgsmålDTO
-                {
-                    SpørgsmålID = s.SpørgsmålID,
-                    SpørgsmålRækkefølge = s.SpørgsmålRækkefølge,
-                    SpørgsmålTid = s.SpørgsmålTid,
-                    Teknik = s.Teknik != null ? new TeknikDTO
-                    {
-                        TeknikID = s.Teknik.TeknikID,
-                        TeknikNavn = s.Teknik.TeknikNavn,
-                        TeknikBeskrivelse = s.Teknik.TeknikBeskrivelse,
-                        TeknikBillede = s.Teknik.TeknikBillede,
-                        TeknikVideo = s.Teknik.TeknikVideo,
-                        TeknikLyd = s.Teknik.TeknikLyd,
-                        PensumID = s.Teknik.PensumID
-                    } : null,
-                    Teori = s.Teori != null ? new TeoriDTO
-                    {
-                        TeoriID = s.Teori.TeoriID,
-                        TeoriNavn = s.Teori.TeoriNavn,
-                        TeoriBeskrivelse = s.Teori.TeoriBeskrivelse,
-                        TeoriBillede = s.Teori.TeoriBillede,
-                        TeoriVideo = s.Teori.TeoriVideo,
-                        TeoriLyd = s.Teori.TeoriLyd,
-                        PensumID = s.Teori.PensumID
-                    } : null,
-                    Øvelse = s.Øvelse != null ? new ØvelseDTO
-                    {
-                        ØvelseID = s.Øvelse.ØvelseID,
-                        ØvelseNavn = s.Øvelse.ØvelseNavn,
-                        ØvelseBeskrivelse = s.Øvelse.ØvelseBeskrivelse,
-                        ØvelseBillede = s.Øvelse.ØvelseBillede,
-                        ØvelseVideo = s.Øvelse.ØvelseVideo,
-                        ØvelseTid = s.Øvelse.ØvelseTid,
-                        ØvelseSværhed = s.Øvelse.ØvelseSværhed,
-                    } : null
-                }).ToList()
-            }).ToList();
+        // Get All Quizzes
+        public async Task<Result<IEnumerable<QuizDTO>>> GetAllQuizzesAsync()
+        {
+            var quizzesList = await _quizRepository.GetAllQuizzesAsync();
+            var mapped = _mapper.Map<IEnumerable<QuizDTO>>(quizzesList);
+            return Result<IEnumerable<QuizDTO>>.Ok(mapped);
         }
 
-        // Get quiz by ID
-        public async Task<QuizDTO?> GetQuizByIdAsync(Guid id)
+        // Get Quiz by ID
+        public async Task<Result<QuizDTO>> GetQuizByIdAsync(Guid quizId)
         {
-            var quiz = await _quizRepository.GetByIdAsync(id);
+            var quiz = await _quizRepository.GetQuizByIdAsync(quizId);
             if (quiz == null)
-                return null;
+                return Result<QuizDTO>.Fail("Quiz not found.");
 
-            return new QuizDTO
-            {
-                QuizID = quiz.QuizID,
-                QuizNavn = quiz.QuizNavn,
-                QuizBeskrivelse = quiz.QuizBeskrivelse,
-                PensumID = quiz.PensumID,
-                Spørgsmål = quiz.Spørgsmåls.Select(s => new SpørgsmålDTO
-                {
-                    SpørgsmålID = s.SpørgsmålID,
-                    SpørgsmålRækkefølge = s.SpørgsmålRækkefølge,
-                    SpørgsmålTid = s.SpørgsmålTid,
-                    Teknik = s.Teknik != null ? new TeknikDTO
-                    {
-                        TeknikID = s.Teknik.TeknikID,
-                        TeknikNavn = s.Teknik.TeknikNavn,
-                        TeknikBeskrivelse = s.Teknik.TeknikBeskrivelse,
-                        TeknikBillede = s.Teknik.TeknikBillede,
-                        TeknikVideo = s.Teknik.TeknikVideo,
-                        TeknikLyd = s.Teknik.TeknikLyd,
-                        PensumID = s.Teknik.PensumID
-                    } : null,
-                    Teori = s.Teori != null ? new TeoriDTO
-                    {
-                        TeoriID = s.Teori.TeoriID,
-                        TeoriNavn = s.Teori.TeoriNavn,
-                        TeoriBeskrivelse = s.Teori.TeoriBeskrivelse,
-                        TeoriBillede = s.Teori.TeoriBillede,
-                        TeoriVideo = s.Teori.TeoriVideo,
-                        TeoriLyd = s.Teori.TeoriLyd,
-                        PensumID = s.Teori.PensumID
-                    } : null,
-                    Øvelse = s.Øvelse != null ? new ØvelseDTO
-                    {
-                        ØvelseID = s.Øvelse.ØvelseID,
-                        ØvelseNavn = s.Øvelse.ØvelseNavn,
-                        ØvelseBeskrivelse = s.Øvelse.ØvelseBeskrivelse,
-                        ØvelseBillede = s.Øvelse.ØvelseBillede,
-                        ØvelseVideo = s.Øvelse.ØvelseVideo,
-                        ØvelseTid = s.Øvelse.ØvelseTid,
-                        ØvelseSværhed = s.Øvelse.ØvelseSværhed,
-                    } : null
-                }).ToList()
-            };
+            var mapped = _mapper.Map<QuizDTO>(quiz);
+            return Result<QuizDTO>.Ok(mapped);
         }
 
-        // Create quiz based on DTO
-        public async Task<QuizDTO> CreateQuizAsync(QuizDTO quizDto)
+        // Create New Quiz
+        public async Task<Result<QuizDTO>> CreateQuizAsync(QuizDTO quizDto)
         {
-            var newQuiz = new Quiz
+            // Validation if necessary
+            if (string.IsNullOrEmpty(quizDto.QuizNavn))
             {
-                QuizNavn = quizDto.QuizNavn,
-                QuizBeskrivelse = quizDto.QuizBeskrivelse,
-                PensumID = quizDto.PensumID
-            };
-
-            var createdQuiz = await _quizRepository.CreateAsync(newQuiz);
-            return new QuizDTO
-            {
-                QuizID = createdQuiz.QuizID,
-                QuizNavn = createdQuiz.QuizNavn,
-                QuizBeskrivelse = createdQuiz.QuizBeskrivelse,
-                PensumID = createdQuiz.PensumID
-            };
-        }
-
-        // Update quiz based on DTO
-        public async Task<bool> UpdateQuizAsync(Guid id, QuizDTO quizDto)
-        {
-            if (id != quizDto.QuizID) return false;
-
-            var existingQuiz = await _quizRepository.GetByIdAsync(id);
-            if (existingQuiz == null) return false;
-
-            if (string.IsNullOrEmpty(quizDto.QuizNavn) || string.IsNullOrEmpty(quizDto.QuizBeskrivelse))
-            {
-                return false; // Invalid input
+                return Result<QuizDTO>.Fail("Quiz Name is required.");
             }
 
-            existingQuiz.QuizNavn = quizDto.QuizNavn;
-            existingQuiz.QuizBeskrivelse = quizDto.QuizBeskrivelse;
-            existingQuiz.PensumID = quizDto.PensumID;
+            var newQuiz = _mapper.Map<Quiz>(quizDto);
+            EntityHelper.InitializeEntity(newQuiz, quizDto.ModifiedBy, "Created new Quiz.");
+            var createdQuiz = await _quizRepository.CreateQuizAsync(newQuiz);
 
-            return await _quizRepository.UpdateAsync(existingQuiz);
+            var mapped = _mapper.Map<QuizDTO>(createdQuiz);
+            return Result<QuizDTO>.Ok(mapped);
         }
 
-        // Delete quiz by ID
-        public async Task<bool> DeleteQuizAsync(Guid id)
+        // Update Existing Quiz
+        public async Task<Result<QuizDTO>> UpdateQuizAsync(Guid quizId, QuizDTO quizDto)
         {
-            return await _quizRepository.DeleteAsync(id);
-        }
-        public async Task<QuizDTO> CreateQuizWithBrugerAndKlubAsync(QuizDTO dto)
-        {
-            // Create Quiz object
-            var quiz = new Quiz
+            if (string.IsNullOrEmpty(quizDto.QuizNavn))
             {
-                QuizNavn = dto.QuizNavn,
-                QuizBeskrivelse = dto.QuizBeskrivelse,
-                PensumID = dto.PensumID
-            };
-
-            // Save Quiz first to get QuizID
-            var createdQuiz = await _quizRepository.CreateAsync(quiz);
-
-            // Validate BrugerID (User ID)
-            if (dto.BrugerID != null && dto.BrugerID != null)
-            {
-                var brugerQuiz = new BrugerQuiz
-                {
-                    BrugerID = (Guid)dto.BrugerID,
-                    QuizID = createdQuiz.QuizID,
-                };
-                await _brugerQuizRepository.CreateBrugerQuizAsync(brugerQuiz);
+                return Result<QuizDTO>.Fail("Quiz Name is required.");
             }
 
-            // Validate KlubID (Club ID)
-            if (dto.KlubID != null && dto.KlubID != null)
-            {
-                var klubQuiz = new KlubQuiz
-                {
-                    KlubID = (Guid)dto.KlubID,
-                    QuizID = createdQuiz.QuizID,
-                };
-                await _klubQuizRepository.CreateKlubQuizAsync(klubQuiz);
-            }
-
-            // Add associated Spørgsmål (questions) to the quiz
-            foreach (var spørgsmål in dto.Spørgsmål)
-            {
-                var newSpørgsmål = new Spørgsmål
-                {
-                    QuizID = createdQuiz.QuizID,
-                    TeoriID = spørgsmål.Teori.TeoriID,
-                    TeknikID = spørgsmål.Teknik.TeknikID,
-                    ØvelseID = spørgsmål.Øvelse.ØvelseID,
-                    SpørgsmålTid = spørgsmål.SpørgsmålTid,
-                    SpørgsmålRækkefølge = spørgsmål.SpørgsmålRækkefølge
-                };
-
-                // Save the Spørgsmål record to the database
-                await _spørgsmålRepository.CreateAsync(newSpørgsmål);
-            }
-
-            return dto;
-        }
-        public async Task<QuizDTO> UpdateQuizWithBrugerAndKlubAsync(Guid quizId, QuizDTO dto)
-        {
-            var existingQuiz = await _quizRepository.GetByIdAsync(quizId);
+            var existingQuiz = await _quizRepository.GetQuizByIdAsync(quizId);
             if (existingQuiz == null)
-                return null; // Handle not found case
+                return Result<QuizDTO>.Fail("Quiz not found.");
 
-            // Update Quiz fields
-            existingQuiz.QuizNavn = dto.QuizNavn;
-            existingQuiz.QuizBeskrivelse = dto.QuizBeskrivelse;
-            existingQuiz.PensumID = dto.PensumID;
+            _mapper.Map(quizDto, existingQuiz);
+            EntityHelper.UpdateCommonFields(existingQuiz, quizDto.ModifiedBy);
+            var updateSuccess = await _quizRepository.UpdateQuizAsync(existingQuiz);
 
-            await _quizRepository.UpdateAsync(existingQuiz);
-
-            //// Update Bruger association
-            //if (dto.BrugerID != null && dto.BrugerID != 0)
-            //{
-            //    var existingBrugerQuiz = await _brugerQuizRepository.GetByQuizIdAsync(quizId);
-            //    if (existingBrugerQuiz == null)
-            //    {
-            //        await _brugerQuizRepository.CreateBrugerQuizAsync(new BrugerQuiz
-            //        {
-            //            BrugerID = dto.BrugerID,
-            //            QuizID = quizId
-            //        });
-            //    }
-            //    else
-            //    {
-            //        existingBrugerQuiz.BrugerID = dto.BrugerID;
-            //        await _brugerQuizRepository.UpdateBrugerQuizAsync(existingBrugerQuiz);
-            //    }
-            //}
-
-            //// Update Klub association
-            //if (dto.KlubID != null && dto.KlubID != 0)
-            //{
-            //    var existingKlubQuiz = await _klubQuizRepository.GetByQuizIdAsync(quizId);
-            //    if (existingKlubQuiz == null)
-            //    {
-            //        await _klubQuizRepository.CreateKlubQuizAsync(new KlubQuiz
-            //        {
-            //            KlubID = dto.KlubID,
-            //            QuizID = quizId
-            //        });
-            //    }
-            //    else
-            //    {
-            //        existingKlubQuiz.KlubID = dto.KlubID;
-            //        await _klubQuizRepository.(existingKlubQuiz);
-            //    }
-            //}
-
-
-            // Update Spørgsmål
-            var existingSpørgsmåls = await _spørgsmålRepository.GetByQuizIdAsync(quizId);
-
-            // Convert existing Spørgsmål to a dictionary for easy lookup
-            var spørgsmålDictionary = existingSpørgsmåls.ToDictionary(s => s.SpørgsmålID);
-
-            // Loop through new spørgsmål
-            foreach (var spørgsmålDTO in dto.Spørgsmål)
-            {
-                if (spørgsmålDictionary.TryGetValue(spørgsmålDTO.SpørgsmålID, out var existingSpørgsmål))
-                {
-                    // Update existing spørgsmål
-                    existingSpørgsmål.TeoriID = spørgsmålDTO.Teori.TeoriID;
-                    existingSpørgsmål.TeknikID = spørgsmålDTO.Teknik.TeknikID;
-                    existingSpørgsmål.ØvelseID = spørgsmålDTO.Øvelse.ØvelseID;
-                    existingSpørgsmål.SpørgsmålTid = spørgsmålDTO.SpørgsmålTid;
-                    existingSpørgsmål.SpørgsmålRækkefølge = spørgsmålDTO.SpørgsmålRækkefølge;
-
-                    await _spørgsmålRepository.UpdateAsync(existingSpørgsmål);
-                }
-                else
-                {
-                    // Insert new spørgsmål
-                    await _spørgsmålRepository.CreateAsync(new Spørgsmål
-                    {
-                        QuizID = quizId,
-                        TeoriID = spørgsmålDTO.Teori.TeoriID,
-                        TeknikID = spørgsmålDTO.Teknik.TeknikID,
-                        ØvelseID = spørgsmålDTO.Øvelse.ØvelseID,
-                        SpørgsmålTid = spørgsmålDTO.SpørgsmålTid,
-                        SpørgsmålRækkefølge = spørgsmålDTO.SpørgsmålRækkefølge
-                    });
-                }
-            }
-
-            // Remove spørgsmål that are not in the new list
-            var newSpørgsmålIds = dto.Spørgsmål.Select(s => s.SpørgsmålID).ToHashSet();
-            foreach (var existing in existingSpørgsmåls)
-            {
-                if (!newSpørgsmålIds.Contains(existing.SpørgsmålID))
-                {
-                    await _spørgsmålRepository.DeleteAsync(existing.SpørgsmålID);
-                }
-            }
-
-            return dto;
-
+            return updateSuccess ? Result<QuizDTO>.Ok(_mapper.Map<QuizDTO>(existingQuiz)) : Result<QuizDTO>.Fail("Failed to update Quiz.");
         }
-        public async Task<List<QuizDTO>> GetAllQuizzesByBrugerAsync(Guid brugerId)
+
+        // Soft Delete Quiz
+        public async Task<Result<bool>> DeleteQuizAsync(Guid quizId)
         {
-            var quizzes = await _quizRepository.GetAllByBrugerAsync(brugerId);
+            var quiz = await _quizRepository.GetQuizByIdAsync(quizId);
+            if (quiz == null)
+                return Result<bool>.Fail("Quiz not found.");
 
-            return quizzes.Select(q => new QuizDTO
-            {
-                QuizID = q.QuizID,
-                QuizNavn = q.QuizNavn,
-                QuizBeskrivelse = q.QuizBeskrivelse,
-                PensumID = q.PensumID,
-                Spørgsmål = q.Spørgsmåls.Select(s => new SpørgsmålDTO
-                {
-                    SpørgsmålID = s.SpørgsmålID,
-                    SpørgsmålRækkefølge = s.SpørgsmålRækkefølge,
-                    SpørgsmålTid = s.SpørgsmålTid,
-                    Teknik = s.Teknik != null ? new TeknikDTO
-                    {
-                        TeknikID = s.Teknik.TeknikID,
-                        TeknikNavn = s.Teknik.TeknikNavn,
-                        TeknikBeskrivelse = s.Teknik.TeknikBeskrivelse,
-                        TeknikBillede = s.Teknik.TeknikBillede,
-                        TeknikVideo = s.Teknik.TeknikVideo,
-                        TeknikLyd = s.Teknik.TeknikLyd,
-                        PensumID = s.Teknik.PensumID
-                    } : null,
-                    Teori = s.Teori != null ? new TeoriDTO
-                    {
-                        TeoriID = s.Teori.TeoriID,
-                        TeoriNavn = s.Teori.TeoriNavn,
-                        TeoriBeskrivelse = s.Teori.TeoriBeskrivelse,
-                        TeoriBillede = s.Teori.TeoriBillede,
-                        TeoriVideo = s.Teori.TeoriVideo,
-                        TeoriLyd = s.Teori.TeoriLyd,
-                        PensumID = s.Teori.PensumID
-                    } : null,
-                    Øvelse = s.Øvelse != null ? new ØvelseDTO
-                    {
-                        ØvelseID = s.Øvelse.ØvelseID,
-                        ØvelseNavn = s.Øvelse.ØvelseNavn,
-                        ØvelseBeskrivelse = s.Øvelse.ØvelseBeskrivelse,
-                        ØvelseBillede = s.Øvelse.ØvelseBillede,
-                        ØvelseVideo = s.Øvelse.ØvelseVideo,
-                        ØvelseTid = s.Øvelse.ØvelseTid,
-                        ØvelseSværhed = s.Øvelse.ØvelseSværhed,
-                    } : null
-                }).ToList()
-            }).ToList();
+            // Soft delete logic
+            string modifiedBy = quiz.ModifiedBy; // Assuming user context
+            EntityHelper.SetDeletedOrRestoredProperties(quiz, "Soft-deleted Quiz", modifiedBy);
+
+            var success = await _quizRepository.UpdateQuizAsync(quiz);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Quiz.");
         }
-        public async Task<List<QuizDTO>> GetAllQuizzesByKlubAsync(Guid klubId)
+
+        // Restore Quiz from Soft-Delete
+        public async Task<Result<bool>> RestoreQuizAsync(Guid quizId, QuizDTO quizDto)
         {
-            var quizzes = await _quizRepository.GetAllByKlubAsync(klubId);
+            var quiz = await _quizRepository.GetQuizByIdIncludingDeletedAsync(quizId);
+            if (quiz == null || !quiz.IsDeleted)
+                return Result<bool>.Fail("Quiz not found or not deleted.");
 
-            return quizzes.Select(q => new QuizDTO
-            {
-                QuizID = q.QuizID,
-                QuizNavn = q.QuizNavn,
-                QuizBeskrivelse = q.QuizBeskrivelse,
-                PensumID = q.PensumID,
-                Spørgsmål = q.Spørgsmåls.Select(s => new SpørgsmålDTO
-                {
-                    SpørgsmålID = s.SpørgsmålID,
-                    SpørgsmålRækkefølge = s.SpørgsmålRækkefølge,
-                    SpørgsmålTid = s.SpørgsmålTid,
-                    Teknik = s.Teknik != null ? new TeknikDTO
-                    {
-                        TeknikID = s.Teknik.TeknikID,
-                        TeknikNavn = s.Teknik.TeknikNavn,
-                        TeknikBeskrivelse = s.Teknik.TeknikBeskrivelse,
-                        TeknikBillede = s.Teknik.TeknikBillede,
-                        TeknikVideo = s.Teknik.TeknikVideo,
-                        TeknikLyd = s.Teknik.TeknikLyd,
-                        PensumID = s.Teknik.PensumID
-                    } : null,
-                    Teori = s.Teori != null ? new TeoriDTO
-                    {
-                        TeoriID = s.Teori.TeoriID,
-                        TeoriNavn = s.Teori.TeoriNavn,
-                        TeoriBeskrivelse = s.Teori.TeoriBeskrivelse,
-                        TeoriBillede = s.Teori.TeoriBillede,
-                        TeoriVideo = s.Teori.TeoriVideo,
-                        TeoriLyd = s.Teori.TeoriLyd,
-                        PensumID = s.Teori.PensumID
-                    } : null,
-                    Øvelse = s.Øvelse != null ? new ØvelseDTO
-                    {
-                        ØvelseID = s.Øvelse.ØvelseID,
-                        ØvelseNavn = s.Øvelse.ØvelseNavn,
-                        ØvelseBeskrivelse = s.Øvelse.ØvelseBeskrivelse,
-                        ØvelseBillede = s.Øvelse.ØvelseBillede,
-                        ØvelseVideo = s.Øvelse.ØvelseVideo,
-                        ØvelseTid = s.Øvelse.ØvelseTid,
-                        ØvelseSværhed = s.Øvelse.ØvelseSværhed,
-                    } : null
-                }).ToList()
-            }).ToList();
+            quiz.IsDeleted = false;
+            quiz.Status = SyncStatus.Synced;
+            quiz.ModifiedBy = quizDto.ModifiedBy;
+            quiz.LastSyncedVersion++;
+
+            // Set properties for restored entry
+            EntityHelper.SetDeletedOrRestoredProperties(quiz, "Restored Quiz", quizDto.ModifiedBy);
+
+            var success = await _quizRepository.UpdateQuizAsync(quiz);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore Quiz.");
         }
-        public async Task<List<QuizDTO>> GetAllQuizzesByPensumAsync(Guid pensumId)
+
+        #endregion
+
+        #region Get Operations
+
+        // Get Quizzes by User (Bruger)
+        public async Task<Result<IEnumerable<QuizDTO>>> GetAllQuizzesByBrugerIdAsync(Guid brugerId)
         {
-            var quizzes = await _quizRepository.GetAllByPensumAsync(pensumId);
-
-            return quizzes.Select(q => new QuizDTO
-            {
-                QuizID = q.QuizID,
-                QuizNavn = q.QuizNavn,
-                QuizBeskrivelse = q.QuizBeskrivelse,
-                PensumID = q.PensumID,
-                Spørgsmål = q.Spørgsmåls.Select(s => new SpørgsmålDTO
-                {
-                    SpørgsmålID = s.SpørgsmålID,
-                    SpørgsmålRækkefølge = s.SpørgsmålRækkefølge,
-                    SpørgsmålTid = s.SpørgsmålTid,
-                    Teknik = s.Teknik != null ? new TeknikDTO
-                    {
-                        TeknikID = s.Teknik.TeknikID,
-                        TeknikNavn = s.Teknik.TeknikNavn,
-                        TeknikBeskrivelse = s.Teknik.TeknikBeskrivelse,
-                        TeknikBillede = s.Teknik.TeknikBillede,
-                        TeknikVideo = s.Teknik.TeknikVideo,
-                        TeknikLyd = s.Teknik.TeknikLyd,
-                        PensumID = s.Teknik.PensumID
-                    } : null,
-                    Teori = s.Teori != null ? new TeoriDTO
-                    {
-                        TeoriID = s.Teori.TeoriID,
-                        TeoriNavn = s.Teori.TeoriNavn,
-                        TeoriBeskrivelse = s.Teori.TeoriBeskrivelse,
-                        TeoriBillede = s.Teori.TeoriBillede,
-                        TeoriVideo = s.Teori.TeoriVideo,
-                        TeoriLyd = s.Teori.TeoriLyd,
-                        PensumID = s.Teori.PensumID
-                    } : null,
-                    Øvelse = s.Øvelse != null ? new ØvelseDTO
-                    {
-                        ØvelseID = s.Øvelse.ØvelseID,
-                        ØvelseNavn = s.Øvelse.ØvelseNavn,
-                        ØvelseBeskrivelse = s.Øvelse.ØvelseBeskrivelse,
-                        ØvelseBillede = s.Øvelse.ØvelseBillede,
-                        ØvelseVideo = s.Øvelse.ØvelseVideo,
-                        ØvelseTid = s.Øvelse.ØvelseTid,
-                        ØvelseSværhed = s.Øvelse.ØvelseSværhed,
-                    } : null
-                }).ToList()
-            }).ToList();
+            var quizzes = await _quizRepository.GetAllQuizzesByBrugerAsync(brugerId);
+            var mapped = _mapper.Map<IEnumerable<QuizDTO>>(quizzes);
+            return Result<IEnumerable<QuizDTO>>.Ok(mapped);
         }
 
+        // Get Quizzes by Club (Klub)
+        public async Task<Result<IEnumerable<QuizDTO>>> GetAllQuizzesByKlubIdAsync(Guid klubId)
+        {
+            var quizzes = await _quizRepository.GetAllQuizzesByKlubAsync(klubId);
+            var mapped = _mapper.Map<IEnumerable<QuizDTO>>(quizzes);
+            return Result<IEnumerable<QuizDTO>>.Ok(mapped);
+        }
+
+        // Get All Quizzes
+        public async Task<Result<IEnumerable<QuizDTO>>> GetAllQuizzesIncludingDeletedAsync()
+        {
+            var quizzes = await _quizRepository.GetAllQuizzesIncludingDeletedAsync();
+            var mapped = _mapper.Map<IEnumerable<QuizDTO>>(quizzes);
+            return Result<IEnumerable<QuizDTO>>.Ok(mapped);
+        }
+
+        // Get Quiz by ID
+        public async Task<Result<QuizDTO>> GetQuizByIdIncludingDeletedAsync(Guid quizId)
+        {
+            var quiz = await _quizRepository.GetQuizByIdIncludingDeletedAsync(quizId);
+            if (quiz == null)
+                return Result<QuizDTO>.Fail("Quiz not found.");
+
+            var mapped = _mapper.Map<QuizDTO>(quiz);
+            return Result<QuizDTO>.Ok(mapped);
+        }
+
+        // Get Quizzes by Pensum
+        public async Task<Result<IEnumerable<QuizDTO>>> GetAllQuizzesByPensumIdAsync(Guid pensumId)
+        {
+            var quizzes = await _quizRepository.GetAllQuizzesByPensumAsync(pensumId);
+            var mapped = _mapper.Map<IEnumerable<QuizDTO>>(quizzes);
+            return Result<IEnumerable<QuizDTO>>.Ok(mapped);
+        }
+
+        #endregion
     }
-
 }
