@@ -1,7 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoOrchestration.ApiService.Services;
+using Microsoft.AspNetCore.SignalR;
 using TaekwondoApp.Shared.DTO;
-using TaekwondoApp.Shared.Helper;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -9,55 +14,76 @@ namespace TaekwondoOrchestration.ApiService.Controllers
     [ApiController]
     public class PensumController : ApiBaseController
     {
-        private readonly PensumService _pensumService;
+        private readonly IPensumService _pensumService;
+        private readonly IHubContext<PensumHub> _hubContext; // Assuming you have a PensumHub for real-time notifications
 
-        public PensumController(PensumService pensumService)
+        public PensumController(IPensumService pensumService, IHubContext<PensumHub> hubContext)
         {
             _pensumService = pensumService;
+            _hubContext = hubContext;
         }
 
+        // GET: api/Pensum
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<IEnumerable<PensumDTO>>>> GetPensum()
+        public async Task<IActionResult> GetPensum()
         {
-            var pensumList = await _pensumService.GetAllPensumAsync();
-            return Ok(ApiResponse<IEnumerable<PensumDTO>>.Ok(pensumList.AsEnumerable()));
+            var result = await _pensumService.GetAllPensumAsync();
+            return result.ToApiResponse(); // Assuming result is a Response object that has the ToApiResponse method
         }
 
+        // GET: api/Pensum/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<PensumDTO>>> GetPensum(Guid id)
+        public async Task<IActionResult> GetPensum(Guid id)
         {
-            var pensum = await _pensumService.GetPensumByIdAsync(id);
-            if (pensum == null)
-                return NotFoundResponse<PensumDTO>("Pensum not found.");
-
-            return OkResponse(pensum);
+            var result = await _pensumService.GetPensumByIdAsync(id);
+            return result.ToApiResponse(); // Assuming result is a Response object that has the ToApiResponse method
         }
 
+        // GET: api/Pensum/grad/{grad}
+        [HttpGet("grad/{grad}")]
+        public async Task<IActionResult> GetPensumByGrad(string grad)
+        {
+            var result = await _pensumService.GetPensumByGradAsync(grad);
+            return result.ToApiResponse();
+        }
+
+        // POST: api/Pensum
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<PensumDTO>>> PostPensum([FromBody] PensumDTO pensumDTO)
+        public async Task<IActionResult> PostPensum([FromBody] PensumDTO pensumDto)
         {
-            var createdPensum = await _pensumService.CreatePensumAsync(pensumDTO);
-            return CreatedResponse(nameof(GetPensum), new { id = createdPensum.PensumID }, createdPensum);
+            var result = await _pensumService.CreatePensumAsync(pensumDto);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("PensumUpdated");
+
+            return result.ToApiResponse();
         }
 
+        // PUT: api/Pensum/5
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> PutPensum(Guid id, [FromBody] PensumDTO pensumDTO)
+        public async Task<IActionResult> PutPensum(Guid id, [FromBody] PensumDTO pensumDto)
         {
-            var success = await _pensumService.UpdatePensumAsync(id, pensumDTO);
-            if (!success)
-                return NotFoundResponse<string>("Failed to update Pensum. It may not exist.");
+            var result = await _pensumService.UpdatePensumAsync(id, pensumDto);
 
-            return OkResponse("Pensum updated successfully.");
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("PensumUpdated");
+
+            return result.ToApiResponse();
         }
 
+        // DELETE: api/Pensum/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> DeletePensum(Guid id)
+        public async Task<IActionResult> DeletePensum(Guid id)
         {
-            var success = await _pensumService.DeletePensumAsync(id);
-            if (!success)
-                return NotFoundResponse<string>("Pensum not found.");
+            var result = await _pensumService.DeletePensumAsync(id);
 
-            return OkResponse("Pensum deleted successfully.");
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("PensumDeleted");
+
+            return result.ToApiResponse();
         }
     }
 }
