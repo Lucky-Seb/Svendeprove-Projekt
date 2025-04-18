@@ -289,29 +289,41 @@ namespace TaekwondoOrchestration.Tests.BrugerTests
 
         // AuthenticateBrugerAsync Tests
         [Fact]
-        public async Task AuthenticateBrugerAsync_ShouldReturnBruger_WhenCredentialsAreValid()
+        public async Task AuthenticateBrugerAsync_ShouldReturnBrugerDTO_WhenCredentialsAreCorrect()
         {
-            var loginDto = new LoginDTO { EmailOrBrugernavn = "john_doe", Brugerkode = "password123" };
-            var bruger = new Bruger { Brugernavn = "john_doe" };
-            _mockRepo.Setup(repo => repo.AuthenticateBrugerAsync(loginDto.EmailOrBrugernavn, loginDto.Brugerkode)).ReturnsAsync(bruger);
-            _mockMapper.Setup(m => m.Map<BrugerDTO>(bruger)).Returns(new BrugerDTO { Brugernavn = "john_doe" });
+            // Arrange
+            var loginDto = new LoginDTO { EmailOrBrugernavn = "user@example.com", Brugerkode = "correctPassword" };
+            var brugerDTO = new BrugerDTO { Brugernavn = "john_doe" }; // Assuming this is a correct login
 
+            // Set up the mock for AuthenticateBrugerAsync
+            _mockRepo.Setup(repo => repo.AuthenticateBrugerAsync(loginDto.EmailOrBrugernavn, loginDto.Brugerkode))
+                     .ReturnsAsync(brugerDTO);
+
+            // Act
             var result = await _service.AuthenticateBrugerAsync(loginDto);
 
+            // Assert
             result.Success.Should().BeTrue();
-            result.Value.Brugernavn.Should().Be("john_doe");
+            result.Value.Should().BeEquivalentTo(brugerDTO);
         }
 
         [Fact]
         public async Task AuthenticateBrugerAsync_ShouldReturnFail_WhenInvalidCredentials()
         {
-            var loginDto = new LoginDTO { EmailOrBrugernavn = "wrong_username", Brugerkode = "wrong_password" };
-            _mockRepo.Setup(repo => repo.AuthenticateBrugerAsync(loginDto.EmailOrBrugernavn, loginDto.Brugerkode)).ReturnsAsync((Bruger?)null);
+            // Arrange
+            var loginDto = new LoginDTO { EmailOrBrugernavn = "user@example.com", Brugerkode = "wrongPassword" };
+            var errorMessage = "Invalid credentials.";
 
+            // Set up the mock for AuthenticateBrugerAsync
+            _mockRepo.Setup(repo => repo.AuthenticateBrugerAsync(loginDto.EmailOrBrugernavn, loginDto.Brugerkode))
+                     .ReturnsAsync((BrugerDTO?)null); // Return null for invalid credentials
+
+            // Act
             var result = await _service.AuthenticateBrugerAsync(loginDto);
 
+            // Assert
             result.Success.Should().BeFalse();
-            result.Errors.Should().Contain("Invalid credentials.");
+            result.Errors.Should().Contain(errorMessage);
         }
     }
 }
