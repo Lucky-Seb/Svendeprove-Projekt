@@ -1,9 +1,10 @@
-﻿using TaekwondoOrchestration.ApiService.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoApp.Shared.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TaekwondoOrchestration.ApiService.Repositories
 {
@@ -16,24 +17,58 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             _context = context;
         }
 
-        public async Task<List<Teknik>> GetAllTekniksAsync()
+        // GET all Teknikker with related data
+        public async Task<List<Teknik>> GetAllAsync()
         {
-            return await _context.Teknikker.ToListAsync();
+            return await _context.Teknikker
+                .Include(t => t.Pensum) // Example related entity (add more as needed)
+                .ToListAsync();
         }
 
-        public async Task<Teknik?> GetTeknikByIdAsync(Guid teknikId)
+        // GET a Teknik by ID with related data
+        public async Task<Teknik?> GetByIdAsync(Guid teknikId)
         {
-            return await _context.Teknikker.FindAsync(teknikId);
+            return await _context.Teknikker
+                .Include(t => t.Pensum) // Example related entity
+                .FirstOrDefaultAsync(t => t.TeknikID == teknikId);
         }
 
-        public async Task<Teknik> CreateTeknikAsync(Teknik teknik)
+        // GET a Teknik by ID including deleted records (for soft deletes)
+        public async Task<Teknik?> GetByIdIncludingDeletedAsync(Guid teknikId)
+        {
+            return await _context.Teknikker
+                .IgnoreQueryFilters() // Ignores the soft delete filter
+                .Include(t => t.Pensum) // Example related entity
+                .FirstOrDefaultAsync(t => t.TeknikID == teknikId);
+        }
+
+        // GET all Teknikker including deleted records (for soft deletes)
+        public async Task<List<Teknik>> GetAllIncludingDeletedAsync()
+        {
+            return await _context.Teknikker
+                .IgnoreQueryFilters() // Ignores the soft delete filter
+                .Include(t => t.Pensum) // Example related entity
+                .ToListAsync();
+        }
+
+        // CREATE a new Teknik
+        public async Task<Teknik> CreateAsync(Teknik teknik)
         {
             _context.Teknikker.Add(teknik);
             await _context.SaveChangesAsync();
             return teknik;
         }
 
-        public async Task<bool> DeleteTeknikAsync(Guid teknikId)
+        // UPDATE an existing Teknik
+        public async Task<bool> UpdateAsync(Teknik teknik)
+        {
+            _context.Entry(teknik).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // DELETE a Teknik
+        public async Task<bool> DeleteAsync(Guid teknikId)
         {
             var teknik = await _context.Teknikker.FindAsync(teknikId);
             if (teknik == null)
@@ -44,23 +79,30 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return true;
         }
 
-        public async Task<bool> UpdateTeknikAsync(Teknik teknik)
-        {
-            _context.Entry(teknik).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return true;
-        }
-        public async Task<List<Teknik>> GetTekniksByPensumAsync(Guid pensumId)
+        // GET Teknikker by PensumId (with related data)
+        public async Task<List<Teknik>> GetByPensumIdAsync(Guid pensumId)
         {
             return await _context.Teknikker
-                                 .Where(t => t.PensumID == pensumId)
-                                 .ToListAsync();
+                .Where(t => t.PensumID == pensumId) // Filter by PensumID
+                .Include(t => t.Pensum) // Example related entity
+                .ToListAsync();
         }
 
-        public async Task<Teknik?> GetTeknikByTeknikNavnAsync(string teknikNavn)
+        // GET Teknik by TeknikNavn (for example, name search)
+        public async Task<Teknik?> GetByTeknikNavnAsync(string teknikNavn)
         {
             return await _context.Teknikker
-                                 .FirstOrDefaultAsync(t => t.TeknikNavn == teknikNavn);
+                .FirstOrDefaultAsync(t => t.TeknikNavn == teknikNavn);
+        }
+
+        // GET Teknikker by PensumId including deleted records (for soft deletes)
+        public async Task<List<Teknik>> GetByPensumIdIncludingDeletedAsync(Guid pensumId)
+        {
+            return await _context.Teknikker
+                .IgnoreQueryFilters() // Ignores the soft delete filter
+                .Where(t => t.PensumID == pensumId) // Filter by PensumID
+                .Include(t => t.Pensum) // Example related entity
+                .ToListAsync();
         }
     }
 }

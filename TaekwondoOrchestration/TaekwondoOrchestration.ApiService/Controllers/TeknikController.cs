@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoOrchestration.ApiService.Services;
+using Microsoft.AspNetCore.SignalR;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,68 +12,107 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TeknikController : ControllerBase
+    public class TeknikController : ApiBaseController
     {
-        private readonly TeknikService _teknikService;
+        private readonly ITeknikService _teknikService;
+        private readonly IHubContext<TeknikHub> _hubContext; // Assuming you have a TeknikHub for real-time notifications
 
-        public TeknikController(TeknikService teknikService)
+        public TeknikController(ITeknikService teknikService, IHubContext<TeknikHub> hubContext)
         {
             _teknikService = teknikService;
+            _hubContext = hubContext;
         }
 
-        // Get all Tekniks
+        // GET: api/teknik
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TeknikDTO>>> GetTekniks()
+        public async Task<IActionResult> GetTekniks()
         {
-            return Ok(await _teknikService.GetAllTekniksAsync());
+            var result = await _teknikService.GetAllTekniksAsync();
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
-        // Get Teknik by ID
+        // GET: api/teknik/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<TeknikDTO>> GetTeknik(Guid id)
+        public async Task<IActionResult> GetTeknik(Guid id)
         {
-            var teknik = await _teknikService.GetTeknikByIdAsync(id);
-            if (teknik == null)
-                return NotFound();
-            return Ok(teknik);
+            var result = await _teknikService.GetTeknikByIdAsync(id);
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
-        // Get all Tekniks by Pensum ID
+        // GET: api/teknik/pensum/{pensumId}
         [HttpGet("pensum/{pensumId}")]
-        public async Task<ActionResult<IEnumerable<TeknikDTO>>> GetTekniksByPensum(Guid pensumId)
+        public async Task<IActionResult> GetTekniksByPensum(Guid pensumId)
         {
-            var tekniks = await _teknikService.GetAllTeknikByPensumAsync(pensumId);
-            if (tekniks == null || tekniks.Count == 0)
-                return NotFound();
-            return Ok(tekniks);
+            var result = await _teknikService.GetAllTeknikByPensumAsync(pensumId);
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
-        // Get Teknik by TeknikNavn
+        // GET: api/teknik/tekniknavn/{teknikNavn}
         [HttpGet("tekniknavn/{teknikNavn}")]
-        public async Task<ActionResult<TeknikDTO>> GetTeknikByTeknikNavn(string teknikNavn)
+        public async Task<IActionResult> GetTeknikByTeknikNavn(string teknikNavn)
         {
-            var teknik = await _teknikService.GetTeknikByTeknikNavnAsync(teknikNavn);
-            if (teknik == null)
-                return NotFound();
-            return Ok(teknik);
+            var result = await _teknikService.GetTeknikByTeknikNavnAsync(teknikNavn);
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
-        // Create Teknik
+        // POST: api/teknik
         [HttpPost]
-        public async Task<ActionResult<TeknikDTO>> PostTeknik(TeknikDTO teknikDto)
+        public async Task<IActionResult> PostTeknik([FromBody] TeknikDTO teknikDto)
         {
-            var createdTeknik = await _teknikService.CreateTeknikAsync(teknikDto);
-            return CreatedAtAction(nameof(GetTeknik), new { id = createdTeknik.TeknikID }, createdTeknik);
+            if (teknikDto == null)
+            {
+                return BadRequest("Invalid data");
+            }
+
+            var result = await _teknikService.CreateTeknikAsync(teknikDto);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("TeknikUpdated");
+
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
 
-        // Delete Teknik
+        // DELETE: api/teknik/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTeknik(Guid id)
         {
-            var success = await _teknikService.DeleteTeknikAsync(id);
-            if (!success)
-                return NotFound();
-            return NoContent();
+            var result = await _teknikService.DeleteTeknikAsync(id);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("TeknikDeleted");
+
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
+        }
+
+        // PUT: api/teknik/restore/{id}
+        [HttpPut("restore/{id}")]
+        public async Task<IActionResult> RestoreTeknik(Guid id, [FromBody] TeknikDTO teknikDto)
+        {
+            var result = await _teknikService.RestoreTeknikAsync(id, teknikDto);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("TeknikRestored");
+
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
+        }
+
+        // GET: api/teknik/all
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllTeknikIncludingDeleted()
+        {
+            var result = await _teknikService.GetAllTeknikIncludingDeletedAsync();
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
+        }
+
+        // GET: api/teknik/{id}/including-deleted
+        [HttpGet("{id}/including-deleted")]
+        public async Task<IActionResult> GetTeknikByIdIncludingDeleted(Guid id)
+        {
+            var result = await _teknikService.GetTeknikByIdIncludingDeletedAsync(id);
+            return result.ToApiResponse(); // Assuming Result has ToApiResponse extension
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace TaekwondoOrchestration.ApiService.NotificationHubs
 {
-    public class TekinkHub : Hub
+    public class TeknikHub : Hub
     {
         // Optional: add methods if you want clients to call server-side methods
     }
