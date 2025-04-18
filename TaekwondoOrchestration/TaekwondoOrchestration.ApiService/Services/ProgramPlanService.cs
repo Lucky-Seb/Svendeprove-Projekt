@@ -11,197 +11,169 @@ namespace TaekwondoOrchestration.ApiService.Services
     public class ProgramPlanService : IProgramPlanService
     {
         private readonly IProgramPlanRepository _programPlanRepository;
-        private readonly ITræningRepository _træningRepository;
-        private readonly IKlubProgramRepository _klubProgramRepository;
-        private readonly IBrugerProgramRepository _brugerProgramRepository;
         private readonly IMapper _mapper;
 
-        public ProgramPlanService(
-            IProgramPlanRepository programPlanRepository,
-            ITræningRepository træningRepository,
-            IKlubProgramRepository klubProgramRepository,
-            IBrugerProgramRepository brugerProgramRepository,
-            IMapper mapper)
+        public ProgramPlanService(IProgramPlanRepository programPlanRepository, IMapper mapper)
         {
-            _programPlanRepository = programPlanRepository ?? throw new ArgumentNullException(nameof(programPlanRepository));
-            _træningRepository = træningRepository ?? throw new ArgumentNullException(nameof(træningRepository));
-            _klubProgramRepository = klubProgramRepository ?? throw new ArgumentNullException(nameof(klubProgramRepository));
-            _brugerProgramRepository = brugerProgramRepository ?? throw new ArgumentNullException(nameof(brugerProgramRepository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _programPlanRepository = programPlanRepository;
+            _mapper = mapper;
         }
 
         #region CRUD Operations
 
         // Get All Program Plans
-        public async Task<List<ProgramPlanDTO>> GetAllProgramPlansAsync()
+        public async Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansAsync()
         {
-            var programPlans = await _programPlanRepository.GetAllProgramPlansAsync();
-            return _mapper.Map<List<ProgramPlanDTO>>(programPlans);
+            var programPlansList = await _programPlanRepository.GetAllProgramPlansAsync();
+            var mapped = _mapper.Map<IEnumerable<ProgramPlanDTO>>(programPlansList);
+            return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
         }
 
         // Get Program Plan by ID
-        public async Task<ProgramPlanDTO?> GetProgramPlanByIdAsync(Guid id)
+        public async Task<Result<ProgramPlanDTO>> GetProgramPlanByIdAsync(Guid id)
         {
             var programPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
             if (programPlan == null)
-                return null;
+                return Result<ProgramPlanDTO>.Fail("Program Plan not found.");
 
-            return _mapper.Map<ProgramPlanDTO>(programPlan);
+            var mapped = _mapper.Map<ProgramPlanDTO>(programPlan);
+            return Result<ProgramPlanDTO>.Ok(mapped);
         }
 
         // Create New Program Plan
-        public async Task<ProgramPlanDTO> CreateProgramPlanWithBrugerAndKlubAsync(ProgramPlanDTO dto)
+        public async Task<Result<ProgramPlanDTO>> CreateProgramPlanWithBrugerAndKlubAsync(ProgramPlanDTO programPlanDto)
         {
-            if (string.IsNullOrEmpty(dto.ProgramNavn))
-                throw new ArgumentException("Program name is required.");
-
-            var programPlan = _mapper.Map<ProgramPlan>(dto);
-            EntityHelper.InitializeEntity(programPlan, dto.ModifiedBy, "Created new Program Plan.");
-
-            var createdProgramPlan = await _programPlanRepository.CreateProgramPlanAsync(programPlan);
-
-            // Handle BrugerProgram creation
-            if (dto.BrugerID != null)
+            // Perform validation or any necessary checks on the DTO
+            if (string.IsNullOrEmpty(programPlanDto.ProgramNavn))
             {
-                var brugerProgram = new BrugerProgram
-                {
-                    BrugerID = dto.BrugerID,
-                    ProgramID = createdProgramPlan.ProgramID
-                };
-                await _brugerProgramRepository.CreateBrugerProgramAsync(brugerProgram);
+                return Result<ProgramPlanDTO>.Fail("ProgramPlan Name is required.");
             }
 
-            // Handle KlubProgram creation
-            if (dto.KlubID != null)
+            var newProgramPlan = _mapper.Map<ProgramPlan>(programPlanDto);
+            EntityHelper.InitializeEntity(newProgramPlan, programPlanDto.ModifiedBy, "Created new Program Plan.");
+            var createdProgramPlan = await _programPlanRepository.CreateProgramPlanAsync(newProgramPlan);
+
+            var mapped = _mapper.Map<ProgramPlanDTO>(createdProgramPlan);
+            return Result<ProgramPlanDTO>.Ok(mapped);
+        }
+        public async Task<Result<bool>> UpdateProgramPlanAsync(Guid id, ProgramPlanDTO programPlanDto)
+        {
+            // Validate input
+            if (string.IsNullOrEmpty(programPlanDto.ProgramNavn))
             {
-                var klubProgram = new KlubProgram
-                {
-                    KlubID = dto.KlubID,
-                    ProgramID = createdProgramPlan.ProgramID
-                };
-                await _klubProgramRepository.CreateKlubProgramAsync(klubProgram);
+                return Result<bool>.Fail("ProgramPlan Name is required.");
             }
 
-            // Handle Træning creation
-            foreach (var træningDTO in dto.Træninger)
+            // Retrieve the existing program plan by ID
+            var existingProgramPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
+            if (existingProgramPlan == null)
             {
-                var træning = _mapper.Map<Træning>(træningDTO);
-                træning.ProgramID = createdProgramPlan.ProgramID;
-                await _træningRepository.CreateTræningAsync(træning);
+                return Result<bool>.Fail("Program Plan not found.");
             }
 
-            return _mapper.Map<ProgramPlanDTO>(createdProgramPlan);
+            // Map the DTO to the existing program plan entity
+            _mapper.Map(programPlanDto, existingProgramPlan);
+
+            // Update common fields (e.g., ModifiedBy, ModifiedDate)
+            EntityHelper.UpdateCommonFields(existingProgramPlan, programPlanDto.ModifiedBy);
+
+            // Save the changes in the repository
+            var updateSuccess = await _programPlanRepository.UpdateProgramPlanAsync(existingProgramPlan);
+
+            // Return the result of the update operation
+            return updateSuccess ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to update Program Plan.");
         }
 
         // Update Existing Program Plan
-        public async Task<ProgramPlanDTO> UpdateProgramPlanWithBrugerAndKlubAsync(Guid id, ProgramPlanDTO dto)
+        public async Task<Result<ProgramPlanDTO>> UpdateProgramPlanWithBrugerAndKlubAsync(Guid id, ProgramPlanDTO programPlanDto)
         {
-            var existingProgramPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
-            if (existingProgramPlan == null)
-                return null;
-
-            _mapper.Map(dto, existingProgramPlan);
-            EntityHelper.UpdateCommonFields(existingProgramPlan, dto.ModifiedBy);
-
-            // Handle Træning update
-            var existingTræninger = await _træningRepository.GetByProgramIdAsync(id);
-            foreach (var træningDTO in dto.Træninger)
+            if (string.IsNullOrEmpty(programPlanDto.ProgramNavn))
             {
-                var existingTræning = existingTræninger.FirstOrDefault(t => t.TræningID == træningDTO.TræningID);
-                if (existingTræning != null)
-                {
-                    _mapper.Map(træningDTO, existingTræning);
-                    await _træningRepository.UpdateTræningAsync(existingTræning);
-                }
-                else
-                {
-                    var newTræning = _mapper.Map<Træning>(træningDTO);
-                    newTræning.ProgramID = existingProgramPlan.ProgramID;
-                    await _træningRepository.CreateTræningAsync(newTræning);
-                }
+                return Result<ProgramPlanDTO>.Fail("ProgramPlan Name is required.");
             }
 
-            var updateSuccess = await _programPlanRepository.UpdateProgramPlanAsync(existingProgramPlan);
-            if (updateSuccess)
-            {
-                return _mapper.Map<ProgramPlanDTO>(existingProgramPlan);
-            }
-            return null;
-        }
-
-        // Update Program Plan (generic update with boolean return)
-        public async Task<bool> UpdateProgramPlanAsync(Guid id, ProgramPlanDTO programPlanDto)
-        {
             var existingProgramPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
             if (existingProgramPlan == null)
-                return false;
+                return Result<ProgramPlanDTO>.Fail("Program Plan not found.");
 
             _mapper.Map(programPlanDto, existingProgramPlan);
             EntityHelper.UpdateCommonFields(existingProgramPlan, programPlanDto.ModifiedBy);
+            var updateSuccess = await _programPlanRepository.UpdateProgramPlanAsync(existingProgramPlan);
 
-            // Handle Træning update
-            var existingTræninger = await _træningRepository.GetByProgramIdAsync(id);
-            foreach (var træningDTO in programPlanDto.Træninger)
-            {
-                var existingTræning = existingTræninger.FirstOrDefault(t => t.TræningID == træningDTO.TræningID);
-                if (existingTræning != null)
-                {
-                    _mapper.Map(træningDTO, existingTræning);
-                    await _træningRepository.UpdateTræningAsync(existingTræning);
-                }
-                else
-                {
-                    var newTræning = _mapper.Map<Træning>(træningDTO);
-                    newTræning.ProgramID = existingProgramPlan.ProgramID;
-                    await _træningRepository.CreateTræningAsync(newTræning);
-                }
-            }
-
-            return await _programPlanRepository.UpdateProgramPlanAsync(existingProgramPlan);
+            return updateSuccess ? Result<ProgramPlanDTO>.Ok(_mapper.Map<ProgramPlanDTO>(existingProgramPlan)) : Result<ProgramPlanDTO>.Fail("Failed to update Program Plan.");
         }
 
-        // Delete Program Plan
-        public async Task<bool> DeleteProgramPlanAsync(Guid id)
+        // Soft Delete Program Plan
+        public async Task<Result<bool>> DeleteProgramPlanAsync(Guid id)
         {
             var programPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
             if (programPlan == null)
-                return false;
+                return Result<bool>.Fail("Program Plan not found.");
 
-            string modifiedBy = programPlan.ModifiedBy;
-            EntityHelper.SetDeletedOrRestoredProperties(programPlan, "Soft-deleted program plan", modifiedBy);
+            // Soft delete logic
+            string modifiedBy = programPlan.ModifiedBy; // Assuming user context
+            EntityHelper.SetDeletedOrRestoredProperties(programPlan, "Soft-deleted Program Plan", modifiedBy);
 
-            return await _programPlanRepository.UpdateProgramPlanAsync(programPlan);
+            var success = await _programPlanRepository.UpdateProgramPlanAsync(programPlan);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Program Plan.");
         }
 
-        // Get All Programs with related entities (e.g., training, quiz, etc.)
-        public async Task<List<ProgramPlanDTO>> GetAllProgramsAsync()
+        // Restore Program Plan from Soft-Delete
+        public async Task<Result<bool>> RestoreProgramPlanAsync(Guid id, ProgramPlanDTO dto)
         {
-            var programPlans = await _programPlanRepository.GetAllProgramPlansAsync();
-            return _mapper.Map<List<ProgramPlanDTO>>(programPlans);
+            var programPlan = await _programPlanRepository.GetProgramPlanByIdIncludingDeletedAsync(id);
+            if (programPlan == null || !programPlan.IsDeleted)
+                return Result<bool>.Fail("Program Plan not found or not deleted.");
+
+            programPlan.IsDeleted = false;
+            programPlan.Status = SyncStatus.Synced;
+            programPlan.ModifiedBy = dto.ModifiedBy;
+            programPlan.LastSyncedVersion++;
+
+            // Set properties for restored entry
+            EntityHelper.SetDeletedOrRestoredProperties(programPlan, "Restored Program Plan", dto.ModifiedBy);
+
+            var success = await _programPlanRepository.UpdateProgramPlanAsync(programPlan);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore Program Plan.");
+        }
+
+        #endregion
+
+        #region Get Operations
+
+        // Get Programs by User (Bruger)
+        public async Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansByBrugerIdAsync(Guid brugerId)
+        {
+            var programPlans = await _programPlanRepository.GetAllProgramPlansByBrugerIdAsync(brugerId);
+            var mapped = _mapper.Map<IEnumerable<ProgramPlanDTO>>(programPlans);
+            return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
+        }
+
+        // Get Programs by Club (Klub)
+        public async Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansByKlubIdAsync(Guid klubId)
+        {
+            var programPlans = await _programPlanRepository.GetAllProgramPlansByKlubIdAsync(klubId);
+            var mapped = _mapper.Map<IEnumerable<ProgramPlanDTO>>(programPlans);
+            return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
+        }
+
+        // Get All Programs
+        public async Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramsAsync()
+        {
+            var programs = await _programPlanRepository.GetAllProgramPlansAsync();
+            var mapped = _mapper.Map<IEnumerable<ProgramPlanDTO>>(programs);
+            return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
         }
 
         // Get Program by ID
-        public async Task<ProgramPlanDTO?> GetProgramByIdAsync(Guid id)
+        public async Task<Result<ProgramPlanDTO>> GetProgramByIdAsync(Guid id)
         {
-            var programPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
-            if (programPlan == null)
-                return null;
+            var program = await _programPlanRepository.GetProgramPlanByIdAsync(id);
+            if (program == null)
+                return Result<ProgramPlanDTO>.Fail("Program not found.");
 
-            return _mapper.Map<ProgramPlanDTO>(programPlan);
-        }
-
-        // Get Programs by Bruger
-        public async Task<List<ProgramPlanDTO>> GetAllProgramPlansByBrugerIdAsync(Guid brugerId)
-        {
-            var programPlans = await _programPlanRepository.GetAllProgramPlansByBrugerIdAsync(brugerId);
-            return _mapper.Map<List<ProgramPlanDTO>>(programPlans);
-        }
-
-        // Get Programs by Klub
-        public async Task<List<ProgramPlanDTO>> GetAllProgramPlansByKlubIdAsync(Guid klubId)
-        {
-            var programPlans = await _programPlanRepository.GetAllProgramPlansByKlubIdAsync(klubId);
-            return _mapper.Map<List<ProgramPlanDTO>>(programPlans);
+            var mapped = _mapper.Map<ProgramPlanDTO>(program);
+            return Result<ProgramPlanDTO>.Ok(mapped);
         }
 
         #endregion
