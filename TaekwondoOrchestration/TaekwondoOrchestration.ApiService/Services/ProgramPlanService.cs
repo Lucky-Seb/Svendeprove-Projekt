@@ -1,448 +1,181 @@
 ﻿using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
+using TaekwondoOrchestration.ApiService.Repositories;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
-
+using AutoMapper;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class ProgramPlanService
+    public class ProgramPlanService : IProgramPlanService
     {
         private readonly IProgramPlanRepository _programPlanRepository;
-        private readonly ITræningRepository _træningRepository;
-        private readonly IKlubProgramRepository _klubProgramRepository;
-        private readonly IBrugerProgramRepository _brugerProgramRepository;
+        private readonly IMapper _mapper;
 
-        public ProgramPlanService(
-            IProgramPlanRepository programPlanRepository,
-            ITræningRepository træningRepository,
-            IKlubProgramRepository klubProgramRepository,
-            IBrugerProgramRepository brugerProgramRepository)
+        public ProgramPlanService(IProgramPlanRepository programPlanRepository, IMapper mapper)
         {
-            _programPlanRepository = programPlanRepository ?? throw new ArgumentNullException(nameof(programPlanRepository));
-            _træningRepository = træningRepository ?? throw new ArgumentNullException(nameof(træningRepository));
-            _klubProgramRepository = klubProgramRepository ?? throw new ArgumentNullException(nameof(klubProgramRepository));
-            _brugerProgramRepository = brugerProgramRepository ?? throw new ArgumentNullException(nameof(brugerProgramRepository));
-        }
-        // Get all ProgramPlans as DTO
-        public async Task<List<ProgramPlanDTO>> GetAllProgramPlansAsync()
-        {
-            var programPlans = await _programPlanRepository.GetAllAsync();
-            return programPlans.Select(pp => new ProgramPlanDTO
-            {
-                ProgramID = pp.ProgramID,
-                ProgramNavn = pp.ProgramNavn,
-                OprettelseDato = pp.OprettelseDato,
-                Længde = pp.Længde,
-                Beskrivelse = pp.Beskrivelse
-            }).ToList();
+            _programPlanRepository = programPlanRepository;
+            _mapper = mapper;
         }
 
-        // Get ProgramPlan by ID
-        public async Task<ProgramPlanDTO?> GetProgramPlanByIdAsync(Guid id)
-        {
-            var programPlan = await _programPlanRepository.GetByIdAsync(id);
-            if (programPlan == null) return null;
+        #region CRUD Operations
 
-            return new ProgramPlanDTO
-            {
-                ProgramID = programPlan.ProgramID,
-                ProgramNavn = programPlan.ProgramNavn,
-                OprettelseDato = programPlan.OprettelseDato,
-                Længde = programPlan.Længde,
-                Beskrivelse = programPlan.Beskrivelse
-            };
+        // Get All Program Plans
+        public async Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansAsync()
+        {
+            var programPlansList = await _programPlanRepository.GetAllProgramPlansAsync();
+            var mapped = _mapper.Map<IEnumerable<ProgramPlanDTO>>(programPlansList);
+            return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
         }
 
-        //public async Task<ProgramPlanDTO?> CreateProgramPlanAsync(ProgramPlanDTO programPlanDto)
-        //{
-        //    // Validate required fields
-        //    if (string.IsNullOrEmpty(programPlanDto.ProgramNavn))
-        //    {
-        //        return null; // Return null or a custom error DTO if needed
-        //    }
-
-        //    if (string.IsNullOrEmpty(programPlanDto.Beskrivelse))
-        //    {
-        //        return null; // Return null or a custom error DTO if needed
-        //    }
-
-        //    // Validate Længde field (should be positive)
-        //    if (programPlanDto.Længde <= 0)
-        //    {
-        //        return null; // Return null or a custom error DTO if needed
-        //    }
-
-        //    // Validate OprettelseDato (should be a valid date in the past or present)
-        //    if (programPlanDto.OprettelseDato > DateTime.Now)
-        //    {
-        //        return null; // Return null or a custom error DTO if needed
-        //    }
-
-        //    // Create the ProgramPlan entity based on the validated DTO
-        //    var newProgramPlan = new ProgramPlan
-        //    {
-        //        ProgramNavn = programPlanDto.ProgramNavn,
-        //        OprettelseDato = programPlanDto.OprettelseDato,
-        //        Længde = programPlanDto.Længde,
-        //        Beskrivelse = programPlanDto.Beskrivelse
-        //    };
-
-        //    // Save the new ProgramPlan to the repository
-        //    var createdProgramPlan = await _programPlanRepository.CreateAsync(newProgramPlan);
-
-        //    // Return the created ProgramPlan as DTO
-        //    return new ProgramPlanDTO
-        //    {
-        //        ProgramID = createdProgramPlan.ProgramID,
-        //        ProgramNavn = createdProgramPlan.ProgramNavn,
-        //        OprettelseDato = createdProgramPlan.OprettelseDato,
-        //        Længde = createdProgramPlan.Længde,
-        //        Beskrivelse = createdProgramPlan.Beskrivelse
-        //    };
-        //}
-        public async Task<ProgramPlanDTO> CreateProgramPlanWithBrugerAndKlubAsync(ProgramPlanDTO dto)
+        // Get Program Plan by ID
+        public async Task<Result<ProgramPlanDTO>> GetProgramPlanByIdAsync(Guid id)
         {
-            // Create ProgramPlan object
-            var programPlan = new ProgramPlan
+            var programPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
+            if (programPlan == null)
+                return Result<ProgramPlanDTO>.Fail("Program Plan not found.");
+
+            var mapped = _mapper.Map<ProgramPlanDTO>(programPlan);
+            return Result<ProgramPlanDTO>.Ok(mapped);
+        }
+
+        // Create New Program Plan
+        public async Task<Result<ProgramPlanDTO>> CreateProgramPlanWithBrugerAndKlubAsync(ProgramPlanDTO programPlanDto)
+        {
+            // Perform validation or any necessary checks on the DTO
+            if (string.IsNullOrEmpty(programPlanDto.ProgramNavn))
             {
-                ProgramNavn = dto.ProgramNavn,
-                OprettelseDato = dto.OprettelseDato,
-                Længde = dto.Længde,
-                Beskrivelse = dto.Beskrivelse
-            };
-
-            // Save ProgramPlan first to get ProgramID
-            var createdProgramPlan = await _programPlanRepository.CreateAsync(programPlan);
-
-            // Validate BrugerID (User ID)
-
-            
-
-            if (dto.BrugerID != null && dto.BrugerID != null)
-            {
-                var brugerProgram = new BrugerProgram
-                {
-                    BrugerID = dto.BrugerID,
-                    ProgramID = createdProgramPlan.ProgramID,
-                };
-                // Save the 
-                await _brugerProgramRepository.CreateBrugerProgramAsync(brugerProgram);
+                return Result<ProgramPlanDTO>.Fail("ProgramPlan Name is required.");
             }
 
-            //var klub = await _klubService.GetKlubByIdAsync(dto.KlubID);
+            var newProgramPlan = _mapper.Map<ProgramPlan>(programPlanDto);
+            EntityHelper.InitializeEntity(newProgramPlan, programPlanDto.ModifiedBy, "Created new Program Plan.");
+            var createdProgramPlan = await _programPlanRepository.CreateProgramPlanAsync(newProgramPlan);
 
-            // Validate KlubID (Club ID)
-            if (dto.KlubID != null && dto.KlubID != null)
-            {
-                var klubprogram = new KlubProgram
-                {
-                    KlubID = dto.KlubID,
-                    ProgramID = createdProgramPlan.ProgramID,
-                };
-                // Save the 
-                await _klubProgramRepository.CreateKlubProgramAsync(klubprogram);
-            }
-
-
-            foreach (var træninger in dto.Træninger)
-            {
-                var træning = new Træning
-                {
-                    ProgramID = createdProgramPlan.ProgramID,
-                    TeoriID = træninger.TeoriID,
-                    TeknikID = træninger.TeknikID,
-                    ØvelseID = træninger.ØvelseID,
-                    QuizID = træninger.QuizID,
-                    Tid = træninger.Tid,
-                    TræningRækkefølge = træninger.TræningRækkefølge // Increment the sequence for each training session
-                };
-
-                // Save the Træning record to the database
-                await _træningRepository.CreateTræningAsync(træning);
-            }
-
-            return dto;
+            var mapped = _mapper.Map<ProgramPlanDTO>(createdProgramPlan);
+            return Result<ProgramPlanDTO>.Ok(mapped);
         }
-        public async Task<ProgramPlanDTO> UpdateProgramPlanWithBrugerAndKlubAsync(Guid id, ProgramPlanDTO dto)
+        public async Task<Result<bool>> UpdateProgramPlanAsync(Guid id, ProgramPlanDTO programPlanDto)
         {
-            var existingProgramPlan = await _programPlanRepository.GetByIdAsync(id);
+            // Validate input
+            if (string.IsNullOrEmpty(programPlanDto.ProgramNavn))
+            {
+                return Result<bool>.Fail("ProgramPlan Name is required.");
+            }
+
+            // Retrieve the existing program plan by ID
+            var existingProgramPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
             if (existingProgramPlan == null)
-                return null; // Handle not found case
-
-            // Update ProgramPlan fields
-            existingProgramPlan.ProgramNavn = dto.ProgramNavn;
-            existingProgramPlan.OprettelseDato = dto.OprettelseDato;
-            existingProgramPlan.Længde = dto.Længde;
-            existingProgramPlan.Beskrivelse = dto.Beskrivelse;
-
-            await _programPlanRepository.UpdateAsync(existingProgramPlan);
-
-            //// Update Bruger association
-            //if (dto.BrugerID != null && dto.BrugerID != 0)
-            //{
-            //    var existingBrugerProgram = await _brugerProgramRepository.GetBrugerProgramByIdAsync(BrugerID, programPlanId);
-            //    if (existingBrugerProgram == null)
-            //    {
-            //        await _brugerProgramRepository.CreateBrugerProgramAsync(new BrugerProgram
-            //        {
-            //            BrugerID = dto.BrugerID,
-            //            ProgramID = programPlanId
-            //        });
-            //    }
-            //    else
-            //    {
-            //        existingBrugerProgram.BrugerID = dto.BrugerID;
-            //        await _brugerProgramRepository.(existingBrugerProgram);
-            //    }
-            //}
-
-            //// Update Klub association
-            //if (dto.KlubID != null && dto.KlubID != 0)
-            //{
-            //    var existingKlubProgram = await _klubProgramRepository.GetByProgramIdAsync(programPlanId);
-            //    if (existingKlubProgram == null)
-            //    {
-            //        await _klubProgramRepository.CreateKlubProgramAsync(new KlubProgram
-            //        {
-            //            KlubID = dto.KlubID,
-            //            ProgramID = programPlanId
-            //        });
-            //    }
-            //    else
-            //    {
-            //        existingKlubProgram.KlubID = dto.KlubID;
-            //        await _klubProgramRepository.UpdateKlubProgramAsync(existingKlubProgram);
-            //    }
-            //}
-
-            // Update Træninger
-            //await _træningRepository.DeleteByProgramIdAsync(programPlanId); // Remove old træninger
-            //foreach (var træningDTO in dto.Træninger)
-            //{
-            //    await _træningRepository.CreateTræningAsync(new Træning
-            //    {
-            //        ProgramID = programPlanId,
-            //        TeoriID = træningDTO.TeoriID,
-            //        TeknikID = træningDTO.TeknikID,
-            //        ØvelseID = træningDTO.ØvelseID,
-            //        QuizID = træningDTO.QuizID,
-            //        Tid = træningDTO.Tid,
-            //        TræningRækkefølge = træningDTO.TræningRækkefølge
-            //    });
-            //}
-            var existingTræninger = await _træningRepository.GetByProgramIdAsync(id);
-
-            // Convert existing træninger to a dictionary for easy lookup
-            var træningDictionary = existingTræninger.ToDictionary(t => t.TræningID);
-
-            // Loop through new træninger
-            foreach (var træningDTO in dto.Træninger)
             {
-                if (træningDictionary.TryGetValue(træningDTO.TræningID, out var existingTræning))
-                {
-                    // Update existing træning
-                    existingTræning.TeoriID = træningDTO.TeoriID;
-                    existingTræning.TeknikID = træningDTO.TeknikID;
-                    existingTræning.ØvelseID = træningDTO.ØvelseID;
-                    existingTræning.QuizID = træningDTO.QuizID;
-                    existingTræning.Tid = træningDTO.Tid;
-                    existingTræning.TræningRækkefølge = træningDTO.TræningRækkefølge;
-
-                    await _træningRepository.UpdateTræningAsync(existingTræning);
-                }
-                else
-                {
-                    // Insert new træning
-                    await _træningRepository.CreateTræningAsync(new Træning
-                    {
-                        ProgramID = træningDTO.ProgramID,
-                        TeoriID = træningDTO.TeoriID,
-                        TeknikID = træningDTO.TeknikID,
-                        ØvelseID = træningDTO.ØvelseID,
-                        QuizID = træningDTO.QuizID,
-                        Tid = træningDTO.Tid,
-                        TræningRækkefølge = træningDTO.TræningRækkefølge
-                    });
-                }
+                return Result<bool>.Fail("Program Plan not found.");
             }
 
-            // Remove træninger that are not in the new list
-            var newTræningIds = dto.Træninger.Select(t => t.TræningID).ToHashSet();
-            foreach (var existing in existingTræninger)
+            // Map the DTO to the existing program plan entity
+            _mapper.Map(programPlanDto, existingProgramPlan);
+
+            // Update common fields (e.g., ModifiedBy, ModifiedDate)
+            EntityHelper.UpdateCommonFields(existingProgramPlan, programPlanDto.ModifiedBy);
+
+            // Save the changes in the repository
+            var updateSuccess = await _programPlanRepository.UpdateProgramPlanAsync(existingProgramPlan);
+
+            // Return the result of the update operation
+            return updateSuccess ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to update Program Plan.");
+        }
+
+        // Update Existing Program Plan
+        public async Task<Result<ProgramPlanDTO>> UpdateProgramPlanWithBrugerAndKlubAsync(Guid id, ProgramPlanDTO programPlanDto)
+        {
+            if (string.IsNullOrEmpty(programPlanDto.ProgramNavn))
             {
-                if (!newTræningIds.Contains(existing.TræningID))
-                {
-                    await _træningRepository.DeleteTræningAsync(existing.TræningID);
-                }
+                return Result<ProgramPlanDTO>.Fail("ProgramPlan Name is required.");
             }
 
-            return dto;
+            var existingProgramPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
+            if (existingProgramPlan == null)
+                return Result<ProgramPlanDTO>.Fail("Program Plan not found.");
+
+            _mapper.Map(programPlanDto, existingProgramPlan);
+            EntityHelper.UpdateCommonFields(existingProgramPlan, programPlanDto.ModifiedBy);
+            var updateSuccess = await _programPlanRepository.UpdateProgramPlanAsync(existingProgramPlan);
+
+            return updateSuccess ? Result<ProgramPlanDTO>.Ok(_mapper.Map<ProgramPlanDTO>(existingProgramPlan)) : Result<ProgramPlanDTO>.Fail("Failed to update Program Plan.");
         }
 
-        // Update ProgramPlan based on DTO
-        public async Task<bool> UpdateProgramPlanAsync(Guid id, ProgramPlanDTO programPlanDto)
+        // Soft Delete Program Plan
+        public async Task<Result<bool>> DeleteProgramPlanAsync(Guid id)
         {
-            if (id != programPlanDto.ProgramID) return false;
+            var programPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
+            if (programPlan == null)
+                return Result<bool>.Fail("Program Plan not found.");
 
-            var existingProgramPlan = await _programPlanRepository.GetByIdAsync(id);
-            if (existingProgramPlan == null) return false;
+            // Soft delete logic
+            string modifiedBy = programPlan.ModifiedBy; // Assuming user context
+            EntityHelper.SetDeletedOrRestoredProperties(programPlan, "Soft-deleted Program Plan", modifiedBy);
 
-            existingProgramPlan.ProgramNavn = programPlanDto.ProgramNavn;
-            existingProgramPlan.OprettelseDato = programPlanDto.OprettelseDato;
-            existingProgramPlan.Længde = programPlanDto.Længde;
-            existingProgramPlan.Beskrivelse = programPlanDto.Beskrivelse;
-
-            return await _programPlanRepository.UpdateAsync(existingProgramPlan);
+            var success = await _programPlanRepository.UpdateProgramPlanAsync(programPlan);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Program Plan.");
         }
 
-        // Delete ProgramPlan by ID
-        public async Task<bool> DeleteProgramPlanAsync(Guid id)
+        // Restore Program Plan from Soft-Delete
+        public async Task<Result<bool>> RestoreProgramPlanAsync(Guid id, ProgramPlanDTO dto)
         {
-            return await _programPlanRepository.DeleteAsync(id);
+            var programPlan = await _programPlanRepository.GetProgramPlanByIdIncludingDeletedAsync(id);
+            if (programPlan == null || !programPlan.IsDeleted)
+                return Result<bool>.Fail("Program Plan not found or not deleted.");
+
+            programPlan.IsDeleted = false;
+            programPlan.Status = SyncStatus.Synced;
+            programPlan.ModifiedBy = dto.ModifiedBy;
+            programPlan.LastSyncedVersion++;
+
+            // Set properties for restored entry
+            EntityHelper.SetDeletedOrRestoredProperties(programPlan, "Restored Program Plan", dto.ModifiedBy);
+
+            var success = await _programPlanRepository.UpdateProgramPlanAsync(programPlan);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore Program Plan.");
         }
 
-        // Get all programs with their training, quiz, teori, teknik, and øvelse
-        public async Task<List<ProgramPlanDTO>> GetAllProgramsAsync()
+        #endregion
+
+        #region Get Operations
+
+        // Get Programs by User (Bruger)
+        public async Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansByBrugerIdAsync(Guid brugerId)
         {
-            var programs = await _programPlanRepository.GetAllAsync();
-
-            return programs.Select(p => new ProgramPlanDTO
-            {
-                ProgramID = p.ProgramID,
-                ProgramNavn = p.ProgramNavn,
-                Træninger = p.Træninger.Select(t => new TræningDTO
-                {
-                    TræningID = t.TræningID,
-                    Quiz = t.Quiz != null ? new QuizDTO
-                    {
-                        QuizID = t.Quiz.QuizID,
-                        QuizNavn = t.Quiz.QuizNavn
-                    } : null,
-                    Teori = t.Teori != null ? new TeoriDTO
-                    {
-                        TeoriID = t.Teori.TeoriID,
-                        TeoriNavn = t.Teori.TeoriNavn
-                    } : null,
-                    Teknik = t.Teknik != null ? new TeknikDTO
-                    {
-                        TeknikID = t.Teknik.TeknikID,
-                        TeknikNavn = t.Teknik.TeknikNavn
-                    } : null,
-                    Øvelse = t.Øvelse != null ? new ØvelseDTO
-                    {
-                        ØvelseID = t.Øvelse.ØvelseID,
-                        ØvelseNavn = t.Øvelse.ØvelseNavn
-                    } : null
-                }).ToList()
-            }).ToList();
+            var programPlans = await _programPlanRepository.GetAllProgramPlansByBrugerIdAsync(brugerId);
+            var mapped = _mapper.Map<IEnumerable<ProgramPlanDTO>>(programPlans);
+            return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
         }
 
-        public async Task<ProgramPlanDTO?> GetProgramByIdAsync(Guid id)
+        // Get Programs by Club (Klub)
+        public async Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansByKlubIdAsync(Guid klubId)
         {
-            var program = await _programPlanRepository.GetByIdAsync(id);
-            if (program == null) return null;
-
-            return new ProgramPlanDTO
-            {
-                ProgramID = program.ProgramID,
-                ProgramNavn = program.ProgramNavn,
-                Træninger = program.Træninger.Select(t => new TræningDTO
-                {
-                    TræningID = t.TræningID,
-                    Quiz = t.Quiz != null ? new QuizDTO
-                    {
-                        QuizID = t.Quiz.QuizID,
-                        QuizNavn = t.Quiz.QuizNavn
-                    } : null,
-                    Teori = t.Teori != null ? new TeoriDTO
-                    {
-                        TeoriID = t.Teori.TeoriID,
-                        TeoriNavn = t.Teori.TeoriNavn
-                    } : null,
-                    Teknik = t.Teknik != null ? new TeknikDTO
-                    {
-                        TeknikID = t.Teknik.TeknikID,
-                        TeknikNavn = t.Teknik.TeknikNavn
-                    } : null,
-                    Øvelse = t.Øvelse != null ? new ØvelseDTO
-                    {
-                        ØvelseID = t.Øvelse.ØvelseID,
-                        ØvelseNavn = t.Øvelse.ØvelseNavn
-                    } : null
-                }).ToList()
-            };
+            var programPlans = await _programPlanRepository.GetAllProgramPlansByKlubIdAsync(klubId);
+            var mapped = _mapper.Map<IEnumerable<ProgramPlanDTO>>(programPlans);
+            return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
         }
 
-        public async Task<List<ProgramPlanDTO>> GetProgramsByBrugerAsync(Guid brugerId)
+        // Get All Programs
+        public async Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramsAsync()
         {
-            var programs = await _programPlanRepository.GetAllByBrugerIdAsync(brugerId);
-
-            return programs.Select(p => new ProgramPlanDTO
-            {
-                ProgramID = p.ProgramID,
-                ProgramNavn = p.ProgramNavn,
-                Træninger = p.Træninger.Select(t => new TræningDTO
-                {
-                    TræningID = t.TræningID,
-                    Quiz = t.Quiz != null ? new QuizDTO
-                    {
-                        QuizID = t.Quiz.QuizID,
-                        QuizNavn = t.Quiz.QuizNavn
-                    } : null,
-                    Teori = t.Teori != null ? new TeoriDTO
-                    {
-                        TeoriID = t.Teori.TeoriID,
-                        TeoriNavn = t.Teori.TeoriNavn
-                    } : null,
-                    Teknik = t.Teknik != null ? new TeknikDTO
-                    {
-                        TeknikID = t.Teknik.TeknikID,
-                        TeknikNavn = t.Teknik.TeknikNavn
-                    } : null,
-                    Øvelse = t.Øvelse != null ? new ØvelseDTO
-                    {
-                        ØvelseID = t.Øvelse.ØvelseID,
-                        ØvelseNavn = t.Øvelse.ØvelseNavn
-                    } : null
-                }).ToList()
-            }).ToList();
+            var programs = await _programPlanRepository.GetAllProgramPlansAsync();
+            var mapped = _mapper.Map<IEnumerable<ProgramPlanDTO>>(programs);
+            return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
         }
 
-
-        public async Task<List<ProgramPlanDTO>> GetProgramsByKlubAsync(Guid klubId)
+        // Get Program by ID
+        public async Task<Result<ProgramPlanDTO>> GetProgramByIdAsync(Guid id)
         {
-            var programs = await _programPlanRepository.GetAllByKlubIdAsync(klubId);
+            var program = await _programPlanRepository.GetProgramPlanByIdAsync(id);
+            if (program == null)
+                return Result<ProgramPlanDTO>.Fail("Program not found.");
 
-            return programs.Select(p => new ProgramPlanDTO
-            {
-                ProgramID = p.ProgramID,
-                ProgramNavn = p.ProgramNavn,
-                Træninger = p.Træninger.Select(t => new TræningDTO
-                {
-                    TræningID = t.TræningID,
-                    Quiz = t.Quiz != null ? new QuizDTO
-                    {
-                        QuizID = t.Quiz.QuizID,
-                        QuizNavn = t.Quiz.QuizNavn
-                    } : null,
-                    Teori = t.Teori != null ? new TeoriDTO
-                    {
-                        TeoriID = t.Teori.TeoriID,
-                        TeoriNavn = t.Teori.TeoriNavn
-                    } : null,
-                    Teknik = t.Teknik != null ? new TeknikDTO
-                    {
-                        TeknikID = t.Teknik.TeknikID,
-                        TeknikNavn = t.Teknik.TeknikNavn
-                    } : null,
-                    Øvelse = t.Øvelse != null ? new ØvelseDTO
-                    {
-                        ØvelseID = t.Øvelse.ØvelseID,
-                        ØvelseNavn = t.Øvelse.ØvelseNavn
-                    } : null
-                }).ToList()
-            }).ToList();
+            var mapped = _mapper.Map<ProgramPlanDTO>(program);
+            return Result<ProgramPlanDTO>.Ok(mapped);
         }
 
+        #endregion
     }
 }

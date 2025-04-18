@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoOrchestration.ApiService.Services;
+using Microsoft.AspNetCore.SignalR;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,110 +12,120 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProgramPlanController : ControllerBase
+    public class ProgramPlanController : ApiBaseController
     {
-        private readonly ProgramPlanService _programPlanService;
+        private readonly IProgramPlanService _programPlanService;
+        private readonly IHubContext<ProgramPlanHub> _hubContext; // Assuming you have a ProgramPlanHub for real-time notifications
 
-        public ProgramPlanController(ProgramPlanService programPlanService)
+        public ProgramPlanController(IProgramPlanService programPlanService, IHubContext<ProgramPlanHub> hubContext)
         {
             _programPlanService = programPlanService;
+            _hubContext = hubContext;
         }
 
         // GET: api/programplan
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProgramPlanDTO>>> GetProgramPlans()
+        public async Task<IActionResult> GetProgramPlans()
         {
-            var programPlanList = await _programPlanService.GetAllProgramPlansAsync();
-            return Ok(programPlanList);
+            var result = await _programPlanService.GetAllProgramPlansAsync();
+            return result.ToApiResponse(); // Assuming result is a Response object that has the ToApiResponse method
         }
 
         // GET: api/programplan/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProgramPlanDTO>> GetProgramPlan(Guid id)
+        public async Task<IActionResult> GetProgramPlan(Guid id)
         {
-            var programPlan = await _programPlanService.GetProgramPlanByIdAsync(id);
-            if (programPlan == null)
-                return NotFound();
-            return Ok(programPlan);
+            var result = await _programPlanService.GetProgramPlanByIdAsync(id);
+            return result.ToApiResponse(); // Assuming result is a Response object that has the ToApiResponse method
         }
 
         // POST: api/programplan
-        //[HttpPost]
-        //public async Task<ActionResult<ProgramPlanDTO>> PostProgramPlan(ProgramPlanCreateDTO programPlanDto)
-        //{
-        //    var createdProgramPlan = await _programPlanService.CreateProgramPlanAsync(programPlanDto);
-        //    return CreatedAtAction(nameof(GetProgramPlan), new { id = createdProgramPlan.ProgramID }, createdProgramPlan);
-        //}
         [HttpPost]
-        public async Task<ActionResult<ProgramPlanDTO>> PostQuiz(ProgramPlanDTO programPlanDTO)
+        public async Task<IActionResult> PostProgramPlan([FromBody] ProgramPlanDTO programPlanDTO)
         {
             if (programPlanDTO == null)
             {
                 return BadRequest("Invalid data");
             }
-            var createdProgramPlan = await _programPlanService.CreateProgramPlanWithBrugerAndKlubAsync(programPlanDTO);
-            return CreatedAtAction(nameof(GetProgramPlan), new { id = createdProgramPlan.ProgramID }, createdProgramPlan);
+
+            var result = await _programPlanService.CreateProgramPlanWithBrugerAndKlubAsync(programPlanDTO);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("ProgramPlanUpdated");
+
+            return result.ToApiResponse();
         }
 
         // PUT: api/programplan/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProgramPlan(Guid id, ProgramPlanDTO programPlanDto)
+        public async Task<IActionResult> PutProgramPlan(Guid id, [FromBody] ProgramPlanDTO programPlanDto)
         {
-            var success = await _programPlanService.UpdateProgramPlanAsync(id, programPlanDto);
-            if (!success)
-                return BadRequest();
-            return NoContent();
+            var result = await _programPlanService.UpdateProgramPlanAsync(id, programPlanDto);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("ProgramPlanUpdated");
+
+            return result.ToApiResponse();
         }
 
         // DELETE: api/programplan/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProgramPlan(Guid id)
         {
-            var success = await _programPlanService.DeleteProgramPlanAsync(id);
-            if (!success)
-                return NotFound();
-            return NoContent();
+            var result = await _programPlanService.DeleteProgramPlanAsync(id);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("ProgramPlanDeleted");
+
+            return result.ToApiResponse();
         }
+
+        // PUT: api/programplan/træning/5
         [HttpPut("træning/{id}")]
-        public async Task<IActionResult> PutProgramPlanwithtræning(Guid id, ProgramPlanDTO programPlanDto)
+        public async Task<IActionResult> PutProgramPlanWithTræning(Guid id, [FromBody] ProgramPlanDTO programPlanDto)
         {
-            var updatedProgramPlan = await _programPlanService.UpdateProgramPlanWithBrugerAndKlubAsync(id, programPlanDto);
-            if (updatedProgramPlan == null)
-                return NotFound();
+            var result = await _programPlanService.UpdateProgramPlanWithBrugerAndKlubAsync(id, programPlanDto);
 
-            // Return the updated ProgramPlanDTO with a 200 OK response
-            return Ok(updatedProgramPlan);
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("ProgramPlanUpdated");
+
+            return result.ToApiResponse();
         }
+
+        // GET: api/programplan/by-bruger/{brugerId}
         [HttpGet("by-bruger/{brugerId}")]
-        public async Task<ActionResult<List<ProgramPlanDTO>>> GetAllProgrammmerByBruger(Guid brugerId)
+        public async Task<IActionResult> GetAllProgramsByBruger(Guid brugerId)
         {
-            var programs = await _programPlanService.GetProgramsByBrugerAsync(brugerId);
-            return Ok(programs);
-        }
-        [HttpGet("by-klub/{klubId}")]
-        public async Task<ActionResult<List<ProgramPlanDTO>>> GetAllProgrammerByKlub(Guid klubId)
-        {
-            var programs = await _programPlanService.GetProgramsByBrugerAsync(klubId);
-            return Ok(programs);
-        }
-        // Get all programs
-        [HttpGet("all")]
-        public async Task<ActionResult<List<ProgramPlanDTO>>> GetAllPrograms()
-        {
-            var programs = await _programPlanService.GetAllProgramsAsync();
-            return Ok(programs);
+            var result = await _programPlanService.GetAllProgramPlansByBrugerIdAsync(brugerId);
+            return result.ToApiResponse();
         }
 
-        // Get program by ID
-        [HttpGet("/{id}")]
-        public async Task<ActionResult<ProgramPlanDTO>> GetProgramById(Guid id)
+        // GET: api/programplan/by-klub/{klubId}
+        [HttpGet("by-klub/{klubId}")]
+        public async Task<IActionResult> GetAllProgramsByKlub(Guid klubId)
         {
-            var program = await _programPlanService.GetProgramByIdAsync(id);
-            if (program == null)
-            {
-                return NotFound($"Program with ID {id} not found.");
-            }
-            return Ok(program);
+            var result = await _programPlanService.GetAllProgramPlansByBrugerIdAsync(klubId);
+            return result.ToApiResponse();
+        }
+
+        // GET: api/programplan/all
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllPrograms()
+        {
+            var result = await _programPlanService.GetAllProgramsAsync();
+            return result.ToApiResponse();
+        }
+
+        // GET: api/programplan/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProgramById(Guid id)
+        {
+            var result = await _programPlanService.GetProgramByIdAsync(id);
+            return result.ToApiResponse();
         }
     }
 }
