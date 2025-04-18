@@ -35,6 +35,13 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                 .IgnoreQueryFilters()  // Ignore global filters (soft delete) for this query
                 .FirstOrDefaultAsync(p => p.PensumID == pensumId);
         }
+        public async Task<Pensum?> GetPensumByGradAsync(string grad)
+        {
+            // Assuming PensumGrad is a column in the Pensum table
+            return await _context.Pensum
+                                 .Where(p => p.PensumGrad == grad)
+                                 .FirstOrDefaultAsync();
+        }
 
         public async Task<List<Pensum>> GetAllPensumIncludingDeletedAsync()
         {

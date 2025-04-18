@@ -10,6 +10,7 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
         Task<Pensum?> GetPensumByIdAsync(Guid pensumId);
         Task<List<Pensum>> GetAllPensumIncludingDeletedAsync();
         Task<Pensum?> GetPensumByIdIncludingDeletedAsync(Guid pensumId);
+        Task<Pensum?> GetPensumByGradAsync(string grad);
         Task<Pensum> CreatePensumAsync(Pensum pensum);
         Task<bool> UpdatePensumAsync(Pensum pensum);
         Task<bool> DeletePensumAsync(Guid pensumId);

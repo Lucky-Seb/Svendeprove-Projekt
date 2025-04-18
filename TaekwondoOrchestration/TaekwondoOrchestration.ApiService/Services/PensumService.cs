@@ -1,105 +1,126 @@
 ﻿using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using AutoMapper;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class PensumService
+    public class PensumService : IPensumService
     {
         private readonly IPensumRepository _pensumRepository;
+        private readonly IMapper _mapper;
 
-        public PensumService(IPensumRepository pensumRepository)
+        public PensumService(IPensumRepository pensumRepository, IMapper mapper)
         {
             _pensumRepository = pensumRepository;
+            _mapper = mapper;
         }
 
-        public async Task<List<PensumDTO>> GetAllPensumAsync()
+        #region CRUD Operations
+
+        // Get All Pensum
+        public async Task<Result<IEnumerable<PensumDTO>>> GetAllPensumAsync()
         {
-            var pensumList = await _pensumRepository.GetAllAsync();
-            return pensumList.Select(p => new PensumDTO
-            {
-                PensumID = p.PensumID,
-                PensumGrad = p.PensumGrad
-            }).ToList();
+            var pensumList = await _pensumRepository.GetAllPensumAsync();
+            var mapped = _mapper.Map<IEnumerable<PensumDTO>>(pensumList);
+            return Result<IEnumerable<PensumDTO>>.Ok(mapped);
         }
 
-        public async Task<PensumDTO?> GetPensumByIdAsync(Guid id)
+        // Get Pensum by ID
+        public async Task<Result<PensumDTO>> GetPensumByIdAsync(Guid id)
         {
-            var pensum = await _pensumRepository.GetByIdAsync(id);
+            var pensum = await _pensumRepository.GetPensumByIdAsync(id);
             if (pensum == null)
-                return null;
+                return Result<PensumDTO>.Fail("Pensum not found.");
 
-            return new PensumDTO
-            {
-                PensumID = pensum.PensumID,
-                PensumGrad = pensum.PensumGrad,
-
-                // Ensure Technik and Teori are correctly mapped from the loaded related entities
-                Teknik = pensum.Teknikker?.Select(t => new TeknikDTO
-                {
-                    TeknikID = t.TeknikID,
-                    TeknikNavn = t.TeknikNavn,
-                    TeknikBeskrivelse = t.TeknikBeskrivelse,
-                    TeknikBillede = t.TeknikBillede,
-                    TeknikVideo = t.TeknikVideo,
-                    TeknikLyd = t.TeknikLyd,
-                    PensumID = t.PensumID
-                }).ToList(),
-
-                Teori = pensum.Teorier?.Select(te => new TeoriDTO
-                {
-                    TeoriID = te.TeoriID,
-                    TeoriNavn = te.TeoriNavn,
-                    TeoriBeskrivelse = te.TeoriBeskrivelse,
-                    TeoriBillede = te.TeoriBillede,
-                    TeoriVideo = te.TeoriVideo,
-                    TeoriLyd = te.TeoriLyd,
-                    PensumID = te.PensumID
-                }).ToList()
-            };
+            var mapped = _mapper.Map<PensumDTO>(pensum);
+            return Result<PensumDTO>.Ok(mapped);
         }
 
-
-        public async Task<PensumDTO> CreatePensumAsync(PensumDTO pensumDTO)
+        // Create New Pensum
+        public async Task<Result<PensumDTO>> CreatePensumAsync(PensumDTO pensumDto)
         {
-            // Validate required field PensumGrad
-            if (string.IsNullOrEmpty(pensumDTO.PensumGrad))
+            if (string.IsNullOrEmpty(pensumDto.PensumGrad))
             {
-                return null; // Return null or a custom error DTO if needed
+                return Result<PensumDTO>.Fail("PensumGrad is required.");
             }
 
-            var pensum = new Pensum
-            {
-                PensumGrad = pensumDTO.PensumGrad
-            };
+            var newPensum = _mapper.Map<Pensum>(pensumDto);
+            EntityHelper.InitializeEntity(newPensum, pensumDto.ModifiedBy, "Created new Pensum.");
+            var createdPensum = await _pensumRepository.CreatePensumAsync(newPensum);
 
-            var createdPensum = await _pensumRepository.CreateAsync(pensum);
-
-            return new PensumDTO
-            {
-                PensumID = createdPensum.PensumID,
-                PensumGrad = createdPensum.PensumGrad
-            };
+            var mapped = _mapper.Map<PensumDTO>(createdPensum);
+            return Result<PensumDTO>.Ok(mapped);
         }
 
-
-        public async Task<bool> UpdatePensumAsync(Guid id, PensumDTO pensumDTO)
+        // Update Existing Pensum
+        public async Task<Result<bool>> UpdatePensumAsync(Guid id, PensumDTO pensumDto)
         {
-            var pensum = await _pensumRepository.GetByIdAsync(id);
-            if (pensum == null) return false;
+            if (string.IsNullOrEmpty(pensumDto.PensumGrad))
+            {
+                return Result<bool>.Fail("PensumGrad is required.");
+            }
 
-            pensum.PensumGrad = pensumDTO.PensumGrad;
+            var existingPensum = await _pensumRepository.GetPensumByIdAsync(id);
+            if (existingPensum == null)
+                return Result<bool>.Fail("Pensum not found.");
 
-            return await _pensumRepository.UpdateAsync(pensum);
+            _mapper.Map(pensumDto, existingPensum);
+            EntityHelper.UpdateCommonFields(existingPensum, pensumDto.ModifiedBy);
+            var updateSuccess = await _pensumRepository.UpdatePensumAsync(existingPensum);
+
+            return updateSuccess ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to update Pensum.");
         }
 
-        public async Task<bool> DeletePensumAsync(Guid id)
+        // Soft Delete Pensum
+        public async Task<Result<bool>> DeletePensumAsync(Guid id)
         {
-            return await _pensumRepository.DeleteAsync(id);
+            var pensum = await _pensumRepository.GetPensumByIdAsync(id);
+            if (pensum == null)
+                return Result<bool>.Fail("Pensum not found.");
+
+            // Soft delete
+            string modifiedBy = pensum.ModifiedBy; // Assuming we pass user context here
+            EntityHelper.SetDeletedOrRestoredProperties(pensum, "Soft-deleted Pensum entry", modifiedBy);
+
+            var success = await _pensumRepository.UpdatePensumAsync(pensum);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Pensum.");
         }
+
+        // Restore Pensum from Soft-Delete
+        public async Task<Result<bool>> RestorePensumAsync(Guid id, PensumDTO dto)
+        {
+            var pensum = await _pensumRepository.GetPensumByIdIncludingDeletedAsync(id);
+            if (pensum == null || !pensum.IsDeleted)
+                return Result<bool>.Fail("Pensum not found or not deleted.");
+
+            pensum.IsDeleted = false;
+            pensum.Status = SyncStatus.Synced;
+            pensum.ModifiedBy = dto.ModifiedBy;
+            pensum.LastSyncedVersion++;
+
+            // Set properties for restored entry
+            EntityHelper.SetDeletedOrRestoredProperties(pensum, "Restored Pensum entry", dto.ModifiedBy);
+
+            var success = await _pensumRepository.UpdatePensumAsync(pensum);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to restore Pensum.");
+        }
+
+        #endregion
+
+        #region Search Operations
+
+        // Get Pensum by Grad (Difficulty)
+        public async Task<Result<IEnumerable<PensumDTO>>> GetPensumByGradAsync(string grad)
+        {
+            var pensumList = await _pensumRepository.GetPensumByGradAsync(grad);
+            var mapped = _mapper.Map<IEnumerable<PensumDTO>>(pensumList);
+            return Result<IEnumerable<PensumDTO>>.Ok(mapped);
+        }
+
+        #endregion
     }
 }
