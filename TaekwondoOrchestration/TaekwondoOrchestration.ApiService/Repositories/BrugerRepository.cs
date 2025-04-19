@@ -108,15 +108,10 @@ namespace TaekwondoOrchestration.ApiService.Repositories
 
         public async Task<bool> UpdateBrugerAsync(Bruger bruger)
         {
-            // Hash the password if it is being updated
-            if (!string.IsNullOrEmpty(bruger.Brugerkode))
-            {
-                bruger.Brugerkode = BCrypt.Net.BCrypt.HashPassword(bruger.Brugerkode);
-            }
-
             _context.Brugere.Update(bruger);
             return await _context.SaveChangesAsync() > 0;
         }
+
 
         public async Task<bool> DeleteBrugerAsync(Guid brugerId)
         {

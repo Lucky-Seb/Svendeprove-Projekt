@@ -73,16 +73,27 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<Result<bool>> UpdateBrugerAsync(Guid id, BrugerUpdateDTO brugerUpdateDTO)
         {
+            // Fetch the existing entity
             var existing = await _brugerRepository.GetBrugerByIdAsync(id);
             if (existing == null)
                 return Result<bool>.Fail("Bruger not found.");
+            var keeppassword = existing.Brugerkode;
 
+            // Only map properties that are changed (AutoMapper will not update Brugerkode if it's null or empty)
             _mapper.Map(brugerUpdateDTO, existing);
-            EntityHelper.UpdateCommonFields(existing, brugerUpdateDTO.ModifiedBy);
 
+            // Handle password update logic if needed (only if provided)
+            if (!string.IsNullOrEmpty(brugerUpdateDTO.Brugerkode))
+            {
+                existing.Brugerkode = BCrypt.Net.BCrypt.HashPassword(brugerUpdateDTO.Brugerkode);
+            }
+            existing.Brugerkode = keeppassword;
+
+            // Save the changes using the repository
             var success = await _brugerRepository.UpdateBrugerAsync(existing);
             return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to update Bruger.");
         }
+
 
         public async Task<Result<bool>> DeleteBrugerAsync(Guid id)
         {

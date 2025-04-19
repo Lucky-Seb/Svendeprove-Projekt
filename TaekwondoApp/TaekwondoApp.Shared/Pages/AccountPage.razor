@@ -94,12 +94,12 @@ else
 }
 
 @code {
-    private BrugerDTO brugerModel = new();
+    private BrugerUpdateDTO brugerModel = new();
     private bool isEditing = false;
     private bool isAuthenticated;
     private string errorMessage = string.Empty;
     private string token = "";
-
+    private Guid brugerId = new Guid();
     private HttpClient _apiClient;
     private HubConnection _hubConnection;
 
@@ -114,6 +114,7 @@ else
                 NavigationManager.NavigateTo("/login");
                 return;
             }
+            brugerId = JwtParser.GetUserIdFromJwt(token);
 
             isAuthenticated = true;
             _apiClient = HttpClientFactory.CreateClient("ApiClient");
@@ -142,11 +143,10 @@ else
     {
         try
         {
-            var brugerId = JwtParser.GetUserIdFromJwt(token);
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<Bruger>>($"api/bruger/{brugerId}");
             if (response?.Success == true && response.Data != null)
             {
-                brugerModel = _mapper.Map<BrugerDTO>(response.Data);
+                brugerModel = _mapper.Map<BrugerUpdateDTO>(response.Data);
             }
             else
             {
@@ -173,7 +173,7 @@ else
     {
         try
         {
-            var response = await _apiClient.PutAsJsonAsync($"api/bruger/{brugerModel.BrugerID}", brugerModel);
+            var response = await _apiClient.PutAsJsonAsync($"api/bruger/{brugerId}", brugerModel);
             if (response.IsSuccessStatusCode)
             {
                 await LoadBruger();
@@ -195,7 +195,7 @@ else
     {
         try
         {
-            var response = await _apiClient.DeleteAsync($"api/bruger/{brugerModel.BrugerID}");
+            var response = await _apiClient.DeleteAsync($"api/bruger/{brugerId}");
             if (response.IsSuccessStatusCode)
             {
                 // 🔐 Clear token from SecureStorage and auth state
