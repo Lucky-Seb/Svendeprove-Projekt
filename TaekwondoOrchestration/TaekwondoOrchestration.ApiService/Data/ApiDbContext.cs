@@ -53,42 +53,42 @@ namespace TaekwondoOrchestration.ApiService.Data
                     method.Invoke(null, new object[] { modelBuilder });
                 }
             }
-            // Configure properties for each derived class
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.CreatedAt)
-                .IsRequired();
+            //// Configure properties for each derived class
+            //modelBuilder.Entity<Ordbog>()
+            //    .Property(o => o.CreatedAt)
+            //    .IsRequired();
 
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.LastModified)
-                .IsRequired();
+            //modelBuilder.Entity<Ordbog>()
+            //    .Property(o => o.LastModified)
+            //    .IsRequired();
 
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.ConflictStatus)
-                .HasDefaultValue(ConflictResolutionStatus.NoConflict);
+            //modelBuilder.Entity<Ordbog>()
+            //    .Property(o => o.ConflictStatus)
+            //    .HasDefaultValue(ConflictResolutionStatus.NoConflict);
 
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.Status)
-                .HasDefaultValue(SyncStatus.Pending);
+            //modelBuilder.Entity<Ordbog>()
+            //    .Property(o => o.Status)
+            //    .HasDefaultValue(SyncStatus.Synced);
 
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.LastSyncedVersion)
-                .HasDefaultValue(0);
+            //modelBuilder.Entity<Ordbog>()
+            //    .Property(o => o.LastSyncedVersion)
+            //    .HasDefaultValue(0);
 
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.ETag)
-                .HasMaxLength(255);
+            //modelBuilder.Entity<Ordbog>()
+            //    .Property(o => o.ETag)
+            //    .HasMaxLength(255);
 
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.ModifiedBy)
-                .HasMaxLength(255);
+            //modelBuilder.Entity<Ordbog>()
+            //    .Property(o => o.ModifiedBy)
+            //    .HasMaxLength(255);
 
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.IsDeleted)
-                .HasDefaultValue(false);
+            //modelBuilder.Entity<Ordbog>()
+            //    .Property(o => o.IsDeleted)
+            //    .HasDefaultValue(false);
 
-            modelBuilder.Entity<Ordbog>()
-                .Property(o => o.ChangeHistoryJson)
-                .HasColumnType("nvarchar(max)");  // Use the appropriate type for your DB (nvarchar, text, etc.)
+            //modelBuilder.Entity<Ordbog>()
+            //    .Property(o => o.ChangeHistoryJson)
+            //    .HasColumnType("nvarchar(max)");  // Use the appropriate type for your DB (nvarchar, text, etc.)
 
             // Define primary keys and sequential GUID generation
             modelBuilder.Entity<Bruger>().HasKey(b => b.BrugerID);
@@ -386,7 +386,7 @@ namespace TaekwondoOrchestration.ApiService.Data
             var ordbogID8 = Guid.Parse("10efa19d-6353-4373-b455-414131376826");  // Generated GUID 79
             var ordbogID9 = Guid.Parse("0fd1ec97-6cee-4e0f-a032-0a3f3020d5be");  // Generated GUID 80
             var ordbogID10 = Guid.Parse("a61b1f2a-3236-4af5-90aa-3483b96a5666");  // Generated GUID 81
-            
+
             modelBuilder.Entity<Bruger>().HasData(
                 new Bruger
                 {
@@ -398,7 +398,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Brugerkode = "hashed_password",  // This should be a hashed password
                     Address = "123 Taekwondo St.",
                     Bæltegrad = "Hvidt Bælte",
-                    Role = "Bruger"
+                    Role = "Bruger",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Bruger
                 {
@@ -410,7 +418,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Brugerkode = "hashed_password2",  // This should be a hashed password
                     Address = "456 Taekwondo St.",
                     Bæltegrad = "Gult Bælte",
-                    Role = "Bruger"
+                    Role = "Bruger",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Bruger
                 {
@@ -422,7 +438,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Brugerkode = "hashed_password3",  // This should be a hashed password
                     Address = "789 Taekwondo St.",
                     Bæltegrad = "Blåt Bælte",
-                    Role = "Bruger"
+                    Role = "Bruger",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Bruger
                 {
@@ -434,7 +458,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Brugerkode = "hashed_password4",  // This should be a hashed password
                     Address = "321 Taekwondo St.",
                     Bæltegrad = "Grønt Bælte",
-                    Role = "Bruger"
+                    Role = "Bruger",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Bruger
                 {
@@ -446,9 +478,18 @@ namespace TaekwondoOrchestration.ApiService.Data
                     Brugerkode = "hashed_password5",  // This should be a hashed password
                     Address = "654 Taekwondo St.",
                     Bæltegrad = "Brunt Bælte",
-                    Role = "Bruger"
+                    Role = "Bruger",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 }
             );
+
 
             // Seed for Klub
             modelBuilder.Entity<Klub>().HasData(
@@ -484,27 +525,67 @@ namespace TaekwondoOrchestration.ApiService.Data
                 new Pensum
                 {
                     PensumID = pensumID1,
-                    PensumGrad = "Hvid"
+                    PensumGrad = "Hvid",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Pensum
                 {
                     PensumID = pensumID2,
-                    PensumGrad = "Gult"
+                    PensumGrad = "Gult",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Pensum
                 {
                     PensumID = pensumID3,
-                    PensumGrad = "Blåt"
+                    PensumGrad = "Blåt",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Pensum
                 {
                     PensumID = pensumID4,
-                    PensumGrad = "Rød"
+                    PensumGrad = "Rød",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Pensum
                 {
                     PensumID = pensumID5,
-                    PensumGrad = "Sort"
+                    PensumGrad = "Sort",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 }
             );
 
@@ -516,7 +597,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ProgramNavn = "Basic Taekwondo Program",
                     OprettelseDato = new DateTime(2025, 4, 8),  // Static date
                     Længde = 4,
-                    Beskrivelse = "A basic program to get started with Taekwondo."
+                    Beskrivelse = "A basic program to get started with Taekwondo.",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new ProgramPlan
                 {
@@ -524,7 +613,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ProgramNavn = "Intermediate Taekwondo Program",
                     OprettelseDato = new DateTime(2025, 4, 9),  // Static date
                     Længde = 6,
-                    Beskrivelse = "An intermediate program to enhance your Taekwondo skills."
+                    Beskrivelse = "An intermediate program to enhance your Taekwondo skills.",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new ProgramPlan
                 {
@@ -532,10 +629,19 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ProgramNavn = "Advanced Taekwondo Program",
                     OprettelseDato = new DateTime(2025, 4, 10),  // Static date
                     Længde = 8,
-                    Beskrivelse = "An advanced program for mastering Taekwondo techniques."
+                    Beskrivelse = "An advanced program for mastering Taekwondo techniques.",
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 }
             );
 
+            // Seed for Teknik
             // Seed for Teknik
             modelBuilder.Entity<Teknik>().HasData(
                 new Teknik
@@ -546,7 +652,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeknikBillede = "roundhouse_kick_image_url",
                     TeknikVideo = "roundhouse_kick_video_url",
                     TeknikLyd = "roundhouse_kick_sound_url",
-                    PensumID = pensumID1
+                    PensumID = pensumID1,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teknik
                 {
@@ -556,7 +670,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeknikBillede = "front_kick_image_url",
                     TeknikVideo = "front_kick_video_url",
                     TeknikLyd = "front_kick_sound_url",
-                    PensumID = pensumID1
+                    PensumID = pensumID1,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teknik
                 {
@@ -566,7 +688,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeknikBillede = "back_kick_image_url",
                     TeknikVideo = "back_kick_video_url",
                     TeknikLyd = "back_kick_sound_url",
-                    PensumID = pensumID2
+                    PensumID = pensumID2,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teknik
                 {
@@ -576,7 +706,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeknikBillede = "side_kick_image_url",
                     TeknikVideo = "side_kick_video_url",
                     TeknikLyd = "side_kick_sound_url",
-                    PensumID = pensumID2
+                    PensumID = pensumID2,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teknik
                 {
@@ -586,7 +724,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeknikBillede = "hammerfist_image_url",
                     TeknikVideo = "hammerfist_video_url",
                     TeknikLyd = "hammerfist_sound_url",
-                    PensumID = pensumID3
+                    PensumID = pensumID3,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teknik
                 {
@@ -596,7 +742,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeknikBillede = "elbow_strike_image_url",
                     TeknikVideo = "elbow_strike_video_url",
                     TeknikLyd = "elbow_strike_sound_url",
-                    PensumID = pensumID3
+                    PensumID = pensumID3,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teknik
                 {
@@ -606,7 +760,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeknikBillede = "knee_strike_image_url",
                     TeknikVideo = "knee_strike_video_url",
                     TeknikLyd = "knee_strike_sound_url",
-                    PensumID = pensumID1
+                    PensumID = pensumID1,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teknik
                 {
@@ -616,27 +778,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeknikBillede = "axe_kick_image_url",
                     TeknikVideo = "axe_kick_video_url",
                     TeknikLyd = "axe_kick_sound_url",
-                    PensumID = pensumID2
-                },
-                new Teknik
-                {
-                    TeknikID = teknikID9,
-                    TeknikNavn = "Spinning Back Kick",
-                    TeknikBeskrivelse = "A spinning kick where you turn around and strike with a powerful back kick.",
-                    TeknikBillede = "spinning_back_kick_image_url",
-                    TeknikVideo = "spinning_back_kick_video_url",
-                    TeknikLyd = "spinning_back_kick_sound_url",
-                    PensumID = pensumID3
-                },
-                new Teknik
-                {
-                    TeknikID = teknikID10,
-                    TeknikNavn = "Knife Hand Strike",
-                    TeknikBeskrivelse = "A strike using the edge of the hand, aimed at vulnerable areas.",
-                    TeknikBillede = "knife_hand_strike_image_url",
-                    TeknikVideo = "knife_hand_strike_video_url",
-                    TeknikLyd = "knife_hand_strike_sound_url",
-                    PensumID = pensumID5
+                    PensumID = pensumID2,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 }
             );
 
@@ -650,7 +800,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeoriBillede = "taekwondo_etiquette_image_url",
                     TeoriVideo = "taekwondo_etiquette_video_url",
                     TeoriLyd = "taekwondo_etiquette_sound_url",
-                    PensumID = pensumID1
+                    PensumID = pensumID1,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teori
                 {
@@ -660,7 +818,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeoriBillede = "history_of_taekwondo_image_url",
                     TeoriVideo = "history_of_taekwondo_video_url",
                     TeoriLyd = "history_of_taekwondo_sound_url",
-                    PensumID = pensumID1
+                    PensumID = pensumID1,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teori
                 {
@@ -670,7 +836,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeoriBillede = "taekwondo_stances_image_url",
                     TeoriVideo = "taekwondo_stances_video_url",
                     TeoriLyd = "taekwondo_stances_sound_url",
-                    PensumID = pensumID2
+                    PensumID = pensumID2,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teori
                 {
@@ -680,7 +854,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeoriBillede = "dojang_image_url",
                     TeoriVideo = "dojang_video_url",
                     TeoriLyd = "dojang_sound_url",
-                    PensumID = pensumID2
+                    PensumID = pensumID2,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teori
                 {
@@ -690,7 +872,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeoriBillede = "belt_system_image_url",
                     TeoriVideo = "belt_system_video_url",
                     TeoriLyd = "belt_system_sound_url",
-                    PensumID = pensumID2
+                    PensumID = pensumID2,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teori
                 {
@@ -700,7 +890,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeoriBillede = "basic_movements_image_url",
                     TeoriVideo = "basic_movements_video_url",
                     TeoriLyd = "basic_movements_sound_url",
-                    PensumID = pensumID3
+                    PensumID = pensumID3,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teori
                 {
@@ -710,7 +908,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeoriBillede = "self_defense_image_url",
                     TeoriVideo = "self_defense_video_url",
                     TeoriLyd = "self_defense_sound_url",
-                    PensumID = pensumID3
+                    PensumID = pensumID3,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teori
                 {
@@ -720,7 +926,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeoriBillede = "tournaments_image_url",
                     TeoriVideo = "tournaments_video_url",
                     TeoriLyd = "tournaments_sound_url",
-                    PensumID = pensumID4
+                    PensumID = pensumID4,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teori
                 {
@@ -730,7 +944,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeoriBillede = "forms_image_url",
                     TeoriVideo = "forms_video_url",
                     TeoriLyd = "forms_sound_url",
-                    PensumID = pensumID5
+                    PensumID = pensumID5,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Teori
                 {
@@ -740,9 +962,18 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TeoriBillede = "philosophy_image_url",
                     TeoriVideo = "philosophy_video_url",
                     TeoriLyd = "philosophy_sound_url",
-                    PensumID = pensumID5
+                    PensumID = pensumID5,
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 }
             );
+
 
             // Seed for Ordbog with static values
             modelBuilder.Entity<Ordbog>().HasData(
@@ -758,7 +989,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ETag = "12345",  // Static ETag
                     CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
                     LastModified = new DateTime(2025, 1, 1),  // Static LastModified
-                    Status = SyncStatus.Pending,  // Static Sync Status
+                    Status = SyncStatus.Synced,  // Static Sync Status
                     ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
                     LastSyncedVersion = 0,  // Static version
                     ModifiedBy = "Admin",  // Static ModifiedBy
@@ -776,7 +1007,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ETag = "12346",  // Static ETag
                     CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
                     LastModified = new DateTime(2025, 1, 1),  // Static LastModified
-                    Status = SyncStatus.Pending,  // Static Sync Status
+                    Status = SyncStatus.Synced,  // Static Sync Status
                     ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
                     LastSyncedVersion = 0,  // Static version
                     ModifiedBy = "Admin",  // Static ModifiedBy
@@ -794,7 +1025,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ETag = "12347",  // Static ETag
                     CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
                     LastModified = new DateTime(2025, 1, 1),  // Static LastModified
-                    Status = SyncStatus.Pending,  // Static Sync Status
+                    Status = SyncStatus.Synced,  // Static Sync Status
                     ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
                     LastSyncedVersion = 0,  // Static version
                     ModifiedBy = "Admin",  // Static ModifiedBy
@@ -812,7 +1043,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ETag = "12348",  // Static ETag
                     CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
                     LastModified = new DateTime(2025, 1, 1),  // Static LastModified
-                    Status = SyncStatus.Pending,  // Static Sync Status
+                    Status = SyncStatus.Synced,  // Static Sync Status
                     ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
                     LastSyncedVersion = 0,  // Static version
                     ModifiedBy = "Admin",  // Static ModifiedBy
@@ -830,7 +1061,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ETag = "12349",  // Static ETag
                     CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
                     LastModified = new DateTime(2025, 1, 1),  // Static LastModified
-                    Status = SyncStatus.Pending,  // Static Sync Status
+                    Status = SyncStatus.Synced,  // Static Sync Status
                     ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
                     LastSyncedVersion = 0,  // Static version
                     ModifiedBy = "Admin",  // Static ModifiedBy
@@ -848,7 +1079,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ETag = "12350",  // Static ETag
                     CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
                     LastModified = new DateTime(2025, 1, 1),  // Static LastModified
-                    Status = SyncStatus.Pending,  // Static Sync Status
+                    Status = SyncStatus.Synced,  // Static Sync Status
                     ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
                     LastSyncedVersion = 0,  // Static version
                     ModifiedBy = "Admin",  // Static ModifiedBy
@@ -866,7 +1097,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ETag = "12351",  // Static ETag
                     CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
                     LastModified = new DateTime(2025, 1, 1),  // Static LastModified
-                    Status = SyncStatus.Pending,  // Static Sync Status
+                    Status = SyncStatus.Synced,  // Static Sync Status
                     ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
                     LastSyncedVersion = 0,  // Static version
                     ModifiedBy = "Admin",  // Static ModifiedBy
@@ -884,7 +1115,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ETag = "12352",  // Static ETag
                     CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
                     LastModified = new DateTime(2025, 1, 1),  // Static LastModified
-                    Status = SyncStatus.Pending,  // Static Sync Status
+                    Status = SyncStatus.Synced,  // Static Sync Status
                     ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
                     LastSyncedVersion = 0,  // Static version
                     ModifiedBy = "Admin",  // Static ModifiedBy
@@ -902,7 +1133,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ETag = "12353",  // Static ETag
                     CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
                     LastModified = new DateTime(2025, 1, 1),  // Static LastModified
-                    Status = SyncStatus.Pending,  // Static Sync Status
+                    Status = SyncStatus.Synced,  // Static Sync Status
                     ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
                     LastSyncedVersion = 0,  // Static version
                     ModifiedBy = "Admin",  // Static ModifiedBy
@@ -920,7 +1151,7 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ETag = "12354",  // Static ETag
                     CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
                     LastModified = new DateTime(2025, 1, 1),  // Static LastModified
-                    Status = SyncStatus.Pending,  // Static Sync Status
+                    Status = SyncStatus.Synced,  // Static Sync Status
                     ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
                     LastSyncedVersion = 0,  // Static version
                     ModifiedBy = "Admin",  // Static ModifiedBy
@@ -938,7 +1169,14 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "push_up_video_url",
                     ØvelseTid = 30,  // Time for each round of exercise in seconds
                     ØvelseSværhed = "Let",  // Difficulty: Easy
-                    PensumID = pensumID1  // Example PensumID
+                    PensumID = pensumID1,  // Example PensumID                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag
                 },
                 new Øvelse
                 {
@@ -949,7 +1187,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "sit_up_video_url",
                     ØvelseTid = 30,
                     ØvelseSværhed = "Let",
-                    PensumID = pensumID1  // Example PensumID
+                    PensumID = pensumID1,  // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -960,7 +1206,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "squat_video_url",
                     ØvelseTid = 45,
                     ØvelseSværhed = "Mellem",  // Difficulty: Medium
-                    PensumID = pensumID2  // Example PensumID
+                    PensumID = pensumID2,  // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -971,7 +1225,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "burpee_video_url",
                     ØvelseTid = 60,
                     ØvelseSværhed = "Svær",  // Difficulty: Hard
-                    PensumID = pensumID1  // Example PensumID
+                    PensumID = pensumID1,  // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -982,7 +1244,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "lunge_video_url",
                     ØvelseTid = 40,
                     ØvelseSværhed = "Mellem",
-                    PensumID = pensumID3  // Example PensumID
+                    PensumID = pensumID3,   // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -993,7 +1263,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "mountain_climber_video_url",
                     ØvelseTid = 30,
                     ØvelseSværhed = "Mellem",
-                    PensumID = pensumID2  // Example PensumID
+                    PensumID = pensumID2,  // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -1004,7 +1282,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "plank_video_url",
                     ØvelseTid = 45,
                     ØvelseSværhed = "Mellem",
-                    PensumID = pensumID1  // Example PensumID
+                    PensumID = pensumID1,  // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -1015,7 +1301,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "jumping_jacks_video_url",
                     ØvelseTid = 30,
                     ØvelseSværhed = "Let",
-                    PensumID = pensumID1  // Example PensumID
+                    PensumID = pensumID1,  // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -1026,7 +1320,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "high_knees_video_url",
                     ØvelseTid = 40,
                     ØvelseSværhed = "Mellem",
-                    PensumID = pensumID2  // Example PensumID
+                    PensumID = pensumID2,  // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Øvelse
                 {
@@ -1037,7 +1339,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "tricep_dips_video_url",
                     ØvelseTid = 45,
                     ØvelseSværhed = "Mellem",
-                    PensumID = pensumID3  // Example PensumID
+                    PensumID = pensumID3, // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 }
             );
 
@@ -1047,21 +1357,45 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID1,
                     QuizNavn = "Taekwondo Basics Quiz",
                     QuizBeskrivelse = "A quiz to test your knowledge of basic Taekwondo concepts.",
-                    PensumID = pensumID1  // Example PensumID
+                    PensumID = pensumID1,  // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Quiz
                 {
                     QuizID = quizID2,
                     QuizNavn = "Taekwondo History Quiz",
                     QuizBeskrivelse = "Test your knowledge of the history and origins of Taekwondo.",
-                    PensumID = pensumID2  // Example PensumID
+                    PensumID = pensumID2,  // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Quiz
                 {
                     QuizID = quizID3,
                     QuizNavn = "Taekwondo Techniques Quiz",
                     QuizBeskrivelse = "A quiz to assess your understanding of various Taekwondo techniques and movements.",
-                    PensumID = pensumID3  // Example PensumID
+                    PensumID = pensumID3,  // Example PensumID
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 }
             );
 
@@ -1076,7 +1410,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID1,  // Reference the first quiz
                     TeoriID = teoriID1,  // Reference a theory
                     TeknikID = teknikID1,  // Reference a technique
-                    ØvelseID = øvelseID1  // Reference an exercise
+                    ØvelseID = øvelseID1,  // Reference an exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1086,7 +1428,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID1,  // Reference the first quiz
                     TeoriID = teoriID2,  // Reference a different theory
                     TeknikID = teknikID2,  // Reference a different technique
-                    ØvelseID = øvelseID2  // Reference a different exercise
+                    ØvelseID = øvelseID2,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1096,7 +1446,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID1,  // Reference the first quiz
                     TeoriID = teoriID3,  // Reference a different theory
                     TeknikID = teknikID3,  // Reference a different technique
-                    ØvelseID = øvelseID3  // Reference a different exercise
+                    ØvelseID = øvelseID3,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1106,7 +1464,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID1,  // Reference the first quiz
                     TeoriID = teoriID4,  // Reference a different theory
                     TeknikID = teknikID4,  // Reference a different technique
-                    ØvelseID = øvelseID4  // Reference a different exercise
+                    ØvelseID = øvelseID4,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1116,7 +1482,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID1,  // Reference the first quiz
                     TeoriID = teoriID5,  // Reference a different theory
                     TeknikID = teknikID5,  // Reference a different technique
-                    ØvelseID = øvelseID5  // Reference a different exercise
+                    ØvelseID = øvelseID5,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
 
                 // Questions for Quiz 2 (Taekwondo History Quiz)
@@ -1128,7 +1502,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID2,  // Reference the second quiz
                     TeoriID = teoriID1,  // Reference a theory
                     TeknikID = teknikID2,  // Reference a technique
-                    ØvelseID = øvelseID1  // Reference an exercise
+                    ØvelseID = øvelseID1,  // Reference an exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1138,7 +1520,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID2,  // Reference the second quiz
                     TeoriID = teoriID2,  // Reference a different theory
                     TeknikID = teknikID3,  // Reference a different technique
-                    ØvelseID = øvelseID2  // Reference a different exercise
+                    ØvelseID = øvelseID2,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1148,7 +1538,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID2,  // Reference the second quiz
                     TeoriID = teoriID3,  // Reference a different theory
                     TeknikID = teknikID4,  // Reference a different technique
-                    ØvelseID = øvelseID3  // Reference a different exercise
+                    ØvelseID = øvelseID3,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1158,7 +1556,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID2,  // Reference the second quiz
                     TeoriID = teoriID4,  // Reference a different theory
                     TeknikID = teknikID5,  // Reference a different technique
-                    ØvelseID = øvelseID4  // Reference a different exercise
+                    ØvelseID = øvelseID4,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1168,7 +1574,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID2,  // Reference the second quiz
                     TeoriID = teoriID5,  // Reference a different theory
                     TeknikID = teknikID1,  // Reference a different technique
-                    ØvelseID = øvelseID5  // Reference a different exercise
+                    ØvelseID = øvelseID5,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
 
                 // Questions for Quiz 3 (Taekwondo Advanced Quiz)
@@ -1180,7 +1594,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID3,  // Reference the third quiz
                     TeoriID = teoriID1,  // Reference a theory
                     TeknikID = teknikID2,  // Reference a technique
-                    ØvelseID = øvelseID1  // Reference an exercise
+                    ØvelseID = øvelseID1,  // Reference an exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1190,7 +1612,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID3,  // Reference the third quiz
                     TeoriID = teoriID2,  // Reference a different theory
                     TeknikID = teknikID3,  // Reference a different technique
-                    ØvelseID = øvelseID2  // Reference a different exercise
+                    ØvelseID = øvelseID2,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1200,7 +1630,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID3,  // Reference the third quiz
                     TeoriID = teoriID3,  // Reference a different theory
                     TeknikID = teknikID4,  // Reference a different technique
-                    ØvelseID = øvelseID3  // Reference a different exercise
+                    ØvelseID = øvelseID3,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1210,7 +1648,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID3,  // Reference the third quiz
                     TeoriID = teoriID4,  // Reference a different theory
                     TeknikID = teknikID5,  // Reference a different technique
-                    ØvelseID = øvelseID4  // Reference a different exercise
+                    ØvelseID = øvelseID4,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Spørgsmål
                 {
@@ -1220,7 +1666,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     QuizID = quizID3,  // Reference the third quiz
                     TeoriID = teoriID5,  // Reference a different theory
                     TeknikID = teknikID1,  // Reference a different technique
-                    ØvelseID = øvelseID5  // Reference a different exercise
+                    ØvelseID = øvelseID5,  // Reference a different exercise
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 }
             );
 
@@ -1233,7 +1687,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TræningRækkefølge = 1,
                     Tid = 60,
                     ProgramID = programID1,  // Reference the first program
-                    PensumID = pensumID1  // Reference the first Pensum
+                    PensumID = pensumID1,  // Reference the first Pensum
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Træning
                 {
@@ -1241,7 +1703,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TræningRækkefølge = 2,
                     Tid = 75,
                     ProgramID = programID1,  // Reference the first program
-                    PensumID = pensumID1  // Reference the first Pensum
+                    PensumID = pensumID1,  // Reference the first Pensum
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
 
                 // Træning for Program 2
@@ -1251,7 +1721,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TræningRækkefølge = 1,
                     Tid = 90,
                     ProgramID = programID2,  // Reference the second program
-                    PensumID = pensumID2  // Reference the second Pensum
+                    PensumID = pensumID2,  // Reference the second Pensum
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Træning
                 {
@@ -1259,7 +1737,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TræningRækkefølge = 2,
                     Tid = 80,
                     ProgramID = programID2,  // Reference the second program
-                    PensumID = pensumID2  // Reference the second Pensum
+                    PensumID = pensumID2,  // Reference the second Pensum
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 // Træning for Program 3
                 new Træning
@@ -1268,7 +1754,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TræningRækkefølge = 1,
                     Tid = 90,
                     ProgramID = programID3,  // Reference the second program
-                    PensumID = pensumID3  // Reference the second Pensum
+                    PensumID = pensumID3,  // Reference the second Pensum
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 },
                 new Træning
                 {
@@ -1276,7 +1770,15 @@ namespace TaekwondoOrchestration.ApiService.Data
                     TræningRækkefølge = 2,
                     Tid = 80,
                     ProgramID = programID3,  // Reference the second program
-                    PensumID = pensumID3  // Reference the second Pensum
+                    PensumID = pensumID3,  // Reference the second Pensum
+                    ETag = "12346",  // Static ETag
+                    CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
+                    LastModified = new DateTime(2025, 1, 1),  // Static LastModified
+                    Status = SyncStatus.Synced,  // Static Sync Status
+                    ConflictStatus = ConflictResolutionStatus.NoConflict,  // Static Conflict Status
+                    LastSyncedVersion = 0,  // Static version
+                    ModifiedBy = "Admin",  // Static ModifiedBy
+                    IsDeleted = false  // Static IsDeleted flag  // Example PensumID
                 }
             );
 
