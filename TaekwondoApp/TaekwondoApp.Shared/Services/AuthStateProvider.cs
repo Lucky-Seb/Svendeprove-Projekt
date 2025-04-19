@@ -32,12 +32,14 @@ public class AuthStateProvider
     }
 
     // Method to clear authentication data, overwrite the token, and notify listeners
+    // Method to clear authentication data, overwrite the token, and notify listeners
+    // Method to clear authentication data, overwrite the token, and notify listeners
     public async Task ClearAuth()
     {
         _token = null;
         _role = null;
 
-        // Clear the token by overwriting with an empty string
+        // Attempt to overwrite the token with an empty string (or null, depending on platform)
         await SecureStorage.SetAsync("jwt_token", string.Empty);
 
         // Notify subscribers that the authentication state has changed
