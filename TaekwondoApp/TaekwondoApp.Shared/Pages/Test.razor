@@ -60,8 +60,7 @@ else
             return;
         }
 
-        frontendRole = JwtParser.GetRole(fronttoken);
-
+        frontendRole = JwtParser.GetRole(fronttoken);  // Make sure this is set correctly
         try
         {
             var client = HttpClientFactory.CreateClient("ApiClient");

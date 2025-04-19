@@ -17,22 +17,32 @@ public class JwtHelper : IJwtHelper
     {
         var securityKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_secretKey));
 
-        // Here you would typically create a claims identity for the user
+        // Create the signing credentials using the secret key
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+        // Create the claims identity
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, bruger.Brugernavn),
+        };
+
+        // Add the single role as a claim (assuming 'bruger.Role' holds the role as a string)
+        if (!string.IsNullOrEmpty(bruger.Role))
+        {
+            claims.Add(new Claim(ClaimTypes.Role, bruger.Role));  // Role as a single string
+        }
+
+        // Create the token descriptor
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new Claim[]
-            {
-                new Claim(ClaimTypes.Name, bruger.Brugernavn),
-                // Add other claims here as needed
-            }),
-            Expires = DateTime.Now.AddHours(1), // Set the expiration time
-            Issuer = "YourIssuer", // Can be extracted from config as well
-            Audience = "YourAudience", // Can be extracted from config as well
+            Subject = new ClaimsIdentity(claims),  // Add the claims (including role)
+            Expires = DateTime.Now.AddHours(1),    // Set the expiration time
+            Issuer = "YourIssuer",                 // Can be extracted from config
+            Audience = "YourAudience",             // Can be extracted from config
             SigningCredentials = credentials
         };
 
+        // Create the token and return the JWT token string
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
