@@ -62,6 +62,18 @@ foreach (var repo in repositoryTypes)
 // ---------------------
 // 🧠 Services
 // ---------------------
+
+// Add configuration (appsettings.json)
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+
+// Register JwtHelper with DI, passing the secret key
+builder.Services.AddSingleton<IJwtHelper>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var secretKey = configuration.GetValue<string>("JwtSettings:SecretKey");
+    return new JwtHelper(secretKey);
+});
+
 var serviceTypes = typeof(IBrugerService).Assembly
     .GetTypes()
     .Where(t => t.Name.EndsWith("Service") && !t.IsInterface);
@@ -136,19 +148,18 @@ var app = builder.Build();
 // ---------------------
 // 🔥 Middleware
 // ---------------------
-app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseExceptionHandler();
+app.UseMiddleware<GlobalExceptionMiddleware>(); // Add this first for exception handling
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Taekwondo Orchestration API V1");
-        c.RoutePrefix = string.Empty;
-    });
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+c.SwaggerEndpoint("/swagger/v1/swagger.json", "Taekwondo Orchestration API V1");
+c.RoutePrefix = string.Empty;
+});
 
-    app.MapHub<OrdbogHub>("/ordbogHub");
+app.MapHub<OrdbogHub>("/ordbogHub");
 }
 
 // ---------------------
@@ -165,15 +176,15 @@ string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast(
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
+var forecast = Enumerable.Range(1, 5).Select(index =>
+    new WeatherForecast(
+        DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+        Random.Shared.Next(-20, 55),
+        summaries[Random.Shared.Next(summaries.Length)]
+    ))
+    .ToArray();
 
-    return forecast;
+return forecast;
 })
 .WithName("GetWeatherForecast");
 
