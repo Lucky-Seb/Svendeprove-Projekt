@@ -24,7 +24,7 @@ public class JwtHelper : IJwtHelper
         var claims = new List<Claim>
     {
         new Claim(ClaimTypes.Name, bruger.Brugernavn),  // Store the username as a claim
-        new Claim("BrugerID", bruger.BrugerID.ToString())         // Add the UserId as a claim (sub)
+        new Claim("BrugerID", bruger.BrugerID.ToString())         // Add the brugerID as a claim (BrugerID)
     };
 
         // Add the role as a claim if it exists

@@ -41,15 +41,22 @@ namespace TaekwondoApp.Shared.Services
         {
             var claims = ParseClaimsFromJwt(jwt);
 
-            // Assuming the UserId is stored as 'sub' or 'userId' claim, but it could be different based on your setup
-            var userIdClaim = claims.FirstOrDefault(c => c.Type == "BrugerID");
+            // Debug: Print all claim types to verify claim name
+            foreach (var claim in claims)
+            {
+                Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
+            }
+
+            // Assuming the UserId is stored as 'BrugerID' claim
+            var userIdClaim = claims.FirstOrDefault(c => c.Type.Equals("BrugerID", StringComparison.OrdinalIgnoreCase));
 
             if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId))
             {
                 return userId;
             }
 
-            throw new InvalidOperationException("UserId claim not found or is invalid in the JWT token.");
+            throw new InvalidOperationException("UserId claim (BrugerID) not found or is invalid in the JWT token.");
         }
+
     }
 }

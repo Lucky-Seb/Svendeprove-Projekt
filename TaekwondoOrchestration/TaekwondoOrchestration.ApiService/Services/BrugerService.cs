@@ -174,6 +174,10 @@ namespace TaekwondoOrchestration.ApiService.Services
         {
             // Step 1: Fetch the user (Bruger) based on email or username
             var bruger = await _brugerRepository.GetBrugerByEmailOrBrugernavnAsync(loginDto.EmailOrBrugernavn);
+            if (bruger == null)
+            {
+                return Result<BrugerDTO>.Fail("Invalid credentials.");
+            }
 
             Console.WriteLine("Bruger object details:");
             Console.WriteLine($"BrugerID: {bruger.BrugerID}");
