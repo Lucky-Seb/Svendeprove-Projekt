@@ -88,9 +88,9 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBruger(Guid id, [FromBody] BrugerDTO brugerDTO)
+        public async Task<IActionResult> PutBruger(Guid id, [FromBody] BrugerUpdateDTO brugerUpdateDTO)
         {
-            var result = await _brugerService.UpdateBrugerAsync(id, brugerDTO);
+            var result = await _brugerService.UpdateBrugerAsync(id, brugerUpdateDTO);
             if (result.Success)
                 await _hubContext.Clients.All.SendAsync("BrugerUpdated");
 

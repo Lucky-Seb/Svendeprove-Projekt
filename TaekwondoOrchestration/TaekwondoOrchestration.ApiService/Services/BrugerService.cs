@@ -71,14 +71,14 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(created));
         }
 
-        public async Task<Result<bool>> UpdateBrugerAsync(Guid id, BrugerDTO brugerDto)
+        public async Task<Result<bool>> UpdateBrugerAsync(Guid id, BrugerUpdateDTO brugerUpdateDTO)
         {
             var existing = await _brugerRepository.GetBrugerByIdAsync(id);
             if (existing == null)
                 return Result<bool>.Fail("Bruger not found.");
 
-            _mapper.Map(brugerDto, existing);
-            EntityHelper.UpdateCommonFields(existing, brugerDto.ModifiedBy);
+            _mapper.Map(brugerUpdateDTO, existing);
+            EntityHelper.UpdateCommonFields(existing, brugerUpdateDTO.ModifiedBy);
 
             var success = await _brugerRepository.UpdateBrugerAsync(existing);
             return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to update Bruger.");
@@ -96,7 +96,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Bruger.");
         }
 
-        public async Task<Result<bool>> RestoreBrugerAsync(Guid id, BrugerDTO dto)
+        public async Task<Result<bool>> RestoreBrugerAsync(Guid id, BrugerUpdateDTO dto)
         {
             var bruger = await _brugerRepository.GetBrugerByIdIncludingDeletedAsync(id);
             if (bruger == null || !bruger.IsDeleted)
