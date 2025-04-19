@@ -198,8 +198,11 @@ else
             var response = await _apiClient.DeleteAsync($"api/bruger/{brugerModel.BrugerID}");
             if (response.IsSuccessStatusCode)
             {
-                // Handle successful account deletion (e.g., navigate to login page)
-                NavigationManager.NavigateTo("/login");
+                // 🔐 Clear token from SecureStorage and auth state
+                await AuthenticationService.RemoveTokenAsync();
+
+                // 🔁 Navigate to login page
+                NavigationManager.NavigateTo("/login", forceLoad: true);
             }
             else
             {

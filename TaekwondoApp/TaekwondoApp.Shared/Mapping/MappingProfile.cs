@@ -10,9 +10,10 @@ namespace TaekwondoApp.Shared.Mapping
         public MappingProfile()
         {
             // Bruger and BrugerDTO Mapping
-            CreateMap<Bruger, BrugerDTO>();
+            CreateMap<Bruger, BrugerDTO>()
                 //.ForMember(dest => dest.Klub, opt => opt.MapFrom(src => src.BrugerKlubber.FirstOrDefault() != null ? src.BrugerKlubber.FirstOrDefault().Klub : null));
                 //.ForMember(dest => dest.Token, opt => opt.Ignore()); 
+                    .ForMember(dest => dest.Brugerkode, opt => opt.Ignore());
             CreateMap<BrugerDTO, Bruger>(); // Reverse Mapping
 
             // Klub and KlubDTO Mapping

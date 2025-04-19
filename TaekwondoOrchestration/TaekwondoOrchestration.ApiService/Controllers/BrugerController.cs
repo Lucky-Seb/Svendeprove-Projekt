@@ -97,7 +97,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return result.ToApiResponse();
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBruger(Guid id)
         {
