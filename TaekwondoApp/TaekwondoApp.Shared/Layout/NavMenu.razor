@@ -115,7 +115,7 @@
         </div>
         <div class="nav-item px-3">
             @* This link will only be visible to users with "Instructor" or "Elev" roles *@
-            @if (role == "Instructor" || role == "Elev")
+            @if (role == "Instructor" || role == "Elev" || role == "Bruger")
             {
                 <NavLink class="nav-link" href="account">
                     <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Konto Side
@@ -143,7 +143,7 @@
 
     private async Task Logout()
     {
-        AuthStateProvider.ClearAuth();
+        await AuthStateProvider.ClearAuth();
         NavigationManager.NavigateTo("/login", forceLoad: true);
     }
 
