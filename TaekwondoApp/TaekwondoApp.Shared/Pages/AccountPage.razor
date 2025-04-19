@@ -78,6 +78,38 @@ else
             <p><strong>Address:</strong> @brugerModel.Address</p>
             <p><strong>Belt Grade:</strong> @brugerModel.Bæltegrad</p>
 
+            <h4>Clubs:</h4>
+            <ul>
+                @foreach (var klub in brugerModel.BrugerKlubber)
+                {
+                    <li>@klub.KlubNavn</li>
+                }
+            </ul>
+
+            <h4>Programs:</h4>
+            <ul>
+                @foreach (var program in brugerModel.BrugerProgrammer)
+                {
+                    <li>@program.ProgramNavn</li>
+                }
+            </ul>
+
+            <h4>Quizzes:</h4>
+            <ul>
+                @foreach (var quiz in brugerModel.BrugerQuizzer)
+                {
+                    <li>@quiz.QuizNavn</li>
+                }
+            </ul>
+
+            <h4>Exercises:</h4>
+            <ul>
+                @foreach (var øvelse in brugerModel.BrugerØvelser)
+                {
+                    <li>@øvelse.ØvelseNavn</li>
+                }
+            </ul>
+
             <div class="actions">
                 <button @onclick="EditProfile">Edit Profile</button>
                 <button @onclick="DeleteProfile">Delete Account</button>
@@ -94,7 +126,7 @@ else
 }
 
 @code {
-    private BrugerUpdateDTO brugerModel = new();
+    private BrugerDTO brugerModel = new();
     private bool isEditing = false;
     private bool isAuthenticated;
     private string errorMessage = string.Empty;
@@ -143,10 +175,10 @@ else
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<Bruger>>($"api/bruger/{brugerId}");
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/{brugerId}");
             if (response?.Success == true && response.Data != null)
             {
-                brugerModel = _mapper.Map<BrugerUpdateDTO>(response.Data);
+                brugerModel = response.Data;
             }
             else
             {
@@ -173,46 +205,33 @@ else
     {
         try
         {
-            var response = await _apiClient.PutAsJsonAsync($"api/bruger/{brugerId}", brugerModel);
+            var response = await _apiClient.PutAsJsonAsync($"api/bruger/{brugerModel.BrugerID}", brugerModel);
             if (response.IsSuccessStatusCode)
             {
-                await LoadBruger();
                 isEditing = false;
+                await LoadBruger();
             }
             else
             {
-                var details = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Update failed: {details}";
+                errorMessage = "Failed to update user data.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error updating profile: {ex.Message}";
+            errorMessage = $"Error updating user data: {ex.Message}";
         }
     }
 
     private async Task DeleteProfile()
     {
-        try
+        var response = await _apiClient.DeleteAsync($"api/bruger/{brugerModel.BrugerID}");
+        if (response.IsSuccessStatusCode)
         {
-            var response = await _apiClient.DeleteAsync($"api/bruger/{brugerId}");
-            if (response.IsSuccessStatusCode)
-            {
-                // 🔐 Clear token from SecureStorage and auth state
-                await AuthenticationService.RemoveTokenAsync();
-
-                // 🔁 Navigate to login page
-                NavigationManager.NavigateTo("/login", forceLoad: true);
-            }
-            else
-            {
-                var details = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Delete failed: {details}";
-            }
+            NavigationManager.NavigateTo("/logout");
         }
-        catch (Exception ex)
+        else
         {
-            errorMessage = $"Error deleting account: {ex.Message}";
+            errorMessage = "Failed to delete profile.";
         }
     }
 

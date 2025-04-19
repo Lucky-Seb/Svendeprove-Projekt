@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -56,6 +57,20 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
         }
+
+        public async Task<Result<BrugerDTO>> GetBrugerWithDetailsAsync(Guid brugerId)
+        {
+            // Fetch the bruker details from the repository
+            var brugerDTO = await _brugerRepository.GetBrugerWithDetailsAsync(brugerId);
+
+            if (brugerDTO == null)
+            {
+                return Result<BrugerDTO>.Fail("Bruger not found.");
+            }
+
+            return Result<BrugerDTO>.Ok(brugerDTO);
+        }
+
         public async Task<Result<BrugerDTO>> CreateBrugerAsync(BrugerDTO brugerDto)
         {
             var brugerEntity = _mapper.Map<Bruger>(brugerDto);

@@ -16,6 +16,7 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
         Task<Result<BrugerDTO>> AuthenticateBrugerAsync(LoginDTO loginDto);
 
         // Search
+        Task<Result<BrugerDTO>> GetBrugerWithDetailsAsync(Guid brugerId);
         Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByRoleAsync(string role);
         Task<Result<IEnumerable<BrugerDTO>>> GetBrugerByBælteAsync(string bæltegrad);
         Task<Result<IEnumerable<BrugerDTO>>> GetBrugereByKlubAsync(Guid klubId);

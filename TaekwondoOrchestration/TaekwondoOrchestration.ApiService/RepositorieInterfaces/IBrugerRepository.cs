@@ -22,5 +22,6 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
         Task<Bruger?> GetBrugerByEmailOrBrugernavnAsync(string emailOrBrugernavn);
         // Add DeleteBrugerAsync method
         Task<bool> DeleteBrugerAsync(Guid brugerId);
+        Task<BrugerDTO?> GetBrugerWithDetailsAsync(Guid brugerId);
     }
 }

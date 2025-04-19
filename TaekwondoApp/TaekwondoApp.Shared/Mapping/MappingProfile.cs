@@ -13,7 +13,7 @@ namespace TaekwondoApp.Shared.Mapping
             CreateMap<Bruger, BrugerDTO>()
                 //.ForMember(dest => dest.Klub, opt => opt.MapFrom(src => src.BrugerKlubber.FirstOrDefault() != null ? src.BrugerKlubber.FirstOrDefault().Klub : null));
                 //.ForMember(dest => dest.Token, opt => opt.Ignore()); 
-                    .ForMember(dest => dest.Brugerkode, opt => opt.Ignore());
+                .ForMember(dest => dest.Brugerkode, opt => opt.Ignore());
             CreateMap<BrugerDTO, Bruger>(); // Reverse Mapping
             CreateMap<BrugerUpdateDTO, Bruger>();
             CreateMap<Bruger, BrugerUpdateDTO>();
@@ -100,6 +100,44 @@ namespace TaekwondoApp.Shared.Mapping
                 .ForMember(dest => dest.Bæltegrad, opt => opt.MapFrom(src => src.Bæltegrad))
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role));
+
+
+
+            // Bruger -> BrugerDTO
+            CreateMap<Bruger, BrugerDTO>()
+                .ForMember(dest => dest.Klubber, opt => opt.MapFrom(src => src.BrugerKlubber.Select(bk => bk.Klub)))
+                .ForMember(dest => dest.Programmer, opt => opt.MapFrom(src => src.BrugerProgrammer.Select(bp => bp.Plan)))
+                .ForMember(dest => dest.Quizzer, opt => opt.MapFrom(src => src.BrugerQuizzer.Select(bq => bq.Quiz)))
+                .ForMember(dest => dest.Øvelser, opt => opt.MapFrom(src => src.BrugerØvelser.Select(bø => bø.Øvelse)));
+
+            // Klub -> KlubDTO
+            CreateMap<Klub, KlubDTO>();
+
+            // ProgramPlan -> ProgramPlanDTO
+            CreateMap<ProgramPlan, ProgramPlanDTO>()
+                .ForMember(dest => dest.Træninger, opt => opt.MapFrom(src => src.Træninger));
+
+            // Træning -> TræningDTO
+            CreateMap<Træning, TræningDTO>();
+
+            // Quizzer -> QuizDTO
+            CreateMap<Quiz, QuizDTO>()
+                .ForMember(dest => dest.Spørgsmål, opt => opt.MapFrom(src => src.Spørgsmåls));
+
+            // Spørgsmål -> SpørgsmålDTO
+            CreateMap<Spørgsmål, SpørgsmålDTO>()
+                .ForMember(dest => dest.Teknik, opt => opt.MapFrom(src => src.Teknik))
+                .ForMember(dest => dest.Teori, opt => opt.MapFrom(src => src.Teori))
+                .ForMember(dest => dest.Øvelse, opt => opt.MapFrom(src => src.Øvelse));
+
+            // Øvelse -> ØvelseDTO
+            CreateMap<Øvelse, ØvelseDTO>();
+
+            // Teknik -> TeknikDTO
+            CreateMap<Teknik, TeknikDTO>();
+
+            // Teori -> TeoriDTO
+            CreateMap<Teori, TeoriDTO>();
         }
     }
 }

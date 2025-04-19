@@ -34,7 +34,13 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             var result = await _brugerService.GetBrugerByIdAsync(id);
             return result.ToApiResponse();
         }
-
+        // New endpoint for getting a user with detailed information
+        [HttpGet("details/{id}")]
+        public async Task<IActionResult> GetBrugerWithDetails(Guid id)
+        {
+            var result = await _brugerService.GetBrugerWithDetailsAsync(id);
+            return result.ToApiResponse();
+        }
         [HttpGet("role/{role}")]
         public async Task<IActionResult> GetBrugerByRole(string role)
         {

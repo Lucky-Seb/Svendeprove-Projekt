@@ -121,5 +121,24 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             _context.Brugere.Remove(bruger);
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<BrugerDTO?> GetBrugerWithDetailsAsync(Guid brugerId)
+        {
+            // Fetch the bruker along with related data using eager loading (Include)
+            var brugerDetails = await _context.Brugere
+                .Where(b => b.BrugerID == brugerId)
+                .Include(b => b.BrugerKlubber)  // Klubber
+                .Include(b => b.BrugerProgrammer)  // Programmer
+                .Include(b => b.BrugerQuizzer)  // Quizzer
+                .Include(b => b.BrugerØvelser)  // Øvelser
+                .FirstOrDefaultAsync();
+
+            if (brugerDetails == null)
+                return null;
+
+            // Use AutoMapper to map everything to BrugerDTO
+            var brugerDTO = _mapper.Map<BrugerDTO>(brugerDetails);
+
+            return brugerDTO;
+        }
     }
 }
