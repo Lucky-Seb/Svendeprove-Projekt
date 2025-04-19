@@ -152,14 +152,15 @@ app.UseMiddleware<GlobalExceptionMiddleware>(); // Add this first for exception 
 
 if (app.Environment.IsDevelopment())
 {
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-c.SwaggerEndpoint("/swagger/v1/swagger.json", "Taekwondo Orchestration API V1");
-c.RoutePrefix = string.Empty;
-});
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Taekwondo Orchestration API V1");
+        c.RoutePrefix = string.Empty;
+    });
 
-app.MapHub<OrdbogHub>("/ordbogHub");
+    app.MapHub<OrdbogHub>("/ordbogHub");
+    app.MapHub<BrugerHub>("/brugerhub"); // ✅ ADD THIS
 }
 
 // ---------------------

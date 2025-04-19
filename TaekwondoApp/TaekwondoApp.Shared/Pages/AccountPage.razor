@@ -143,16 +143,10 @@ else
         try
         {
             var brugerId = JwtParser.GetUserIdFromJwt(token);
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<Bruger>>>("api/bruger/" + brugerId);
-
-            if (response?.Success == true)
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<Bruger>>($"api/bruger/{brugerId}");
+            if (response?.Success == true && response.Data != null)
             {
-                // Assuming the response contains a list of users, we take the first user (you may want to handle multiple users or more sophisticated logic)
-                var bruger = response.Data?.FirstOrDefault();
-                if (bruger != null)
-                {
-                    brugerModel = _mapper.Map<BrugerDTO>(bruger);
-                }
+                brugerModel = _mapper.Map<BrugerDTO>(response.Data);
             }
             else
             {
