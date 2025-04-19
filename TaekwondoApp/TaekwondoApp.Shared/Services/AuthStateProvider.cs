@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Maui.Storage;
-using System;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using TaekwondoApp.Shared.Services;
 
 public class AuthStateProvider
 {
-    // Event to notify other components that authentication state has changed
     public event Action? OnChange;
 
     private string? _token;
@@ -15,48 +12,43 @@ public class AuthStateProvider
 
     public string? Token => _token;
     public string? Role => _role;
-
     public bool IsAuthenticated => !string.IsNullOrEmpty(_token);
 
-    // Method to set the token and role, and notify listeners of state change
-    public async Task SetAuth(string token)
+    public AuthStateProvider()
     {
-        _token = token;
-        _role = JwtParser.GetRole(token);
-
-        // Store the token securely
-        await SecureStorage.SetAsync("jwt_token", token);
-
-        // Notify subscribers that the authentication state has changed
-        NotifyStateChanged();
+        _ = InitializeAsync(); // Fire and forget initialization
     }
 
-    // Method to clear authentication data, overwrite the token, and notify listeners
-    // Method to clear authentication data, overwrite the token, and notify listeners
-    // Method to clear authentication data, overwrite the token, and notify listeners
-    public async Task ClearAuth()
-    {
-        _token = null;
-        _role = null;
-
-        // Attempt to overwrite the token with an empty string (or null, depending on platform)
-        await SecureStorage.SetAsync("jwt_token", string.Empty);
-
-        // Notify subscribers that the authentication state has changed
-        NotifyStateChanged();
-    }
-
-    // Method to get the current authentication state (i.e., whether the user is authenticated or not)
-    public async Task<AuthenticationState> GetAuthenticationStateAsync()
+    private async Task InitializeAsync()
     {
         var token = await SecureStorage.GetAsync("jwt_token");
 
         if (!string.IsNullOrEmpty(token))
         {
             _token = token;
-            _role = JwtParser.GetRole(token); // Extract role from token
+            _role = JwtParser.GetRole(token);
+            NotifyStateChanged();
         }
+    }
 
+    public async Task SetAuth(string token)
+    {
+        _token = token;
+        _role = JwtParser.GetRole(token);
+        await SecureStorage.SetAsync("jwt_token", token);
+        NotifyStateChanged();
+    }
+
+    public async Task ClearAuth()
+    {
+        _token = null;
+        _role = null;
+        await SecureStorage.SetAsync("jwt_token", string.Empty);
+        NotifyStateChanged();
+    }
+
+    public async Task<AuthenticationState> GetAuthenticationStateAsync()
+    {
         var identity = IsAuthenticated
             ? new ClaimsIdentity(new[]
             {
@@ -65,10 +57,8 @@ public class AuthStateProvider
             }, "jwt")
             : new ClaimsIdentity();
 
-        var user = new ClaimsPrincipal(identity);
-        return new AuthenticationState(user);
+        return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 
-    // Notify all subscribers that the state has changed
     private void NotifyStateChanged() => OnChange?.Invoke();
 }
