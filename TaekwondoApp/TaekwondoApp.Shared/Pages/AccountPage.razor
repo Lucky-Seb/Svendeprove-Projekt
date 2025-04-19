@@ -5,61 +5,65 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 
-<h3>Account Information</h3>
+<h3 class="text-center text-primary mb-4">Account Information</h3>
 
 @if (!isAuthenticated)
 {
-    <p>You need to be logged in to view this page.</p>
-    <button @onclick="NavigateToLogin">Go to Login</button>
+    <div class="alert alert-warning text-center">
+        <p>You need to be logged in to view this page.</p>
+        <button @onclick="NavigateToLogin" class="btn btn-info">Go to Login</button>
+    </div>
 }
 else
 {
-    <div>
-        <h4>Your Account</h4>
+    <div class="container">
+        <h4 class="text-center text-success mb-4">Your Account</h4>
 
         <EditForm Model="user" OnValidSubmit="HandleSubmit">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
             <div class="form-group">
-                <label>Email</label>
-                <InputText @bind-Value="user.Email" class="form-control" />
+                <label for="email">Email</label>
+                <InputText id="email" @bind-Value="user.Email" class="form-control shadow-sm" />
             </div>
 
             <div class="form-group">
-                <label>Brugernavn</label>
-                <InputText @bind-Value="user.Brugernavn" class="form-control" disabled />
+                <label for="username">Brugernavn</label>
+                <InputText id="username" @bind-Value="user.Brugernavn" class="form-control shadow-sm" disabled />
             </div>
 
             <div class="form-group">
-                <label>Fornavn</label>
-                <InputText @bind-Value="user.Fornavn" class="form-control" />
+                <label for="firstname">Fornavn</label>
+                <InputText id="firstname" @bind-Value="user.Fornavn" class="form-control shadow-sm" />
             </div>
 
             <div class="form-group">
-                <label>Efternavn</label>
-                <InputText @bind-Value="user.Efternavn" class="form-control" />
+                <label for="lastname">Efternavn</label>
+                <InputText id="lastname" @bind-Value="user.Efternavn" class="form-control shadow-sm" />
             </div>
 
             <div class="form-group">
-                <label>Bæltegrad</label>
-                <InputText @bind-Value="user.Bæltegrad" class="form-control" />
+                <label for="belt">Bæltegrad</label>
+                <InputText id="belt" @bind-Value="user.Bæltegrad" class="form-control shadow-sm" />
             </div>
 
             <div class="form-group">
-                <label>Address</label>
-                <InputText @bind-Value="user.Address" class="form-control" />
+                <label for="address">Address</label>
+                <InputText id="address" @bind-Value="user.Address" class="form-control shadow-sm" />
             </div>
 
             <div class="form-group">
-                <label>Role</label>
-                <InputText @bind-Value="user.Role" class="form-control" disabled />
+                <label for="role">Role</label>
+                <InputText id="role" @bind-Value="user.Role" class="form-control shadow-sm" disabled />
             </div>
 
-            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="submit" class="btn btn-success btn-block mt-4 shadow-sm">Save Changes</button>
         </EditForm>
 
-        <button @onclick="Logout" class="btn btn-danger mt-3">Log Out</button>
+        <div class="d-flex justify-content-center mt-4">
+            <button @onclick="Logout" class="btn btn-danger btn-lg shadow-sm">Log Out</button>
+        </div>
     </div>
 }
 
@@ -70,7 +74,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // Fetch token and check authentication status
         fronttoken = await AuthenticationService.GetTokenAsync();
         isAuthenticated = !string.IsNullOrEmpty(fronttoken);
 
@@ -80,7 +83,7 @@ else
             return;
         }
 
-        // Fetch the user's current data
+        // Fetch the user data based on the token
         await LoadUserData();
     }
 
@@ -90,7 +93,9 @@ else
 
         try
         {
-            var response = await client.GetAsync("api/bruger/account");
+            // Assuming that the user ID is available in the token or can be fetched from it
+            var userId = await AuthenticationService.GetUserIdFromTokenAsync(fronttoken); // This method can be adjusted to extract the user ID
+            var response = await client.GetAsync($"api/bruger/{userId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -102,7 +107,6 @@ else
             }
             else
             {
-                // Handle the error (maybe show an error message)
                 Console.WriteLine("Failed to load user data.");
             }
         }
@@ -118,16 +122,16 @@ else
 
         try
         {
-            var response = await client.PutAsJsonAsync("api/bruger/update", user);
+            var userId = await AuthenticationService.GetUserIdFromTokenAsync(fronttoken); // Assuming method to extract user ID
+
+            var response = await client.PutAsJsonAsync($"api/bruger/{userId}", user);
 
             if (response.IsSuccessStatusCode)
             {
-                // Successfully updated user data
                 Console.WriteLine("User data updated successfully.");
             }
             else
             {
-                // Handle the error (maybe show an error message)
                 Console.WriteLine("Failed to update user data.");
             }
         }

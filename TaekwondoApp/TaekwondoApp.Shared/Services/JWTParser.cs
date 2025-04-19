@@ -36,5 +36,20 @@ namespace TaekwondoApp.Shared.Services
             var claims = ParseClaimsFromJwt(jwt);
             return claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         }
+        // Method to get the user ID (or 'sub' / 'userId' claim)
+        public static Guid GetUserIdFromJwt(string jwt)
+        {
+            var claims = ParseClaimsFromJwt(jwt);
+
+            // Assuming the UserId is stored as 'sub' or 'userId' claim, but it could be different based on your setup
+            var userIdClaim = claims.FirstOrDefault(c => c.Type == "BrugerID");
+
+            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                return userId;
+            }
+
+            throw new InvalidOperationException("UserId claim not found or is invalid in the JWT token.");
+        }
     }
 }

@@ -22,20 +22,21 @@ public class JwtHelper : IJwtHelper
 
         // Create the claims identity
         var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, bruger.Brugernavn),
-        };
+    {
+        new Claim(ClaimTypes.Name, bruger.Brugernavn),  // Store the username as a claim
+        new Claim("BrugerID", bruger.BrugerID.ToString())         // Add the UserId as a claim (sub)
+    };
 
-        // Add the single role as a claim (assuming 'bruger.Role' holds the role as a string)
+        // Add the role as a claim if it exists
         if (!string.IsNullOrEmpty(bruger.Role))
         {
-            claims.Add(new Claim(ClaimTypes.Role, bruger.Role));  // Role as a single string
+            claims.Add(new Claim(ClaimTypes.Role, bruger.Role));  // Role as a claim
         }
 
         // Create the token descriptor
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(claims),  // Add the claims (including role)
+            Subject = new ClaimsIdentity(claims),  // Add the claims (including UserId and role)
             Expires = DateTime.Now.AddHours(1),    // Set the expiration time
             Issuer = "YourIssuer",                 // Can be extracted from config
             Audience = "YourAudience",             // Can be extracted from config
