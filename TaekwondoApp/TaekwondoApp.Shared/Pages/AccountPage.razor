@@ -1,0 +1,150 @@
+﻿@page "/account"
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Services
+@inject IAuthenticationService AuthenticationService
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+
+<h3>Account Information</h3>
+
+@if (!isAuthenticated)
+{
+    <p>You need to be logged in to view this page.</p>
+    <button @onclick="NavigateToLogin">Go to Login</button>
+}
+else
+{
+    <div>
+        <h4>Your Account</h4>
+
+        <EditForm Model="user" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label>Email</label>
+                <InputText @bind-Value="user.Email" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>Brugernavn</label>
+                <InputText @bind-Value="user.Brugernavn" class="form-control" disabled />
+            </div>
+
+            <div class="form-group">
+                <label>Fornavn</label>
+                <InputText @bind-Value="user.Fornavn" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>Efternavn</label>
+                <InputText @bind-Value="user.Efternavn" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>Bæltegrad</label>
+                <InputText @bind-Value="user.Bæltegrad" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>Address</label>
+                <InputText @bind-Value="user.Address" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>Role</label>
+                <InputText @bind-Value="user.Role" class="form-control" disabled />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </EditForm>
+
+        <button @onclick="Logout" class="btn btn-danger mt-3">Log Out</button>
+    </div>
+}
+
+@code {
+    private bool isAuthenticated = false;
+    private BrugerDTO user = new BrugerDTO();
+    private string? fronttoken;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch token and check authentication status
+        fronttoken = await AuthenticationService.GetTokenAsync();
+        isAuthenticated = !string.IsNullOrEmpty(fronttoken);
+
+        if (!isAuthenticated)
+        {
+            NavigationManager.NavigateTo("/login", true);
+            return;
+        }
+
+        // Fetch the user's current data
+        await LoadUserData();
+    }
+
+    private async Task LoadUserData()
+    {
+        var client = HttpClientFactory.CreateClient("ApiClient");
+
+        try
+        {
+            var response = await client.GetAsync("api/bruger/account");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var userData = await response.Content.ReadFromJsonAsync<BrugerDTO>();
+                if (userData != null)
+                {
+                    user = userData; // Populate the user object with the fetched data
+                }
+            }
+            else
+            {
+                // Handle the error (maybe show an error message)
+                Console.WriteLine("Failed to load user data.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading user data: {ex.Message}");
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        var client = HttpClientFactory.CreateClient("ApiClient");
+
+        try
+        {
+            var response = await client.PutAsJsonAsync("api/bruger/update", user);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Successfully updated user data
+                Console.WriteLine("User data updated successfully.");
+            }
+            else
+            {
+                // Handle the error (maybe show an error message)
+                Console.WriteLine("Failed to update user data.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating user data: {ex.Message}");
+        }
+    }
+
+    private async Task Logout()
+    {
+        await AuthenticationService.RemoveTokenAsync();
+        NavigationManager.NavigateTo("/login", true);
+    }
+
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}
