@@ -7,7 +7,6 @@
 @using TaekwondoApp.Shared.Helper
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
-using Microsoft.Maui.Essentials
 
 @* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
@@ -16,56 +15,212 @@ using Microsoft.Maui.Essentials
 @inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
+<h1>Account</h1>
 
-<h1>acount</h1>
+@if (!isAuthenticated)
+{
+    <p>You are not logged in. Please log in first.</p>
+    <button @onclick="NavigateToLogin">Go to Login</button>
+}
+else
+{
+    <div class="account-details">
+        @if (isEditing)
+        {
+            <h3>Edit Your Profile</h3>
+            <EditForm Model="brugerModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div>
+                    <label for="brugernavn">Username:</label>
+                    <InputText id="brugernavn" @bind-Value="brugerModel.Brugernavn" />
+                </div>
+
+                <div>
+                    <label for="fornavn">First Name:</label>
+                    <InputText id="fornavn" @bind-Value="brugerModel.Fornavn" />
+                </div>
+
+                <div>
+                    <label for="efternavn">Last Name:</label>
+                    <InputText id="efternavn" @bind-Value="brugerModel.Efternavn" />
+                </div>
+
+                <div>
+                    <label for="email">Email:</label>
+                    <InputText id="email" @bind-Value="brugerModel.Email" />
+                </div>
+
+                <div>
+                    <label for="address">Address:</label>
+                    <InputText id="address" @bind-Value="brugerModel.Address" />
+                </div>
+
+                <div>
+                    <label for="bæltegrad">Belt Grade:</label>
+                    <InputText id="bæltegrad" @bind-Value="brugerModel.Bæltegrad" />
+                </div>
+
+                <div class="actions">
+                    <button type="submit">Save</button>
+                    <button type="button" @onclick="CancelEdit">Cancel</button>
+                </div>
+            </EditForm>
+        }
+        else
+        {
+            <h3>Your Profile</h3>
+            <p><strong>Username:</strong> @brugerModel.Brugernavn</p>
+            <p><strong>First Name:</strong> @brugerModel.Fornavn</p>
+            <p><strong>Last Name:</strong> @brugerModel.Efternavn</p>
+            <p><strong>Email:</strong> @brugerModel.Email</p>
+            <p><strong>Address:</strong> @brugerModel.Address</p>
+            <p><strong>Belt Grade:</strong> @brugerModel.Bæltegrad</p>
+
+            <div class="actions">
+                <button @onclick="EditProfile">Edit Profile</button>
+                <button @onclick="DeleteProfile">Delete Account</button>
+            </div>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            <p>@errorMessage</p>
+        </div>
+    }
+}
 
 @code {
-    private BrugerDTO entryModel = new();
+    private BrugerDTO brugerModel = new();
     private bool isEditing = false;
-    private bool isSyncing = false;
-    private bool syncFailed = false;
-    private bool internet = true;
     private bool isAuthenticated;
-    private string? role;
-    private string searchTerm = string.Empty;
     private string errorMessage = string.Empty;
-    private bool showDeleted = false;
     private string token = "";
 
     private HttpClient _apiClient;
     private HubConnection _hubConnection;
 
-
-    // ========== Data Loading ==========
-    private async Task LoadEntries()
+    // ========== Lifecycle ==========
+    protected override async Task OnInitializedAsync()
     {
-        var fronttoken = await AuthenticationService.GetTokenAsync();
-        isAuthenticated = !string.IsNullOrEmpty(fronttoken);
-
-        if (!isAuthenticated)
-        {
-            NavigationManager.NavigateTo("/login", true);
-            return;
-        }
         try
         {
-            var brugerId = JwtParser.GetUserIdFromJwt(fronttoken);  // Make sure this is set correctly
+            token = await AuthenticationService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            isAuthenticated = true;
+            _apiClient = HttpClientFactory.CreateClient("ApiClient");
+            await LoadBruger();
+
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl("https://localhost:7478/brugerhub")
+                .WithAutomaticReconnect()
+                .Build();
+
+            _hubConnection.On("BrugerUpdated", async () =>
+            {
+                await LoadBruger();
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await _hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error during initialization: {ex.Message}";
+        }
+    }
+
+    private async Task LoadBruger()
+    {
+        try
+        {
+            var brugerId = JwtParser.GetUserIdFromJwt(token);
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<Bruger>>>("api/bruger/" + brugerId);
 
             if (response?.Success == true)
             {
-                var bruger = _mapper.Map<BrugerDTO>(response.Data);
+                // Assuming the response contains a list of users, we take the first user (you may want to handle multiple users or more sophisticated logic)
+                var bruger = response.Data?.FirstOrDefault();
+                if (bruger != null)
+                {
+                    brugerModel = _mapper.Map<BrugerDTO>(bruger);
+                }
             }
             else
             {
-                errorMessage = $"Server fetch error";
-
+                errorMessage = "Failed to fetch user data.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Server fetch error: {ex.Message}";
+            errorMessage = $"Error loading user data: {ex.Message}";
         }
-        await InvokeAsync(StateHasChanged); // Use InvokeAsync for Blazor-specific updates
+    }
+
+    private void EditProfile()
+    {
+        isEditing = true;
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var response = await _apiClient.PutAsJsonAsync($"api/bruger/{brugerModel.BrugerID}", brugerModel);
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadBruger();
+                isEditing = false;
+            }
+            else
+            {
+                var details = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Update failed: {details}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating profile: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteProfile()
+    {
+        try
+        {
+            var response = await _apiClient.DeleteAsync($"api/bruger/{brugerModel.BrugerID}");
+            if (response.IsSuccessStatusCode)
+            {
+                // Handle successful account deletion (e.g., navigate to login page)
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                var details = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Delete failed: {details}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting account: {ex.Message}";
+        }
+    }
+
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
     }
 }
