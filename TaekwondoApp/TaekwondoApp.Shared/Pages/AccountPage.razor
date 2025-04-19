@@ -93,8 +93,10 @@ else
 
         try
         {
-            // Assuming that the user ID is available in the token or can be fetched from it
-            var userId = await AuthenticationService.GetUserIdFromTokenAsync(fronttoken); // This method can be adjusted to extract the user ID
+            // Use the JwtParser to extract the userId from the token
+            var userId = JwtParser.GetUserIdFromJwt(fronttoken);
+
+            // Fetch the user data using the extracted userId
             var response = await client.GetAsync($"api/bruger/{userId}");
 
             if (response.IsSuccessStatusCode)
@@ -115,6 +117,7 @@ else
             Console.WriteLine($"Error loading user data: {ex.Message}");
         }
     }
+
 
     private async Task HandleSubmit()
     {
