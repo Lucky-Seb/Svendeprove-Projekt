@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -171,31 +172,72 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<Result<BrugerDTO>> AuthenticateBrugerAsync(LoginDTO loginDto)
         {
+            // Step 1: Fetch the user (Bruger) based on email or username
             var bruger = await _brugerRepository.GetBrugerByEmailOrBrugernavnAsync(loginDto.EmailOrBrugernavn);
 
-            if (bruger == null)
+            Console.WriteLine("Bruger object details:");
+            Console.WriteLine($"BrugerID: {bruger.BrugerID}");
+            Console.WriteLine($"Email: {bruger.Email}");
+            Console.WriteLine($"Brugernavn: {bruger.Brugernavn}");
+            Console.WriteLine($"Fornavn: {bruger.Fornavn}");
+            Console.WriteLine($"Efternavn: {bruger.Efternavn}");
+            Console.WriteLine($"Bæltegrad: {bruger.Bæltegrad}");
+            Console.WriteLine($"Role: {bruger.Role}");
+            Console.WriteLine($"Address: {bruger.Address}");
+            // Log collections if needed
+            if (bruger.BrugerKlubber != null)
             {
-                return Result<BrugerDTO>.Fail("Invalid credentials.");
+                Console.WriteLine($"BrugerKlubber count: {bruger.BrugerKlubber.Count}");
+            }
+            else
+            {
+                Console.WriteLine("BrugerKlubber is null.");
             }
 
+
+            // Step 2: Verify the password
             bool passwordMatch = BCrypt.Net.BCrypt.Verify(loginDto.Brugerkode, bruger.Brugerkode);
             if (!passwordMatch)
             {
                 return Result<BrugerDTO>.Fail("Invalid credentials.");
             }
 
+            // Step 3: Generate the JWT Token
             var jwt = _jwtHelper.GenerateToken(bruger);
             if (jwt == null)
             {
                 return Result<BrugerDTO>.Fail("Failed to generate JWT token.");
             }
 
-            var userDto = _mapper.Map<BrugerDTO>(bruger);
+            // Step 4: Map Bruger to BrugerDTO using AutoMapper
+            BrugerDTO userDto = null;
+
+            try
+            {
+                // Validate AutoMapper can map
+                var mappedUserDto = _mapper.Map<BrugerDTO>(bruger);
+
+                // Proceed with the rest of the code
+                userDto = mappedUserDto;
+            }
+            catch (AutoMapperMappingException mapEx)
+            {
+                Console.WriteLine($"AutoMapper exception: {mapEx.Message}");
+                return Result<BrugerDTO>.Fail($"Mapping error: {mapEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error: {ex.Message}");
+                return Result<BrugerDTO>.Fail("Unexpected error during mapping.");
+            }
+
+            // Step 5: Ensure userDto is not null after mapping
             if (userDto == null)
             {
                 return Result<BrugerDTO>.Fail("Failed to map Bruger to BrugerDTO.");
             }
 
+            // Step 6: Assign the JWT token to the userDto object
             userDto.Token = jwt; // This is where it fails, ensure it's not null
 
             return Result<BrugerDTO>.Ok(userDto);
