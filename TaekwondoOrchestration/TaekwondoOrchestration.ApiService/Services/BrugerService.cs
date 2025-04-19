@@ -9,6 +9,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -55,6 +57,20 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(bruger));
         }
+
+        public async Task<Result<BrugerDTO>> GetBrugerWithDetailsAsync(Guid brugerId)
+        {
+            // Fetch the bruker details from the repository
+            var brugerDTO = await _brugerRepository.GetBrugerWithDetailsAsync(brugerId);
+
+            if (brugerDTO == null)
+            {
+                return Result<BrugerDTO>.Fail("Bruger not found.");
+            }
+
+            return Result<BrugerDTO>.Ok(brugerDTO);
+        }
+
         public async Task<Result<BrugerDTO>> CreateBrugerAsync(BrugerDTO brugerDto)
         {
             var brugerEntity = _mapper.Map<Bruger>(brugerDto);
@@ -70,18 +86,29 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<BrugerDTO>.Ok(_mapper.Map<BrugerDTO>(created));
         }
 
-        public async Task<Result<bool>> UpdateBrugerAsync(Guid id, BrugerDTO brugerDto)
+        public async Task<Result<bool>> UpdateBrugerAsync(Guid id, BrugerUpdateDTO brugerUpdateDTO)
         {
+            // Fetch the existing entity
             var existing = await _brugerRepository.GetBrugerByIdAsync(id);
             if (existing == null)
                 return Result<bool>.Fail("Bruger not found.");
+            var keeppassword = existing.Brugerkode;
 
-            _mapper.Map(brugerDto, existing);
-            EntityHelper.UpdateCommonFields(existing, brugerDto.ModifiedBy);
+            // Only map properties that are changed (AutoMapper will not update Brugerkode if it's null or empty)
+            _mapper.Map(brugerUpdateDTO, existing);
 
+            // Handle password update logic if needed (only if provided)
+            if (!string.IsNullOrEmpty(brugerUpdateDTO.Brugerkode))
+            {
+                existing.Brugerkode = BCrypt.Net.BCrypt.HashPassword(brugerUpdateDTO.Brugerkode);
+            }
+            existing.Brugerkode = keeppassword;
+
+            // Save the changes using the repository
             var success = await _brugerRepository.UpdateBrugerAsync(existing);
             return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to update Bruger.");
         }
+
 
         public async Task<Result<bool>> DeleteBrugerAsync(Guid id)
         {
@@ -95,7 +122,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete Bruger.");
         }
 
-        public async Task<Result<bool>> RestoreBrugerAsync(Guid id, BrugerDTO dto)
+        public async Task<Result<bool>> RestoreBrugerAsync(Guid id, BrugerUpdateDTO dto)
         {
             var bruger = await _brugerRepository.GetBrugerByIdIncludingDeletedAsync(id);
             if (bruger == null || !bruger.IsDeleted)
@@ -171,31 +198,76 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<Result<BrugerDTO>> AuthenticateBrugerAsync(LoginDTO loginDto)
         {
+            // Step 1: Fetch the user (Bruger) based on email or username
             var bruger = await _brugerRepository.GetBrugerByEmailOrBrugernavnAsync(loginDto.EmailOrBrugernavn);
-
             if (bruger == null)
             {
                 return Result<BrugerDTO>.Fail("Invalid credentials.");
             }
 
+            Console.WriteLine("Bruger object details:");
+            Console.WriteLine($"BrugerID: {bruger.BrugerID}");
+            Console.WriteLine($"Email: {bruger.Email}");
+            Console.WriteLine($"Brugernavn: {bruger.Brugernavn}");
+            Console.WriteLine($"Fornavn: {bruger.Fornavn}");
+            Console.WriteLine($"Efternavn: {bruger.Efternavn}");
+            Console.WriteLine($"Bæltegrad: {bruger.Bæltegrad}");
+            Console.WriteLine($"Role: {bruger.Role}");
+            Console.WriteLine($"Address: {bruger.Address}");
+            // Log collections if needed
+            if (bruger.BrugerKlubber != null)
+            {
+                Console.WriteLine($"BrugerKlubber count: {bruger.BrugerKlubber.Count}");
+            }
+            else
+            {
+                Console.WriteLine("BrugerKlubber is null.");
+            }
+
+
+            // Step 2: Verify the password
             bool passwordMatch = BCrypt.Net.BCrypt.Verify(loginDto.Brugerkode, bruger.Brugerkode);
             if (!passwordMatch)
             {
                 return Result<BrugerDTO>.Fail("Invalid credentials.");
             }
 
+            // Step 3: Generate the JWT Token
             var jwt = _jwtHelper.GenerateToken(bruger);
             if (jwt == null)
             {
                 return Result<BrugerDTO>.Fail("Failed to generate JWT token.");
             }
 
-            var userDto = _mapper.Map<BrugerDTO>(bruger);
+            // Step 4: Map Bruger to BrugerDTO using AutoMapper
+            BrugerDTO userDto = null;
+
+            try
+            {
+                // Validate AutoMapper can map
+                var mappedUserDto = _mapper.Map<BrugerDTO>(bruger);
+
+                // Proceed with the rest of the code
+                userDto = mappedUserDto;
+            }
+            catch (AutoMapperMappingException mapEx)
+            {
+                Console.WriteLine($"AutoMapper exception: {mapEx.Message}");
+                return Result<BrugerDTO>.Fail($"Mapping error: {mapEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error: {ex.Message}");
+                return Result<BrugerDTO>.Fail("Unexpected error during mapping.");
+            }
+
+            // Step 5: Ensure userDto is not null after mapping
             if (userDto == null)
             {
                 return Result<BrugerDTO>.Fail("Failed to map Bruger to BrugerDTO.");
             }
 
+            // Step 6: Assign the JWT token to the userDto object
             userDto.Token = jwt; // This is where it fails, ensure it's not null
 
             return Result<BrugerDTO>.Ok(userDto);

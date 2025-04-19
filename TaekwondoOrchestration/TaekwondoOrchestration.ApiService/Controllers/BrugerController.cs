@@ -34,7 +34,13 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             var result = await _brugerService.GetBrugerByIdAsync(id);
             return result.ToApiResponse();
         }
-
+        // New endpoint for getting a user with detailed information
+        [HttpGet("details/{id}")]
+        public async Task<IActionResult> GetBrugerWithDetails(Guid id)
+        {
+            var result = await _brugerService.GetBrugerWithDetailsAsync(id);
+            return result.ToApiResponse();
+        }
         [HttpGet("role/{role}")]
         public async Task<IActionResult> GetBrugerByRole(string role)
         {
@@ -88,16 +94,15 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBruger(Guid id, [FromBody] BrugerDTO brugerDTO)
+        public async Task<IActionResult> PutBruger(Guid id, [FromBody] BrugerUpdateDTO brugerUpdateDTO)
         {
-            var result = await _brugerService.UpdateBrugerAsync(id, brugerDTO);
+            var result = await _brugerService.UpdateBrugerAsync(id, brugerUpdateDTO);
             if (result.Success)
                 await _hubContext.Clients.All.SendAsync("BrugerUpdated");
 
             return result.ToApiResponse();
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBruger(Guid id)
         {

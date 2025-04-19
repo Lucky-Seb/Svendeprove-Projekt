@@ -1,0 +1,245 @@
+﻿@page "/account"
+
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h1>Account</h1>
+
+@if (!isAuthenticated)
+{
+    <p>You are not logged in. Please log in first.</p>
+    <button @onclick="NavigateToLogin">Go to Login</button>
+}
+else
+{
+    <div class="account-details">
+        @if (isEditing)
+        {
+            <h3>Edit Your Profile</h3>
+            <EditForm Model="brugerModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div>
+                    <label for="brugernavn">Username:</label>
+                    <InputText id="brugernavn" @bind-Value="brugerModel.Brugernavn" />
+                </div>
+
+                <div>
+                    <label for="fornavn">First Name:</label>
+                    <InputText id="fornavn" @bind-Value="brugerModel.Fornavn" />
+                </div>
+
+                <div>
+                    <label for="efternavn">Last Name:</label>
+                    <InputText id="efternavn" @bind-Value="brugerModel.Efternavn" />
+                </div>
+
+                <div>
+                    <label for="email">Email:</label>
+                    <InputText id="email" @bind-Value="brugerModel.Email" />
+                </div>
+
+                <div>
+                    <label for="address">Address:</label>
+                    <InputText id="address" @bind-Value="brugerModel.Address" />
+                </div>
+
+                <div>
+                    <label for="bæltegrad">Belt Grade:</label>
+                    <InputText id="bæltegrad" @bind-Value="brugerModel.Bæltegrad" />
+                </div>
+
+                <div class="actions">
+                    <button type="submit">Save</button>
+                    <button type="button" @onclick="CancelEdit">Cancel</button>
+                </div>
+            </EditForm>
+        }
+        else
+        {
+            <h3>Your Profile</h3>
+            <p><strong>Username:</strong> @brugerModel.Brugernavn</p>
+            <p><strong>First Name:</strong> @brugerModel.Fornavn</p>
+            <p><strong>Last Name:</strong> @brugerModel.Efternavn</p>
+            <p><strong>Email:</strong> @brugerModel.Email</p>
+            <p><strong>Address:</strong> @brugerModel.Address</p>
+            <p><strong>Belt Grade:</strong> @brugerModel.Bæltegrad</p>
+
+            <h4>Clubs:</h4>
+            <ul>
+                @foreach (var klub in brugerModel.Klubber)
+                {
+                    <li>@klub.KlubNavn</li>
+                }
+            </ul>
+
+            <h4>Programs:</h4>
+            <ul>
+                @foreach (var program in brugerModel.Programmer)
+                {
+                    <li>@program.ProgramNavn</li>
+                }
+            </ul>
+
+            <h4>Quizzes:</h4>
+            <ul>
+                @foreach (var quiz in brugerModel.Quizzer)
+                {
+                    <li>@quiz.QuizNavn</li>
+                }
+            </ul>
+
+            <h4>Exercises:</h4>
+            <ul>
+                @foreach (var øvelse in brugerModel.Øvelser)
+                {
+                    <li>@øvelse.ØvelseNavn</li>
+                }
+            </ul>
+
+            <div class="actions">
+                <button @onclick="EditProfile">Edit Profile</button>
+                <button @onclick="DeleteProfile">Delete Account</button>
+            </div>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            <p>@errorMessage</p>
+        </div>
+    }
+}
+
+@code {
+    private BrugerDTO brugerModel = null;
+    private bool isEditing = false;
+    private bool isAuthenticated;
+    private string errorMessage = string.Empty;
+    private string token = "";
+    private Guid brugerId = new Guid();
+    private HttpClient _apiClient;
+    private HubConnection _hubConnection;
+
+    // ========== Lifecycle ==========
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            token = await AuthenticationService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+            brugerId = JwtParser.GetUserIdFromJwt(token);
+
+            isAuthenticated = true;
+            _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+            // Call the API endpoint to fetch user details
+            await LoadBruger();
+
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl("https://localhost:7478/brugerhub")
+                .WithAutomaticReconnect()
+                .Build();
+
+            _hubConnection.On("BrugerUpdated", async () =>
+            {
+                await LoadBruger();
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await _hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error during initialization: {ex.Message}";
+        }
+    }
+
+    private async Task LoadBruger()
+    {
+        try
+        {
+            // Call the new API endpoint to fetch user with details
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
+            if (response?.Success == true && response.Data != null)
+            {
+                brugerModel = response.Data;
+            }
+            else
+            {
+                errorMessage = "Failed to fetch user data.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading user data: {ex.Message}";
+        }
+    }
+
+    private void EditProfile()
+    {
+        isEditing = true;
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var response = await _apiClient.PutAsJsonAsync($"api/bruger/{brugerModel.BrugerID}", brugerModel);
+            if (response.IsSuccessStatusCode)
+            {
+                isEditing = false;
+                await LoadBruger();
+            }
+            else
+            {
+                errorMessage = "Failed to update user data.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating user data: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteProfile()
+    {
+        var response = await _apiClient.DeleteAsync($"api/bruger/{brugerModel.BrugerID}");
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo("/logout");
+        }
+        else
+        {
+            errorMessage = "Failed to delete profile.";
+        }
+    }
+
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}

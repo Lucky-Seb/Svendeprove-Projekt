@@ -20,7 +20,7 @@ namespace TaekwondoOrchestration.ApiService.Helpers
             entity.ETag = GenerateETag(entity, entity.GetType().Name, entity.CreatedAt.ToString(), entity.LastModified.ToString());
             entity.CreatedAt = DateTime.UtcNow;
             entity.LastModified = DateTime.UtcNow;
-            entity.Status = SyncStatus.Pending;
+            entity.Status = SyncStatus.Synced;
             entity.ConflictStatus = ConflictResolutionStatus.NoConflict;
             entity.LastSyncedVersion = 0;
             entity.ModifiedBy = modifiedBy;
@@ -40,6 +40,7 @@ namespace TaekwondoOrchestration.ApiService.Helpers
         // Set properties for deleted or restored entities (soft delete). Works with any SyncableEntity.
         public static void SetDeletedOrRestoredProperties<TEntity>(TEntity entity, string modifiedBy, string changeDescription) where TEntity : SyncableEntity
         {
+            entity.IsDeleted = true;
             entity.LastModified = DateTime.UtcNow;
             entity.ModifiedBy = modifiedBy;
             entity.ConflictStatus = ConflictResolutionStatus.NoConflict;

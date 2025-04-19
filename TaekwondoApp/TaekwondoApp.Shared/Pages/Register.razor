@@ -138,6 +138,13 @@
             // Map RegisterModel to BrugerDTO (don't hash the password here)
             var brugerDTO = Mapper.Map<BrugerDTO>(registerModel);
 
+            // Manually populate the fields inherited from SyncableEntityDTO
+            brugerDTO.Brugerkode = registerModel.ConfirmPassword; // Set Brugerkode (must be at least 6 chars, handled above)
+            brugerDTO.ETag = "12345"; // Generate a new ETag (or set as required by your backend)
+            brugerDTO.ModifiedBy = "system"; // Set a value for ModifiedBy (or use a specific user identifier)
+            brugerDTO.ChangeHistoryJson = "[]"; // Set a default value for ChangeHistoryJson (empty JSON array)
+
+
             LogAction("Mapped BrugerDTO:");
             LogAction($"Email: {brugerDTO.Email}");
             LogAction($"Username: {brugerDTO.Brugernavn}");

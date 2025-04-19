@@ -11,5 +11,6 @@ namespace TaekwondoApp.Shared.Services
         Task SetTokenAsync(string token);
         Task<string?> GetTokenAsync();
         Task RemoveTokenAsync();
+
     }
 }

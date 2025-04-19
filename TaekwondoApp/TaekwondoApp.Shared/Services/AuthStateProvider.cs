@@ -1,37 +1,64 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Maui.Storage;
+using System.Security.Claims;
+using TaekwondoApp.Shared.Services;
 
-namespace TaekwondoApp.Shared.Services
+public class AuthStateProvider
 {
-    public class AuthStateProvider
+    public event Action? OnChange;
+
+    private string? _token;
+    private string? _role;
+
+    public string? Token => _token;
+    public string? Role => _role;
+    public bool IsAuthenticated => !string.IsNullOrEmpty(_token);
+
+    public AuthStateProvider()
     {
-        public event Action? OnChange;
+        _ = InitializeAsync(); // Fire and forget initialization
+    }
 
-        private string? _token;
-        public string? Token => _token;
+    private async Task InitializeAsync()
+    {
+        var token = await SecureStorage.GetAsync("jwt_token");
 
-        private string? _role;
-        public string? Role => _role;
-
-        public bool IsAuthenticated => !string.IsNullOrEmpty(_token);
-
-        public void SetAuth(string token)
+        if (!string.IsNullOrEmpty(token))
         {
             _token = token;
             _role = JwtParser.GetRole(token);
             NotifyStateChanged();
         }
-
-        public void ClearAuth()
-        {
-            _token = null;
-            _role = null;
-            NotifyStateChanged();
-        }
-
-        private void NotifyStateChanged() => OnChange?.Invoke();
     }
+
+    public async Task SetAuth(string token)
+    {
+        _token = token;
+        _role = JwtParser.GetRole(token);
+        await SecureStorage.SetAsync("jwt_token", token);
+        NotifyStateChanged();
+    }
+
+    public async Task ClearAuth()
+    {
+        _token = null;
+        _role = null;
+        await SecureStorage.SetAsync("jwt_token", string.Empty);
+        NotifyStateChanged();
+    }
+
+    public async Task<AuthenticationState> GetAuthenticationStateAsync()
+    {
+        var identity = IsAuthenticated
+            ? new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, "User"),
+                new Claim(ClaimTypes.Role, _role ?? "Guest")
+            }, "jwt")
+            : new ClaimsIdentity();
+
+        return new AuthenticationState(new ClaimsPrincipal(identity));
+    }
+
+    private void NotifyStateChanged() => OnChange?.Invoke();
 }

@@ -108,15 +108,10 @@ namespace TaekwondoOrchestration.ApiService.Repositories
 
         public async Task<bool> UpdateBrugerAsync(Bruger bruger)
         {
-            // Hash the password if it is being updated
-            if (!string.IsNullOrEmpty(bruger.Brugerkode))
-            {
-                bruger.Brugerkode = BCrypt.Net.BCrypt.HashPassword(bruger.Brugerkode);
-            }
-
             _context.Brugere.Update(bruger);
             return await _context.SaveChangesAsync() > 0;
         }
+
 
         public async Task<bool> DeleteBrugerAsync(Guid brugerId)
         {
@@ -125,6 +120,26 @@ namespace TaekwondoOrchestration.ApiService.Repositories
 
             _context.Brugere.Remove(bruger);
             return await _context.SaveChangesAsync() > 0;
+        }
+        public async Task<BrugerDTO?> GetBrugerWithDetailsAsync(Guid brugerId)
+        {
+            // Fetch the bruker along with related data using eager loading (Include)
+            var brugerDetails = await _context.Brugere
+                .Where(b => b.BrugerID == brugerId)
+                .Include(b => b.BrugerKlubber)  // Klubber
+                .Include(b => b.BrugerProgrammer)
+                    .ThenInclude(bp => bp.Plan) // Ensure that the Program data inside BrugerProgrammer is included// Programmer
+                .Include(b => b.BrugerQuizzer)  // Quizzer
+                .Include(b => b.BrugerØvelser)  // Øvelser
+                .FirstOrDefaultAsync();
+
+            if (brugerDetails == null)
+                return null;
+
+            // Use AutoMapper to map everything to BrugerDTO
+            var brugerDTO = _mapper.Map<BrugerDTO>(brugerDetails);
+
+            return brugerDTO;
         }
     }
 }

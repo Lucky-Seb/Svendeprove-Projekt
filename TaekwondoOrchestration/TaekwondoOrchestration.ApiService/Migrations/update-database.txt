@@ -1,0 +1,1422 @@
+﻿PM> update-database
+Build started...
+Build succeeded.
+Microsoft.EntityFrameworkCore.Model.Validation[10622]
+      Entity 'Bruger' has a global query filter defined and is the required end of a relationship with the entity 'BrugerKlub'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+Microsoft.EntityFrameworkCore.Model.Validation[10622]
+      Entity 'Bruger' has a global query filter defined and is the required end of a relationship with the entity 'BrugerProgram'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+Microsoft.EntityFrameworkCore.Model.Validation[10622]
+      Entity 'Bruger' has a global query filter defined and is the required end of a relationship with the entity 'BrugerQuiz'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+Microsoft.EntityFrameworkCore.Model.Validation[10622]
+      Entity 'Bruger' has a global query filter defined and is the required end of a relationship with the entity 'BrugerØvelse'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+Microsoft.EntityFrameworkCore.Model.Validation[10622]
+      Entity 'ProgramPlan' has a global query filter defined and is the required end of a relationship with the entity 'KlubProgram'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+Microsoft.EntityFrameworkCore.Model.Validation[10622]
+      Entity 'Quiz' has a global query filter defined and is the required end of a relationship with the entity 'KlubQuiz'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+Microsoft.EntityFrameworkCore.Model.Validation[10622]
+      Entity 'Øvelse' has a global query filter defined and is the required end of a relationship with the entity 'KlubØvelse'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (57ms) [Parameters=[], CommandType='Text', CommandTimeout='60']
+      CREATE DATABASE [Taekwondo];
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (27ms) [Parameters=[], CommandType='Text', CommandTimeout='60']
+      IF SERVERPROPERTY('EngineEdition') <> 5
+      BEGIN
+          ALTER DATABASE [Taekwondo] SET READ_COMMITTED_SNAPSHOT ON;
+      END;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+Microsoft.EntityFrameworkCore.Migrations[20411]
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @result int;
+      EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+      SELECT @result
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+      BEGIN
+          CREATE TABLE [__EFMigrationsHistory] (
+              [MigrationId] nvarchar(150) NOT NULL,
+              [ProductVersion] nvarchar(32) NOT NULL,
+              CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+          );
+      END;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [MigrationId], [ProductVersion]
+      FROM [__EFMigrationsHistory]
+      ORDER BY [MigrationId];
+Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20250410120920_initdatabase'.
+Applying migration '20250410120920_initdatabase'.
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Brugere] (
+          [BrugerID] uniqueidentifier NOT NULL DEFAULT (NEWSEQUENTIALID()),
+          [Email] nvarchar(max) NOT NULL,
+          [Brugernavn] nvarchar(max) NOT NULL,
+          [Fornavn] nvarchar(max) NOT NULL,
+          [Efternavn] nvarchar(max) NOT NULL,
+          [Brugerkode] nvarchar(max) NOT NULL,
+          [Address] nvarchar(max) NOT NULL,
+          [Bæltegrad] nvarchar(max) NOT NULL,
+          [Role] nvarchar(max) NOT NULL,
+          CONSTRAINT [PK_Brugere] PRIMARY KEY ([BrugerID])
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Klubber] (
+          [KlubID] uniqueidentifier NOT NULL DEFAULT (NEWSEQUENTIALID()),
+          [KlubNavn] nvarchar(max) NOT NULL,
+          CONSTRAINT [PK_Klubber] PRIMARY KEY ([KlubID])
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Ordboger] (
+          [OrdbogId] uniqueidentifier NOT NULL DEFAULT (NEWSEQUENTIALID()),
+          [DanskOrd] nvarchar(max) NOT NULL,
+          [KoranskOrd] nvarchar(max) NOT NULL,
+          [Beskrivelse] nvarchar(max) NOT NULL,
+          [BilledeLink] nvarchar(max) NOT NULL,
+          [LydLink] nvarchar(max) NOT NULL,
+          [VideoLink] nvarchar(max) NOT NULL,
+          CONSTRAINT [PK_Ordboger] PRIMARY KEY ([OrdbogId])
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Pensum] (
+          [PensumID] uniqueidentifier NOT NULL DEFAULT (NEWSEQUENTIALID()),
+          [PensumGrad] nvarchar(max) NOT NULL,
+          CONSTRAINT [PK_Pensum] PRIMARY KEY ([PensumID])
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [ProgramPlans] (
+          [ProgramID] uniqueidentifier NOT NULL DEFAULT (NEWSEQUENTIALID()),
+          [ProgramNavn] nvarchar(max) NOT NULL,
+          [OprettelseDato] datetime2 NOT NULL,
+          [Længde] int NOT NULL,
+          [Beskrivelse] nvarchar(max) NOT NULL,
+          CONSTRAINT [PK_ProgramPlans] PRIMARY KEY ([ProgramID])
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [BrugerKlubber] (
+          [BrugerID] uniqueidentifier NOT NULL,
+          [KlubID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_BrugerKlubber] PRIMARY KEY ([BrugerID], [KlubID]),
+          CONSTRAINT [FK_BrugerKlubber_Brugere_BrugerID] FOREIGN KEY ([BrugerID]) REFERENCES [Brugere] ([BrugerID]) ON DELETE CASCADE,
+          CONSTRAINT [FK_BrugerKlubber_Klubber_KlubID] FOREIGN KEY ([KlubID]) REFERENCES [Klubber] ([KlubID]) ON DELETE CASCADE
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Øvelser] (
+          [ØvelseID] uniqueidentifier NOT NULL DEFAULT (NEWSEQUENTIALID()),
+          [ØvelseNavn] nvarchar(max) NOT NULL,
+          [ØvelseBeskrivelse] nvarchar(max) NOT NULL,
+          [ØvelseBillede] nvarchar(max) NOT NULL,
+          [ØvelseVideo] nvarchar(max) NOT NULL,
+          [ØvelseTid] int NOT NULL,
+          [ØvelseSværhed] nvarchar(max) NOT NULL,
+          [PensumID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_Øvelser] PRIMARY KEY ([ØvelseID]),
+          CONSTRAINT [FK_Øvelser_Pensum_PensumID] FOREIGN KEY ([PensumID]) REFERENCES [Pensum] ([PensumID]) ON DELETE CASCADE
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Quizzer] (
+          [QuizID] uniqueidentifier NOT NULL DEFAULT (NEWSEQUENTIALID()),
+          [QuizNavn] nvarchar(max) NOT NULL,
+          [QuizBeskrivelse] nvarchar(max) NOT NULL,
+          [PensumID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_Quizzer] PRIMARY KEY ([QuizID]),
+          CONSTRAINT [FK_Quizzer_Pensum_PensumID] FOREIGN KEY ([PensumID]) REFERENCES [Pensum] ([PensumID]) ON DELETE CASCADE
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Teknikker] (
+          [TeknikID] uniqueidentifier NOT NULL DEFAULT (NEWSEQUENTIALID()),
+          [TeknikNavn] nvarchar(max) NOT NULL,
+          [TeknikBeskrivelse] nvarchar(max) NOT NULL,
+          [TeknikBillede] nvarchar(max) NOT NULL,
+          [TeknikVideo] nvarchar(max) NOT NULL,
+          [TeknikLyd] nvarchar(max) NOT NULL,
+          [PensumID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_Teknikker] PRIMARY KEY ([TeknikID]),
+          CONSTRAINT [FK_Teknikker_Pensum_PensumID] FOREIGN KEY ([PensumID]) REFERENCES [Pensum] ([PensumID]) ON DELETE CASCADE
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Teorier] (
+          [TeoriID] uniqueidentifier NOT NULL DEFAULT (NEWSEQUENTIALID()),
+          [TeoriNavn] nvarchar(max) NOT NULL,
+          [TeoriBeskrivelse] nvarchar(max) NOT NULL,
+          [TeoriBillede] nvarchar(max) NOT NULL,
+          [TeoriVideo] nvarchar(max) NOT NULL,
+          [TeoriLyd] nvarchar(max) NOT NULL,
+          [PensumID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_Teorier] PRIMARY KEY ([TeoriID]),
+          CONSTRAINT [FK_Teorier_Pensum_PensumID] FOREIGN KEY ([PensumID]) REFERENCES [Pensum] ([PensumID]) ON DELETE CASCADE
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [BrugerProgrammer] (
+          [BrugerID] uniqueidentifier NOT NULL,
+          [ProgramID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_BrugerProgrammer] PRIMARY KEY ([BrugerID], [ProgramID]),
+          CONSTRAINT [FK_BrugerProgrammer_Brugere_BrugerID] FOREIGN KEY ([BrugerID]) REFERENCES [Brugere] ([BrugerID]) ON DELETE CASCADE,
+          CONSTRAINT [FK_BrugerProgrammer_ProgramPlans_ProgramID] FOREIGN KEY ([ProgramID]) REFERENCES [ProgramPlans] ([ProgramID]) ON DELETE CASCADE
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [KlubProgrammer] (
+          [KlubID] uniqueidentifier NOT NULL,
+          [ProgramID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_KlubProgrammer] PRIMARY KEY ([KlubID], [ProgramID]),
+          CONSTRAINT [FK_KlubProgrammer_Klubber_KlubID] FOREIGN KEY ([KlubID]) REFERENCES [Klubber] ([KlubID]) ON DELETE CASCADE,
+          CONSTRAINT [FK_KlubProgrammer_ProgramPlans_ProgramID] FOREIGN KEY ([ProgramID]) REFERENCES [ProgramPlans] ([ProgramID]) ON DELETE CASCADE
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [BrugerØvelser] (
+          [BrugerID] uniqueidentifier NOT NULL,
+          [ØvelseID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_BrugerØvelser] PRIMARY KEY ([BrugerID], [ØvelseID]),
+          CONSTRAINT [FK_BrugerØvelser_Brugere_BrugerID] FOREIGN KEY ([BrugerID]) REFERENCES [Brugere] ([BrugerID]) ON DELETE CASCADE,
+          CONSTRAINT [FK_BrugerØvelser_Øvelser_ØvelseID] FOREIGN KEY ([ØvelseID]) REFERENCES [Øvelser] ([ØvelseID]) ON DELETE CASCADE
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [KlubØvelser] (
+          [KlubID] uniqueidentifier NOT NULL,
+          [ØvelseID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_KlubØvelser] PRIMARY KEY ([KlubID], [ØvelseID]),
+          CONSTRAINT [FK_KlubØvelser_Klubber_KlubID] FOREIGN KEY ([KlubID]) REFERENCES [Klubber] ([KlubID]) ON DELETE CASCADE,
+          CONSTRAINT [FK_KlubØvelser_Øvelser_ØvelseID] FOREIGN KEY ([ØvelseID]) REFERENCES [Øvelser] ([ØvelseID]) ON DELETE CASCADE
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [BrugerQuizzer] (
+          [BrugerID] uniqueidentifier NOT NULL,
+          [QuizID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_BrugerQuizzer] PRIMARY KEY ([BrugerID], [QuizID]),
+          CONSTRAINT [FK_BrugerQuizzer_Brugere_BrugerID] FOREIGN KEY ([BrugerID]) REFERENCES [Brugere] ([BrugerID]) ON DELETE CASCADE,
+          CONSTRAINT [FK_BrugerQuizzer_Quizzer_QuizID] FOREIGN KEY ([QuizID]) REFERENCES [Quizzer] ([QuizID]) ON DELETE CASCADE
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [KlubQuizzer] (
+          [KlubID] uniqueidentifier NOT NULL,
+          [QuizID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_KlubQuizzer] PRIMARY KEY ([KlubID], [QuizID]),
+          CONSTRAINT [FK_KlubQuizzer_Klubber_KlubID] FOREIGN KEY ([KlubID]) REFERENCES [Klubber] ([KlubID]) ON DELETE CASCADE,
+          CONSTRAINT [FK_KlubQuizzer_Quizzer_QuizID] FOREIGN KEY ([QuizID]) REFERENCES [Quizzer] ([QuizID]) ON DELETE CASCADE
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Spørgsmål] (
+          [SpørgsmålID] uniqueidentifier NOT NULL DEFAULT (NEWSEQUENTIALID()),
+          [SpørgsmålRækkefølge] int NOT NULL,
+          [SpørgsmålTid] int NOT NULL,
+          [TeoriID] uniqueidentifier NULL,
+          [TeknikID] uniqueidentifier NULL,
+          [ØvelseID] uniqueidentifier NULL,
+          [QuizID] uniqueidentifier NOT NULL,
+          CONSTRAINT [PK_Spørgsmål] PRIMARY KEY ([SpørgsmålID]),
+          CONSTRAINT [FK_Spørgsmål_Quizzer_QuizID] FOREIGN KEY ([QuizID]) REFERENCES [Quizzer] ([QuizID]) ON DELETE CASCADE,
+          CONSTRAINT [FK_Spørgsmål_Teknikker_TeknikID] FOREIGN KEY ([TeknikID]) REFERENCES [Teknikker] ([TeknikID]),
+          CONSTRAINT [FK_Spørgsmål_Teorier_TeoriID] FOREIGN KEY ([TeoriID]) REFERENCES [Teorier] ([TeoriID]),
+          CONSTRAINT [FK_Spørgsmål_Øvelser_ØvelseID] FOREIGN KEY ([ØvelseID]) REFERENCES [Øvelser] ([ØvelseID])
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Træninger] (
+          [TræningID] uniqueidentifier NOT NULL DEFAULT (NEWSEQUENTIALID()),
+          [TræningRækkefølge] int NOT NULL,
+          [Tid] int NOT NULL,
+          [ProgramID] uniqueidentifier NOT NULL,
+          [QuizID] uniqueidentifier NULL,
+          [TeoriID] uniqueidentifier NULL,
+          [TeknikID] uniqueidentifier NULL,
+          [ØvelseID] uniqueidentifier NULL,
+          [PensumID] uniqueidentifier NULL,
+          CONSTRAINT [PK_Træninger] PRIMARY KEY ([TræningID]),
+          CONSTRAINT [FK_Træninger_Pensum_PensumID] FOREIGN KEY ([PensumID]) REFERENCES [Pensum] ([PensumID]),
+          CONSTRAINT [FK_Træninger_ProgramPlans_ProgramID] FOREIGN KEY ([ProgramID]) REFERENCES [ProgramPlans] ([ProgramID]) ON DELETE CASCADE,
+          CONSTRAINT [FK_Træninger_Quizzer_QuizID] FOREIGN KEY ([QuizID]) REFERENCES [Quizzer] ([QuizID]),
+          CONSTRAINT [FK_Træninger_Teknikker_TeknikID] FOREIGN KEY ([TeknikID]) REFERENCES [Teknikker] ([TeknikID]),
+          CONSTRAINT [FK_Træninger_Teorier_TeoriID] FOREIGN KEY ([TeoriID]) REFERENCES [Teorier] ([TeoriID]),
+          CONSTRAINT [FK_Træninger_Øvelser_ØvelseID] FOREIGN KEY ([ØvelseID]) REFERENCES [Øvelser] ([ØvelseID])
+      );
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (18ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'BrugerID', N'Address', N'Brugerkode', N'Brugernavn', N'Bæltegrad', N'Efternavn', N'Email', N'Fornavn', N'Role') AND [object_id] = OBJECT_ID(N'[Brugere]'))
+          SET IDENTITY_INSERT [Brugere] ON;
+      INSERT INTO [Brugere] ([BrugerID], [Address], [Brugerkode], [Brugernavn], [Bæltegrad], [Efternavn], [Email], [Fornavn], [Role])
+      VALUES ('4153884f-a1ce-44d0-970b-8898a11fdb81', N'654 Taekwondo St.', N'hashed_password5', N'robertbrown654', N'Brunt Bælte', N'Brown', N'robert.brown@example.com', N'Robert', N'Bruger'),
+      ('446a5a83-a0bd-4633-b28f-a6526245eed7', N'456 Taekwondo St.', N'hashed_password2', N'janedoe456', N'Gult Bælte', N'Doe', N'jane.doe@example.com', N'Jane', N'Bruger'),
+      ('8bb14e0c-04a3-4679-aa0b-48b9978eb220', N'123 Taekwondo St.', N'hashed_password', N'johndoe123', N'Hvidt Bælte', N'Doe', N'john.doe@example.com', N'John', N'Bruger'),
+      ('98e78576-6bc4-408d-b4af-2ad9051f905b', N'789 Taekwondo St.', N'hashed_password3', N'marksmith789', N'Blåt Bælte', N'Smith', N'mark.smith@example.com', N'Mark', N'Bruger'),
+      ('e4ef6612-011c-453a-894f-858dff3937d4', N'321 Taekwondo St.', N'hashed_password4', N'lucyjones321', N'Grønt Bælte', N'Jones', N'lucy.jones@example.com', N'Lucy', N'Bruger');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'BrugerID', N'Address', N'Brugerkode', N'Brugernavn', N'Bæltegrad', N'Efternavn', N'Email', N'Fornavn', N'Role') AND [object_id] = OBJECT_ID(N'[Brugere]'))
+          SET IDENTITY_INSERT [Brugere] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'KlubID', N'KlubNavn') AND [object_id] = OBJECT_ID(N'[Klubber]'))
+          SET IDENTITY_INSERT [Klubber] ON;
+      INSERT INTO [Klubber] ([KlubID], [KlubNavn])
+      VALUES ('2bed2d1b-b96e-427a-8451-3c43ea48ea5c', N'Taekwondo Club D'),
+      ('6b25c814-a97b-41dc-9597-0864f08cb779', N'Taekwondo Club C'),
+      ('9c3e5c16-5bb2-4076-a871-b2414bd782c2', N'Taekwondo Club E'),
+      ('afa9ebbf-49bb-4737-9ab0-7d9d3153c993', N'Taekwondo Club A'),
+      ('fed25ea9-7695-4945-a109-2900a24ff1ce', N'Taekwondo Club B');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'KlubID', N'KlubNavn') AND [object_id] = OBJECT_ID(N'[Klubber]'))
+          SET IDENTITY_INSERT [Klubber] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'OrdbogId', N'Beskrivelse', N'BilledeLink', N'DanskOrd', N'KoranskOrd', N'LydLink', N'VideoLink') AND [object_id] = OBJECT_ID(N'[Ordboger]'))
+          SET IDENTITY_INSERT [Ordboger] ON;
+      INSERT INTO [Ordboger] ([OrdbogId], [Beskrivelse], [BilledeLink], [DanskOrd], [KoranskOrd], [LydLink], [VideoLink])
+      VALUES ('0fd1ec97-6cee-4e0f-a032-0a3f3020d5be', N'A symbol of rank in Taekwondo, representing the practitioner''s level.', N'belt_image_url', N'Belt', N'띠', N'belt_sound_url', N'belt_video_url'),
+      ('10efa19d-6353-4373-b455-414131376826', N'The act of breaking boards or other objects to test strength and technique.', N'breaking_image_url', N'Breaking', N'격파', N'breaking_sound_url', N'breaking_video_url'),
+      ('2d189ccb-a481-4ea2-8bf3-8014d3fe5825', N'A Korean martial art focusing on high kicks and hand techniques.', N'taekwondo_image_url', N'Taekwondo', N'تايكوندو', N'taekwondo_sound_url', N'taekwondo_video_url'),
+      ('3a2ba1b6-34c7-4be1-af4f-13bd66db3079', N'A kick in Taekwondo, used for both offense and defense.', N'kick_image_url', N'Kik', N'킥', N'kick_sound_url', N'kick_video_url'),
+      ('3e459839-3c17-43a2-b141-6140eeae07d9', N'A fundamental position in Taekwondo used for balance and power.', N'stance_image_url', N'Stance', N'자세', N'stance_sound_url', N'stance_video_url'),
+      ('4bae52b7-970b-41ce-938b-690a44c29795', N'A series of movements and techniques in a specific sequence.', N'form_image_url', N'Form', N'품세', N'form_sound_url', N'form_video_url'),
+      ('73d3dea1-d21b-4f45-bb0a-2eaca4c7aa04', N'A highly skilled Taekwondo practitioner and instructor.', N'master_image_url', N'Master', N'사범', N'master_sound_url', N'master_video_url'),
+      ('7c83305d-527c-4eb7-bb39-28280ad42a2d', N'A practice of fighting against an opponent in Taekwondo.', N'sparring_image_url', N'Sparring', N'겨루기', N'sparring_sound_url', N'sparring_video_url'),
+      ('965a856f-eb8f-4910-a6a3-661ff0c4a78a', N'A board used in training for practicing kicks.', N'kickboard_image_url', N'Kickboard', N'발차기보드', N'kickboard_sound_url', N'kickboard_video_url'),
+      ('a61b1f2a-3236-4af5-90aa-3483b96a5666', N'A command to stand at attention, often used during training or ceremonies.', N'charyeot_image_url', N'Charyeot', N'차렷', N'charyeot_sound_url', N'charyeot_video_url');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'OrdbogId', N'Beskrivelse', N'BilledeLink', N'DanskOrd', N'KoranskOrd', N'LydLink', N'VideoLink') AND [object_id] = OBJECT_ID(N'[Ordboger]'))
+          SET IDENTITY_INSERT [Ordboger] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'PensumID', N'PensumGrad') AND [object_id] = OBJECT_ID(N'[Pensum]'))
+          SET IDENTITY_INSERT [Pensum] ON;
+      INSERT INTO [Pensum] ([PensumID], [PensumGrad])
+      VALUES ('094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'Hvid'),
+      ('362385ac-7c43-41b1-989c-b8d9ba6fce67', N'Sort'),
+      ('67db5817-3c5a-4604-ba74-8076578528c3', N'Blåt'),
+      ('9c3cabef-0731-4243-a5e8-d837c77ee523', N'Rød'),
+      ('dcd90332-5e1b-4352-bf88-fb40e75932bd', N'Gult');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'PensumID', N'PensumGrad') AND [object_id] = OBJECT_ID(N'[Pensum]'))
+          SET IDENTITY_INSERT [Pensum] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'ProgramID', N'Beskrivelse', N'Længde', N'OprettelseDato', N'ProgramNavn') AND [object_id] = OBJECT_ID(N'[ProgramPlans]'))
+          SET IDENTITY_INSERT [ProgramPlans] ON;
+      INSERT INTO [ProgramPlans] ([ProgramID], [Beskrivelse], [Længde], [OprettelseDato], [ProgramNavn])
+      VALUES ('11741c42-315e-42fe-a0a8-337afd6d511f', N'A basic program to get started with Taekwondo.', 4, '2025-04-08T00:00:00.0000000', N'Basic Taekwondo Program'),
+      ('3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47', N'An advanced program for mastering Taekwondo techniques.', 8, '2025-04-10T00:00:00.0000000', N'Advanced Taekwondo Program'),
+      ('8c98eb00-1efb-4361-99b7-974c1aed66e8', N'An intermediate program to enhance your Taekwondo skills.', 6, '2025-04-09T00:00:00.0000000', N'Intermediate Taekwondo Program');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'ProgramID', N'Beskrivelse', N'Længde', N'OprettelseDato', N'ProgramNavn') AND [object_id] = OBJECT_ID(N'[ProgramPlans]'))
+          SET IDENTITY_INSERT [ProgramPlans] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'BrugerID', N'KlubID') AND [object_id] = OBJECT_ID(N'[BrugerKlubber]'))
+          SET IDENTITY_INSERT [BrugerKlubber] ON;
+      INSERT INTO [BrugerKlubber] ([BrugerID], [KlubID])
+      VALUES ('446a5a83-a0bd-4633-b28f-a6526245eed7', 'fed25ea9-7695-4945-a109-2900a24ff1ce'),
+      ('8bb14e0c-04a3-4679-aa0b-48b9978eb220', 'afa9ebbf-49bb-4737-9ab0-7d9d3153c993');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'BrugerID', N'KlubID') AND [object_id] = OBJECT_ID(N'[BrugerKlubber]'))
+          SET IDENTITY_INSERT [BrugerKlubber] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'BrugerID', N'ProgramID') AND [object_id] = OBJECT_ID(N'[BrugerProgrammer]'))
+          SET IDENTITY_INSERT [BrugerProgrammer] ON;
+      INSERT INTO [BrugerProgrammer] ([BrugerID], [ProgramID])
+      VALUES ('8bb14e0c-04a3-4679-aa0b-48b9978eb220', '3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'BrugerID', N'ProgramID') AND [object_id] = OBJECT_ID(N'[BrugerProgrammer]'))
+          SET IDENTITY_INSERT [BrugerProgrammer] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'KlubID', N'ProgramID') AND [object_id] = OBJECT_ID(N'[KlubProgrammer]'))
+          SET IDENTITY_INSERT [KlubProgrammer] ON;
+      INSERT INTO [KlubProgrammer] ([KlubID], [ProgramID])
+      VALUES ('afa9ebbf-49bb-4737-9ab0-7d9d3153c993', '11741c42-315e-42fe-a0a8-337afd6d511f'),
+      ('fed25ea9-7695-4945-a109-2900a24ff1ce', '8c98eb00-1efb-4361-99b7-974c1aed66e8');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'KlubID', N'ProgramID') AND [object_id] = OBJECT_ID(N'[KlubProgrammer]'))
+          SET IDENTITY_INSERT [KlubProgrammer] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'QuizID', N'PensumID', N'QuizBeskrivelse', N'QuizNavn') AND [object_id] = OBJECT_ID(N'[Quizzer]'))
+          SET IDENTITY_INSERT [Quizzer] ON;
+      INSERT INTO [Quizzer] ([QuizID], [PensumID], [QuizBeskrivelse], [QuizNavn])
+      VALUES ('3b89bd9d-dd30-4ea4-8563-984dbfccb644', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', N'Test your knowledge of the history and origins of Taekwondo.', N'Taekwondo History Quiz'),
+      ('69cde397-c39c-4172-8d95-56c9a5cdc099', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'A quiz to test your knowledge of basic Taekwondo concepts.', N'Taekwondo Basics Quiz'),
+      ('f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2', '67db5817-3c5a-4604-ba74-8076578528c3', N'A quiz to assess your understanding of various Taekwondo techniques and movements.', N'Taekwondo Techniques Quiz');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'QuizID', N'PensumID', N'QuizBeskrivelse', N'QuizNavn') AND [object_id] = OBJECT_ID(N'[Quizzer]'))
+          SET IDENTITY_INSERT [Quizzer] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'TeknikID', N'PensumID', N'TeknikBeskrivelse', N'TeknikBillede', N'TeknikLyd', N'TeknikNavn', N'TeknikVideo') AND [object_id] = OBJECT_ID(N'[Teknikker]'))
+          SET IDENTITY_INSERT [Teknikker] ON;
+      INSERT INTO [Teknikker] ([TeknikID], [PensumID], [TeknikBeskrivelse], [TeknikBillede], [TeknikLyd], [TeknikNavn], [TeknikVideo])
+      VALUES ('13eeede6-81ae-4c79-a25e-9226d7a20316', '362385ac-7c43-41b1-989c-b8d9ba6fce67', N'A strike using the edge of the hand, aimed at vulnerable areas.', N'knife_hand_strike_image_url', N'knife_hand_strike_sound_url', N'Knife Hand Strike', N'knife_hand_strike_video_url'),
+      ('42e75d1b-d44e-416c-8a6a-0dd9b2803d9c', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', N'A kick where the foot comes down like an axe to strike the opponent.', N'axe_kick_image_url', N'axe_kick_sound_url', N'Axe Kick', N'axe_kick_video_url'),
+      ('49425f68-4bcf-412e-8ac3-0f87b3b117ca', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', N'A powerful kick aimed at the opponent''s torso, delivered from the side.', N'side_kick_image_url', N'side_kick_sound_url', N'Side Kick', N'side_kick_video_url'),
+      ('49e7612b-36ff-4f40-9224-5d126945e3e2', '67db5817-3c5a-4604-ba74-8076578528c3', N'A strike using the elbow to target the opponent''s head or torso.', N'elbow_strike_image_url', N'elbow_strike_sound_url', N'Elbow Strike', N'elbow_strike_video_url'),
+      ('4d608ca7-227c-4dc5-b7b9-f8f2315233ec', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'A powerful kick aimed at the opponent''s head or torso.', N'roundhouse_kick_image_url', N'roundhouse_kick_sound_url', N'Roundhouse Kick', N'roundhouse_kick_video_url'),
+      ('72385206-876c-4f9d-bfc6-dc8aa02ef587', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', N'A kick delivered by turning your back to the opponent and kicking backward.', N'back_kick_image_url', N'back_kick_sound_url', N'Back Kick', N'back_kick_video_url'),
+      ('ca16ac6c-3697-49b2-891b-dd9e632790c1', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'A strike using the knee to target the opponent''s midsection or head.', N'knee_strike_image_url', N'knee_strike_sound_url', N'Knee Strike', N'knee_strike_video_url'),
+      ('f4a14256-bf7c-4910-a4c4-13fc063a455a', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'A quick kick aimed at the opponent''s stomach or face.', N'front_kick_image_url', N'front_kick_sound_url', N'Front Kick', N'front_kick_video_url'),
+      ('fe2b1123-5434-4c83-ab16-e8372bd99fef', '67db5817-3c5a-4604-ba74-8076578528c3', N'A strike using the bottom of the fist, like a hammer blow.', N'hammerfist_image_url', N'hammerfist_sound_url', N'Hammerfist', N'hammerfist_video_url'),
+      ('ff1f1f02-2a9f-4281-9569-7bf33ec6f457', '67db5817-3c5a-4604-ba74-8076578528c3', N'A spinning kick where you turn around and strike with a powerful back kick.', N'spinning_back_kick_image_url', N'spinning_back_kick_sound_url', N'Spinning Back Kick', N'spinning_back_kick_video_url');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'TeknikID', N'PensumID', N'TeknikBeskrivelse', N'TeknikBillede', N'TeknikLyd', N'TeknikNavn', N'TeknikVideo') AND [object_id] = OBJECT_ID(N'[Teknikker]'))
+          SET IDENTITY_INSERT [Teknikker] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'TeoriID', N'PensumID', N'TeoriBeskrivelse', N'TeoriBillede', N'TeoriLyd', N'TeoriNavn', N'TeoriVideo') AND [object_id] = OBJECT_ID(N'[Teorier]'))
+          SET IDENTITY_INSERT [Teorier] ON;
+      INSERT INTO [Teorier] ([TeoriID], [PensumID], [TeoriBeskrivelse], [TeoriBillede], [TeoriLyd], [TeoriNavn], [TeoriVideo])
+      VALUES ('26abad43-d433-416e-ba59-6ddb20a64093', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', N'Understanding the belt levels in Taekwondo and their meanings.', N'belt_system_image_url', N'belt_system_sound_url', N'Taekwondo Belt System', N'belt_system_video_url'),
+      ('340c59b4-9f76-46af-8abb-49a200eb4671', '9c3cabef-0731-4243-a5e8-d837c77ee523', N'How Taekwondo tournaments are organized and what the rules are.', N'tournaments_image_url', N'tournaments_sound_url', N'Taekwondo Tournaments', N'tournaments_video_url'),
+      ('3ed65b45-89f7-4209-bc51-9de0b3c6b6d3', '362385ac-7c43-41b1-989c-b8d9ba6fce67', N'The philosophy behind Taekwondo and its martial arts principles.', N'philosophy_image_url', N'philosophy_sound_url', N'Taekwondo Philosophy', N'philosophy_video_url'),
+      ('9e4df6a6-af38-445f-a4d5-2f2f5e01b029', '67db5817-3c5a-4604-ba74-8076578528c3', N'The foundational movements in Taekwondo.', N'basic_movements_image_url', N'basic_movements_sound_url', N'Basic Taekwondo Movements', N'basic_movements_video_url'),
+      ('a845c529-8362-4fac-b7d0-df079db04860', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', N'Overview of the basic stances used in Taekwondo.', N'taekwondo_stances_image_url', N'taekwondo_stances_sound_url', N'Taekwondo Stances', N'taekwondo_stances_video_url'),
+      ('aae05942-0586-4000-aca2-b02525c0f1ea', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'A deep dive into the origins and history of Taekwondo.', N'history_of_taekwondo_image_url', N'history_of_taekwondo_sound_url', N'History of Taekwondo', N'history_of_taekwondo_video_url'),
+      ('bf4135c9-db91-4354-956f-f1606bddccd8', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'The formal etiquette and behavior expected in Taekwondo.', N'taekwondo_etiquette_image_url', N'taekwondo_etiquette_sound_url', N'Taekwondo Etiquette', N'taekwondo_etiquette_video_url'),
+      ('d93a6ee0-f753-4f04-ac35-7fbb1cd09803', '67db5817-3c5a-4604-ba74-8076578528c3', N'Introduction to basic self-defense techniques in Taekwondo.', N'self_defense_image_url', N'self_defense_sound_url', N'Taekwondo Self-defense Techniques', N'self_defense_video_url'),
+      ('e10b50fa-9224-4469-9f4c-7553db8328b6', '362385ac-7c43-41b1-989c-b8d9ba6fce67', N'The different forms (patterns) performed in Taekwondo.', N'forms_image_url', N'forms_sound_url', N'Taekwondo Forms', N'forms_video_url'),
+      ('ecac9146-b9b2-492c-9561-032c39b1436b', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', N'The significance of the Taekwondo training hall, the Dojang.', N'dojang_image_url', N'dojang_sound_url', N'The Dojang', N'dojang_video_url');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'TeoriID', N'PensumID', N'TeoriBeskrivelse', N'TeoriBillede', N'TeoriLyd', N'TeoriNavn', N'TeoriVideo') AND [object_id] = OBJECT_ID(N'[Teorier]'))
+          SET IDENTITY_INSERT [Teorier] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'TræningID', N'PensumID', N'ProgramID', N'QuizID', N'TeknikID', N'TeoriID', N'Tid', N'TræningRækkefølge', N'ØvelseID') AND [object_id] = OBJECT_ID(N'[Træninger]'))
+          SET IDENTITY_INSERT [Træninger] ON;
+      INSERT INTO [Træninger] ([TræningID], [PensumID], [ProgramID], [QuizID], [TeknikID], [TeoriID], [Tid], [TræningRækkefølge], [ØvelseID])
+      VALUES ('2faf5b1b-40a2-4599-99c9-c0e948a31dc7', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', '8c98eb00-1efb-4361-99b7-974c1aed66e8', NULL, NULL, NULL, 90, 1, NULL),
+      ('3949e642-5f71-40b7-8c4f-7bdaee0686c9', '67db5817-3c5a-4604-ba74-8076578528c3', '3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47', NULL, NULL, NULL, 80, 2, NULL),
+      ('4a91f6e6-3b23-4de7-85a1-1f173a90a27f', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', '11741c42-315e-42fe-a0a8-337afd6d511f', NULL, NULL, NULL, 60, 1, NULL),
+      ('58d29731-5915-496c-9f52-b1c64199fdd7', '67db5817-3c5a-4604-ba74-8076578528c3', '3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47', NULL, NULL, NULL, 90, 1, NULL),
+      ('84a19dcc-6f70-49ce-9629-d04b0cb0c7dd', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', '11741c42-315e-42fe-a0a8-337afd6d511f', NULL, NULL, NULL, 75, 2, NULL),
+      ('cf9ce0e3-f9d0-41a0-8486-7b9d41aa43be', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', '8c98eb00-1efb-4361-99b7-974c1aed66e8', NULL, NULL, NULL, 80, 2, NULL);
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'TræningID', N'PensumID', N'ProgramID', N'QuizID', N'TeknikID', N'TeoriID', N'Tid', N'TræningRækkefølge', N'ØvelseID') AND [object_id] = OBJECT_ID(N'[Træninger]'))
+          SET IDENTITY_INSERT [Træninger] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'ØvelseID', N'PensumID', N'ØvelseBeskrivelse', N'ØvelseBillede', N'ØvelseNavn', N'ØvelseSværhed', N'ØvelseTid', N'ØvelseVideo') AND [object_id] = OBJECT_ID(N'[Øvelser]'))
+          SET IDENTITY_INSERT [Øvelser] ON;
+      INSERT INTO [Øvelser] ([ØvelseID], [PensumID], [ØvelseBeskrivelse], [ØvelseBillede], [ØvelseNavn], [ØvelseSværhed], [ØvelseTid], [ØvelseVideo])
+      VALUES ('0335fde9-e05e-4a72-b08c-0c076803b395', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'A basic bodyweight exercise for strengthening the upper body and arms.', N'push_up_image_url', N'Push-ups', N'Let', 30, N'push_up_video_url'),
+      ('1ab7a999-d644-418a-b3ba-c3cd27a5dfd6', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'A core exercise to strengthen the abdominal muscles.', N'sit_up_image_url', N'Sit-ups', N'Let', 30, N'sit_up_video_url'),
+      ('1e86d0c9-1d34-4b46-a939-1326f7f9df42', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', N'A lower body exercise to strengthen the thighs, hips, and buttocks.', N'squat_image_url', N'Squats', N'Mellem', 45, N'squat_video_url'),
+      ('29433916-f5aa-4d34-9bf3-6e0eb09aa010', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'A core stability exercise to strengthen the abdominals, back, and shoulders.', N'plank_image_url', N'Plank', N'Mellem', 45, N'plank_video_url'),
+      ('a36f91d7-c05b-48c8-97a3-11f86a2eae69', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', N'A cardiovascular exercise that mimics climbing a mountain while on the ground.', N'mountain_climber_image_url', N'Mountain Climbers', N'Mellem', 30, N'mountain_climber_video_url'),
+      ('bdb87fa8-e777-42e6-ad08-7187707fe1c3', '67db5817-3c5a-4604-ba74-8076578528c3', N'An upper body exercise that targets the triceps, using parallel bars or a bench.', N'tricep_dips_image_url', N'Tricep Dips', N'Mellem', 45, N'tricep_dips_video_url'),
+      ('d5a762e1-b401-4118-955d-bbb3d26f370e', '67db5817-3c5a-4604-ba74-8076578528c3', N'A lower body exercise targeting the quads, hamstrings, and glutes.', N'lunge_image_url', N'Lunges', N'Mellem', 40, N'lunge_video_url'),
+      ('d9f50fe9-11d5-46ee-8836-a57727dc424b', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'A full-body cardio exercise to improve endurance and agility.', N'jumping_jacks_image_url', N'Jumping Jacks', N'Let', 30, N'jumping_jacks_video_url'),
+      ('dcbcc571-4377-4fcc-91a8-fb83f07165f6', '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973', N'A full-body exercise that combines squats, push-ups, and jumps.', N'burpee_image_url', N'Burpees', N'Svær', 60, N'burpee_video_url'),
+      ('f1c414cb-8ce7-4583-b65e-510bc0f2fd8b', 'dcd90332-5e1b-4352-bf88-fb40e75932bd', N'A cardio exercise focusing on fast leg movement to increase heart rate.', N'high_knees_image_url', N'High Knees', N'Mellem', 40, N'high_knees_video_url');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'ØvelseID', N'PensumID', N'ØvelseBeskrivelse', N'ØvelseBillede', N'ØvelseNavn', N'ØvelseSværhed', N'ØvelseTid', N'ØvelseVideo') AND [object_id] = OBJECT_ID(N'[Øvelser]'))
+          SET IDENTITY_INSERT [Øvelser] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'BrugerID', N'QuizID') AND [object_id] = OBJECT_ID(N'[BrugerQuizzer]'))
+          SET IDENTITY_INSERT [BrugerQuizzer] ON;
+      INSERT INTO [BrugerQuizzer] ([BrugerID], [QuizID])
+      VALUES ('8bb14e0c-04a3-4679-aa0b-48b9978eb220', 'f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'BrugerID', N'QuizID') AND [object_id] = OBJECT_ID(N'[BrugerQuizzer]'))
+          SET IDENTITY_INSERT [BrugerQuizzer] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'BrugerID', N'ØvelseID') AND [object_id] = OBJECT_ID(N'[BrugerØvelser]'))
+          SET IDENTITY_INSERT [BrugerØvelser] ON;
+      INSERT INTO [BrugerØvelser] ([BrugerID], [ØvelseID])
+      VALUES ('446a5a83-a0bd-4633-b28f-a6526245eed7', 'dcbcc571-4377-4fcc-91a8-fb83f07165f6'),
+      ('8bb14e0c-04a3-4679-aa0b-48b9978eb220', '1e86d0c9-1d34-4b46-a939-1326f7f9df42');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'BrugerID', N'ØvelseID') AND [object_id] = OBJECT_ID(N'[BrugerØvelser]'))
+          SET IDENTITY_INSERT [BrugerØvelser] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'KlubID', N'QuizID') AND [object_id] = OBJECT_ID(N'[KlubQuizzer]'))
+          SET IDENTITY_INSERT [KlubQuizzer] ON;
+      INSERT INTO [KlubQuizzer] ([KlubID], [QuizID])
+      VALUES ('afa9ebbf-49bb-4737-9ab0-7d9d3153c993', '69cde397-c39c-4172-8d95-56c9a5cdc099'),
+      ('fed25ea9-7695-4945-a109-2900a24ff1ce', '3b89bd9d-dd30-4ea4-8563-984dbfccb644');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'KlubID', N'QuizID') AND [object_id] = OBJECT_ID(N'[KlubQuizzer]'))
+          SET IDENTITY_INSERT [KlubQuizzer] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'KlubID', N'ØvelseID') AND [object_id] = OBJECT_ID(N'[KlubØvelser]'))
+          SET IDENTITY_INSERT [KlubØvelser] ON;
+      INSERT INTO [KlubØvelser] ([KlubID], [ØvelseID])
+      VALUES ('afa9ebbf-49bb-4737-9ab0-7d9d3153c993', '0335fde9-e05e-4a72-b08c-0c076803b395'),
+      ('fed25ea9-7695-4945-a109-2900a24ff1ce', '1ab7a999-d644-418a-b3ba-c3cd27a5dfd6');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'KlubID', N'ØvelseID') AND [object_id] = OBJECT_ID(N'[KlubØvelser]'))
+          SET IDENTITY_INSERT [KlubØvelser] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'SpørgsmålID', N'QuizID', N'SpørgsmålRækkefølge', N'SpørgsmålTid', N'TeknikID', N'TeoriID', N'ØvelseID') AND [object_id] = OBJECT_ID(N'[Spørgsmål]'))
+          SET IDENTITY_INSERT [Spørgsmål] ON;
+      INSERT INTO [Spørgsmål] ([SpørgsmålID], [QuizID], [SpørgsmålRækkefølge], [SpørgsmålTid], [TeknikID], [TeoriID], [ØvelseID])
+      VALUES ('0a4b9bd3-1fc3-498c-9574-51d1db67cce4', '3b89bd9d-dd30-4ea4-8563-984dbfccb644', 2, 30, '72385206-876c-4f9d-bfc6-dc8aa02ef587', 'aae05942-0586-4000-aca2-b02525c0f1ea', '1ab7a999-d644-418a-b3ba-c3cd27a5dfd6'),
+      ('2f02f12d-3c9a-4b63-b7f0-8df70d9ed799', 'f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2', 1, 30, 'f4a14256-bf7c-4910-a4c4-13fc063a455a', 'bf4135c9-db91-4354-956f-f1606bddccd8', '0335fde9-e05e-4a72-b08c-0c076803b395'),
+      ('3e5a25d1-a1a2-411d-b5ab-db0aead404c3', '3b89bd9d-dd30-4ea4-8563-984dbfccb644', 3, 40, '49425f68-4bcf-412e-8ac3-0f87b3b117ca', 'a845c529-8362-4fac-b7d0-df079db04860', '1e86d0c9-1d34-4b46-a939-1326f7f9df42'),
+      ('464d80b9-28b4-4e16-949a-bddbafc4c6f1', '69cde397-c39c-4172-8d95-56c9a5cdc099', 4, 45, '49425f68-4bcf-412e-8ac3-0f87b3b117ca', 'ecac9146-b9b2-492c-9561-032c39b1436b', 'dcbcc571-4377-4fcc-91a8-fb83f07165f6'),
+      ('49da5e18-a087-40aa-8ea8-0a67e13d249b', '3b89bd9d-dd30-4ea4-8563-984dbfccb644', 5, 60, '4d608ca7-227c-4dc5-b7b9-f8f2315233ec', '26abad43-d433-416e-ba59-6ddb20a64093', 'd5a762e1-b401-4118-955d-bbb3d26f370e'),
+      ('4ba89cd8-b931-4071-a057-1c9740dac086', '69cde397-c39c-4172-8d95-56c9a5cdc099', 1, 30, '4d608ca7-227c-4dc5-b7b9-f8f2315233ec', 'bf4135c9-db91-4354-956f-f1606bddccd8', '0335fde9-e05e-4a72-b08c-0c076803b395'),
+      ('600a1b8b-6eed-434d-9a1f-1337124da834', 'f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2', 4, 45, 'fe2b1123-5434-4c83-ab16-e8372bd99fef', 'ecac9146-b9b2-492c-9561-032c39b1436b', 'dcbcc571-4377-4fcc-91a8-fb83f07165f6'),
+      ('67f31858-40f0-481d-844a-7dcc7c4e0b48', 'f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2', 2, 30, '72385206-876c-4f9d-bfc6-dc8aa02ef587', 'aae05942-0586-4000-aca2-b02525c0f1ea', '1ab7a999-d644-418a-b3ba-c3cd27a5dfd6'),
+      ('6e6089f3-1f29-412e-b7ba-9cfe652fecce', 'f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2', 3, 40, '49425f68-4bcf-412e-8ac3-0f87b3b117ca', 'a845c529-8362-4fac-b7d0-df079db04860', '1e86d0c9-1d34-4b46-a939-1326f7f9df42'),
+      ('85c9d413-5148-488c-a667-f971171d2d78', '69cde397-c39c-4172-8d95-56c9a5cdc099', 5, 60, 'fe2b1123-5434-4c83-ab16-e8372bd99fef', '26abad43-d433-416e-ba59-6ddb20a64093', 'd5a762e1-b401-4118-955d-bbb3d26f370e'),
+      ('8fe43b9a-f64d-4701-911a-764204b423ad', '69cde397-c39c-4172-8d95-56c9a5cdc099', 2, 30, 'f4a14256-bf7c-4910-a4c4-13fc063a455a', 'aae05942-0586-4000-aca2-b02525c0f1ea', '1ab7a999-d644-418a-b3ba-c3cd27a5dfd6'),
+      ('94dac4ff-3ef1-41dd-8593-de3736627b98', '69cde397-c39c-4172-8d95-56c9a5cdc099', 3, 40, '72385206-876c-4f9d-bfc6-dc8aa02ef587', 'a845c529-8362-4fac-b7d0-df079db04860', '1e86d0c9-1d34-4b46-a939-1326f7f9df42'),
+      ('a79c2d74-bccf-4a9f-ba03-ac02c906f6c7', '3b89bd9d-dd30-4ea4-8563-984dbfccb644', 4, 45, 'fe2b1123-5434-4c83-ab16-e8372bd99fef', 'ecac9146-b9b2-492c-9561-032c39b1436b', 'dcbcc571-4377-4fcc-91a8-fb83f07165f6'),
+      ('d1797c4a-4378-49a9-84d5-375efcff0d88', '3b89bd9d-dd30-4ea4-8563-984dbfccb644', 1, 30, 'f4a14256-bf7c-4910-a4c4-13fc063a455a', 'bf4135c9-db91-4354-956f-f1606bddccd8', '0335fde9-e05e-4a72-b08c-0c076803b395'),
+      ('d1a60bed-fd96-47dd-b86a-a944230d53bb', 'f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2', 5, 60, '4d608ca7-227c-4dc5-b7b9-f8f2315233ec', '26abad43-d433-416e-ba59-6ddb20a64093', 'd5a762e1-b401-4118-955d-bbb3d26f370e');
+      IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'SpørgsmålID', N'QuizID', N'SpørgsmålRækkefølge', N'SpørgsmålTid', N'TeknikID', N'TeoriID', N'ØvelseID') AND [object_id] = OBJECT_ID(N'[Spørgsmål]'))
+          SET IDENTITY_INSERT [Spørgsmål] OFF;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_BrugerKlubber_KlubID] ON [BrugerKlubber] ([KlubID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_BrugerØvelser_ØvelseID] ON [BrugerØvelser] ([ØvelseID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_BrugerProgrammer_ProgramID] ON [BrugerProgrammer] ([ProgramID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_BrugerQuizzer_QuizID] ON [BrugerQuizzer] ([QuizID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_KlubØvelser_ØvelseID] ON [KlubØvelser] ([ØvelseID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_KlubProgrammer_ProgramID] ON [KlubProgrammer] ([ProgramID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_KlubQuizzer_QuizID] ON [KlubQuizzer] ([QuizID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Øvelser_PensumID] ON [Øvelser] ([PensumID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Quizzer_PensumID] ON [Quizzer] ([PensumID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Spørgsmål_ØvelseID] ON [Spørgsmål] ([ØvelseID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Spørgsmål_QuizID] ON [Spørgsmål] ([QuizID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Spørgsmål_TeknikID] ON [Spørgsmål] ([TeknikID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Spørgsmål_TeoriID] ON [Spørgsmål] ([TeoriID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Teknikker_PensumID] ON [Teknikker] ([PensumID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Teorier_PensumID] ON [Teorier] ([PensumID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Træninger_ØvelseID] ON [Træninger] ([ØvelseID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Træninger_PensumID] ON [Træninger] ([PensumID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Træninger_ProgramID] ON [Træninger] ([ProgramID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Træninger_QuizID] ON [Træninger] ([QuizID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Træninger_TeknikID] ON [Træninger] ([TeknikID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Træninger_TeoriID] ON [Træninger] ([TeoriID]);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+      VALUES (N'20250410120920_initdatabase', N'9.0.4');
+Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20250411081300_addSyncableEntity'.
+Applying migration '20250411081300_addSyncableEntity'.
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Ordboger] ADD [ChangeHistoryJson] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Ordboger] ADD [ConflictStatus] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Ordboger] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Ordboger] ADD [ETag] nvarchar(255) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Ordboger] ADD [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Ordboger] ADD [LastModified] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Ordboger] ADD [LastSyncedVersion] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Ordboger] ADD [ModifiedBy] nvarchar(255) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Ordboger] ADD [Status] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [ChangeHistoryJson] = N'[]', [CreatedAt] = '2025-04-11T10:13:00.5288532+02:00', [ETag] = N'b7978429-39b3-42d3-aef1-39c570eef34f', [LastModified] = '2025-04-11T10:13:00.5288533+02:00', [ModifiedBy] = N'Admin'
+      WHERE [OrdbogId] = '0fd1ec97-6cee-4e0f-a032-0a3f3020d5be';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [ChangeHistoryJson] = N'[]', [CreatedAt] = '2025-04-11T10:13:00.5288527+02:00', [ETag] = N'17261337-ad04-48f1-b2cd-f3cc31c4ac3a', [LastModified] = '2025-04-11T10:13:00.5288528+02:00', [ModifiedBy] = N'Admin'
+      WHERE [OrdbogId] = '10efa19d-6353-4373-b455-414131376826';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [ChangeHistoryJson] = N'[]', [CreatedAt] = '2025-04-11T10:13:00.5275814+02:00', [ETag] = N'f153e933-b245-478c-a3f6-ea32f284989e', [LastModified] = '2025-04-11T10:13:00.5287798+02:00', [ModifiedBy] = N'Admin'
+      WHERE [OrdbogId] = '2d189ccb-a481-4ea2-8bf3-8014d3fe5825';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [ChangeHistoryJson] = N'[]', [CreatedAt] = '2025-04-11T10:13:00.5288463+02:00', [ETag] = N'4591dbb7-986c-4133-b960-f33543048331', [LastModified] = '2025-04-11T10:13:00.5288469+02:00', [ModifiedBy] = N'Admin'
+      WHERE [OrdbogId] = '3a2ba1b6-34c7-4be1-af4f-13bd66db3079';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [ChangeHistoryJson] = N'[]', [CreatedAt] = '2025-04-11T10:13:00.5288474+02:00', [ETag] = N'9b3c75e8-497d-4792-bcde-6cf8c7b2a89f', [LastModified] = '2025-04-11T10:13:00.5288475+02:00', [ModifiedBy] = N'Admin'
+      WHERE [OrdbogId] = '3e459839-3c17-43a2-b141-6140eeae07d9';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [ChangeHistoryJson] = N'[]', [CreatedAt] = '2025-04-11T10:13:00.5288479+02:00', [ETag] = N'ba3ca9e3-12f0-47a5-8765-0f3c0d822d97', [LastModified] = '2025-04-11T10:13:00.5288480+02:00', [ModifiedBy] = N'Admin'
+      WHERE [OrdbogId] = '4bae52b7-970b-41ce-938b-690a44c29795';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [ChangeHistoryJson] = N'[]', [CreatedAt] = '2025-04-11T10:13:00.5288483+02:00', [ETag] = N'a90e8fb8-03b4-406a-9a10-cf408bb61f5c', [LastModified] = '2025-04-11T10:13:00.5288484+02:00', [ModifiedBy] = N'Admin'
+      WHERE [OrdbogId] = '73d3dea1-d21b-4f45-bb0a-2eaca4c7aa04';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [ChangeHistoryJson] = N'[]', [CreatedAt] = '2025-04-11T10:13:00.5288487+02:00', [ETag] = N'780f6321-ab42-4064-8ed9-cfd5c14cfd6b', [LastModified] = '2025-04-11T10:13:00.5288488+02:00', [ModifiedBy] = N'Admin'
+      WHERE [OrdbogId] = '7c83305d-527c-4eb7-bb39-28280ad42a2d';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [ChangeHistoryJson] = N'[]', [CreatedAt] = '2025-04-11T10:13:00.5288518+02:00', [ETag] = N'52ee0f18-f5af-4977-86e6-8c519fd11cae', [LastModified] = '2025-04-11T10:13:00.5288519+02:00', [ModifiedBy] = N'Admin'
+      WHERE [OrdbogId] = '965a856f-eb8f-4910-a6a3-661ff0c4a78a';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [ChangeHistoryJson] = N'[]', [CreatedAt] = '2025-04-11T10:13:00.5288536+02:00', [ETag] = N'28208bef-05fc-4e0a-9c8c-cbaa91e9f566', [LastModified] = '2025-04-11T10:13:00.5288537+02:00', [ModifiedBy] = N'Admin'
+      WHERE [OrdbogId] = 'a61b1f2a-3236-4af5-90aa-3483b96a5666';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+      VALUES (N'20250411081300_addSyncableEntity', N'9.0.4');
+Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20250411081736_RemovedDynmicvaluesimissied'.
+Applying migration '20250411081736_RemovedDynmicvaluesimissied'.
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12353', [LastModified] = '2025-01-01T00:00:00.0000000'
+      WHERE [OrdbogId] = '0fd1ec97-6cee-4e0f-a032-0a3f3020d5be';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12352', [LastModified] = '2025-01-01T00:00:00.0000000'
+      WHERE [OrdbogId] = '10efa19d-6353-4373-b455-414131376826';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12345', [LastModified] = '2025-01-01T00:00:00.0000000'
+      WHERE [OrdbogId] = '2d189ccb-a481-4ea2-8bf3-8014d3fe5825';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [LastModified] = '2025-01-01T00:00:00.0000000'
+      WHERE [OrdbogId] = '3a2ba1b6-34c7-4be1-af4f-13bd66db3079';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12347', [LastModified] = '2025-01-01T00:00:00.0000000'
+      WHERE [OrdbogId] = '3e459839-3c17-43a2-b141-6140eeae07d9';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12348', [LastModified] = '2025-01-01T00:00:00.0000000'
+      WHERE [OrdbogId] = '4bae52b7-970b-41ce-938b-690a44c29795';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12349', [LastModified] = '2025-01-01T00:00:00.0000000'
+      WHERE [OrdbogId] = '73d3dea1-d21b-4f45-bb0a-2eaca4c7aa04';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12350', [LastModified] = '2025-01-01T00:00:00.0000000'
+      WHERE [OrdbogId] = '7c83305d-527c-4eb7-bb39-28280ad42a2d';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12351', [LastModified] = '2025-01-01T00:00:00.0000000'
+      WHERE [OrdbogId] = '965a856f-eb8f-4910-a6a3-661ff0c4a78a';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12354', [LastModified] = '2025-01-01T00:00:00.0000000'
+      WHERE [OrdbogId] = 'a61b1f2a-3236-4af5-90aa-3483b96a5666';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+      VALUES (N'20250411081736_RemovedDynmicvaluesimissied', N'9.0.4');
+Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20250414110523_revete'.
+Applying migration '20250414110523_revete'.
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+      VALUES (N'20250414110523_revete', N'9.0.4');
+Applying migration '20250414130104_JWTaddTObruger'.
+Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20250414130104_JWTaddTObruger'.
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Brugere] ADD [Token] nvarchar(max) NULL;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Brugere] SET [Token] = NULL
+      WHERE [BrugerID] = '4153884f-a1ce-44d0-970b-8898a11fdb81';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Brugere] SET [Token] = NULL
+      WHERE [BrugerID] = '446a5a83-a0bd-4633-b28f-a6526245eed7';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Brugere] SET [Token] = NULL
+      WHERE [BrugerID] = '8bb14e0c-04a3-4679-aa0b-48b9978eb220';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Brugere] SET [Token] = NULL
+      WHERE [BrugerID] = '98e78576-6bc4-408d-b4af-2ad9051f905b';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Brugere] SET [Token] = NULL
+      WHERE [BrugerID] = 'e4ef6612-011c-453a-894f-858dff3937d4';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+      VALUES (N'20250414130104_JWTaddTObruger', N'9.0.4');
+Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20250419075221_updatedtableswithsync'.
+Applying migration '20250419075221_updatedtableswithsync'.
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DELETE FROM [Teknikker]
+      WHERE [TeknikID] = '13eeede6-81ae-4c79-a25e-9226d7a20316';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DELETE FROM [Teknikker]
+      WHERE [TeknikID] = 'ff1f1f02-2a9f-4281-9569-7bf33ec6f457';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Træninger] ADD [ChangeHistoryJson] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Træninger] ADD [ConflictStatus] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Træninger] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Træninger] ADD [ETag] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Træninger] ADD [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Træninger] ADD [LastModified] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Træninger] ADD [LastSyncedVersion] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Træninger] ADD [ModifiedBy] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Træninger] ADD [Status] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teorier] ADD [ChangeHistoryJson] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teorier] ADD [ConflictStatus] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teorier] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teorier] ADD [ETag] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teorier] ADD [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teorier] ADD [LastModified] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teorier] ADD [LastSyncedVersion] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teorier] ADD [ModifiedBy] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teorier] ADD [Status] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teknikker] ADD [ChangeHistoryJson] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teknikker] ADD [ConflictStatus] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teknikker] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teknikker] ADD [ETag] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teknikker] ADD [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teknikker] ADD [LastModified] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teknikker] ADD [LastSyncedVersion] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teknikker] ADD [ModifiedBy] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Teknikker] ADD [Status] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Spørgsmål] ADD [ChangeHistoryJson] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Spørgsmål] ADD [ConflictStatus] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Spørgsmål] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Spørgsmål] ADD [ETag] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Spørgsmål] ADD [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Spørgsmål] ADD [LastModified] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Spørgsmål] ADD [LastSyncedVersion] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Spørgsmål] ADD [ModifiedBy] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Spørgsmål] ADD [Status] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Quizzer] ADD [ChangeHistoryJson] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Quizzer] ADD [ConflictStatus] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Quizzer] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Quizzer] ADD [ETag] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Quizzer] ADD [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Quizzer] ADD [LastModified] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Quizzer] ADD [LastSyncedVersion] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Quizzer] ADD [ModifiedBy] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Quizzer] ADD [Status] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [ProgramPlans] ADD [ChangeHistoryJson] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [ProgramPlans] ADD [ConflictStatus] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [ProgramPlans] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [ProgramPlans] ADD [ETag] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [ProgramPlans] ADD [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [ProgramPlans] ADD [LastModified] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [ProgramPlans] ADD [LastSyncedVersion] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [ProgramPlans] ADD [ModifiedBy] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [ProgramPlans] ADD [Status] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Pensum] ADD [ChangeHistoryJson] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Pensum] ADD [ConflictStatus] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Pensum] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Pensum] ADD [ETag] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Pensum] ADD [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Pensum] ADD [LastModified] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Pensum] ADD [LastSyncedVersion] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Pensum] ADD [ModifiedBy] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Pensum] ADD [Status] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Øvelser] ADD [ChangeHistoryJson] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Øvelser] ADD [ConflictStatus] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Øvelser] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Øvelser] ADD [ETag] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Øvelser] ADD [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Øvelser] ADD [LastModified] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Øvelser] ADD [LastSyncedVersion] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Øvelser] ADD [ModifiedBy] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Øvelser] ADD [Status] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @var sysname;
+      SELECT @var = [d].[name]
+      FROM [sys].[default_constraints] [d]
+      INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+      WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Ordboger]') AND [c].[name] = N'Status');
+      IF @var IS NOT NULL EXEC(N'ALTER TABLE [Ordboger] DROP CONSTRAINT [' + @var + '];');
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @var1 sysname;
+      SELECT @var1 = [d].[name]
+      FROM [sys].[default_constraints] [d]
+      INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+      WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Ordboger]') AND [c].[name] = N'ModifiedBy');
+      IF @var1 IS NOT NULL EXEC(N'ALTER TABLE [Ordboger] DROP CONSTRAINT [' + @var1 + '];');
+      ALTER TABLE [Ordboger] ALTER COLUMN [ModifiedBy] nvarchar(max) NOT NULL;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @var2 sysname;
+      SELECT @var2 = [d].[name]
+      FROM [sys].[default_constraints] [d]
+      INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+      WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Ordboger]') AND [c].[name] = N'LastSyncedVersion');
+      IF @var2 IS NOT NULL EXEC(N'ALTER TABLE [Ordboger] DROP CONSTRAINT [' + @var2 + '];');
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @var3 sysname;
+      SELECT @var3 = [d].[name]
+      FROM [sys].[default_constraints] [d]
+      INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+      WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Ordboger]') AND [c].[name] = N'IsDeleted');
+      IF @var3 IS NOT NULL EXEC(N'ALTER TABLE [Ordboger] DROP CONSTRAINT [' + @var3 + '];');
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @var4 sysname;
+      SELECT @var4 = [d].[name]
+      FROM [sys].[default_constraints] [d]
+      INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+      WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Ordboger]') AND [c].[name] = N'ETag');
+      IF @var4 IS NOT NULL EXEC(N'ALTER TABLE [Ordboger] DROP CONSTRAINT [' + @var4 + '];');
+      ALTER TABLE [Ordboger] ALTER COLUMN [ETag] nvarchar(max) NOT NULL;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @var5 sysname;
+      SELECT @var5 = [d].[name]
+      FROM [sys].[default_constraints] [d]
+      INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+      WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Ordboger]') AND [c].[name] = N'ConflictStatus');
+      IF @var5 IS NOT NULL EXEC(N'ALTER TABLE [Ordboger] DROP CONSTRAINT [' + @var5 + '];');
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Brugere] ADD [ChangeHistoryJson] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Brugere] ADD [ConflictStatus] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Brugere] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Brugere] ADD [ETag] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Brugere] ADD [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit);
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Brugere] ADD [LastModified] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Brugere] ADD [LastSyncedVersion] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Brugere] ADD [ModifiedBy] nvarchar(max) NOT NULL DEFAULT N'';
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE [Brugere] ADD [Status] int NOT NULL DEFAULT 0;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Brugere] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [BrugerID] = '4153884f-a1ce-44d0-970b-8898a11fdb81';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Brugere] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [BrugerID] = '446a5a83-a0bd-4633-b28f-a6526245eed7';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Brugere] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [BrugerID] = '8bb14e0c-04a3-4679-aa0b-48b9978eb220';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Brugere] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [BrugerID] = '98e78576-6bc4-408d-b4af-2ad9051f905b';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Brugere] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [BrugerID] = 'e4ef6612-011c-453a-894f-858dff3937d4';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [Status] = 1
+      WHERE [OrdbogId] = '0fd1ec97-6cee-4e0f-a032-0a3f3020d5be';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [Status] = 1
+      WHERE [OrdbogId] = '10efa19d-6353-4373-b455-414131376826';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [Status] = 1
+      WHERE [OrdbogId] = '2d189ccb-a481-4ea2-8bf3-8014d3fe5825';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [Status] = 1
+      WHERE [OrdbogId] = '3a2ba1b6-34c7-4be1-af4f-13bd66db3079';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [Status] = 1
+      WHERE [OrdbogId] = '3e459839-3c17-43a2-b141-6140eeae07d9';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [Status] = 1
+      WHERE [OrdbogId] = '4bae52b7-970b-41ce-938b-690a44c29795';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [Status] = 1
+      WHERE [OrdbogId] = '73d3dea1-d21b-4f45-bb0a-2eaca4c7aa04';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [Status] = 1
+      WHERE [OrdbogId] = '7c83305d-527c-4eb7-bb39-28280ad42a2d';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [Status] = 1
+      WHERE [OrdbogId] = '965a856f-eb8f-4910-a6a3-661ff0c4a78a';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Ordboger] SET [Status] = 1
+      WHERE [OrdbogId] = 'a61b1f2a-3236-4af5-90aa-3483b96a5666';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Pensum] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [PensumID] = '094cb97e-10b1-4b4b-bfa0-fb6cf18cb973';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Pensum] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [PensumID] = '362385ac-7c43-41b1-989c-b8d9ba6fce67';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Pensum] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [PensumID] = '67db5817-3c5a-4604-ba74-8076578528c3';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Pensum] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [PensumID] = '9c3cabef-0731-4243-a5e8-d837c77ee523';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Pensum] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [PensumID] = 'dcd90332-5e1b-4352-bf88-fb40e75932bd';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [ProgramPlans] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ProgramID] = '11741c42-315e-42fe-a0a8-337afd6d511f';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [ProgramPlans] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ProgramID] = '3c3b50f0-e2d9-4b97-aa42-f15b5ecc7e47';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [ProgramPlans] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ProgramID] = '8c98eb00-1efb-4361-99b7-974c1aed66e8';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Quizzer] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [QuizID] = '3b89bd9d-dd30-4ea4-8563-984dbfccb644';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Quizzer] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [QuizID] = '69cde397-c39c-4172-8d95-56c9a5cdc099';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Quizzer] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [QuizID] = 'f4c2ee66-c57f-4d0c-b4de-1a7741eb28b2';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '0a4b9bd3-1fc3-498c-9574-51d1db67cce4';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '2f02f12d-3c9a-4b63-b7f0-8df70d9ed799';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '3e5a25d1-a1a2-411d-b5ab-db0aead404c3';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '464d80b9-28b4-4e16-949a-bddbafc4c6f1';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '49da5e18-a087-40aa-8ea8-0a67e13d249b';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '4ba89cd8-b931-4071-a057-1c9740dac086';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '600a1b8b-6eed-434d-9a1f-1337124da834';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '67f31858-40f0-481d-844a-7dcc7c4e0b48';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '6e6089f3-1f29-412e-b7ba-9cfe652fecce';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '85c9d413-5148-488c-a667-f971171d2d78';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '8fe43b9a-f64d-4701-911a-764204b423ad';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = '94dac4ff-3ef1-41dd-8593-de3736627b98';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = 'a79c2d74-bccf-4a9f-ba03-ac02c906f6c7';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = 'd1797c4a-4378-49a9-84d5-375efcff0d88';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Spørgsmål] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [SpørgsmålID] = 'd1a60bed-fd96-47dd-b86a-a944230d53bb';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teknikker] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeknikID] = '42e75d1b-d44e-416c-8a6a-0dd9b2803d9c';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teknikker] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeknikID] = '49425f68-4bcf-412e-8ac3-0f87b3b117ca';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teknikker] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeknikID] = '49e7612b-36ff-4f40-9224-5d126945e3e2';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teknikker] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeknikID] = '4d608ca7-227c-4dc5-b7b9-f8f2315233ec';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teknikker] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeknikID] = '72385206-876c-4f9d-bfc6-dc8aa02ef587';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teknikker] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeknikID] = 'ca16ac6c-3697-49b2-891b-dd9e632790c1';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teknikker] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeknikID] = 'f4a14256-bf7c-4910-a4c4-13fc063a455a';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teknikker] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeknikID] = 'fe2b1123-5434-4c83-ab16-e8372bd99fef';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teorier] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeoriID] = '26abad43-d433-416e-ba59-6ddb20a64093';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teorier] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeoriID] = '340c59b4-9f76-46af-8abb-49a200eb4671';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teorier] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeoriID] = '3ed65b45-89f7-4209-bc51-9de0b3c6b6d3';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teorier] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeoriID] = '9e4df6a6-af38-445f-a4d5-2f2f5e01b029';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teorier] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeoriID] = 'a845c529-8362-4fac-b7d0-df079db04860';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teorier] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeoriID] = 'aae05942-0586-4000-aca2-b02525c0f1ea';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teorier] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeoriID] = 'bf4135c9-db91-4354-956f-f1606bddccd8';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teorier] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeoriID] = 'd93a6ee0-f753-4f04-ac35-7fbb1cd09803';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teorier] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeoriID] = 'e10b50fa-9224-4469-9f4c-7553db8328b6';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Teorier] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TeoriID] = 'ecac9146-b9b2-492c-9561-032c39b1436b';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Træninger] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TræningID] = '2faf5b1b-40a2-4599-99c9-c0e948a31dc7';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Træninger] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TræningID] = '3949e642-5f71-40b7-8c4f-7bdaee0686c9';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Træninger] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TræningID] = '4a91f6e6-3b23-4de7-85a1-1f173a90a27f';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Træninger] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TræningID] = '58d29731-5915-496c-9f52-b1c64199fdd7';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Træninger] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TræningID] = '84a19dcc-6f70-49ce-9629-d04b0cb0c7dd';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Træninger] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [TræningID] = 'cf9ce0e3-f9d0-41a0-8486-7b9d41aa43be';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Øvelser] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ØvelseID] = '0335fde9-e05e-4a72-b08c-0c076803b395';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Øvelser] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ØvelseID] = '1ab7a999-d644-418a-b3ba-c3cd27a5dfd6';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Øvelser] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ØvelseID] = '1e86d0c9-1d34-4b46-a939-1326f7f9df42';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Øvelser] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ØvelseID] = '29433916-f5aa-4d34-9bf3-6e0eb09aa010';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Øvelser] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ØvelseID] = 'a36f91d7-c05b-48c8-97a3-11f86a2eae69';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Øvelser] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ØvelseID] = 'bdb87fa8-e777-42e6-ad08-7187707fe1c3';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Øvelser] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ØvelseID] = 'd5a762e1-b401-4118-955d-bbb3d26f370e';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Øvelser] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ØvelseID] = 'd9f50fe9-11d5-46ee-8836-a57727dc424b';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Øvelser] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ØvelseID] = 'dcbcc571-4377-4fcc-91a8-fb83f07165f6';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      UPDATE [Øvelser] SET [ChangeHistoryJson] = N'[]', [ConflictStatus] = 0, [CreatedAt] = '2025-01-01T00:00:00.0000000', [ETag] = N'12346', [IsDeleted] = CAST(0 AS bit), [LastModified] = '2025-01-01T00:00:00.0000000', [LastSyncedVersion] = 0, [ModifiedBy] = N'Admin', [Status] = 1
+      WHERE [ØvelseID] = 'f1c414cb-8ce7-4583-b65e-510bc0f2fd8b';
+      SELECT @@ROWCOUNT;
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+      VALUES (N'20250419075221_updatedtableswithsync', N'9.0.4');
+Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @result int;
+      EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+      SELECT @result
+Done.
+PM> 

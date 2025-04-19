@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
 @inject NavigationManager NavigationManager
 @inject HttpClient HttpClient
 @inject IAuthenticationService AuthenticationService
@@ -77,10 +78,10 @@
             if (response.IsSuccessStatusCode)
             {
                 // Try to deserialize the response
-                LoginResponseDTO? loginResponse = null;
+                ApiResponse<LoginResponseDTO>? apiResponse = null;
                 try
                 {
-                    loginResponse = await response.Content.ReadFromJsonAsync<LoginResponseDTO>();
+                    apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<LoginResponseDTO>>();
                 }
                 catch (Exception ex)
                 {
@@ -88,19 +89,29 @@
                     LogAction($"Error deserializing login response: {ex.Message}");
                 }
 
-                if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
+                if (apiResponse != null && apiResponse.Success)
                 {
-                    // Store the token using AuthenticationService
-                    await AuthenticationService.SetTokenAsync(loginResponse.Token);
+                    var loginResponse = apiResponse.Data;
 
-                    LogAction("Login successful and token stored.");
-                    // Redirect to the dashboard or home page
-                    NavigationManager.NavigateTo("/testpage");
+                    if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
+                    {
+                        // Store the token using AuthenticationService
+                        await AuthenticationService.SetTokenAsync(loginResponse.Token);
+
+                        LogAction("Login successful and token stored.");
+                        // Redirect to the dashboard or home page
+                        NavigationManager.NavigateTo("/testpage");
+                    }
+                    else
+                    {
+                        validationErrors.Add("Invalid credentials.");
+                        LogAction("Invalid credentials.");
+                    }
                 }
                 else
                 {
-                    validationErrors.Add("Invalid credentials.");
-                    LogAction("Invalid credentials.");
+                    validationErrors.Add("Login failed. " + string.Join(", ", apiResponse?.Errors ?? new List<string>()));
+                    LogAction($"Login failed. Errors: {string.Join(", ", apiResponse?.Errors ?? new List<string>())}");
                 }
             }
             else
