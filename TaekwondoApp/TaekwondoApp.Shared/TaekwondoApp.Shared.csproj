@@ -7,14 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Pages\AccountPage.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Pages\AccountPage.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
