@@ -1,42 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using TaekwondoApp.Shared.Models;
+using TaekwondoOrchestration.ApiService.Helpers;
 
-namespace TaekwondoOrchestration.ApiService.Helpers
+public class JwtHelper : IJwtHelper
 {
-    public class JwtHelper : IJwtHelper
+    private readonly string _secretKey;
+
+    public JwtHelper(string secretKey)
     {
-        private readonly string _secretKey;
+        _secretKey = secretKey;
+    }
 
-        public JwtHelper(string secretKey)
+    public string GenerateToken(Bruger bruger)
+    {
+        var securityKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_secretKey));
+
+        // Here you would typically create a claims identity for the user
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
-            _secretKey = secretKey;
-        }
-
-        public string GenerateToken(Bruger bruger)
-        {
-            var securityKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_secretKey));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new List<Claim>
+            Subject = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.Name, bruger.Brugernavn),
-                new Claim(ClaimTypes.NameIdentifier, bruger.BrugerID.ToString()),
-                new Claim(ClaimTypes.Role, bruger.Role)
-            };
+                // Add other claims here as needed
+            }),
+            Expires = DateTime.Now.AddHours(1), // Set the expiration time
+            Issuer = "YourIssuer", // Can be extracted from config as well
+            Audience = "YourAudience", // Can be extracted from config as well
+            SigningCredentials = credentials
+        };
 
-            var token = new JwtSecurityToken(
-                issuer: "YourIssuer",
-                audience: "YourAudience",
-                claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 }

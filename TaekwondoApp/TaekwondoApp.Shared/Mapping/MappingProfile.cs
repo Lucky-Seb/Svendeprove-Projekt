@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using TaekwondoApp.Shared.Models;
 using TaekwondoApp.Shared.DTO;
+using static TaekwondoApp.Shared.Pages.Register;
 
 namespace TaekwondoApp.Shared.Mapping
 {
@@ -85,6 +86,16 @@ namespace TaekwondoApp.Shared.Mapping
             CreateMap<KlubQuizDTO, KlubQuiz>(); // Reverse Mapping
             CreateMap<KlubØvelse, KlubØvelseDTO>();
             CreateMap<KlubØvelseDTO, KlubØvelse>(); // Reverse Mapping
+
+
+            CreateMap<RegisterModel, BrugerDTO>()
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Brugernavn, opt => opt.MapFrom(src => src.Brugernavn))
+                .ForMember(dest => dest.Fornavn, opt => opt.MapFrom(src => src.Fornavn))
+                .ForMember(dest => dest.Efternavn, opt => opt.MapFrom(src => src.Efternavn))
+                .ForMember(dest => dest.Bæltegrad, opt => opt.MapFrom(src => src.Bæltegrad))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role));
         }
     }
 }

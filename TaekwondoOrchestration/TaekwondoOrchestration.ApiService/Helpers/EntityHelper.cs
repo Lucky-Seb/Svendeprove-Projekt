@@ -20,7 +20,7 @@ namespace TaekwondoOrchestration.ApiService.Helpers
             entity.ETag = GenerateETag(entity, entity.GetType().Name, entity.CreatedAt.ToString(), entity.LastModified.ToString());
             entity.CreatedAt = DateTime.UtcNow;
             entity.LastModified = DateTime.UtcNow;
-            entity.Status = SyncStatus.Pending;
+            entity.Status = SyncStatus.Synced;
             entity.ConflictStatus = ConflictResolutionStatus.NoConflict;
             entity.LastSyncedVersion = 0;
             entity.ModifiedBy = modifiedBy;

@@ -33,10 +33,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "YourIssuer",
-            ValidAudience = "YourAudience",
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],  // Assuming you have this set in the config
+            ValidAudience = builder.Configuration["Jwt:Audience"], // Same here
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]) // Using the key from configuration
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]) // Correct reference
             )
         };
     });
@@ -70,7 +70,7 @@ builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddSingleton<IJwtHelper>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
-    var secretKey = configuration.GetValue<string>("JwtSettings:SecretKey");
+    var secretKey = configuration.GetValue<string>("Jwt:SecretKey"); // Ensure consistency here
     return new JwtHelper(secretKey);
 });
 
