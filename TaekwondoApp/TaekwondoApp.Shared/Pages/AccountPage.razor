@@ -80,7 +80,7 @@ else
 
             <h4>Clubs:</h4>
             <ul>
-                @foreach (var klub in brugerModel.BrugerKlubber)
+                @foreach (var klub in brugerModel.Klubber)
                 {
                     <li>@klub.KlubNavn</li>
                 }
@@ -88,7 +88,7 @@ else
 
             <h4>Programs:</h4>
             <ul>
-                @foreach (var program in brugerModel.BrugerProgrammer)
+                @foreach (var program in brugerModel.Programmer)
                 {
                     <li>@program.ProgramNavn</li>
                 }
@@ -96,7 +96,7 @@ else
 
             <h4>Quizzes:</h4>
             <ul>
-                @foreach (var quiz in brugerModel.BrugerQuizzer)
+                @foreach (var quiz in brugerModel.Quizzer)
                 {
                     <li>@quiz.QuizNavn</li>
                 }
@@ -104,7 +104,7 @@ else
 
             <h4>Exercises:</h4>
             <ul>
-                @foreach (var øvelse in brugerModel.BrugerØvelser)
+                @foreach (var øvelse in brugerModel.Øvelser)
                 {
                     <li>@øvelse.ØvelseNavn</li>
                 }
@@ -150,6 +150,8 @@ else
 
             isAuthenticated = true;
             _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+            // Call the API endpoint to fetch user details
             await LoadBruger();
 
             _hubConnection = new HubConnectionBuilder()
@@ -175,7 +177,8 @@ else
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/{brugerId}");
+            // Call the new API endpoint to fetch user with details
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
             if (response?.Success == true && response.Data != null)
             {
                 brugerModel = response.Data;
