@@ -44,24 +44,5 @@ namespace TaekwondoApp.Shared.Services
 
             _authStateProvider.ClearAuth();
         }
-        public async Task<Guid> GetUserIdFromTokenAsync(string token)
-        {
-            if (string.IsNullOrEmpty(token))
-            {
-                throw new ArgumentException("Token cannot be null or empty", nameof(token));
-            }
-
-            try
-            {
-                // Extract the userId from the JWT token
-                return JwtParser.GetUserIdFromJwt(token);
-            }
-            catch (Exception ex)
-            {
-                // Handle error if userId cannot be extracted
-                Console.WriteLine($"Error extracting UserId from token: {ex.Message}");
-                throw;
-            }
-        }
     }
 }

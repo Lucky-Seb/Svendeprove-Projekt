@@ -1,80 +1,45 @@
 ﻿@page "/account"
+
+@* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
-@inject IAuthenticationService AuthenticationService
-@inject IHttpClientFactory HttpClientFactory
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+using Microsoft.Maui.Essentials
+
+@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
 
-<h3 class="text-center text-primary mb-4">Account Information</h3>
 
-@if (!isAuthenticated)
-{
-    <div class="alert alert-warning text-center">
-        <p>You need to be logged in to view this page.</p>
-        <button @onclick="NavigateToLogin" class="btn btn-info">Go to Login</button>
-    </div>
-}
-else
-{
-    <div class="container">
-        <h4 class="text-center text-success mb-4">Your Account</h4>
-
-        <EditForm Model="user" OnValidSubmit="HandleSubmit">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-
-            <div class="form-group">
-                <label for="email">Email</label>
-                <InputText id="email" @bind-Value="user.Email" class="form-control shadow-sm" />
-            </div>
-
-            <div class="form-group">
-                <label for="username">Brugernavn</label>
-                <InputText id="username" @bind-Value="user.Brugernavn" class="form-control shadow-sm" disabled />
-            </div>
-
-            <div class="form-group">
-                <label for="firstname">Fornavn</label>
-                <InputText id="firstname" @bind-Value="user.Fornavn" class="form-control shadow-sm" />
-            </div>
-
-            <div class="form-group">
-                <label for="lastname">Efternavn</label>
-                <InputText id="lastname" @bind-Value="user.Efternavn" class="form-control shadow-sm" />
-            </div>
-
-            <div class="form-group">
-                <label for="belt">Bæltegrad</label>
-                <InputText id="belt" @bind-Value="user.Bæltegrad" class="form-control shadow-sm" />
-            </div>
-
-            <div class="form-group">
-                <label for="address">Address</label>
-                <InputText id="address" @bind-Value="user.Address" class="form-control shadow-sm" />
-            </div>
-
-            <div class="form-group">
-                <label for="role">Role</label>
-                <InputText id="role" @bind-Value="user.Role" class="form-control shadow-sm" disabled />
-            </div>
-
-            <button type="submit" class="btn btn-success btn-block mt-4 shadow-sm">Save Changes</button>
-        </EditForm>
-
-        <div class="d-flex justify-content-center mt-4">
-            <button @onclick="Logout" class="btn btn-danger btn-lg shadow-sm">Log Out</button>
-        </div>
-    </div>
-}
+<h1>acount</h1>
 
 @code {
-    private bool isAuthenticated = false;
-    private BrugerDTO user = new BrugerDTO();
-    private string? fronttoken;
+    private BrugerDTO entryModel = new();
+    private bool isEditing = false;
+    private bool isSyncing = false;
+    private bool syncFailed = false;
+    private bool internet = true;
+    private bool isAuthenticated;
+    private string? role;
+    private string searchTerm = string.Empty;
+    private string errorMessage = string.Empty;
+    private bool showDeleted = false;
+    private string token = "";
 
-    protected override async Task OnInitializedAsync()
+    private HttpClient _apiClient;
+    private HubConnection _hubConnection;
+
+
+    // ========== Data Loading ==========
+    private async Task LoadEntries()
     {
-        fronttoken = await AuthenticationService.GetTokenAsync();
+        var fronttoken = await AuthenticationService.GetTokenAsync();
         isAuthenticated = !string.IsNullOrEmpty(fronttoken);
 
         if (!isAuthenticated)
@@ -82,76 +47,25 @@ else
             NavigationManager.NavigateTo("/login", true);
             return;
         }
-
-        // Fetch the user data based on the token
-        await LoadUserData();
-    }
-
-    private async Task LoadUserData()
-    {
-        var client = HttpClientFactory.CreateClient("ApiClient");
-
         try
         {
-            // Use the JwtParser to extract the userId from the token
-            var userId = JwtParser.GetUserIdFromJwt(fronttoken);
+            var brugerId = JwtParser.GetUserIdFromJwt(fronttoken);  // Make sure this is set correctly
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<Bruger>>>("api/bruger/" + brugerId);
 
-            // Fetch the user data using the extracted userId
-            var response = await client.GetAsync($"api/bruger/{userId}");
-
-            if (response.IsSuccessStatusCode)
+            if (response?.Success == true)
             {
-                var userData = await response.Content.ReadFromJsonAsync<BrugerDTO>();
-                if (userData != null)
-                {
-                    user = userData; // Populate the user object with the fetched data
-                }
+                var bruger = _mapper.Map<BrugerDTO>(response.Data);
             }
             else
             {
-                Console.WriteLine("Failed to load user data.");
+                errorMessage = $"Server fetch error";
+
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading user data: {ex.Message}");
+            errorMessage = $"Server fetch error: {ex.Message}";
         }
-    }
-
-
-    private async Task HandleSubmit()
-    {
-        var client = HttpClientFactory.CreateClient("ApiClient");
-
-        try
-        {
-            var userId = await AuthenticationService.GetUserIdFromTokenAsync(fronttoken); // Assuming method to extract user ID
-
-            var response = await client.PutAsJsonAsync($"api/bruger/{userId}", user);
-
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("User data updated successfully.");
-            }
-            else
-            {
-                Console.WriteLine("Failed to update user data.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error updating user data: {ex.Message}");
-        }
-    }
-
-    private async Task Logout()
-    {
-        await AuthenticationService.RemoveTokenAsync();
-        NavigationManager.NavigateTo("/login", true);
-    }
-
-    private void NavigateToLogin()
-    {
-        NavigationManager.NavigateTo("/login");
+        await InvokeAsync(StateHasChanged); // Use InvokeAsync for Blazor-specific updates
     }
 }
