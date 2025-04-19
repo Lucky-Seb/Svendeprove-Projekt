@@ -1169,7 +1169,8 @@ namespace TaekwondoOrchestration.ApiService.Data
                     ØvelseVideo = "push_up_video_url",
                     ØvelseTid = 30,  // Time for each round of exercise in seconds
                     ØvelseSværhed = "Let",  // Difficulty: Easy
-                    PensumID = pensumID1,  // Example PensumID                    ETag = "12346",  // Static ETag
+                    PensumID = pensumID1,  // Example PensumID
+                    ETag = "12346",  // Static ETag
                     CreatedAt = new DateTime(2025, 1, 1),  // Static CreatedAt
                     LastModified = new DateTime(2025, 1, 1),  // Static LastModified
                     Status = SyncStatus.Synced,  // Static Sync Status
