@@ -134,7 +134,7 @@
             var token = await AuthenticationService.GetTokenAsync();
             var brugerId = JwtParser.GetUserIdFromJwt(token); // Assuming the token contains the user ID
             newProgramPlan.BrugerID = brugerId;  // Set the BrugerID to the authenticated user's ID
-            newProgramPlan.ProgramID = new Guid();
+            newProgramPlan.ProgramID = Guid.NewGuid();
             // Step 2: Ensure that each TræningDTO has the ProgramID set before sending it
             foreach (var træning in newProgramPlan.Træninger)
             {

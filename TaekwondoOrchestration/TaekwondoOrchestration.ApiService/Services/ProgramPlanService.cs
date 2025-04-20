@@ -12,11 +12,21 @@ namespace TaekwondoOrchestration.ApiService.Services
     {
         private readonly IProgramPlanRepository _programPlanRepository;
         private readonly IMapper _mapper;
-
-        public ProgramPlanService(IProgramPlanRepository programPlanRepository, IMapper mapper)
+        private readonly IBrugerProgramService _brugerProgramService;
+        private readonly IKlubProgramService _klubProgramService;
+        private readonly ITræningService _træningService;
+        public ProgramPlanService(
+            IProgramPlanRepository programPlanRepository,
+            IMapper mapper,
+            IBrugerProgramService brugerProgramService,
+            IKlubProgramService klubProgramService,
+            ITræningService træningService)
         {
             _programPlanRepository = programPlanRepository;
             _mapper = mapper;
+            _brugerProgramService = brugerProgramService;
+            _klubProgramService = klubProgramService;
+            _træningService = træningService;
         }
 
         #region CRUD Operations
@@ -40,8 +50,10 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<ProgramPlanDTO>.Ok(mapped);
         }
 
-        // Create New Program Plan
-        public async Task<Result<ProgramPlanDTO>> CreateProgramPlanWithBrugerAndKlubAsync(ProgramPlanDTO programPlanDto)
+        // Create New Program Plan with associated Bruger or Klub and Træning entities
+
+        // Create New Program Plan with associated Bruger or Klub and Træning entities
+        public async Task<Result<ProgramPlanDTO>> CreateProgramPlanWithBrugerOrKlubAsync(ProgramPlanDTO programPlanDto)
         {
             // Perform validation or any necessary checks on the DTO
             if (string.IsNullOrEmpty(programPlanDto.ProgramNavn))
@@ -51,11 +63,63 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             var newProgramPlan = _mapper.Map<ProgramPlan>(programPlanDto);
             EntityHelper.InitializeEntity(newProgramPlan, programPlanDto.ModifiedBy, "Created new Program Plan.");
+
+            // Create the ProgramPlan
             var createdProgramPlan = await _programPlanRepository.CreateProgramPlanAsync(newProgramPlan);
 
-            var mapped = _mapper.Map<ProgramPlanDTO>(createdProgramPlan);
-            return Result<ProgramPlanDTO>.Ok(mapped);
+            // Create the appropriate Program (BrugerProgram or KlubProgram) based on who created it
+            if (programPlanDto.BrugerID.HasValue)
+            {
+                // If a Bruger is creating the Program Plan, create a BrugerProgram
+                var brugerProgramDto = new BrugerProgramDTO
+                {
+                    BrugerID = programPlanDto.BrugerID.Value,
+                    ProgramID = createdProgramPlan.ProgramID
+                };
+
+                var createdBrugerProgram = await _brugerProgramService.CreateBrugerProgramAsync(brugerProgramDto);
+                if (createdBrugerProgram == null)
+                {
+                    return Result<ProgramPlanDTO>.Fail("Failed to create BrugerProgram.");
+                }
+            }
+            else if (programPlanDto.KlubID.HasValue)
+            {
+                // If a Klub is creating the Program Plan, create a KlubProgram
+                var klubProgramDto = new KlubProgramDTO
+                {
+                    KlubID = programPlanDto.KlubID.Value,
+                    ProgramID = createdProgramPlan.ProgramID
+                };
+
+                var createdKlubProgram = await _klubProgramService.CreateKlubProgramAsync(klubProgramDto);
+                if (createdKlubProgram == null)
+                {
+                    return Result<ProgramPlanDTO>.Fail("Failed to create KlubProgram.");
+                }
+            }
+            else
+            {
+                return Result<ProgramPlanDTO>.Fail("Either BrugerID or KlubID must be provided.");
+            }
+
+            // Create the associated Træning entities
+            if (programPlanDto.Træninger != null && programPlanDto.Træninger.Any())
+            {
+                foreach (var træningDto in programPlanDto.Træninger)
+                {
+                    var træningResult = await _træningService.CreateTræningAsync(træningDto);
+                    if (træningResult.IsFailure)
+                    {
+                        return Result<ProgramPlanDTO>.Fail($"Failed to create Træning for ProgramPlan. Error: {træningResult.Error}");
+                    }
+                }
+            }
+
+            var mappedProgramPlan = _mapper.Map<ProgramPlanDTO>(createdProgramPlan);
+            return Result<ProgramPlanDTO>.Ok(mappedProgramPlan);
         }
+
         public async Task<Result<bool>> UpdateProgramPlanAsync(Guid id, ProgramPlanDTO programPlanDto)
         {
             // Validate input
@@ -85,7 +149,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Update Existing Program Plan
-        public async Task<Result<ProgramPlanDTO>> UpdateProgramPlanWithBrugerAndKlubAsync(Guid id, ProgramPlanDTO programPlanDto)
+        public async Task<Result<ProgramPlanDTO>> UpdateProgramPlanWithBrugerOrKlubAsync(Guid id, ProgramPlanDTO programPlanDto)
         {
             if (string.IsNullOrEmpty(programPlanDto.ProgramNavn))
             {

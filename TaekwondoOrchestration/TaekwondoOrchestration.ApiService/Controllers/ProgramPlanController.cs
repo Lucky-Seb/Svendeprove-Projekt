@@ -48,7 +48,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
                 return BadRequest("Invalid data");
             }
 
-            var result = await _programPlanService.CreateProgramPlanWithBrugerAndKlubAsync(programPlanDTO);
+            var result = await _programPlanService.CreateProgramPlanWithBrugerOrKlubAsync(programPlanDTO);
 
             // Optionally, trigger notifications if required
             if (result.Success)
@@ -87,7 +87,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         [HttpPut("træning/{id}")]
         public async Task<IActionResult> PutProgramPlanWithTræning(Guid id, [FromBody] ProgramPlanDTO programPlanDto)
         {
-            var result = await _programPlanService.UpdateProgramPlanWithBrugerAndKlubAsync(id, programPlanDto);
+            var result = await _programPlanService.UpdateProgramPlanWithBrugerOrKlubAsync(id, programPlanDto);
 
             // Optionally, trigger notifications if required
             if (result.Success)
