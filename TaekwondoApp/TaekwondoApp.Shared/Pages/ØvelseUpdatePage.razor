@@ -7,10 +7,10 @@
 @using TaekwondoApp.Shared.Helper
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
-
-@* --- Dependency Injection --- *@
+@using System.Text.Json
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory HttpClientFactory
+@inject IAuthenticationService AuthenticationService
 
 <h3>Edit Exercise</h3>
 
@@ -61,6 +61,7 @@ else
         <div>
             <label>Pensum:</label>
             <select @bind="editModel.PensumID" class="form-control">
+                <option value="">-- Select Pensum --</option>
                 @foreach (var pensum in pensumGradList)
                 {
                     <option value="@pensum.PensumID">@pensum.PensumGrad</option>
@@ -76,37 +77,40 @@ else
 @code {
     [Parameter] public Guid Id { get; set; }
 
-    private ØvelseDTO editModel = new ØvelseDTO();
+    private ØvelseDTO editModel = new();
     private bool loading = true;
     private string errorMessage = "";
     private HttpClient _apiClient;
+    private List<Pensum> pensumGradList = new();
 
-    // List of PensumGrad options
-    private List<Pensum> pensumGradList = new List<Pensum>();
-
-    // ========== Lifecycle ==========
     protected override async Task OnInitializedAsync()
     {
         try
         {
             _apiClient = HttpClientFactory.CreateClient("ApiClient");
 
-            // Fetch the exercise data
+            var token = await AuthenticationService.GetTokenAsync();
+            var brugerId = JwtParser.GetUserIdFromJwt(token);
+            Console.WriteLine($"Loaded BrugerID: {brugerId}");
+
+            // Fetch exercise
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<ØvelseDTO>>($"api/øvelse/{Id}");
             if (response?.Success == true && response.Data != null)
             {
                 editModel = response.Data;
+                Console.WriteLine($"Loaded Øvelse: {JsonSerializer.Serialize(editModel)}");
             }
             else
             {
                 errorMessage = "Failed to load exercise.";
             }
 
-            // Fetch the list of PensumGrad options
+            // Fetch Pensum list
             var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
             if (pensumResponse?.Success == true && pensumResponse.Data != null)
             {
                 pensumGradList = pensumResponse.Data;
+                Console.WriteLine("Pensum list loaded.");
             }
             else
             {
@@ -116,6 +120,7 @@ else
         catch (Exception ex)
         {
             errorMessage = $"Error loading exercise or PensumGrads: {ex.Message}";
+            Console.WriteLine($"Exception: {ex.Message}");
         }
         finally
         {
@@ -123,37 +128,54 @@ else
         }
     }
 
-    // ========== Valid Submit Handler ==========
     private async Task HandleValidSubmit()
     {
         try
         {
-            var response = await _apiClient.PutAsJsonAsync($"api/ovelse/{editModel.ØvelseID}", editModel);
+            Console.WriteLine("Submitting update...");
+            Console.WriteLine($"ØvelseID: {editModel.ØvelseID}");
+            Console.WriteLine($"PensumID: {editModel.PensumID}");
+
+            // Add/Update sync fields if needed
+            editModel.ModifiedBy = "system";
+            editModel.ETag ??= Guid.NewGuid().ToString();
+            editModel.ChangeHistoryJson ??= "[]";
+
+            var jsonPayload = JsonSerializer.Serialize(editModel);
+            Console.WriteLine($"Payload: {jsonPayload}");
+
+            var response = await _apiClient.PutAsJsonAsync($"api/øvelse/{editModel.ØvelseID}", editModel);
+
+            Console.WriteLine($"Response Status: {response.StatusCode}");
+
             if (response.IsSuccessStatusCode)
             {
+                Console.WriteLine("✔ Exercise updated.");
                 NavigationManager.NavigateTo("/account");
             }
             else
             {
-                errorMessage = "Failed to update exercise.";
+                var body = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("❌ Failed to update exercise.");
+                Console.WriteLine($"Response Body: {body}");
+                errorMessage = $"Failed to update exercise. Status: {response.StatusCode}\nDetails: {body}";
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Exception: {ex.Message}");
             errorMessage = $"Error updating exercise: {ex.Message}";
         }
     }
 
-    // ========== Cancel ==========
     private void Cancel()
     {
         NavigationManager.NavigateTo("/account");
     }
-}
 
-// Models
-public class Pensum
-{
-    public Guid PensumID { get; set; }
-    public string PensumGrad { get; set; }
+    public class Pensum
+    {
+        public Guid PensumID { get; set; }
+        public string PensumGrad { get; set; }
+    }
 }

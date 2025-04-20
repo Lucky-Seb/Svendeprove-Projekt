@@ -59,6 +59,7 @@
     <div>
         <label>Pensum:</label>
         <select @bind="newExercise.PensumID" class="form-control">
+            <option value="">-- Select Pensum --</option>
             @foreach (var pensum in pensumGradList)
             {
                 <option value="@pensum.PensumID">@pensum.PensumGrad</option>
@@ -111,21 +112,50 @@
     {
         try
         {
+            Console.WriteLine("Submitting new exercise...");
+
+            // Debug log of key fields
+            Console.WriteLine($"ØvelseNavn: {newExercise.ØvelseNavn}");
+            Console.WriteLine($"PensumID: {newExercise.PensumID}");
+            Console.WriteLine($"BrugerID: {newExercise.BrugerID}");
+            Console.WriteLine($"Sværhed: {newExercise.ØvelseSværhed}");
+
+            // Syncable fields
+            newExercise.ETag = Guid.NewGuid().ToString();
+            newExercise.ModifiedBy = "system";
+            newExercise.ChangeHistoryJson = "[]";
+
+            // Log full object as JSON
+            var payloadJson = System.Text.Json.JsonSerializer.Serialize(newExercise);
+            Console.WriteLine($"Payload: {payloadJson}");
+
             var response = await _apiClient.PostAsJsonAsync("api/øvelse", newExercise);
+
+            Console.WriteLine($"Response Status: {response.StatusCode}");
+
             if (response.IsSuccessStatusCode)
             {
+                Console.WriteLine("Exercise created successfully.");
                 NavigationManager.NavigateTo("/account");
             }
             else
             {
-                errorMessage = "Failed to create exercise.";
+                var responseBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("❌ Failed to create exercise.");
+                Console.WriteLine($"Response Body:\n{responseBody}");
+
+                errorMessage = $"Failed to create exercise. Status: {response.StatusCode}\nDetails: {responseBody}";
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Exception occurred: {ex.Message}");
+            Console.WriteLine(ex.StackTrace);
             errorMessage = $"Error: {ex.Message}";
         }
     }
+
+    
 
     private void Cancel()
     {
