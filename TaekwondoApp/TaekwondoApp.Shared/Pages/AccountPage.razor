@@ -459,7 +459,7 @@ else
     {
         try
         {
-            var response = await _apiClient.DeleteAsync($"api/program/{programId}");
+            var response = await _apiClient.DeleteAsync($"api/programplan/{programId}");
 
             if (response.IsSuccessStatusCode)
             {
