@@ -311,6 +311,7 @@ else
             if (response?.Success == true && response.Data != null)
             {
                 brugerDTO = response.Data;
+                StateHasChanged();
             }
             else
             {
@@ -329,7 +330,7 @@ else
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<KlubDTO>>>($"api/klub");
             if (response?.Success == true && response.Data != null)
             {
-                    availableKlubs = _mapper.Map<List<KlubDTO>>(response.Data);
+                availableKlubs = _mapper.Map<List<KlubDTO>>(response.Data);
             }
             else
             {
@@ -459,7 +460,8 @@ else
             // Update the UI after the user has joined the club
             // For example, refresh the clubs list or add the joined club to the user's list
             var joinedClub = await response.Content.ReadFromJsonAsync<BrugerKlubDTO>();
-            // brugerDTO.Klubber.Add(klubDTO); // Add KlubDTO, not Klub model       
+            // brugerDTO.Klubber.Add(klubDTO); // Add KlubDTO, not Klub model
+            LoadKluber();
         }
         else
         {
@@ -470,7 +472,7 @@ else
     private async Task DropOutClub(Guid klubId)
     {
         // Send a DELETE request to remove the user from the club
-        var response = await _apiClient.DeleteAsync($"api/brugerklub/{Guid.NewGuid()}/{klubId}");
+        var response = await _apiClient.DeleteAsync($"api/brugerklub/{brugerDTO.BrugerID}/{klubId}");
 
         if (response.IsSuccessStatusCode)
         {

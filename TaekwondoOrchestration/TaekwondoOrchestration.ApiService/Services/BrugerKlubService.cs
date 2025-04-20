@@ -44,12 +44,21 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<BrugerKlubDTO>.Ok(mapped);
         }
 
-        // Create New BrugerKlub
         public async Task<Result<BrugerKlubDTO>> CreateBrugerKlubAsync(BrugerKlubDTO brugerKlubDto)
         {
             if (brugerKlubDto == null)
                 return Result<BrugerKlubDTO>.Fail("Invalid BrugerKlub data.");
 
+            // First, check if the user is already connected to the club
+            var existingBrugerKlub = await _brugerKlubRepository.GetBrugerKlubByIdAsync(brugerKlubDto.BrugerID, brugerKlubDto.KlubID);
+
+            // If the connection already exists, return a failure message
+            if (existingBrugerKlub != null)
+            {
+                return Result<BrugerKlubDTO>.Fail("Bruger is already connected to this Klub.");
+            }
+
+            // Proceed with creating the new connection
             var newBrugerKlub = _mapper.Map<BrugerKlub>(brugerKlubDto);
             var createdBrugerKlub = await _brugerKlubRepository.CreateBrugerKlubAsync(newBrugerKlub);
 
@@ -59,6 +68,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             var mapped = _mapper.Map<BrugerKlubDTO>(createdBrugerKlub);
             return Result<BrugerKlubDTO>.Ok(mapped);
         }
+
 
         // Delete BrugerKlub
         public async Task<Result<bool>> DeleteBrugerKlubAsync(Guid brugerId, Guid klubId)
