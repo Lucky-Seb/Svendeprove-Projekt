@@ -39,17 +39,6 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
         }
 
-        // Get Program Plan by ID
-        public async Task<Result<ProgramPlanDTO>> GetProgramPlanByIdAsync(Guid id)
-        {
-            var programPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
-            if (programPlan == null)
-                return Result<ProgramPlanDTO>.Fail("Program Plan not found.");
-
-            var mapped = _mapper.Map<ProgramPlanDTO>(programPlan);
-            return Result<ProgramPlanDTO>.Ok(mapped);
-        }
-
         // Create New Program Plan with associated Bruger or Klub and Træning entities
         public async Task<Result<ProgramPlanDTO>> CreateProgramPlanWithBrugerOrKlubAsync(ProgramPlanDTO programPlanDto)
         {
@@ -272,17 +261,16 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
         }
 
-        // Get Program by ID
-        public async Task<Result<ProgramPlanDTO>> GetProgramByIdAsync(Guid id)
+        // Get Program Plan by ID
+        public async Task<Result<ProgramPlanDTO>> GetProgramPlanByIdAsync(Guid id)
         {
-            var program = await _programPlanRepository.GetProgramPlanByIdAsync(id);
-            if (program == null)
-                return Result<ProgramPlanDTO>.Fail("Program not found.");
+            var programPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
+            if (programPlan == null)
+                return Result<ProgramPlanDTO>.Fail("Program Plan not found.");
 
-            var mapped = _mapper.Map<ProgramPlanDTO>(program);
+            var mapped = _mapper.Map<ProgramPlanDTO>(programPlan);
             return Result<ProgramPlanDTO>.Ok(mapped);
         }
-
         #endregion
     }
 }

@@ -111,21 +111,5 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             var result = await _programPlanService.GetAllProgramPlansByBrugerIdAsync(klubId);
             return result.ToApiResponse();
         }
-
-        // GET: api/programplan/all
-        [HttpGet("all")]
-        public async Task<IActionResult> GetAllPrograms()
-        {
-            var result = await _programPlanService.GetAllProgramsAsync();
-            return result.ToApiResponse();
-        }
-
-        // GET: api/programplan/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProgramById(Guid id)
-        {
-            var result = await _programPlanService.GetProgramByIdAsync(id);
-            return result.ToApiResponse();
-        }
     }
 }
