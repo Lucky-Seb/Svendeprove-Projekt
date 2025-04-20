@@ -1,77 +1,76 @@
 ﻿using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using AutoMapper;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class BrugerKlubService
+    public class BrugerKlubService : IBrugerKlubService
     {
         private readonly IBrugerKlubRepository _brugerKlubRepository;
+        private readonly IMapper _mapper;
 
-        public BrugerKlubService(IBrugerKlubRepository brugerKlubRepository)
+        // Constructor: Dependency Injection of Repository and Mapper
+        public BrugerKlubService(IBrugerKlubRepository brugerKlubRepository, IMapper mapper)
         {
             _brugerKlubRepository = brugerKlubRepository;
+            _mapper = mapper;
         }
 
-        public async Task<List<BrugerKlubDTO>> GetAllBrugerKlubsAsync()
+        #region CRUD Operations
+
+        // Get All BrugerKlubber
+        public async Task<Result<IEnumerable<BrugerKlubDTO>>> GetAllBrugerKlubsAsync()
         {
             var brugerKlubber = await _brugerKlubRepository.GetAllBrugerKlubberAsync();
-            return brugerKlubber.Select(brugerKlub => new BrugerKlubDTO
-            {
-                BrugerID = brugerKlub.BrugerID,
-                KlubID = brugerKlub.KlubID
-            }).ToList();
+            var mapped = _mapper.Map<IEnumerable<BrugerKlubDTO>>(brugerKlubber);
+            return Result<IEnumerable<BrugerKlubDTO>>.Ok(mapped);
         }
 
-        public async Task<BrugerKlubDTO?> GetBrugerKlubByIdAsync(Guid brugerId, Guid klubId)
+        // Get BrugerKlub by ID
+        public async Task<Result<BrugerKlubDTO>> GetBrugerKlubByIdAsync(Guid brugerId, Guid klubId)
         {
             var brugerKlub = await _brugerKlubRepository.GetBrugerKlubByIdAsync(brugerId, klubId);
             if (brugerKlub == null)
-                return null;
+                return Result<BrugerKlubDTO>.Fail("BrugerKlub not found.");
 
-            return new BrugerKlubDTO
-            {
-                BrugerID = brugerKlub.BrugerID,
-                KlubID = brugerKlub.KlubID
-            };
+            var mapped = _mapper.Map<BrugerKlubDTO>(brugerKlub);
+            return Result<BrugerKlubDTO>.Ok(mapped);
         }
 
-        public async Task<BrugerKlubDTO?> CreateBrugerKlubAsync(BrugerKlubDTO brugerKlubDto)
+        // Create New BrugerKlub
+        public async Task<Result<BrugerKlubDTO>> CreateBrugerKlubAsync(BrugerKlubDTO brugerKlubDto)
         {
-            // Check if the DTO is null
-            if (brugerKlubDto == null) return null;
+            if (brugerKlubDto == null)
+                return Result<BrugerKlubDTO>.Fail("Invalid BrugerKlub data.");
 
-            //// Validate required fields
-            //if (brugerKlubDto.BrugerID <= 0) return null;  // BrugerID must be a positive integer
-            //if (brugerKlubDto.KlubID <= 0) return null;    // KlubID must be a positive integer
-
-            // Create new BrugerKlub entity
-            var newBrugerKlub = new BrugerKlub
-            {
-                BrugerID = brugerKlubDto.BrugerID,
-                KlubID = brugerKlubDto.KlubID
-            };
-
-            // Save the new BrugerKlub entity to the repository
+            var newBrugerKlub = _mapper.Map<BrugerKlub>(brugerKlubDto);
             var createdBrugerKlub = await _brugerKlubRepository.CreateBrugerKlubAsync(newBrugerKlub);
-            if (createdBrugerKlub == null) return null;  // Return null if creation fails
 
-            // Return the newly created BrugerKlubDTO
-            return new BrugerKlubDTO
-            {
-                BrugerID = createdBrugerKlub.BrugerID,
-                KlubID = createdBrugerKlub.KlubID
-            };
+            if (createdBrugerKlub == null)
+                return Result<BrugerKlubDTO>.Fail("Failed to create BrugerKlub.");
+
+            var mapped = _mapper.Map<BrugerKlubDTO>(createdBrugerKlub);
+            return Result<BrugerKlubDTO>.Ok(mapped);
         }
 
-
-        public async Task<bool> DeleteBrugerKlubAsync(Guid brugerId, Guid klubId)
+        // Delete BrugerKlub
+        public async Task<Result<bool>> DeleteBrugerKlubAsync(Guid brugerId, Guid klubId)
         {
-            return await _brugerKlubRepository.DeleteBrugerKlubAsync(brugerId, klubId);
+            var brugerKlub = await _brugerKlubRepository.GetBrugerKlubByIdAsync(brugerId, klubId);
+            if (brugerKlub == null)
+                return Result<bool>.Fail("BrugerKlub not found.");
+
+            var success = await _brugerKlubRepository.DeleteBrugerKlubAsync(brugerId, klubId);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete BrugerKlub.");
         }
+
+        #endregion
     }
 }
