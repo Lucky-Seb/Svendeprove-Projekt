@@ -1,0 +1,165 @@
+﻿@page "/brugerøvelse"
+
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h1>My Exercises</h1>
+
+@if (!isAuthenticated)
+{
+    <p>You are not logged in. Please log in first.</p>
+    <button @onclick="NavigateToLogin">Go to Login</button>
+}
+else
+{
+    @if (isLoading)
+    {
+        <p>Loading your exercises...</p>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <p class="text-danger">@errorMessage</p>
+    }
+    else
+    {
+        <button class="btn btn-success mb-3" @onclick="NavigateToCreate">Create New Exercise</button>
+
+        @if (userExercises != null && userExercises.Any())
+        {
+            <ul class="list-group">
+                @foreach (var øvelse in userExercises)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>@øvelse.ØvelseNavn</strong> – @øvelse.ØvelseSværhed
+                            <br />
+                            <small>@øvelse.ØvelseBeskrivelse</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-primary me-2" @onclick="@(() => NavigateToEdit(øvelse.ØvelseID))">Edit</button>
+                            <button class="btn btn-sm btn-danger" @onclick="@(() => DeleteExercise(øvelse.ØvelseID))">Delete</button>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>You don't have any exercises yet.</p>
+        }
+    }
+}
+
+@code {
+    private bool isAuthenticated = false;
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+    private List<ØvelseDTO> userExercises = new();
+    private Guid brugerId;
+    private HttpClient _apiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var token = await AuthenticationService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            isAuthenticated = true;
+            brugerId = JwtParser.GetUserIdFromJwt(token);
+
+            _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+            await LoadExercises();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Initialization failed: " + ex.Message;
+        }
+    }
+
+    private async Task LoadExercises()
+    {
+        try
+        {
+            isLoading = true;
+
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>($"api/øvelse/user/{brugerId}");
+
+            if (response?.Success == true && response.Data != null)
+            {
+                userExercises = response.Data;
+            }
+            else
+            {
+                errorMessage = "Failed to load exercises.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading exercises: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void NavigateToCreate()
+    {
+        NavigationManager.NavigateTo($"/exercise/create?brugerId={brugerId}");
+    }
+
+    private void NavigateToEdit(Guid øvelseId)
+    {
+        NavigationManager.NavigateTo($"/exercise/edit/{øvelseId}");
+    }
+
+    private async Task DeleteExercise(Guid øvelseId)
+    {
+        if (!await Confirm($"Are you sure you want to delete this exercise?")) return;
+
+        try
+        {
+            var response = await _apiClient.DeleteAsync($"api/øvelse/{øvelseId}");
+            if (response.IsSuccessStatusCode)
+            {
+                userExercises.RemoveAll(o => o.ØvelseID == øvelseId);
+            }
+            else
+            {
+                errorMessage = "Failed to delete exercise.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Delete failed: " + ex.Message;
+        }
+    }
+
+    private async Task<bool> Confirm(string message)
+    {
+        // You could implement a modal here later
+        return await Task.FromResult(true); // just auto-confirming for now
+    }
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}

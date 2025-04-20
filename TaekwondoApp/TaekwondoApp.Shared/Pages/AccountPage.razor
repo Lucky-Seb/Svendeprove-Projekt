@@ -110,6 +110,9 @@ else
                 }
             </ul>
 
+            <button class="btn btn-primary" @onclick="NavigateToCreateExercise">Create New Exercise</button>
+
+
             <div class="actions">
                 <button @onclick="EditProfile">Edit Profile</button>
                 <button @onclick="DeleteProfile">Delete Account</button>
@@ -242,4 +245,9 @@ else
     {
         NavigationManager.NavigateTo("/login");
     }
+    private void NavigateToCreateExercise()
+    {
+        NavigationManager.NavigateTo("/brugerøvelse");
+    }
+
 }
