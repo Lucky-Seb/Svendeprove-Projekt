@@ -51,8 +51,6 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Create New Program Plan with associated Bruger or Klub and Træning entities
-
-        // Create New Program Plan with associated Bruger or Klub and Træning entities
         public async Task<Result<ProgramPlanDTO>> CreateProgramPlanWithBrugerOrKlubAsync(ProgramPlanDTO programPlanDto)
         {
             // Perform validation or any necessary checks on the DTO
@@ -68,12 +66,12 @@ namespace TaekwondoOrchestration.ApiService.Services
             var createdProgramPlan = await _programPlanRepository.CreateProgramPlanAsync(newProgramPlan);
 
             // Create the appropriate Program (BrugerProgram or KlubProgram) based on who created it
-            if (programPlanDto.BrugerID.HasValue)
+            if (programPlanDto.BrugerID != Guid.Empty)
             {
                 // If a Bruger is creating the Program Plan, create a BrugerProgram
                 var brugerProgramDto = new BrugerProgramDTO
                 {
-                    BrugerID = programPlanDto.BrugerID.Value,
+                    BrugerID = programPlanDto.BrugerID,
                     ProgramID = createdProgramPlan.ProgramID
                 };
 
@@ -83,12 +81,12 @@ namespace TaekwondoOrchestration.ApiService.Services
                     return Result<ProgramPlanDTO>.Fail("Failed to create BrugerProgram.");
                 }
             }
-            else if (programPlanDto.KlubID.HasValue)
+            else if (programPlanDto.KlubID != Guid.Empty)
             {
                 // If a Klub is creating the Program Plan, create a KlubProgram
                 var klubProgramDto = new KlubProgramDTO
                 {
-                    KlubID = programPlanDto.KlubID.Value,
+                    KlubID = programPlanDto.KlubID,
                     ProgramID = createdProgramPlan.ProgramID
                 };
 
@@ -109,7 +107,7 @@ namespace TaekwondoOrchestration.ApiService.Services
                 foreach (var træningDto in programPlanDto.Træninger)
                 {
                     var træningResult = await _træningService.CreateTræningAsync(træningDto);
-                    if (træningResult.IsFailure)
+                    if (træningResult.Failure)
                     {
                         return Result<ProgramPlanDTO>.Fail($"Failed to create Træning for ProgramPlan. Error: {træningResult.Error}");
                     }
