@@ -84,7 +84,24 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
             return result.ToApiResponse();
         }
+        // PUT: api/Øvelse/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutØvelse(Guid id, [FromBody] ØvelseDTO updatedØvelseDto)
+        {
+            if (id != updatedØvelseDto.ØvelseID)
+            {
+                return BadRequest("Exercise ID mismatch.");
+            }
 
+            // Call the service to update the exercise
+            var result = await _øvelseService.UpdateØvelseAsync(id, updatedØvelseDto);
+
+            // Optionally, trigger notifications if required
+            if (result.Success)
+                await _hubContext.Clients.All.SendAsync("ØvelseUpdated");
+
+            return result.ToApiResponse();
+        }
         // DELETE: api/Øvelse/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteØvelse(Guid id)

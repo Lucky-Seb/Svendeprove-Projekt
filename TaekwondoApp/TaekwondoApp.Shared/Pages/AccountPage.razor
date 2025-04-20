@@ -273,7 +273,7 @@ else
     }
     private void EditExercise(Guid øvelseId)
     {
-        NavigationManager.NavigateTo($"/exercise/update/{øvelseId}");
+        NavigationManager.NavigateTo($"/øvelse/update/{øvelseId}");
     }
 
     private void NavigateToLogin()
@@ -298,7 +298,7 @@ else
     {
         try
         {
-            var response = await _apiClient.DeleteAsync($"api/ovelse/{øvelseId}");
+            var response = await _apiClient.DeleteAsync($"api/øvelse/{øvelseId}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadBruger(); // Reload to update list
