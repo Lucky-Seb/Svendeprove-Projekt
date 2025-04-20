@@ -15,6 +15,7 @@
 @inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
+
 <h3>Create New Quiz</h3>
 
 @if (!string.IsNullOrEmpty(errorMessage))
@@ -36,10 +37,10 @@
         <InputTextArea @bind-Value="newQuiz.QuizBeskrivelse" class="form-control" />
     </div>
 
-    <div class="mb-3">
+@*     <div class="mb-3">
         <label>Pensum ID:</label>
         <InputNumber @bind-Value="newQuiz.PensumID" class="form-control" />
-    </div>
+    </div> *@
 
     <div class="mb-4">
         <h5>Questions for the Quiz</h5>
@@ -129,7 +130,10 @@
     <button type="submit" class="btn btn-success">Create Quiz</button>
     <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
 </EditForm>
-
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
 @code {
     private string errorMessage = "";
     private HttpClient _apiClient;
@@ -137,9 +141,17 @@
     private QuizDTO newQuiz = new()
         {
             Spørgsmål = new List<SpørgsmålDTO>(),
+            ETag = "some-etag-value",    // You need to generate or provide a valid ETag
+            ModifiedBy = "user-id",      // The user who is making the changes (this can be set dynamically)
+            ChangeHistoryJson = "{}"     // An empty JSON object or a valid history record
         };
 
-    private SpørgsmålDTO newSpørgsmål = new();
+    private SpørgsmålDTO newSpørgsmål = new()
+        {
+            ETag = "some-etag-value",    // Set for each question
+            ModifiedBy = "user-id",      // The user making the change
+            ChangeHistoryJson = "{}"     // The change history for the question
+        };
 
     private List<TeoriDTO> teorier = new();
     private List<TeknikDTO> teknikker = new();
@@ -151,19 +163,40 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+        newQuiz.QuizID= Guid.NewGuid();
+        newQuiz.PensumID = Guid.NewGuid();
 
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+        var token = await AuthenticationService.GetTokenAsync();
         try
         {
-            // Fetch theories
-            var teorierResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeoriDTO>>>("api/teori");
-            if (teorierResponse?.Success == true && teorierResponse.Data != null)
+            try
             {
-                teorier = teorierResponse.Data;
+                var response = await _apiClient.GetAsync("api/teori");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("Response: " + content);
+
+                    var teorierResponse = await response.Content.ReadFromJsonAsync<ApiResponse<List<TeoriDTO>>>();
+                    if (teorierResponse?.Success == true && teorierResponse.Data != null)
+                    {
+                        teorier = teorierResponse.Data;
+                    }
+                    else
+                    {
+                        errorMessage = "Failed to load theories. Response data is invalid.";
+                    }
+                }
+                else
+                {
+                    errorMessage = $"API call failed with status code {response.StatusCode}";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                errorMessage = "Failed to load theories.";
+                errorMessage = $"An error occurred while fetching theories: {ex.Message}";
             }
 
             // Fetch techniques
@@ -245,12 +278,16 @@
 
     private async Task HandleValidSubmit()
     {
+
         try
         {
             var response = await _apiClient.PostAsJsonAsync("api/quiz", newQuiz);
 
             if (response.IsSuccessStatusCode)
             {
+                // Reset form after successful submission
+                newQuiz = new QuizDTO(); // Resetting the model
+                StateHasChanged(); // Trigger a re-render
                 NavigationManager.NavigateTo("/account");
             }
             else
@@ -264,6 +301,7 @@
             errorMessage = $"Error creating quiz: {ex.Message}";
         }
     }
+
 
     private void Cancel()
     {
