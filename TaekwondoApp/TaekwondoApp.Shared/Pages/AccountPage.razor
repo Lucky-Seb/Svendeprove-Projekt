@@ -252,6 +252,7 @@ else
     private BrugerDTO brugerDTO = null;
     private BrugerKlubDTO BrugerklubDTO = new();
     private KlubDTO KlubDTO = new();
+    private QuizDTO QuizDTO = null;
     private bool isEditing = false;
     private bool isAuthenticated;
     private string errorMessage = string.Empty;
@@ -405,22 +406,118 @@ else
     // Prompt delete methods
     private void PromptDelete(Guid exerciseId)
     {
-        // Show confirmation before deleting an exercise
-        Console.WriteLine($"Are you sure you want to delete exercise {exerciseId}?");
+        // Prompt the user for confirmation
+        // This part depends on how you want to implement the confirmation (e.g., a dialog box or simple alert)
+        bool userConfirmed = true; // This should be your actual confirmation logic
+
+        if (userConfirmed)
+        {
+            // Call the delete method if the user confirmed
+            DeleteExercise(exerciseId);
+        }
+    }
+    private async Task DeleteExercise(Guid exerciseId)
+    {
+        try
+        {
+            var response = await _apiClient.DeleteAsync($"api/øvelse/{exerciseId}");
+
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Remove the exercise from the list
+                var exerciseToRemove = brugerDTO.Øvelser.FirstOrDefault(e => e.ØvelseID == exerciseId);
+                if (exerciseToRemove != null)
+                {
+                    await _apiClient.DeleteAsync($"api/øvelse/{exerciseId}");
+                }
+            }
+            else
+            {
+                errorMessage = "Failed to delete exercise. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting exercise: {ex.Message}";
+        }
     }
 
     private void PromptDeleteProgram(Guid programId)
     {
-        // Show confirmation before deleting a program
-        Console.WriteLine($"Are you sure you want to delete program {programId}?");
+        // Prompt the user for confirmation
+        // This part depends on how you want to implement the confirmation (e.g., a dialog box or simple alert)
+        bool userConfirmed = true; // This should be your actual confirmation logic
+
+        if (userConfirmed)
+        {
+            // Call the delete method if the user confirmed
+            DeleteProgram(programId);
+        }
+    }
+    private async Task DeleteProgram(Guid programId)
+    {
+        try
+        {
+            var response = await _apiClient.DeleteAsync($"api/program/{programId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Remove the program from the list
+                var programToRemove = brugerDTO.Programmer.FirstOrDefault(p => p.ProgramID == programId);
+                if (programToRemove != null)
+                {
+                    brugerDTO.Programmer.Remove(programToRemove);
+                }
+            }
+            else
+            {
+                errorMessage = "Failed to delete program. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting program: {ex.Message}";
+        }
     }
 
     private void PromptDeleteQuiz(Guid quizId)
     {
-        // Show confirmation before deleting a quiz
-        Console.WriteLine($"Are you sure you want to delete quiz {quizId}?");
-    }
+        // Prompt the user for confirmation
+        // This part depends on how you want to implement the confirmation (e.g., a dialog box or simple alert)
+        bool userConfirmed = true; // This should be your actual confirmation logic
 
+        if (userConfirmed)
+        {
+            // Call the delete method if the user confirmed
+            DeleteQuiz(quizId);
+        }
+    }
+    private async Task DeleteQuiz(Guid quizId)
+    {
+        try
+        {
+            var response = await _apiClient.DeleteAsync($"api/quiz/{quizId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Remove the program from the list
+                var quizToRemove = brugerDTO.Quizzer.FirstOrDefault(q => q.QuizID == quizId);
+                if (quizToRemove != null)
+                {
+                    brugerDTO.Quizzer.Remove(quizToRemove);
+                }
+            }
+            else
+            {
+                errorMessage = "Failed to delete program. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting program: {ex.Message}";
+        }
+    }
     // Navigation methods
     private void NavigateToCreateExercise()
     {
