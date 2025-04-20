@@ -1,0 +1,164 @@
+﻿@page "/programplan/create"
+
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h3>Create New Program Plan</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<EditForm Model="newProgramPlan" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Program Name:</label>
+        <InputText @bind-Value="newProgramPlan.ProgramNavn" class="form-control" />
+    </div>
+
+    <div>
+        <label>Description:</label>
+        <InputTextArea @bind-Value="newProgramPlan.Beskrivelse" class="form-control" />
+    </div>
+
+    <div>
+        <label>Length (in days):</label>
+        <InputNumber @bind-Value="newProgramPlan.Længde" class="form-control" />
+    </div>
+
+    <div>
+        <label>Start Date:</label>
+        <InputDate @bind-Value="newProgramPlan.OprettelseDato" class="form-control" />
+    </div>
+
+    <div>
+        <label>Træning(s):</label>
+        <select @bind="selectedTræningId" class="form-control">
+            <option value="">-- Select Træning --</option>
+            @foreach (var træning in træningList)
+            {
+                <option value="@træning.TræningID">@træning.TræningRækkefølge</option>  <!-- You can customize what is shown here -->
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Create</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+@code {
+    private ProgramPlanDTO newProgramPlan = new();
+    private string errorMessage = "";
+    private HttpClient _apiClient;
+
+    // List of TræningDTO options
+    private List<TræningDTO> træningList = new List<TræningDTO>();
+    private Guid selectedTræningId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+        var token = await AuthenticationService.GetTokenAsync();
+        var brugerId = JwtParser.GetUserIdFromJwt(token);
+
+        newProgramPlan.BrugerID = brugerId;
+        newProgramPlan.ProgramID = Guid.NewGuid();
+        newProgramPlan.KlubID = Guid.Empty; // Replace with appropriate value if needed
+
+        // Fetch the list of TræningDTO options for the dropdown
+        try
+        {
+            var træningResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TræningDTO>>>("api/træning");
+            if (træningResponse?.Success == true && træningResponse.Data != null)
+            {
+                træningList = træningResponse.Data;
+            }
+            else
+            {
+                errorMessage = "Failed to load Træning options.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading Træning options: {ex.Message}";
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            Console.WriteLine("Submitting new program plan...");
+
+            // Debug log of key fields
+            Console.WriteLine($"ProgramNavn: {newProgramPlan.ProgramNavn}");
+            Console.WriteLine($"Længde: {newProgramPlan.Længde}");
+            Console.WriteLine($"Beskrivelse: {newProgramPlan.Beskrivelse}");
+            Console.WriteLine($"BrugerID: {newProgramPlan.BrugerID}");
+            Console.WriteLine($"KlubID: {newProgramPlan.KlubID}");
+
+            // Add the selected TræningDTO to the program
+            if (selectedTræningId != Guid.Empty)
+            {
+                newProgramPlan.Træninger = new List<TræningDTO>
+                {
+                    new TræningDTO { TræningID = selectedTræningId }
+                };
+            }
+
+            // Syncable fields (if needed)
+            newProgramPlan.ETag = Guid.NewGuid().ToString();
+            newProgramPlan.ModifiedBy = "system";
+            newProgramPlan.ChangeHistoryJson = "[]";
+
+            // Log full object as JSON
+            var payloadJson = System.Text.Json.JsonSerializer.Serialize(newProgramPlan);
+            Console.WriteLine($"Payload: {payloadJson}");
+
+            var response = await _apiClient.PostAsJsonAsync("api/programplan", newProgramPlan);
+
+            Console.WriteLine($"Response Status: {response.StatusCode}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Program Plan created successfully.");
+                NavigationManager.NavigateTo("/account");
+            }
+            else
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("❌ Failed to create program plan.");
+                Console.WriteLine($"Response Body:\n{responseBody}");
+
+                errorMessage = $"Failed to create program plan. Status: {response.StatusCode}\nDetails: {responseBody}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception occurred: {ex.Message}");
+            Console.WriteLine(ex.StackTrace);
+            errorMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/account");
+    }
+}
