@@ -174,10 +174,61 @@
         _apiClient = HttpClientFactory.CreateClient("ApiClient");
         var token = await AuthenticationService.GetTokenAsync();
 
-        quizzes = await _apiClient.GetFromJsonAsync<List<QuizDTO>>("api/quiz") ?? new();
-        teorier = await _apiClient.GetFromJsonAsync<List<TeoriDTO>>("api/teori") ?? new();
-        teknikker = await _apiClient.GetFromJsonAsync<List<TeknikDTO>>("api/teknik") ?? new();
-        øvelser = await _apiClient.GetFromJsonAsync<List<ØvelseDTO>>("api/øvelse") ?? new();
+        try
+        {
+            // Fetch the list of quizzes
+            var quizzesResponse = await _apiClient.GetAsync("api/quiz");
+            if (quizzesResponse.IsSuccessStatusCode)
+            {
+                quizzes = await quizzesResponse.Content.ReadFromJsonAsync<List<QuizDTO>>() ?? new List<QuizDTO>();
+            }
+            else
+            {
+                var responseBody = await quizzesResponse.Content.ReadAsStringAsync();
+                errorMessage = $"Failed to load quizzes. Status: {quizzesResponse.StatusCode}\nDetails: {responseBody}";
+            }
+
+            // Fetch the list of theories
+            var teorierResponse = await _apiClient.GetAsync("api/teori");
+            if (teorierResponse.IsSuccessStatusCode)
+            {
+                teorier = await teorierResponse.Content.ReadFromJsonAsync<List<TeoriDTO>>() ?? new List<TeoriDTO>();
+            }
+            else
+            {
+                var responseBody = await teorierResponse.Content.ReadAsStringAsync();
+                errorMessage = $"Failed to load theories. Status: {teorierResponse.StatusCode}\nDetails: {responseBody}";
+            }
+
+            // Fetch the list of techniques
+            var teknikkerResponse = await _apiClient.GetAsync("api/teknik");
+            if (teknikkerResponse.IsSuccessStatusCode)
+            {
+                teknikker = await teknikkerResponse.Content.ReadFromJsonAsync<List<TeknikDTO>>() ?? new List<TeknikDTO>();
+            }
+            else
+            {
+                var responseBody = await teknikkerResponse.Content.ReadAsStringAsync();
+                errorMessage = $"Failed to load techniques. Status: {teknikkerResponse.StatusCode}\nDetails: {responseBody}";
+            }
+
+            // Fetch the list of exercises
+            var øvelserResponse = await _apiClient.GetAsync("api/øvelse");
+            if (øvelserResponse.IsSuccessStatusCode)
+            {
+                øvelser = await øvelserResponse.Content.ReadFromJsonAsync<List<ØvelseDTO>>() ?? new List<ØvelseDTO>();
+            }
+            else
+            {
+                var responseBody = await øvelserResponse.Content.ReadAsStringAsync();
+                errorMessage = $"Failed to load exercises. Status: {øvelserResponse.StatusCode}\nDetails: {responseBody}";
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle general errors
+            errorMessage = $"An error occurred while loading data: {ex.Message}";
+        }
     }
 
     private void OnQuizChanged(ChangeEventArgs e)
