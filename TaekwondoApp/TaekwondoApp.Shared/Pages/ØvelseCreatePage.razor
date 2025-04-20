@@ -1,0 +1,142 @@
+﻿@page "/øvelse/create"
+
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h3>Create New Exercise</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<EditForm Model="newExercise" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Name:</label>
+        <InputText @bind-Value="newExercise.ØvelseNavn" class="form-control" />
+    </div>
+
+    <div>
+        <label>Description:</label>
+        <InputTextArea @bind-Value="newExercise.ØvelseBeskrivelse" class="form-control" />
+    </div>
+
+    <div>
+        <label>Image URL:</label>
+        <InputText @bind-Value="newExercise.ØvelseBillede" class="form-control" />
+    </div>
+
+    <div>
+        <label>Video URL:</label>
+        <InputText @bind-Value="newExercise.ØvelseVideo" class="form-control" />
+    </div>
+
+    <div>
+        <label>Duration (seconds):</label>
+        <InputNumber @bind-Value="newExercise.ØvelseTid" class="form-control" />
+    </div>
+
+    <div>
+        <label>Difficulty:</label>
+        <InputText @bind-Value="newExercise.ØvelseSværhed" class="form-control" />
+    </div>
+
+    <div>
+        <label>Pensum:</label>
+        <select @bind="newExercise.PensumID" class="form-control">
+            @foreach (var pensum in pensumGradList)
+            {
+                <option value="@pensum.PensumID">@pensum.PensumGrad</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Create</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+@code {
+    private ØvelseDTO newExercise = new();
+    private string errorMessage = "";
+    private HttpClient _apiClient;
+
+    // List of PensumGrad options
+    private List<Pensum> pensumGradList = new List<Pensum>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+        var token = await AuthenticationService.GetTokenAsync();
+        var brugerId = JwtParser.GetUserIdFromJwt(token);
+
+        newExercise.BrugerID = brugerId;
+        newExercise.ØvelseID = Guid.NewGuid();
+
+        // Fetch the list of PensumGrad options for the dropdown
+        try
+        {
+            var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
+            if (pensumResponse?.Success == true && pensumResponse.Data != null)
+            {
+                pensumGradList = pensumResponse.Data;
+            }
+            else
+            {
+                errorMessage = "Failed to load PensumGrads.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading PensumGrads: {ex.Message}";
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var response = await _apiClient.PostAsJsonAsync("api/øvelse", newExercise);
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo("/account");
+            }
+            else
+            {
+                errorMessage = "Failed to create exercise.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/account");
+    }
+
+    public class Pensum
+    {
+        public Guid PensumID { get; set; }
+        public string PensumGrad { get; set; }
+    }
+
+}
+
