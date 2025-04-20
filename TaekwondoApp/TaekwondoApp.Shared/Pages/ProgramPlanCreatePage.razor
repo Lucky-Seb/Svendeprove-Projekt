@@ -87,7 +87,6 @@
     protected override async Task OnInitializedAsync()
     {
         _apiClient = HttpClientFactory.CreateClient("ApiClient");
-        newProgramPlan.ProgramID = new Guid();
         var token = await AuthenticationService.GetTokenAsync();
         var brugerId = JwtParser.GetUserIdFromJwt(token);
     }
@@ -131,14 +130,18 @@
     {
         try
         {
-            // Step 1: Ensure that each TræningDTO has the ProgramID set before sending it
+            // Step 1: Ensure that BrugerID is set to the authenticated user's ID (you need to get this from the authentication service)
+            var token = await AuthenticationService.GetTokenAsync();
+            var brugerId = JwtParser.GetUserIdFromJwt(token); // Assuming the token contains the user ID
+            newProgramPlan.BrugerID = brugerId;  // Set the BrugerID to the authenticated user's ID
+            newProgramPlan.ProgramID = new Guid();
+            // Step 2: Ensure that each TræningDTO has the ProgramID set before sending it
             foreach (var træning in newProgramPlan.Træninger)
             {
-                // Set ProgramID for each TræningDTO
-                træning.ProgramID = newProgramPlan.ProgramID; // Ensure ProgramID is set
+                træning.ProgramID = newProgramPlan.ProgramID; // Ensure ProgramID is set for each TræningDTO
             }
 
-            // Step 2: Send the new program plan to the API (ProgramPlanDTO already includes TræningDTO)
+            // Step 3: Send the new program plan to the API (ProgramPlanDTO already includes TræningDTO)
             var response = await _apiClient.PostAsJsonAsync("api/programplan", newProgramPlan);
 
             if (response.IsSuccessStatusCode)
@@ -158,6 +161,7 @@
             errorMessage = $"Error creating program plan: {ex.Message}";
         }
     }
+
 
 
     private void Cancel()
