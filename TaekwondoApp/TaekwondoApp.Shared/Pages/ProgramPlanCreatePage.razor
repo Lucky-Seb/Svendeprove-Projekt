@@ -1,9 +1,18 @@
 ﻿@page "/programplan/create"
 
+@* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
+@inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
 <h3>Create New Program Plan</h3>
@@ -56,6 +65,10 @@
             <div class="mb-2">
                 <label>Træning Rækkefølge:</label>
                 <InputNumber @bind-Value="newTræning.TræningRækkefølge" class="form-control" />
+            </div>
+            <div class="mb-2">
+                <label>Træning Tid:</label>
+                <InputNumber @bind-Value="newTræning.Tid" class="form-control" />
             </div>
 
             <!-- Dropdowns with Previews -->
@@ -176,52 +189,48 @@
 
         try
         {
-            // Fetch the list of quizzes
-            var quizzesResponse = await _apiClient.GetAsync("api/quiz");
-            if (quizzesResponse.IsSuccessStatusCode)
+            // Fetch quizzes with a response wrapper
+            var quizzesResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>("api/quiz");
+            if (quizzesResponse?.Success == true && quizzesResponse.Data != null)
             {
-                quizzes = await quizzesResponse.Content.ReadFromJsonAsync<List<QuizDTO>>() ?? new List<QuizDTO>();
+                quizzes = quizzesResponse.Data;
             }
             else
             {
-                var responseBody = await quizzesResponse.Content.ReadAsStringAsync();
-                errorMessage = $"Failed to load quizzes. Status: {quizzesResponse.StatusCode}\nDetails: {responseBody}";
+                errorMessage = "Failed to load quizzes.";
             }
 
-            // Fetch the list of theories
-            var teorierResponse = await _apiClient.GetAsync("api/teori");
-            if (teorierResponse.IsSuccessStatusCode)
+            // Fetch theories with a response wrapper
+            var teorierResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeoriDTO>>>("api/teori");
+            if (teorierResponse?.Success == true && teorierResponse.Data != null)
             {
-                teorier = await teorierResponse.Content.ReadFromJsonAsync<List<TeoriDTO>>() ?? new List<TeoriDTO>();
+                teorier = teorierResponse.Data;
             }
             else
             {
-                var responseBody = await teorierResponse.Content.ReadAsStringAsync();
-                errorMessage = $"Failed to load theories. Status: {teorierResponse.StatusCode}\nDetails: {responseBody}";
+                errorMessage = "Failed to load theories.";
             }
 
-            // Fetch the list of techniques
-            var teknikkerResponse = await _apiClient.GetAsync("api/teknik");
-            if (teknikkerResponse.IsSuccessStatusCode)
+            // Fetch techniques with a response wrapper
+            var teknikkerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeknikDTO>>>("api/teknik");
+            if (teknikkerResponse?.Success == true && teknikkerResponse.Data != null)
             {
-                teknikker = await teknikkerResponse.Content.ReadFromJsonAsync<List<TeknikDTO>>() ?? new List<TeknikDTO>();
+                teknikker = teknikkerResponse.Data;
             }
             else
             {
-                var responseBody = await teknikkerResponse.Content.ReadAsStringAsync();
-                errorMessage = $"Failed to load techniques. Status: {teknikkerResponse.StatusCode}\nDetails: {responseBody}";
+                errorMessage = "Failed to load techniques.";
             }
 
-            // Fetch the list of exercises
-            var øvelserResponse = await _apiClient.GetAsync("api/øvelse");
-            if (øvelserResponse.IsSuccessStatusCode)
+            // Fetch exercises with a response wrapper
+            var øvelserResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
+            if (øvelserResponse?.Success == true && øvelserResponse.Data != null)
             {
-                øvelser = await øvelserResponse.Content.ReadFromJsonAsync<List<ØvelseDTO>>() ?? new List<ØvelseDTO>();
+                øvelser = øvelserResponse.Data;
             }
             else
             {
-                var responseBody = await øvelserResponse.Content.ReadAsStringAsync();
-                errorMessage = $"Failed to load exercises. Status: {øvelserResponse.StatusCode}\nDetails: {responseBody}";
+                errorMessage = "Failed to load exercises.";
             }
         }
         catch (Exception ex)
@@ -299,9 +308,9 @@
         }
 
         // Basic validation
-        if (newTræning.TræningRækkefølge <= 0 || newTræning.Tid <= 0 || string.IsNullOrEmpty(selectedType))
+        if (newTræning.TræningRækkefølge <= 0 || newTræning.Tid <= 0)
         {
-            errorMessage = "Please provide valid rækkefølge, time, and select a type.";
+            errorMessage = "Please provide valid rækkefølge, time.";
             return;
         }
 
