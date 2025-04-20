@@ -17,9 +17,7 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
         Task<Result<ProgramPlanDTO>> CreateProgramPlanWithBrugerOrKlubAsync(ProgramPlanDTO dto);
 
         Task<Result<ProgramPlanDTO>> UpdateProgramPlanWithBrugerOrKlubAsync(Guid id, ProgramPlanDTO dto);
-
-        Task<Result<bool>> UpdateProgramPlanAsync(Guid id, ProgramPlanDTO programPlanDto);
-
+        Task<Result<ProgramPlanDTO>> UpdateProgramPlanAsync(Guid programId, ProgramPlanDTO updatedDto);
         Task<Result<bool>> DeleteProgramPlanAsync(Guid id);
 
         #endregion

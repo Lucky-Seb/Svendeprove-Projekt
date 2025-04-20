@@ -109,7 +109,7 @@ namespace TaekwondoOrchestration.ApiService.Services
                     var træningResult = await _træningService.CreateTræningAsync(træningDto);
                     if (træningResult.Failure)
                     {
-                        return Result<ProgramPlanDTO>.Fail($"Failed to create Træning for ProgramPlan. Error: {træningResult.Error}");
+                        return Result<ProgramPlanDTO>.Fail($"Failed to create Træning for ProgramPlan. Error: {træningResult.Failure}");
                     }
                 }
             }
@@ -118,33 +118,78 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<ProgramPlanDTO>.Ok(mappedProgramPlan);
         }
 
-        public async Task<Result<bool>> UpdateProgramPlanAsync(Guid id, ProgramPlanDTO programPlanDto)
+        public async Task<Result<ProgramPlanDTO>> UpdateProgramPlanAsync(Guid programId,ProgramPlanDTO updatedDto)
         {
-            // Validate input
-            if (string.IsNullOrEmpty(programPlanDto.ProgramNavn))
+            // 1. Validate ProgramNavn
+            if (string.IsNullOrEmpty(updatedDto.ProgramNavn))
+                return Result<ProgramPlanDTO>.Fail("ProgramPlan Name is required.");
+
+            // 2. Fetch existing ProgramPlan from DB
+            var existingPlan = await _programPlanRepository.GetProgramPlanByIdAsync(programId);
+            if (existingPlan == null)
+                return Result<ProgramPlanDTO>.Fail("ProgramPlan not found.");
+
+            // 3. Update ProgramPlan fields
+            existingPlan.ProgramNavn = updatedDto.ProgramNavn;
+            existingPlan.Beskrivelse = updatedDto.Beskrivelse;
+            existingPlan.Længde = updatedDto.Længde;
+            EntityHelper.InitializeEntity(existingPlan, updatedDto.ModifiedBy, "Updated Program Plan");
+
+            await _programPlanRepository.UpdateProgramPlanAsync(existingPlan);
+
+            // 4. Get existing træninger from DB
+            var træningerResult = await _træningService.GetTræningByProgramIdAsync(programId);
+            if (træningerResult.Failure)
             {
-                return Result<bool>.Fail("ProgramPlan Name is required.");
+                return Result<ProgramPlanDTO>.Fail("Failed to retrieve existing træninger.");
             }
 
-            // Retrieve the existing program plan by ID
-            var existingProgramPlan = await _programPlanRepository.GetProgramPlanByIdAsync(id);
-            if (existingProgramPlan == null)
+            var existingTræninger = træningerResult.Value.ToList();
+
+            var updatedTræninger = updatedDto.Træninger ?? new List<TræningDTO>();
+
+            // 5. Handle Deletions
+            var træningIdsToKeep = updatedTræninger
+                .Where(t => t.TræningID != Guid.Empty)
+                .Select(t => t.TræningID)
+                .ToHashSet();
+
+            var træningerToDelete = existingTræninger
+                .Where(et => !træningIdsToKeep.Contains(et.TræningID))
+                .ToList();
+
+            foreach (var træning in træningerToDelete)
             {
-                return Result<bool>.Fail("Program Plan not found.");
+                await _træningService.DeleteTræningAsync(træning.TræningID);
             }
 
-            // Map the DTO to the existing program plan entity
-            _mapper.Map(programPlanDto, existingProgramPlan);
+            // 6. Handle Additions & Updates
+            foreach (var træningDto in updatedTræninger)
+            {
+                if (træningDto.TræningID == Guid.Empty)
+                {
+                    // New træning
+                    træningDto.ProgramID = updatedDto.ProgramID;
+                    var createResult = await _træningService.CreateTræningAsync(træningDto);
+                    if (createResult.Failure)
+                        return Result<ProgramPlanDTO>.Fail($"Failed to add træning: {createResult.Failure}");
+                }
+                else
+                {
+                    // Update existing træning
+                    var existing = existingTræninger.FirstOrDefault(t => t.TræningID == træningDto.TræningID);
+                    if (existing != null)
+                    {
+                        await _træningService.UpdateTræningAsync(træningDto.TræningID, træningDto);
+                    }
+                }
+            }
 
-            // Update common fields (e.g., ModifiedBy, ModifiedDate)
-            EntityHelper.UpdateCommonFields(existingProgramPlan, programPlanDto.ModifiedBy);
-
-            // Save the changes in the repository
-            var updateSuccess = await _programPlanRepository.UpdateProgramPlanAsync(existingProgramPlan);
-
-            // Return the result of the update operation
-            return updateSuccess ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to update Program Plan.");
+            // 7. Return updated ProgramPlanDTO
+            var mapped = _mapper.Map<ProgramPlanDTO>(existingPlan);
+            return Result<ProgramPlanDTO>.Ok(mapped);
         }
+
 
         // Update Existing Program Plan
         public async Task<Result<ProgramPlanDTO>> UpdateProgramPlanWithBrugerOrKlubAsync(Guid id, ProgramPlanDTO programPlanDto)
