@@ -216,30 +216,61 @@
         }
     }
 
+    private string selectedType = ""; // Holds "quiz", "teori", "teknik", or "øvelse"
+
     private void AddTræning()
     {
-        if (newTræning.TræningRækkefølge > 0)
-        {
-            newTræning.ProgramID = newProgramPlan.ProgramID;
-            newTræning.TræningID = Guid.NewGuid();
-            newProgramPlan.Træninger.Add(newTræning);
+        // Reset all GUIDs
+        newTræning.QuizID = null;
+        newTræning.TeoriID = null;
+        newTræning.TeknikID = null;
+        newTræning.ØvelseID = null;
 
-            newTræning = new TræningDTO
-                {
-                    ETag = Guid.NewGuid().ToString(),
-                    ModifiedBy = "system",
-                    ChangeHistoryJson = "[]"
-                };
-
-            selectedQuiz = null;
-            selectedTeori = null;
-            selectedTeknik = null;
-            selectedØvelse = null;
-        }
-        else
+        // Set only the selected one
+        switch (selectedType)
         {
-            errorMessage = "Træning Rækkefølge must be greater than 0.";
+            case "quiz":
+                if (selectedQuiz != null)
+                    newTræning.QuizID = selectedQuiz.QuizID;
+                break;
+            case "teori":
+                if (selectedTeori != null)
+                    newTræning.TeoriID = selectedTeori.TeoriID;
+                break;
+            case "teknik":
+                if (selectedTeknik != null)
+                    newTræning.TeknikID = selectedTeknik.TeknikID;
+                break;
+            case "øvelse":
+                if (selectedØvelse != null)
+                    newTræning.ØvelseID = selectedØvelse.ØvelseID;
+                break;
         }
+
+        // Basic validation
+        if (newTræning.TræningRækkefølge <= 0 || newTræning.Tid <= 0 || string.IsNullOrEmpty(selectedType))
+        {
+            errorMessage = "Please provide valid rækkefølge, time, and select a type.";
+            return;
+        }
+
+        // Finalize and add
+        newTræning.TræningID = Guid.NewGuid();
+        newTræning.ProgramID = newProgramPlan.ProgramID;
+        newProgramPlan.Træninger.Add(newTræning);
+
+        // Reset form
+        newTræning = new TræningDTO
+            {
+                ETag = Guid.NewGuid().ToString(),
+                ModifiedBy = "system",
+                ChangeHistoryJson = "[]"
+            };
+        selectedQuiz = null;
+        selectedTeori = null;
+        selectedTeknik = null;
+        selectedØvelse = null;
+        selectedType = "";
     }
 
     private void RemoveTræning(Guid træningId)
@@ -287,4 +318,5 @@
     {
         NavigationManager.NavigateTo("/account");
     }
+
 }
