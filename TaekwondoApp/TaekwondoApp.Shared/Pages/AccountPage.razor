@@ -382,21 +382,25 @@ else
     // Edit methods
     private void EditExercise(Guid exerciseId)
     {
-        // Redirect or perform actions to edit an exercise
+        // Redirect to the exercise update page with the provided exercise ID
         Console.WriteLine($"Editing exercise {exerciseId}");
+        NavigationManager.NavigateTo($"/øvelse/update/{exerciseId}");
     }
 
     private void EditProgram(Guid programId)
     {
-        // Redirect or perform actions to edit a program
+        // Redirect to the program plan update page with the provided program ID
         Console.WriteLine($"Editing program {programId}");
+        NavigationManager.NavigateTo($"/programplan/update/{programId}");
     }
 
     private void EditQuiz(Guid quizId)
     {
-        // Redirect or perform actions to edit a quiz
+        // Redirect to the quiz update page with the provided quiz ID
         Console.WriteLine($"Editing quiz {quizId}");
+        NavigationManager.NavigateTo($"/quiz/update/{quizId}");
     }
+
 
     // Prompt delete methods
     private void PromptDelete(Guid exerciseId)
@@ -430,7 +434,7 @@ else
 
     private void NavigateToCreateProgram()
     {
-        NavigationManager.NavigateTo("/create/program");
+        NavigationManager.NavigateTo("/programplan/create");
     }
 
     private void NavigateToCreateQuiz()

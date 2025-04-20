@@ -1,0 +1,200 @@
+﻿@page "/programplan/update/{Id:guid}"
+
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Text.Json
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory HttpClientFactory
+@inject IAuthenticationService AuthenticationService
+
+<h3>Edit Program Plan</h3>
+
+@if (loading)
+{
+    <p>Loading...</p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else
+{
+    <EditForm Model="editModel" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>Program Name:</label>
+            <InputText @bind-Value="editModel.ProgramNavn" class="form-control" />
+        </div>
+
+        <div>
+            <label>Description:</label>
+            <InputTextArea @bind-Value="editModel.Beskrivelse" class="form-control" />
+        </div>
+
+        <div>
+            <label>Length (in days):</label>
+            <InputNumber @bind-Value="editModel.Længde" class="form-control" />
+        </div>
+
+        <div>
+            <label>Start Date:</label>
+            <InputDate @bind-Value="editModel.OprettelseDato" class="form-control" />
+        </div>
+
+        <div>
+            <label>Træning(s):</label>
+            <ul>
+                @foreach (var træning in editModel.Træninger)
+                {
+                    <li>
+                        <div>
+                            <label>Træning Rækkefølge:</label>
+                            <InputNumber @bind-Value="træning.TræningRækkefølge" class="form-control" />
+                        </div>
+
+                        <div>
+                            <label>Exercise (Øvelse):</label>
+                            <select @bind="træning.ØvelseID" class="form-control">
+                                <option value="">-- Select Øvelse --</option>
+                                @foreach (var øvelse in exerciseList)
+                                {
+                                    <option value="@øvelse.ØvelseID">@øvelse.ØvelseNavn</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Add additional fields for Quiz, Teori, Teknik if needed -->
+                    </li>
+                }
+            </ul>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private ProgramPlanDTO editModel = new();
+    private bool loading = true;
+    private string errorMessage = "";
+    private HttpClient _apiClient;
+    private List<ØvelseDTO> exerciseList = new(); // List for Øvelse (Exercises)
+    private List<Pensum> pensumGradList = new();  // List for Pensum (Pensum)
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+            var token = await AuthenticationService.GetTokenAsync();
+            var brugerId = JwtParser.GetUserIdFromJwt(token);
+            Console.WriteLine($"Loaded BrugerID: {brugerId}");
+
+            // Fetch Program Plan
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<ProgramPlanDTO>>($"api/programplan/{Id}");
+            if (response?.Success == true && response.Data != null)
+            {
+                editModel = response.Data;
+                Console.WriteLine($"Loaded Program Plan: {JsonSerializer.Serialize(editModel)}");
+            }
+            else
+            {
+                errorMessage = "Failed to load Program Plan.";
+            }
+
+            // Fetch Exercises (Øvelser) for dropdown
+            var exerciseResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
+            if (exerciseResponse?.Success == true && exerciseResponse.Data != null)
+            {
+                exerciseList = exerciseResponse.Data;
+                Console.WriteLine("Exercises loaded.");
+            }
+            else
+            {
+                errorMessage = "Failed to load exercises.";
+            }
+
+            // Fetch Pensum list
+            var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
+            if (pensumResponse?.Success == true && pensumResponse.Data != null)
+            {
+                pensumGradList = pensumResponse.Data;
+                Console.WriteLine("Pensum list loaded.");
+            }
+            else
+            {
+                errorMessage = "Failed to load PensumGrads.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading program plan, exercises or PensumGrads: {ex.Message}";
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            Console.WriteLine("Submitting update...");
+            Console.WriteLine($"ProgramID: {editModel.ProgramID}");
+
+            // Add/Update sync fields if needed
+            editModel.ModifiedBy = "system";
+            editModel.ETag ??= Guid.NewGuid().ToString();
+            editModel.ChangeHistoryJson ??= "[]";
+
+            var jsonPayload = JsonSerializer.Serialize(editModel);
+            Console.WriteLine($"Payload: {jsonPayload}");
+
+            var response = await _apiClient.PutAsJsonAsync($"api/programplan/{editModel.ProgramID}", editModel);
+
+            Console.WriteLine($"Response Status: {response.StatusCode}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("✔ Program Plan updated.");
+                NavigationManager.NavigateTo("/account");
+            }
+            else
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("❌ Failed to update Program Plan.");
+                Console.WriteLine($"Response Body: {body}");
+                errorMessage = $"Failed to update Program Plan. Status: {response.StatusCode}\nDetails: {body}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+            errorMessage = $"Error updating Program Plan: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/account");
+    }
+
+    public class Pensum
+    {
+        public Guid PensumID { get; set; }
+        public string PensumGrad { get; set; }
+    }
+}
