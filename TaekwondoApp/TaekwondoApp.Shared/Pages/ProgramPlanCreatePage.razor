@@ -2,17 +2,10 @@
 
 @* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
-@using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
-@using TaekwondoApp.Shared.Helper
 @using AutoMapper
-@using Microsoft.AspNetCore.SignalR.Client
-
-@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
-@inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
-@inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
 <h3>Create New Program Plan</h3>
@@ -47,35 +40,38 @@
     </div>
 
     <div>
-        <label>Træning(s):</label>
-        <select @bind="selectedTræningId" class="form-control">
-            <option value="">-- Select Træning --</option>
-            @foreach (var træning in træningList)
-            {
-                <option value="@træning.TræningID">@træning.TræningRækkefølge</option> <!-- You can customize what is shown here -->
-            }
-        </select>
-        <button type="button" class="btn btn-primary mt-2" @onclick="AddTræning">Add Træning</button>
-    </div>
-
-    <div>
-        <h5>Selected Træninger</h5>
+        <h5>Træning(s) for the Program</h5>
         <ul>
             @foreach (var træning in newProgramPlan.Træninger)
             {
-                <li>@træning.TræningRækkefølge (ID: @træning.TræningID)</li>
+                <li>
+                    @træning.TræningRækkefølge (ID: @træning.TræningID)
+                    <button type="button" class="btn btn-danger" @onclick="() => RemoveTræning(træning.TræningID)">Remove</button>
+                </li>
             }
         </ul>
+
+        <!-- Add Træning -->
+        <div>
+            <label>Træning Rækkefølge (Sequence):</label>
+            <InputNumber @bind-Value="newTræning.TræningRækkefølge" class="form-control" />
+        </div>
+
+        <button type="button" class="btn btn-primary" @onclick="AddTræning">Add Træning</button>
     </div>
 
-    <button type="submit" class="btn btn-success">Create</button>
+    <button type="submit" class="btn btn-success">Create Program Plan</button>
     <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
 </EditForm>
 
 @code {
-    private ProgramPlanDTO newProgramPlan = new ProgramPlanDTO();
     private string errorMessage = "";
     private HttpClient _apiClient;
+    private ProgramPlanDTO newProgramPlan = new ProgramPlanDTO
+        {
+            Træninger = new List<TræningDTO>() // Initialize as empty list
+        };
+    private TræningDTO newTræning = new TræningDTO(); // Temporary object for adding a new Træning
 
     // List of TræningDTO options
     private List<TræningDTO> træningList = new List<TræningDTO>();
@@ -87,46 +83,30 @@
 
         var token = await AuthenticationService.GetTokenAsync();
         var brugerId = JwtParser.GetUserIdFromJwt(token);
-
-        newProgramPlan.BrugerID = brugerId;
-        newProgramPlan.ProgramID = Guid.NewGuid();
-        newProgramPlan.KlubID = Guid.Empty; // Replace with appropriate value if needed
-
-        // Fetch the list of TræningDTO options for the dropdown
-        try
-        {
-            var træningResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TræningDTO>>>("api/træning");
-            if (træningResponse?.Success == true && træningResponse.Data != null)
-            {
-                træningList = træningResponse.Data;
-            }
-            else
-            {
-                errorMessage = "Failed to load Træning options.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error loading Træning options: {ex.Message}";
-        }
     }
-
-    // Method to handle adding a Træning to the list
+    // Add a new træning to the program plan
     private void AddTræning()
     {
-        if (selectedTræningId != Guid.Empty)
+        if (newTræning.TræningRækkefølge > 0) // Ensure valid sequence
         {
-            // Add the selected TræningDTO to the Program Plan
-            var selectedTræning = træningList.FirstOrDefault(t => t.TræningID == selectedTræningId);
-            if (selectedTræning != null)
-            {
-                newProgramPlan.Træninger.Add(selectedTræning);
-                selectedTræningId = Guid.Empty; // Reset selection after adding
-            }
+            // Add the new træning to the list of træninger for the program plan
+            newProgramPlan.Træninger.Add(newTræning);
+            // Reset newTræning for the next input
+            newTræning = new TræningDTO();
         }
         else
         {
-            errorMessage = "Please select a valid Træning before adding.";
+            errorMessage = "Træning Rækkefølge must be greater than 0.";
+        }
+    }
+
+    // Remove a træning from the program plan
+    private void RemoveTræning(Guid træningId)
+    {
+        var træningToRemove = newProgramPlan.Træninger.FirstOrDefault(t => t.TræningID == træningId);
+        if (træningToRemove != null)
+        {
+            newProgramPlan.Træninger.Remove(træningToRemove);
         }
     }
 
@@ -134,47 +114,21 @@
     {
         try
         {
-            Console.WriteLine("Submitting new program plan...");
-
-            // Debug log of key fields
-            Console.WriteLine($"ProgramNavn: {newProgramPlan.ProgramNavn}");
-            Console.WriteLine($"Længde: {newProgramPlan.Længde}");
-            Console.WriteLine($"Beskrivelse: {newProgramPlan.Beskrivelse}");
-            Console.WriteLine($"BrugerID: {newProgramPlan.BrugerID}");
-            Console.WriteLine($"KlubID: {newProgramPlan.KlubID}");
-
-            // Syncable fields (if needed)
-            newProgramPlan.ETag = Guid.NewGuid().ToString();
-            newProgramPlan.ModifiedBy = "system";
-            newProgramPlan.ChangeHistoryJson = "[]";
-
-            // Log full object as JSON
-            var payloadJson = System.Text.Json.JsonSerializer.Serialize(newProgramPlan);
-            Console.WriteLine($"Payload: {payloadJson}");
-
             var response = await _apiClient.PostAsJsonAsync("api/programplan", newProgramPlan);
-
-            Console.WriteLine($"Response Status: {response.StatusCode}");
 
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("Program Plan created successfully.");
                 NavigationManager.NavigateTo("/account");
             }
             else
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("❌ Failed to create program plan.");
-                Console.WriteLine($"Response Body:\n{responseBody}");
-
                 errorMessage = $"Failed to create program plan. Status: {response.StatusCode}\nDetails: {responseBody}";
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exception occurred: {ex.Message}");
-            Console.WriteLine(ex.StackTrace);
-            errorMessage = $"Error: {ex.Message}";
+            errorMessage = $"Error creating program plan: {ex.Message}";
         }
     }
 
