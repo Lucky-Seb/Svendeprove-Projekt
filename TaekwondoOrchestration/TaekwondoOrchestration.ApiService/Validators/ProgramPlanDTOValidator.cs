@@ -27,10 +27,12 @@ namespace TaekwondoOrchestration.ApiService.Validators
                 .MaximumLength(500).WithMessage("Beskrivelse must be less than 500 characters.");
 
             RuleFor(x => x.BrugerID)
-                .NotEmpty().WithMessage("BrugerID is required.");
+                .NotEmpty().WithMessage("BrugerID is required.")
+                .When(x => x.BrugerID != null);
 
             RuleFor(x => x.KlubID)
-                .NotEmpty().WithMessage("KlubID is required.");
+                .NotEmpty().WithMessage("KlubID is required.")
+                .When(x => x.KlubID != null);
 
             RuleFor(x => x.Træninger)
                 .NotNull().WithMessage("Træninger cannot be null.")

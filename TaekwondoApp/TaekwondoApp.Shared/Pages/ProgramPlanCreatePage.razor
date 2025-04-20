@@ -52,9 +52,20 @@
             <option value="">-- Select Træning --</option>
             @foreach (var træning in træningList)
             {
-                <option value="@træning.TræningID">@træning.TræningRækkefølge</option>  <!-- You can customize what is shown here -->
+                <option value="@træning.TræningID">@træning.TræningRækkefølge</option> <!-- You can customize what is shown here -->
             }
         </select>
+        <button type="button" class="btn btn-primary mt-2" @onclick="AddTræning">Add Træning</button>
+    </div>
+
+    <div>
+        <h5>Selected Træninger</h5>
+        <ul>
+            @foreach (var træning in newProgramPlan.Træninger)
+            {
+                <li>@træning.TræningRækkefølge (ID: @træning.TræningID)</li>
+            }
+        </ul>
     </div>
 
     <button type="submit" class="btn btn-success">Create</button>
@@ -62,7 +73,7 @@
 </EditForm>
 
 @code {
-    private ProgramPlanDTO newProgramPlan = new();
+    private ProgramPlanDTO newProgramPlan = new ProgramPlanDTO();
     private string errorMessage = "";
     private HttpClient _apiClient;
 
@@ -100,6 +111,25 @@
         }
     }
 
+    // Method to handle adding a Træning to the list
+    private void AddTræning()
+    {
+        if (selectedTræningId != Guid.Empty)
+        {
+            // Add the selected TræningDTO to the Program Plan
+            var selectedTræning = træningList.FirstOrDefault(t => t.TræningID == selectedTræningId);
+            if (selectedTræning != null)
+            {
+                newProgramPlan.Træninger.Add(selectedTræning);
+                selectedTræningId = Guid.Empty; // Reset selection after adding
+            }
+        }
+        else
+        {
+            errorMessage = "Please select a valid Træning before adding.";
+        }
+    }
+
     private async Task HandleValidSubmit()
     {
         try
@@ -112,15 +142,6 @@
             Console.WriteLine($"Beskrivelse: {newProgramPlan.Beskrivelse}");
             Console.WriteLine($"BrugerID: {newProgramPlan.BrugerID}");
             Console.WriteLine($"KlubID: {newProgramPlan.KlubID}");
-
-            // Add the selected TræningDTO to the program
-            if (selectedTræningId != Guid.Empty)
-            {
-                newProgramPlan.Træninger = new List<TræningDTO>
-                {
-                    new TræningDTO { TræningID = selectedTræningId }
-                };
-            }
 
             // Syncable fields (if needed)
             newProgramPlan.ETag = Guid.NewGuid().ToString();
