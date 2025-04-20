@@ -28,38 +28,38 @@ else
         @if (isEditing)
         {
             <h3>Edit Your Profile</h3>
-            <EditForm Model="brugerModel" OnValidSubmit="HandleValidSubmit">
+            <EditForm Model="brugerDTO" OnValidSubmit="HandleValidSubmit">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
                 <div>
                     <label for="brugernavn">Username:</label>
-                    <InputText id="brugernavn" @bind-Value="brugerModel.Brugernavn" />
+                    <InputText id="brugernavn" @bind-Value="brugerDTO.Brugernavn" />
                 </div>
 
                 <div>
                     <label for="fornavn">First Name:</label>
-                    <InputText id="fornavn" @bind-Value="brugerModel.Fornavn" />
+                    <InputText id="fornavn" @bind-Value="brugerDTO.Fornavn" />
                 </div>
 
                 <div>
                     <label for="efternavn">Last Name:</label>
-                    <InputText id="efternavn" @bind-Value="brugerModel.Efternavn" />
+                    <InputText id="efternavn" @bind-Value="brugerDTO.Efternavn" />
                 </div>
 
                 <div>
                     <label for="email">Email:</label>
-                    <InputText id="email" @bind-Value="brugerModel.Email" />
+                    <InputText id="email" @bind-Value="brugerDTO.Email" />
                 </div>
 
                 <div>
                     <label for="address">Address:</label>
-                    <InputText id="address" @bind-Value="brugerModel.Address" />
+                    <InputText id="address" @bind-Value="brugerDTO.Address" />
                 </div>
 
                 <div>
                     <label for="bæltegrad">Belt Grade:</label>
-                    <InputText id="bæltegrad" @bind-Value="brugerModel.Bæltegrad" />
+                    <InputText id="bæltegrad" @bind-Value="brugerDTO.Bæltegrad" />
                 </div>
 
                 <div class="actions">
@@ -71,15 +71,15 @@ else
         else
         {
             <h3>Your Profile</h3>
-            <p><strong>Username:</strong> @brugerModel.Brugernavn</p>
-            <p><strong>First Name:</strong> @brugerModel.Fornavn</p>
-            <p><strong>Last Name:</strong> @brugerModel.Efternavn</p>
-            <p><strong>Email:</strong> @brugerModel.Email</p>
-            <p><strong>Address:</strong> @brugerModel.Address</p>
-            <p><strong>Belt Grade:</strong> @brugerModel.Bæltegrad</p>
+            <p><strong>Username:</strong> @brugerDTO.Brugernavn</p>
+            <p><strong>First Name:</strong> @brugerDTO.Fornavn</p>
+            <p><strong>Last Name:</strong> @brugerDTO.Efternavn</p>
+            <p><strong>Email:</strong> @brugerDTO.Email</p>
+            <p><strong>Address:</strong> @brugerDTO.Address</p>
+            <p><strong>Belt Grade:</strong> @brugerDTO.Bæltegrad</p>
 
             <h4>Exercises:</h4>
-            @if (brugerModel.Øvelser?.Any() == true)
+            @if (brugerDTO.Øvelser?.Any() == true)
             {
                 <table class="table">
                     <thead>
@@ -91,7 +91,7 @@ else
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var øvelse in brugerModel.Øvelser)
+                        @foreach (var øvelse in brugerDTO.Øvelser)
                         {
                             <tr>
                                 <td>@øvelse.ØvelseNavn</td>
@@ -116,7 +116,8 @@ else
             <hr>
 
             <h4>Clubs:</h4>
-            @if (brugerModel.Klubber?.Any() == true)
+
+            @if (brugerDTO.Klubber?.Any() == true)
             {
                 <table class="table">
                     <thead>
@@ -126,13 +127,12 @@ else
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var klub in brugerModel.Klubber)
+                        @foreach (var klub in brugerDTO.Klubber)
                         {
                             <tr>
                                 <td>@klub.KlubNavn</td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary" @onclick="() => EditClub(klub.KlubID)">Edit</button>
-                                    <button class="btn btn-sm btn-danger" @onclick="() => PromptDeleteClub(klub.KlubID)">Delete</button>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => DropOutClub(klub.KlubID)">Drop Out</button>
                                 </td>
                             </tr>
                         }
@@ -144,12 +144,31 @@ else
                 <p>No clubs available.</p>
             }
 
-            <button class="btn btn-primary" @onclick="NavigateToCreateClub">Create New Club</button>
+            <h4>Join a Club:</h4>
+
+            @if (availableKlubs?.Any() == true)
+            {
+                <div>
+                    <label for="clubDropdown">Select a club to join:</label>
+                    <select id="clubDropdown" @bind="selectedClubId">
+                        <option value="">-- Select Club --</option>
+                        @foreach (var klub in availableKlubs)
+                        {
+                            <option value="@klub.KlubID">@klub.KlubNavn</option>
+                        }
+                    </select>
+                    <button class="btn btn-primary" @onclick="JoinClub">Join Club</button>
+                </div>
+            }
+            else
+            {
+                <p>No clubs available to join.</p>
+            }
 
             <hr>
 
             <h4>Programs:</h4>
-            @if (brugerModel.Programmer?.Any() == true)
+            @if (brugerDTO.Programmer?.Any() == true)
             {
                 <table class="table">
                     <thead>
@@ -159,7 +178,7 @@ else
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var program in brugerModel.Programmer)
+                        @foreach (var program in brugerDTO.Programmer)
                         {
                             <tr>
                                 <td>@program.ProgramNavn</td>
@@ -182,7 +201,7 @@ else
             <hr>
 
             <h4>Quizzes:</h4>
-            @if (brugerModel.Quizzer?.Any() == true)
+            @if (brugerDTO.Quizzer?.Any() == true)
             {
                 <table class="table">
                     <thead>
@@ -192,7 +211,7 @@ else
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var quiz in brugerModel.Quizzer)
+                        @foreach (var quiz in brugerDTO.Quizzer)
                         {
                             <tr>
                                 <td>@quiz.QuizNavn</td>
@@ -230,7 +249,9 @@ else
 }
 
 @code {
-    private BrugerDTO brugerModel = null;
+    private BrugerDTO brugerDTO = null;
+    private BrugerKlubDTO BrugerklubDTO = new();
+    private KlubDTO KlubDTO = new();
     private bool isEditing = false;
     private bool isAuthenticated;
     private string errorMessage = string.Empty;
@@ -238,6 +259,8 @@ else
     private Guid brugerId = new Guid();
     private HttpClient _apiClient;
     private HubConnection _hubConnection;
+    private List<KlubDTO> availableKlubs = new List<KlubDTO>();
+    private Guid selectedClubId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -255,6 +278,7 @@ else
             _apiClient = HttpClientFactory.CreateClient("ApiClient");
 
             await LoadBruger();
+            await LoadKluber();
 
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl("https://localhost:7478/brugerhub")
@@ -266,6 +290,10 @@ else
                 await LoadBruger();
                 await InvokeAsync(StateHasChanged);
             });
+            // // Fetch available clubs (this can come from your API, e.g. GET request)
+            // availableClubs = await _apiClient.GetFromJsonAsync<List<Klub>>("api/klub");
+
+            // await _apiClient.GetFromJsonAsync<List<Klub>>("api/user/clubs");
 
             await _hubConnection.StartAsync();
         }
@@ -282,7 +310,26 @@ else
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
             if (response?.Success == true && response.Data != null)
             {
-                brugerModel = response.Data;
+                brugerDTO = response.Data;
+            }
+            else
+            {
+                errorMessage = "Failed to fetch user data.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading user data: {ex.Message}";
+        }
+    }
+    private async Task LoadKluber()
+    {
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<KlubDTO>>>($"api/klub");
+            if (response?.Success == true && response.Data != null)
+            {
+                    availableKlubs = _mapper.Map<List<KlubDTO>>(response.Data);
             }
             else
             {
@@ -300,7 +347,7 @@ else
         try
         {
             // Send the updated user data to the API for saving
-            var response = await _apiClient.PutAsJsonAsync($"api/bruger/update/{brugerId}", brugerModel);
+            var response = await _apiClient.PutAsJsonAsync($"api/bruger/update/{brugerId}", brugerDTO);
             if (response.IsSuccessStatusCode)
             {
                 // Successfully updated the profile
@@ -338,12 +385,6 @@ else
         Console.WriteLine($"Editing exercise {exerciseId}");
     }
 
-    private void EditClub(Guid clubId)
-    {
-        // Redirect or perform actions to edit a club
-        Console.WriteLine($"Editing club {clubId}");
-    }
-
     private void EditProgram(Guid programId)
     {
         // Redirect or perform actions to edit a program
@@ -361,12 +402,6 @@ else
     {
         // Show confirmation before deleting an exercise
         Console.WriteLine($"Are you sure you want to delete exercise {exerciseId}?");
-    }
-
-    private void PromptDeleteClub(Guid clubId)
-    {
-        // Show confirmation before deleting a club
-        Console.WriteLine($"Are you sure you want to delete club {clubId}?");
     }
 
     private void PromptDeleteProgram(Guid programId)
@@ -400,6 +435,56 @@ else
     private void NavigateToCreateQuiz()
     {
         NavigationManager.NavigateTo("/create/quiz");
+    }
+
+    private async Task JoinClub()
+    {
+        if (selectedClubId == Guid.Empty)
+        {
+            // Optionally add a check for selectedClubId
+            return;
+        }
+
+        var brugerKlubDto = new BrugerKlubDTO
+            {
+                BrugerID = brugerDTO.BrugerID,// This should come from the logged-in user
+                KlubID = selectedClubId
+            };
+
+        // Send a POST request to join the club
+        var response = await _apiClient.PostAsJsonAsync("api/brugerklub", brugerKlubDto);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Update the UI after the user has joined the club
+            // For example, refresh the clubs list or add the joined club to the user's list
+            var joinedClub = await response.Content.ReadFromJsonAsync<BrugerKlubDTO>();
+            // brugerDTO.Klubber.Add(klubDTO); // Add KlubDTO, not Klub model       
+        }
+        else
+        {
+            // Handle errors here (e.g., show an error message)
+        }
+    }
+
+    private async Task DropOutClub(Guid klubId)
+    {
+        // Send a DELETE request to remove the user from the club
+        var response = await _apiClient.DeleteAsync($"api/brugerklub/{Guid.NewGuid()}/{klubId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Remove the club from the list of user's clubs
+            var klubToRemove = brugerDTO.Klubber.FirstOrDefault(k => k.KlubID == klubId);
+            if (klubToRemove != null)
+            {
+                brugerDTO.Klubber.Remove(klubToRemove);
+            }
+        }
+        else
+        {
+            // Handle errors (e.g., show an error message)
+        }
     }
 }
 
