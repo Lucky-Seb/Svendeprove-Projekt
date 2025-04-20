@@ -8,6 +8,8 @@
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
 @using System.Text.Json
+
+@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory HttpClientFactory
 @inject IAuthenticationService AuthenticationService
@@ -39,7 +41,7 @@ else
         </div>
 
         <div>
-            <label>Length (in days):</label>
+            <label>Length (days):</label>
             <InputNumber @bind-Value="editModel.Længde" class="form-control" />
         </div>
 
@@ -48,35 +50,54 @@ else
             <InputDate @bind-Value="editModel.OprettelseDato" class="form-control" />
         </div>
 
-        <div>
-            <label>Træning(s):</label>
-            <ul>
-                @foreach (var træning in editModel.Træninger)
-                {
-                    <li>
-                        <div>
-                            <label>Træning Rækkefølge:</label>
-                            <InputNumber @bind-Value="træning.TræningRækkefølge" class="form-control" />
-                        </div>
+        <hr />
+        <h5>Træninger</h5>
+        <ul class="list-unstyled">
+            @foreach (var træning in editModel.Træninger)
+            {
+                <li class="border rounded p-3 mb-3">
+                    <div>
+                        <label>Træning Rækkefølge:</label>
+                        <InputNumber @bind-Value="træning.TræningRækkefølge" class="form-control" />
+                    </div>
 
-                        <div>
-                            <label>Exercise (Øvelse):</label>
-                            <select @bind="træning.ØvelseID" class="form-control">
-                                <option value="">-- Select Øvelse --</option>
-                                @foreach (var øvelse in exerciseList)
-                                {
-                                    <option value="@øvelse.ØvelseID">@øvelse.ØvelseNavn</option>
-                                }
-                            </select>
-                        </div>
+                    <div>
+                        <label>Øvelse:</label>
+                        <select @bind="træning.ØvelseID" class="form-control">
+                            <option value="">-- Select Øvelse --</option>
+                            @foreach (var ø in exerciseList)
+                            {
+                                <option value="@ø.ØvelseID">@ø.ØvelseNavn</option>
+                            }
+                        </select>
+                    </div>
 
-                        <!-- Add additional fields for Quiz, Teori, Teknik if needed -->
-                    </li>
-                }
-            </ul>
-        </div>
+                    <div>
+                        <label>Quiz (Teori):</label>
+                        <select @bind="træning.TeoriID" class="form-control">
+                            <option value="">-- Select Teori --</option>
+                            @foreach (var quiz in quizList)
+                            {
+                                <option value="@quiz.TeoriID">@quiz.TeoriTitel</option>
+                            }
+                        </select>
+                    </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
+                    <div>
+                        <label>Teknik:</label>
+                        <select @bind="træning.TeknikID" class="form-control">
+                            <option value="">-- Select Teknik --</option>
+                            @foreach (var teknik in teknikList)
+                            {
+                                <option value="@teknik.TeknikID">@teknik.TeknikNavn</option>
+                            }
+                        </select>
+                    </div>
+                </li>
+            }
+        </ul>
+
+        <button type="submit" class="btn btn-success">Save</button>
         <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
     </EditForm>
 }
@@ -85,62 +106,73 @@ else
     [Parameter] public Guid Id { get; set; }
 
     private ProgramPlanDTO editModel = new();
+    private List<ØvelseDTO> exerciseList = new();
+    private List<TeoriDTO> quizList = new();
+    private List<TeknikDTO> teknikList = new();
+    private List<Pensum> pensumGradList = new();
+
+    private HttpClient _apiClient;
     private bool loading = true;
     private string errorMessage = "";
-    private HttpClient _apiClient;
-    private List<ØvelseDTO> exerciseList = new(); // List for Øvelse (Exercises)
-    private List<Pensum> pensumGradList = new();  // List for Pensum (Pensum)
 
     protected override async Task OnInitializedAsync()
     {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
         try
         {
-            _apiClient = HttpClientFactory.CreateClient("ApiClient");
-
             var token = await AuthenticationService.GetTokenAsync();
             var brugerId = JwtParser.GetUserIdFromJwt(token);
-            Console.WriteLine($"Loaded BrugerID: {brugerId}");
 
-            // Fetch Program Plan
+            // Load Program Plan
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<ProgramPlanDTO>>($"api/programplan/{Id}");
             if (response?.Success == true && response.Data != null)
             {
                 editModel = response.Data;
-                Console.WriteLine($"Loaded Program Plan: {JsonSerializer.Serialize(editModel)}");
+                Console.WriteLine("✅ Program loaded.");
             }
             else
             {
                 errorMessage = "Failed to load Program Plan.";
+                return;
             }
 
-            // Fetch Exercises (Øvelser) for dropdown
-            var exerciseResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
-            if (exerciseResponse?.Success == true && exerciseResponse.Data != null)
+            // Load Øvelser
+            var øResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
+            if (øResponse?.Success == true && øResponse.Data != null)
             {
-                exerciseList = exerciseResponse.Data;
-                Console.WriteLine("Exercises loaded.");
-            }
-            else
-            {
-                errorMessage = "Failed to load exercises.";
+                exerciseList = øResponse.Data;
+                Console.WriteLine("✅ Øvelser loaded.");
             }
 
-            // Fetch Pensum list
+            // Load Quiz (Teori)
+            var teoriResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeoriDTO>>>("api/teori");
+            if (teoriResponse?.Success == true && teoriResponse.Data != null)
+            {
+                quizList = teoriResponse.Data;
+                Console.WriteLine("✅ Teori loaded.");
+            }
+
+            // Load Teknik
+            var teknikResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeknikDTO>>>("api/teknik");
+            if (teknikResponse?.Success == true && teknikResponse.Data != null)
+            {
+                teknikList = teknikResponse.Data;
+                Console.WriteLine("✅ Teknik loaded.");
+            }
+
+            // Load Pensum
             var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
             if (pensumResponse?.Success == true && pensumResponse.Data != null)
             {
                 pensumGradList = pensumResponse.Data;
-                Console.WriteLine("Pensum list loaded.");
-            }
-            else
-            {
-                errorMessage = "Failed to load PensumGrads.";
+                Console.WriteLine("✅ Pensum loaded.");
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading program plan, exercises or PensumGrads: {ex.Message}";
-            Console.WriteLine($"Exception: {ex.Message}");
+            errorMessage = $"❌ Error: {ex.Message}";
+            Console.WriteLine(errorMessage);
         }
         finally
         {
@@ -152,10 +184,10 @@ else
     {
         try
         {
-            Console.WriteLine("Submitting update...");
+            Console.WriteLine("📤 Submitting update...");
             Console.WriteLine($"ProgramID: {editModel.ProgramID}");
 
-            // Add/Update sync fields if needed
+            // Update metadata
             editModel.ModifiedBy = "system";
             editModel.ETag ??= Guid.NewGuid().ToString();
             editModel.ChangeHistoryJson ??= "[]";
@@ -169,21 +201,18 @@ else
 
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("✔ Program Plan updated.");
+                Console.WriteLine("✅ Program Plan updated successfully.");
                 NavigationManager.NavigateTo("/account");
             }
             else
             {
-                var body = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("❌ Failed to update Program Plan.");
-                Console.WriteLine($"Response Body: {body}");
-                errorMessage = $"Failed to update Program Plan. Status: {response.StatusCode}\nDetails: {body}";
+                var responseBody = await response.Content.ReadAsStringAsync();
+                errorMessage = $"❌ Failed to update. Status: {response.StatusCode}\nDetails: {responseBody}";
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exception: {ex.Message}");
-            errorMessage = $"Error updating Program Plan: {ex.Message}";
+            errorMessage = $"❌ Error updating Program Plan: {ex.Message}";
         }
     }
 
@@ -196,5 +225,17 @@ else
     {
         public Guid PensumID { get; set; }
         public string PensumGrad { get; set; }
+    }
+
+    public class TeoriDTO
+    {
+        public Guid TeoriID { get; set; }
+        public string TeoriTitel { get; set; }
+    }
+
+    public class TeknikDTO
+    {
+        public Guid TeknikID { get; set; }
+        public string TeknikNavn { get; set; }
     }
 }
