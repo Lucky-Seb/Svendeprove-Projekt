@@ -3,7 +3,6 @@
 @* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Services
-@using AutoMapper
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory HttpClientFactory
 @inject IAuthenticationService AuthenticationService
@@ -67,38 +66,56 @@
 @code {
     private string errorMessage = "";
     private HttpClient _apiClient;
+
+    // Initialize Program Plan DTO with default values
     private ProgramPlanDTO newProgramPlan = new ProgramPlanDTO
         {
-            Træninger = new List<TræningDTO>() // Initialize as empty list
+            Træninger = new List<TræningDTO>(), // Initialize as empty list
+            ETag = Guid.NewGuid().ToString(), // Set a new GUID as ETag
+            ModifiedBy = "system", // Set a default ModifiedBy value
+            ChangeHistoryJson = "[]" // Set ChangeHistoryJson as an empty array
         };
-    private TræningDTO newTræning = new TræningDTO(); // Temporary object for adding a new Træning
 
-    // List of TræningDTO options
-    private List<TræningDTO> træningList = new List<TræningDTO>();
-    private Guid selectedTræningId;
+    // Temporary object for adding a new Træning
+    private TræningDTO newTræning = new TræningDTO
+        {
+            ETag = Guid.NewGuid().ToString(), // Set a new GUID as ETag for each træning
+            ModifiedBy = "system", // Set default ModifiedBy for each træning
+            ChangeHistoryJson = "[]" // Set ChangeHistoryJson as an empty array for each træning
+        };
 
     protected override async Task OnInitializedAsync()
     {
         _apiClient = HttpClientFactory.CreateClient("ApiClient");
-
+        newProgramPlan.ProgramID = new Guid();
         var token = await AuthenticationService.GetTokenAsync();
         var brugerId = JwtParser.GetUserIdFromJwt(token);
     }
+
     // Add a new træning to the program plan
     private void AddTræning()
     {
         if (newTræning.TræningRækkefølge > 0) // Ensure valid sequence
         {
+            newTræning.ProgramID = newProgramPlan.ProgramID; // Ensure ProgramID is set
+
             // Add the new træning to the list of træninger for the program plan
             newProgramPlan.Træninger.Add(newTræning);
+
             // Reset newTræning for the next input
-            newTræning = new TræningDTO();
+            newTræning = new TræningDTO
+                {
+                    ETag = Guid.NewGuid().ToString(),
+                    ModifiedBy = "system",
+                    ChangeHistoryJson = "[]"
+                };
         }
         else
         {
             errorMessage = "Træning Rækkefølge must be greater than 0.";
         }
     }
+
 
     // Remove a træning from the program plan
     private void RemoveTræning(Guid træningId)
@@ -114,14 +131,24 @@
     {
         try
         {
+            // Step 1: Ensure that each TræningDTO has the ProgramID set before sending it
+            foreach (var træning in newProgramPlan.Træninger)
+            {
+                // Set ProgramID for each TræningDTO
+                træning.ProgramID = newProgramPlan.ProgramID; // Ensure ProgramID is set
+            }
+
+            // Step 2: Send the new program plan to the API (ProgramPlanDTO already includes TræningDTO)
             var response = await _apiClient.PostAsJsonAsync("api/programplan", newProgramPlan);
 
             if (response.IsSuccessStatusCode)
             {
+                // Success: Navigate to the account page
                 NavigationManager.NavigateTo("/account");
             }
             else
             {
+                // Failure: Extract and display the error message
                 var responseBody = await response.Content.ReadAsStringAsync();
                 errorMessage = $"Failed to create program plan. Status: {response.StatusCode}\nDetails: {responseBody}";
             }
@@ -131,6 +158,7 @@
             errorMessage = $"Error creating program plan: {ex.Message}";
         }
     }
+
 
     private void Cancel()
     {
