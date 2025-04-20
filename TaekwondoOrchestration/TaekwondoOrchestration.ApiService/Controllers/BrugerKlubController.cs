@@ -47,18 +47,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return result.ToApiResponse(); // Converts failure to BadRequest
         }
 
-        [HttpPut("{brugerId}/{klubId}")]
-        public async Task<IActionResult> UpdateBrugerKlub(Guid brugerId, Guid klubId, BrugerKlubDTO brugerKlubDto)
-        {
-            var result = await _brugerKlubService.UpdateBrugerKlubAsync(brugerId, klubId, brugerKlubDto);
-            if (result.Success)
-            {
-                await _hubContext.Clients.All.SendAsync("BrugerKlubUpdated", result.Value); // Optional: Notify clients
-                return NoContent();
-            }
-            return result.ToApiResponse(); // Converts failure to BadRequest
-        }
-
         [HttpDelete("{brugerId}/{klubId}")]
         public async Task<IActionResult> DeleteBrugerKlub(Guid brugerId, Guid klubId)
         {
