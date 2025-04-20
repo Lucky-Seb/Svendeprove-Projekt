@@ -1,6 +1,5 @@
 ﻿@page "/programplan/create"
 
-@* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Services
 @inject NavigationManager NavigationManager
@@ -18,45 +17,123 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div>
+    <div class="mb-3">
         <label>Program Name:</label>
         <InputText @bind-Value="newProgramPlan.ProgramNavn" class="form-control" />
     </div>
 
-    <div>
+    <div class="mb-3">
         <label>Description:</label>
         <InputTextArea @bind-Value="newProgramPlan.Beskrivelse" class="form-control" />
     </div>
 
-    <div>
+    <div class="mb-3">
         <label>Length (in days):</label>
         <InputNumber @bind-Value="newProgramPlan.Længde" class="form-control" />
     </div>
 
-    <div>
+    <div class="mb-3">
         <label>Start Date:</label>
         <InputDate @bind-Value="newProgramPlan.OprettelseDato" class="form-control" />
     </div>
 
-    <div>
+    <div class="mb-4">
         <h5>Træning(s) for the Program</h5>
-        <ul>
+        <ul class="list-group mb-3">
             @foreach (var træning in newProgramPlan.Træninger)
             {
-                <li>
-                    @træning.TræningRækkefølge (ID: @træning.TræningID)
-                    <button type="button" class="btn btn-danger" @onclick="() => RemoveTræning(træning.TræningID)">Remove</button>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Rækkefølge: @træning.TræningRækkefølge (ID: @træning.TræningID)
+                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveTræning(træning.TræningID)">Remove</button>
                 </li>
             }
         </ul>
 
-        <!-- Add Træning -->
-        <div>
-            <label>Træning Rækkefølge (Sequence):</label>
-            <InputNumber @bind-Value="newTræning.TræningRækkefølge" class="form-control" />
-        </div>
+        <!-- Add New Træning -->
+        <div class="card p-3 bg-light border">
+            <h6>Add Træning</h6>
 
-        <button type="button" class="btn btn-primary" @onclick="AddTræning">Add Træning</button>
+            <div class="mb-2">
+                <label>Træning Rækkefølge:</label>
+                <InputNumber @bind-Value="newTræning.TræningRækkefølge" class="form-control" />
+            </div>
+
+            <!-- Dropdowns with Previews -->
+
+            <div class="mb-2">
+                <label>Quiz:</label>
+                <select class="form-control" @onchange="OnQuizChanged">
+                    <option value="">-- Select Quiz --</option>
+                    @foreach (var quiz in quizzes)
+                    {
+                        <option value="@quiz.QuizID">@quiz.QuizNavn</option>
+                    }
+                </select>
+                @if (selectedQuiz != null)
+                {
+                    <div class="mt-1 p-2 border rounded bg-white">
+                        <strong>@selectedQuiz.QuizNavn</strong><br />
+                        <small>@selectedQuiz.QuizBeskrivelse</small>
+                    </div>
+                }
+            </div>
+
+            <div class="mb-2">
+                <label>Teori:</label>
+                <select class="form-control" @onchange="OnTeoriChanged">
+                    <option value="">-- Select Teori --</option>
+                    @foreach (var teori in teorier)
+                    {
+                        <option value="@teori.TeoriID">@teori.TeoriNavn</option>
+                    }
+                </select>
+                @if (selectedTeori != null)
+                {
+                    <div class="mt-1 p-2 border rounded bg-white">
+                        <strong>@selectedTeori.TeoriNavn</strong><br />
+                        <small>@selectedTeori.TeoriBeskrivelse</small>
+                    </div>
+                }
+            </div>
+
+            <div class="mb-2">
+                <label>Teknik:</label>
+                <select class="form-control" @onchange="OnTeknikChanged">
+                    <option value="">-- Select Teknik --</option>
+                    @foreach (var teknik in teknikker)
+                    {
+                        <option value="@teknik.TeknikID">@teknik.TeknikNavn</option>
+                    }
+                </select>
+                @if (selectedTeknik != null)
+                {
+                    <div class="mt-1 p-2 border rounded bg-white">
+                        <strong>@selectedTeknik.TeknikNavn</strong><br />
+                        <small>@selectedTeknik.TeknikBeskrivelse</small>
+                    </div>
+                }
+            </div>
+
+            <div class="mb-2">
+                <label>Øvelse:</label>
+                <select class="form-control" @onchange="OnØvelseChanged">
+                    <option value="">-- Select Øvelse --</option>
+                    @foreach (var øvelse in øvelser)
+                    {
+                        <option value="@øvelse.ØvelseID">@øvelse.ØvelseNavn</option>
+                    }
+                </select>
+                @if (selectedØvelse != null)
+                {
+                    <div class="mt-1 p-2 border rounded bg-white">
+                        <strong>@selectedØvelse.ØvelseNavn</strong><br />
+                        <small>@selectedØvelse.ØvelseBeskrivelse</small>
+                    </div>
+                }
+            </div>
+
+            <button type="button" class="btn btn-primary mt-2" @onclick="AddTræning">Add Træning</button>
+        </div>
     </div>
 
     <button type="submit" class="btn btn-success">Create Program Plan</button>
@@ -67,47 +144,97 @@
     private string errorMessage = "";
     private HttpClient _apiClient;
 
-    // Initialize Program Plan DTO with default values
-    private ProgramPlanDTO newProgramPlan = new ProgramPlanDTO
+    private ProgramPlanDTO newProgramPlan = new()
         {
-            Træninger = new List<TræningDTO>(), // Initialize as empty list
-            ETag = Guid.NewGuid().ToString(), // Set a new GUID as ETag
-            ModifiedBy = "system", // Set a default ModifiedBy value
-            ChangeHistoryJson = "[]" // Set ChangeHistoryJson as an empty array
+            Træninger = new List<TræningDTO>(),
+            ETag = Guid.NewGuid().ToString(),
+            ModifiedBy = "system",
+            ChangeHistoryJson = "[]"
         };
 
-    // Temporary object for adding a new Træning
-    private TræningDTO newTræning = new TræningDTO
+    private TræningDTO newTræning = new()
         {
-            ETag = Guid.NewGuid().ToString(), // Set a new GUID as ETag for each træning
-            ModifiedBy = "system", // Set default ModifiedBy for each træning
-            ChangeHistoryJson = "[]" // Set ChangeHistoryJson as an empty array for each træning
+            ETag = Guid.NewGuid().ToString(),
+            ModifiedBy = "system",
+            ChangeHistoryJson = "[]"
         };
+
+    private List<QuizDTO> quizzes = new();
+    private List<TeoriDTO> teorier = new();
+    private List<TeknikDTO> teknikker = new();
+    private List<ØvelseDTO> øvelser = new();
+
+    private QuizDTO? selectedQuiz;
+    private TeoriDTO? selectedTeori;
+    private TeknikDTO? selectedTeknik;
+    private ØvelseDTO? selectedØvelse;
 
     protected override async Task OnInitializedAsync()
     {
         _apiClient = HttpClientFactory.CreateClient("ApiClient");
         var token = await AuthenticationService.GetTokenAsync();
-        var brugerId = JwtParser.GetUserIdFromJwt(token);
+
+        quizzes = await _apiClient.GetFromJsonAsync<List<QuizDTO>>("api/quiz") ?? new();
+        teorier = await _apiClient.GetFromJsonAsync<List<TeoriDTO>>("api/teori") ?? new();
+        teknikker = await _apiClient.GetFromJsonAsync<List<TeknikDTO>>("api/teknik") ?? new();
+        øvelser = await _apiClient.GetFromJsonAsync<List<ØvelseDTO>>("api/øvelse") ?? new();
     }
 
-    // Add a new træning to the program plan
+    private void OnQuizChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var id))
+        {
+            selectedQuiz = quizzes.FirstOrDefault(q => q.QuizID == id);
+            newTræning.QuizID = id;
+        }
+    }
+
+    private void OnTeoriChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var id))
+        {
+            selectedTeori = teorier.FirstOrDefault(t => t.TeoriID == id);
+            newTræning.TeoriID = id;
+        }
+    }
+
+    private void OnTeknikChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var id))
+        {
+            selectedTeknik = teknikker.FirstOrDefault(t => t.TeknikID == id);
+            newTræning.TeknikID = id;
+        }
+    }
+
+    private void OnØvelseChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var id))
+        {
+            selectedØvelse = øvelser.FirstOrDefault(o => o.ØvelseID == id);
+            newTræning.ØvelseID = id;
+        }
+    }
+
     private void AddTræning()
     {
-        if (newTræning.TræningRækkefølge > 0) // Ensure valid sequence
+        if (newTræning.TræningRækkefølge > 0)
         {
-            newTræning.ProgramID = newProgramPlan.ProgramID; // Ensure ProgramID is set
-
-            // Add the new træning to the list of træninger for the program plan
+            newTræning.ProgramID = newProgramPlan.ProgramID;
+            newTræning.TræningID = Guid.NewGuid();
             newProgramPlan.Træninger.Add(newTræning);
 
-            // Reset newTræning for the next input
             newTræning = new TræningDTO
                 {
                     ETag = Guid.NewGuid().ToString(),
                     ModifiedBy = "system",
                     ChangeHistoryJson = "[]"
                 };
+
+            selectedQuiz = null;
+            selectedTeori = null;
+            selectedTeknik = null;
+            selectedØvelse = null;
         }
         else
         {
@@ -115,8 +242,6 @@
         }
     }
 
-
-    // Remove a træning from the program plan
     private void RemoveTræning(Guid træningId)
     {
         var træningToRemove = newProgramPlan.Træninger.FirstOrDefault(t => t.TræningID == træningId);
@@ -130,28 +255,24 @@
     {
         try
         {
-            // Step 1: Ensure that BrugerID is set to the authenticated user's ID (you need to get this from the authentication service)
             var token = await AuthenticationService.GetTokenAsync();
-            var brugerId = JwtParser.GetUserIdFromJwt(token); // Assuming the token contains the user ID
-            newProgramPlan.BrugerID = brugerId;  // Set the BrugerID to the authenticated user's ID
+            var brugerId = JwtParser.GetUserIdFromJwt(token);
+            newProgramPlan.BrugerID = brugerId;
             newProgramPlan.ProgramID = Guid.NewGuid();
-            // Step 2: Ensure that each TræningDTO has the ProgramID set before sending it
+
             foreach (var træning in newProgramPlan.Træninger)
             {
-                træning.ProgramID = newProgramPlan.ProgramID; // Ensure ProgramID is set for each TræningDTO
+                træning.ProgramID = newProgramPlan.ProgramID;
             }
 
-            // Step 3: Send the new program plan to the API (ProgramPlanDTO already includes TræningDTO)
             var response = await _apiClient.PostAsJsonAsync("api/programplan", newProgramPlan);
 
             if (response.IsSuccessStatusCode)
             {
-                // Success: Navigate to the account page
                 NavigationManager.NavigateTo("/account");
             }
             else
             {
-                // Failure: Extract and display the error message
                 var responseBody = await response.Content.ReadAsStringAsync();
                 errorMessage = $"Failed to create program plan. Status: {response.StatusCode}\nDetails: {responseBody}";
             }
@@ -161,8 +282,6 @@
             errorMessage = $"Error creating program plan: {ex.Message}";
         }
     }
-
-
 
     private void Cancel()
     {
