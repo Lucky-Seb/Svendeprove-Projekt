@@ -1,4 +1,5 @@
 ﻿@page "/øvelse/create"
+@page "/admin/klub/{klubId:guid}/create-øvelse"
 
 @* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
@@ -72,26 +73,36 @@
 </EditForm>
 
 @code {
+    [Parameter] public Guid? klubId { get; set; } // Optional: if this comes from admin route
+
     private ØvelseDTO newExercise = new();
     private string errorMessage = "";
     private HttpClient _apiClient;
 
-    // List of PensumGrad options
     private List<Pensum> pensumGradList = new List<Pensum>();
 
     protected override async Task OnInitializedAsync()
     {
         _apiClient = HttpClientFactory.CreateClient("ApiClient");
 
-        var token = await AuthenticationService.GetTokenAsync();
-        var brugerId = JwtParser.GetUserIdFromJwt(token);
-
-        newExercise.BrugerID = brugerId;
         newExercise.ØvelseID = Guid.NewGuid();
 
-        // Fetch the list of PensumGrad options for the dropdown
         try
         {
+            var token = await AuthenticationService.GetTokenAsync();
+
+            if (klubId.HasValue)
+            {
+                Console.WriteLine($"Creating exercise for klub: {klubId.Value}");
+                newExercise.KlubID = klubId.Value;
+            }
+            else
+            {
+                var brugerId = JwtParser.GetUserIdFromJwt(token);
+                Console.WriteLine($"Creating exercise for bruger: {brugerId}");
+                newExercise.BrugerID = brugerId;
+            }
+
             var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
             if (pensumResponse?.Success == true && pensumResponse.Data != null)
             {
@@ -104,7 +115,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading PensumGrads: {ex.Message}";
+            errorMessage = $"Error loading data: {ex.Message}";
         }
     }
 
@@ -114,18 +125,11 @@
         {
             Console.WriteLine("Submitting new exercise...");
 
-            // Debug log of key fields
-            Console.WriteLine($"ØvelseNavn: {newExercise.ØvelseNavn}");
-            Console.WriteLine($"PensumID: {newExercise.PensumID}");
-            Console.WriteLine($"BrugerID: {newExercise.BrugerID}");
-            Console.WriteLine($"Sværhed: {newExercise.ØvelseSværhed}");
-
-            // Syncable fields
+            // System fields
             newExercise.ETag = Guid.NewGuid().ToString();
             newExercise.ModifiedBy = "system";
             newExercise.ChangeHistoryJson = "[]";
 
-            // Log full object as JSON
             var payloadJson = System.Text.Json.JsonSerializer.Serialize(newExercise);
             Console.WriteLine($"Payload: {payloadJson}");
 
@@ -135,8 +139,12 @@
 
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("Exercise created successfully.");
-                NavigationManager.NavigateTo("/account");
+                Console.WriteLine("✔ Exercise created successfully.");
+
+                if (klubId.HasValue)
+                    NavigationManager.NavigateTo($"/admin/klub/{klubId}/exercises");
+                else
+                    NavigationManager.NavigateTo("/account");
             }
             else
             {
@@ -150,16 +158,16 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Exception occurred: {ex.Message}");
-            Console.WriteLine(ex.StackTrace);
             errorMessage = $"Error: {ex.Message}";
         }
     }
 
-    
-
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/account");
+        if (klubId.HasValue)
+            NavigationManager.NavigateTo($"/admin/klub/{klubId}/exercises");
+        else
+            NavigationManager.NavigateTo("/account");
     }
 
     public class Pensum
@@ -167,6 +175,4 @@
         public Guid PensumID { get; set; }
         public string PensumGrad { get; set; }
     }
-
 }
-
