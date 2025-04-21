@@ -74,7 +74,7 @@ else
                     @foreach (var program in klubDTO.Programmer)
                     {
                         <tr>
-                            <td>@program.</td>
+                            <td>@program.ProgramNavn</td>
                             <td>
                                 <button class="btn btn-sm btn-primary" @onclick="() => EditProgram(program.ProgramID)">Edit</button>
                                 <button class="btn btn-sm btn-danger" @onclick="() => DeleteProgram(program.ProgramID)">Delete</button>
@@ -256,7 +256,7 @@ else
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<BrugerDTO>>>($"api/klub/{klubId}");
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<BrugerDTO>>>($"api/bruger/klub/{klubId}");
             if (response?.Success == true)
             {
                 klubBrugere = response.Data ?? new List<BrugerDTO>();
