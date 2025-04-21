@@ -36,11 +36,16 @@
         <label>Quiz Description:</label>
         <InputTextArea @bind-Value="newQuiz.QuizBeskrivelse" class="form-control" />
     </div>
-
-@*     <div class="mb-3">
-        <label>Pensum ID:</label>
-        <InputNumber @bind-Value="newQuiz.PensumID" class="form-control" />
-    </div> *@
+    <div class="mb-3">
+        <label>Pensum:</label>
+        <select class="form-control" @bind="newQuiz.PensumID">
+            <option value="">-- Select Pensum --</option>
+            @foreach (var pensum in pensumListe)
+            {
+                <option value="@pensum.PensumID">@pensum.PensumGrad</option>
+            }
+        </select>
+    </div>
 
     <div class="mb-4">
         <h5>Questions for the Quiz</h5>
@@ -156,7 +161,7 @@
     private List<TeoriDTO> teorier = new();
     private List<TeknikDTO> teknikker = new();
     private List<ØvelseDTO> øvelser = new();
-
+    private List<PensumDTO> pensumListe = new();
     private TeoriDTO? selectedTeori;
     private TeknikDTO? selectedTeknik;
     private ØvelseDTO? selectedØvelse;
@@ -165,6 +170,7 @@
     {
         newQuiz.QuizID= Guid.NewGuid();
         newQuiz.PensumID = Guid.NewGuid();
+        pensumListe = await _apiClient.GetFromJsonAsync<List<PensumDTO>>("api/pensum");
 
         _apiClient = HttpClientFactory.CreateClient("ApiClient");
         var token = await AuthenticationService.GetTokenAsync();
