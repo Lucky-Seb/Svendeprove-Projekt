@@ -1,5 +1,18 @@
 ﻿@page "/programplan"
-@inject HttpClient Http
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
 
 <h1>Program Plan Management</h1>
 
@@ -74,42 +87,6 @@ else
         <label>Klub ID:</label>
         <InputNumber class="form-control" @bind-Value="programPlan.KlubID" required />
     </div>
-
-    <h4>Træninger</h4>
-    <button type="button" class="btn btn-success" @onclick="AddTræning">Add Træning</button>
-
-    @foreach (var træning in programPlan.Træninger)
-    {
-        <div class="card mt-3">
-            <div class="card-body">
-                <label>Træning Rækkefølge:</label>
-                <InputNumber class="form-control" @bind-Value="træning.TræningRækkefølge" />
-
-                <label>Tid:</label>
-                <InputNumber class="form-control" @bind-Value="træning.Tid" />
-
-                <label>Tid:</label>
-                <InputNumber class="form-control" @bind-Value="træning.ProgramID" />
-
-                <label>Quiz ID:</label>
-                <InputNumber class="form-control" @bind-Value="træning.QuizID" />
-
-                <label>Teori ID:</label>
-                <InputNumber class="form-control" @bind-Value="træning.TeoriID" />
-
-                <label>Teknik ID:</label>
-                <InputNumber class="form-control" @bind-Value="træning.TeknikID" />
-
-                <label>Øvelse ID:</label>
-                <InputNumber class="form-control" @bind-Value="træning.ØvelseID" />
-
-                <button class="btn btn-danger mt-2" @onclick="() => RemoveTræning(træning)">Remove</button>
-            </div>
-        </div>
-    }
-
-    <button type="submit" class="btn btn-success">@(isEditing ? "Update" : "Create")</button>
-    <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
 </EditForm>
 
 @if (errorMessage != null)
@@ -122,9 +99,11 @@ else
     private ProgramPlanDTO programPlan = new();
     private bool isEditing = false;
     private string? errorMessage;
+    private HttpClient _apiClient;
 
     protected override async Task OnInitializedAsync()
     {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
         await LoadProgramPlans();
     }
 
@@ -132,7 +111,15 @@ else
     {
         try
         {
-            programPlans = await Http.GetFromJsonAsync<List<ProgramPlanDTO>>("https://localhost:7478/api/programplan/all");
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>("api/programplan");
+            if (response?.Success == true && response.Data != null)
+            {
+                programPlans = _mapper.Map<List<ProgramPlanDTO>>(response.Data);
+            }
+            else
+            {
+                errorMessage = "Failed to fetch program plans.";
+            }
         }
         catch (Exception ex)
         {
@@ -144,7 +131,7 @@ else
     {
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/programplan", programPlan);
+            var response = await _apiClient.PostAsJsonAsync("https://localhost:7478/api/programplan", programPlan);
             if (response.IsSuccessStatusCode)
             {
                 await LoadProgramPlans();
@@ -161,9 +148,9 @@ else
         }
     }
 
-    private void EditProgramPlan(ProgramPlanDTO program)
+    private void EditProgramPlan(ProgramPlanDTO selectedProgram)
     {
-        programPlan = program;
+        programPlan = selectedProgram;
         isEditing = true;
     }
 
@@ -171,7 +158,7 @@ else
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/programplan/{programPlan.ProgramID}", programPlan);
+            var response = await _apiClient.PutAsJsonAsync($"https://localhost:7478/api/programplan/{programPlan.ProgramID}", programPlan);
             if (response.IsSuccessStatusCode)
             {
                 await LoadProgramPlans();
@@ -189,7 +176,7 @@ else
         }
     }
 
-    private async Task DeleteProgramPlan(int id)
+    private async Task DeleteProgramPlan(Guid id)
     {
         if (!await ConfirmDelete())
         {
@@ -198,7 +185,7 @@ else
 
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7478/api/programplan/{id}");
+            var response = await _apiClient.DeleteAsync($"https://localhost:7478/api/programplan/{id}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadProgramPlans();
@@ -233,29 +220,5 @@ else
     private async Task<bool> ConfirmDelete()
     {
         return await Task.FromResult(true);
-    }
-
-    private class ProgramPlanDTO
-    {
-        public int ProgramID { get; set; }
-        public string ProgramNavn { get; set; }
-        public DateTime OprettelseDato { get; set; } = DateTime.Now;
-        public int Længde { get; set; }
-        public string Beskrivelse { get; set; }
-        public int BrugerID { get; set; }
-        public int KlubID { get; set; }
-        public List<TræningDTO> Træninger { get; set; } = new();
-    }
-
-    private class TræningDTO
-    {
-        public int TræningID { get; set; }
-        public int TræningRækkefølge { get; set; }
-        public int Tid { get; set; }
-        public int ProgramID { get; set; }
-        public int? QuizID { get; set; }
-        public int? TeoriID { get; set; }
-        public int? TeknikID { get; set; }
-        public int? ØvelseID { get; set; }
     }
 }

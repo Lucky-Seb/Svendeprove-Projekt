@@ -1,5 +1,19 @@
 ﻿@page "/klub"
-@inject HttpClient Http
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
 
 <h1>Klub Management</h1>
 
@@ -72,16 +86,18 @@ else
 }
 
 @code {
-    private List<KlubDTO> klubber = new();
+    private List<KlubDTO> availableKlubs = new();
     private List<KlubDTO> filteredKlubber = new();
     private KlubDTO klub = new();
     private bool isEditing = false;
     private string? errorMessage;
+    private HttpClient _apiClient;
 
     private string searchKlubName = "";
 
     protected override async Task OnInitializedAsync()
     {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
         await LoadKlubber();
     }
 
@@ -89,23 +105,26 @@ else
     {
         try
         {
-            var url = "https://localhost:7478/api/klub";
-            var response = await Http.GetFromJsonAsync<List<KlubDTO>>(url);
-            if (response != null)
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<KlubDTO>>>($"api/klub");
+            if (response?.Success == true && response.Data != null)
             {
-                klubber = response;
+                availableKlubs = _mapper.Map<List<KlubDTO>>(response.Data);
                 ApplyFilters();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch user data.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading Klubber: {ex.Message}";
+            errorMessage = $"Error loading user data: {ex.Message}";
         }
     }
 
     private void ApplyFilters()
     {
-        filteredKlubber = klubber
+        filteredKlubber = availableKlubs
             .Where(k => string.IsNullOrEmpty(searchKlubName) || k.KlubNavn.Contains(searchKlubName, StringComparison.OrdinalIgnoreCase))
             .ToList();
     }
@@ -120,7 +139,7 @@ else
     {
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/klub", klub);
+            var response = await _apiClient.PostAsJsonAsync("https://localhost:7478/api/klub", klub);
             if (response.IsSuccessStatusCode)
             {
                 await LoadKlubber();
@@ -147,7 +166,7 @@ else
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/klub/{klub.KlubID}", klub);
+            var response = await _apiClient.PutAsJsonAsync($"https://localhost:7478/api/klub/{klub.KlubID}", klub);
             if (response.IsSuccessStatusCode)
             {
                 await LoadKlubber();
@@ -165,7 +184,7 @@ else
         }
     }
 
-    private async Task DeleteKlub(int id)
+    private async Task DeleteKlub(Guid id)
     {
         if (!await ConfirmDelete())
         {
@@ -174,7 +193,7 @@ else
 
         try
         {
-            var response = await Http.DeleteAsync($"https://localhost:7478/api/klub/{id}");
+            var response = await _apiClient.DeleteAsync($"https://localhost:7478/api/klub/{id}");
             if (response.IsSuccessStatusCode)
             {
                 await LoadKlubber();
@@ -202,7 +221,7 @@ else
     }
     public class KlubDTO
     {
-        public int KlubID { get; set; }
+        public Guid KlubID { get; set; }
         public string KlubNavn { get; set; }
     }
 }
