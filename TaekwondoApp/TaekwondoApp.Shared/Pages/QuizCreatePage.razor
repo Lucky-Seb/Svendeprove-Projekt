@@ -40,7 +40,7 @@
         <label>Pensum:</label>
         <select class="form-control" @bind="newQuiz.PensumID">
             <option value="">-- Select Pensum --</option>
-            @foreach (var pensum in pensumListe)
+            @foreach (var pensum in pensumGradList)
             {
                 <option value="@pensum.PensumID">@pensum.PensumGrad</option>
             }
@@ -161,18 +161,32 @@
     private List<TeoriDTO> teorier = new();
     private List<TeknikDTO> teknikker = new();
     private List<ØvelseDTO> øvelser = new();
-    private List<PensumDTO> pensumListe = new();
+    private List<Pensum> pensumGradList = new List<Pensum>();
     private TeoriDTO? selectedTeori;
     private TeknikDTO? selectedTeknik;
     private ØvelseDTO? selectedØvelse;
 
     protected override async Task OnInitializedAsync()
     {
-        newQuiz.QuizID= Guid.NewGuid();
+        newQuiz.QuizID = Guid.NewGuid();
         newQuiz.PensumID = Guid.NewGuid();
-        pensumListe = await _apiClient.GetFromJsonAsync<List<PensumDTO>>("api/pensum");
-
         _apiClient = HttpClientFactory.CreateClient("ApiClient");
+        try
+        {
+            var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
+            if (pensumResponse?.Success == true && pensumResponse.Data != null)
+            {
+                pensumGradList = pensumResponse.Data;
+            }
+            else
+            {
+                errorMessage = "Failed to load PensumGrads.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading PensumGrads: {ex.Message}";
+        }
         var token = await AuthenticationService.GetTokenAsync();
         try
         {
