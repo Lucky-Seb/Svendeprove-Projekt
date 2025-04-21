@@ -78,7 +78,7 @@ else
                     @foreach (var program in klubDTO.Programmer)
                     {
                         <tr>
-                            <td>@program.ProgramNavn</td>
+                            <td>@program.</td>
                             <td>
                                 <button class="btn btn-sm btn-primary" @onclick="() => EditProgram(program.ProgramID)">Edit</button>
                                 <button class="btn btn-sm btn-danger" @onclick="() => DeleteProgram(program.ProgramID)">Delete</button>

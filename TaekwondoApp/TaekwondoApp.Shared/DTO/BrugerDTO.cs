@@ -16,11 +16,12 @@
 
         // Related collections
         // List of related entities
-        public List<KlubDTO> Klubber { get; set; }  // Clubs associated with the user
-        public List<ProgramPlanDTO> Programmer { get; set; }  // Programs associated with the user
-        public List<QuizDTO> Quizzer { get; set; }  // Quizzes associated with the user
-        public List<ØvelseDTO> Øvelser { get; set; }  // Exercises associated with the user
-        public List<BrugerKlubDTO> BrugerKlubber { get; set; }  // Clubs associated with the user
+        // Using ICollection<T> as a general collection type for flexibility
+        public ICollection<KlubDTO> Klubber { get; set; } = new List<KlubDTO>();
+        public ICollection<ProgramPlanDTO> Programmer { get; set; } = new List<ProgramPlanDTO>();
+        public ICollection<QuizDTO> Quizzer { get; set; } = new List<QuizDTO>();
+        public ICollection<ØvelseDTO> Øvelser { get; set; } = new List<ØvelseDTO>();
+        public ICollection<BrugerKlubDTO> BrugerKlubber { get; set; } = new List<BrugerKlubDTO>();
 
     }
 }
