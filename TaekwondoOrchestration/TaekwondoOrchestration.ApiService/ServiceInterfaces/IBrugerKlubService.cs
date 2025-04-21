@@ -3,6 +3,7 @@ using TaekwondoOrchestration.ApiService.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TaekwondoApp.Shared.Helper;
 
 namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
 {
@@ -19,5 +20,7 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
 
         // Delete BrugerKlub
         Task<Result<bool>> DeleteBrugerKlubAsync(Guid brugerId, Guid klubId);
+        Task<Result<bool>> CheckIfUserIsAdminAsync(Guid brugerId, Guid klubId);
+
     }
 }
