@@ -15,5 +15,6 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
         Task<Result<bool>> UpdateKlubAsync(Guid id, KlubDTO klubDto);
         Task<Result<bool>> DeleteKlubAsync(Guid id);
         Task<Result<IEnumerable<KlubDTO>>> GetKlubberByNavnAsync(string klubNavn);
+        Task<Result<KlubDTO>> GetKlubWithDetailsAsync(Guid klubId);
     }
 }

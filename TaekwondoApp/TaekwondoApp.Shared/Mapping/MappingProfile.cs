@@ -138,6 +138,13 @@ namespace TaekwondoApp.Shared.Mapping
 
             // Teori -> TeoriDTO
             CreateMap<Teori, TeoriDTO>();
+
+            CreateMap<Klub, KlubDTO>();
+            CreateMap<KlubProgram, ProgramPlanDTO>().ForMember(dest => dest.ProgramNavn, opt => opt.MapFrom(src => src.Plan.ProgramNavn));
+            CreateMap<KlubQuiz, QuizDTO>().ForMember(dest => dest.QuizNavn, opt => opt.MapFrom(src => src.Quiz.QuizNavn));
+            CreateMap<KlubØvelse, ØvelseDTO>().ForMember(dest => dest.ØvelseNavn, opt => opt.MapFrom(src => src.Øvelse.ØvelseNavn));
+            CreateMap<BrugerKlub, BrugerDTO>().ForMember(dest => dest.Brugernavn, opt => opt.MapFrom(src => src.Bruger.Brugernavn));
+
         }
     }
 }

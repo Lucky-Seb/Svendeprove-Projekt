@@ -33,6 +33,14 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             var result = await _klubService.GetKlubByIdAsync(id);
             return result.ToApiResponse();
         }
+        // New endpoint for getting a klub with detailed information
+        [HttpGet("details/{id}")]
+        public async Task<IActionResult> GetKlubWithDetails(Guid id)
+        {
+            var result = await _klubService.GetKlubWithDetailsAsync(id);
+            return result.ToApiResponse();
+        }
+
 
         [HttpGet("by-name/{klubNavn}")]
         public async Task<IActionResult> GetKlubByNavn(string klubNavn)
