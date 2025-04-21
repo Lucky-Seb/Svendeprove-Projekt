@@ -1788,11 +1788,13 @@ namespace TaekwondoOrchestration.ApiService.Data
                 new BrugerKlub
                 {
                     BrugerID = brugerID1,  // Link to Bruger 1
+                    KlubRole = "Admin",  // Role in the club
                     KlubID = klubID1       // Link to Klub 1
                 },
                 new BrugerKlub
                 {
                     BrugerID = brugerID2,  // Link to Bruger 2
+                    KlubRole = "Member",  // Role in the club
                     KlubID = klubID2       // Link to Klub 2
                 }
             );
