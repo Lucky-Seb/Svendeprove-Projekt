@@ -1,6 +1,6 @@
 ﻿namespace TaekwondoApp.Shared.DTO
 {
-    public class SimpleBrugerDTO : SyncableEntityDTO
+    public class BrugerDTO : SyncableEntityDTO
     {
         public Guid BrugerID { get; set; }
         public string Email { get; set; }
@@ -13,6 +13,14 @@
         public string Role { get; set; }
         public KlubDTO? Klub { get; set; }
         public string? Token { get; set; }  // Nullable since it will only be populated after successful authentication
+
+        // Related collections
+        // List of related entities
+        // Using ICollection<T> as a general collection type for flexibility
+        public ICollection<KlubDTO> Klubber { get; set; } = new List<KlubDTO>();
+        public ICollection<ProgramPlanDTO> Programmer { get; set; } = new List<ProgramPlanDTO>();
+        public ICollection<QuizDTO> Quizzer { get; set; } = new List<QuizDTO>();
+        public ICollection<ØvelseDTO> Øvelser { get; set; } = new List<ØvelseDTO>();
 
     }
 }

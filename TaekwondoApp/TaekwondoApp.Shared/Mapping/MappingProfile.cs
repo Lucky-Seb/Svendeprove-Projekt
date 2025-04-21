@@ -108,15 +108,12 @@ namespace TaekwondoApp.Shared.Mapping
                 .ForMember(dest => dest.Quizzer, opt => opt.MapFrom(src => src.BrugerQuizzer.Select(bq => bq.Quiz)))
                 .ForMember(dest => dest.Øvelser, opt => opt.MapFrom(src => src.BrugerØvelser.Select(bø => bø.Øvelse)));
 
-            // Klub → KlubDTO with BrugerSlim
+            // Klub -> KlubDTO
             CreateMap<Klub, KlubDTO>()
-                .ForMember(dest => dest.Bruger, opt => opt.MapFrom(src => src.BrugerKlubber.Select(bk => bk.Bruger)))
-                .ForMember(dest => dest.Programmer, opt => opt.MapFrom(src => src.KlubProgrammer.Select(kp => kp.Plan)))
-                .ForMember(dest => dest.Quizzer, opt => opt.MapFrom(src => src.KlubQuizzer.Select(kq => kq.Quiz)))
-                .ForMember(dest => dest.Øvelser, opt => opt.MapFrom(src => src.KlubØvelser.Select(kø => kø.Øvelse)));
+                .ForMember(dest => dest.Programmer, opt => opt.MapFrom(src => src.KlubProgrammer.Select(bp => bp.Plan)))
+                .ForMember(dest => dest.Quizzer, opt => opt.MapFrom(src => src.KlubQuizzer.Select(bq => bq.Quiz)))
+                .ForMember(dest => dest.Øvelser, opt => opt.MapFrom(src => src.KlubØvelser.Select(bø => bø.Øvelse)));
 
-            // Bruger → BrugerSlimDTO
-            CreateMap<Bruger, SimpleBrugerDTO>();
 
             // ProgramPlan -> ProgramPlanDTO
             CreateMap<ProgramPlan, ProgramPlanDTO>()
