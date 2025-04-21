@@ -49,18 +49,68 @@ namespace TaekwondoOrchestration.ApiService.Services
         // Create New Quiz
         public async Task<Result<QuizDTO>> CreateQuizAsync(QuizDTO quizDto)
         {
-            // Validation if necessary
+            // Validate DTO
             if (string.IsNullOrEmpty(quizDto.QuizNavn))
             {
-                return Result<QuizDTO>.Fail("Quiz Name is required.");
+                return Result<QuizDTO>.Fail("Quiz name is required.");
             }
 
             var newQuiz = _mapper.Map<Quiz>(quizDto);
             EntityHelper.InitializeEntity(newQuiz, quizDto.ModifiedBy, "Created new Quiz.");
+
+            // Create the Quiz
             var createdQuiz = await _quizRepository.CreateQuizAsync(newQuiz);
 
-            var mapped = _mapper.Map<QuizDTO>(createdQuiz);
-            return Result<QuizDTO>.Ok(mapped);
+            // Create the appropriate relation (BrugerQuiz or KlubQuiz)
+            if (quizDto.BrugerID.HasValue && quizDto.BrugerID.Value != Guid.Empty)
+            {
+                var brugerQuizDto = new BrugerQuizDTO
+                {
+                    BrugerID = quizDto.BrugerID.Value,
+                    QuizID = createdQuiz.QuizID
+                };
+
+                var createdBrugerQuiz = await _brugerQuizService.CreateBrugerQuizAsync(brugerQuizDto);
+                if (createdBrugerQuiz == null)
+                {
+                    return Result<QuizDTO>.Fail("Failed to create BrugerQuiz.");
+                }
+            }
+            else if (quizDto.KlubID.HasValue && quizDto.KlubID.Value != Guid.Empty)
+            {
+                var klubQuizDto = new KlubQuizDTO
+                {
+                    KlubID = quizDto.KlubID.Value,
+                    QuizID = createdQuiz.QuizID
+                };
+
+                var createdKlubQuiz = await _klubQuizService.CreateKlubQuizAsync(klubQuizDto);
+                if (createdKlubQuiz == null)
+                {
+                    return Result<QuizDTO>.Fail("Failed to create KlubQuiz.");
+                }
+            }
+            else
+            {
+                return Result<QuizDTO>.Fail("Either BrugerID or KlubID must be provided.");
+            }
+
+            // Create associated Spørgsmål entities
+            if (quizDto.Spørgsmål != null && quizDto.Spørgsmål.Any())
+            {
+                foreach (var spørgsmålDto in quizDto.Spørgsmål)
+                {
+                    spørgsmålDto.QuizID = createdQuiz.QuizID; // Ensure correct foreign key
+                    var spørgsmålResult = await _spørgsmålService.CreateSpørgsmålAsync(spørgsmålDto);
+                    if (spørgsmålResult.Failure)
+                    {
+                        return Result<QuizDTO>.Fail($"Failed to create Spørgsmål. Error: {spørgsmålResult.Failure}");
+                    }
+                }
+            }
+
+            var mappedQuiz = _mapper.Map<QuizDTO>(createdQuiz);
+            return Result<QuizDTO>.Ok(mappedQuiz);
         }
 
         // Update Existing Quiz
