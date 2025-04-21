@@ -161,9 +161,11 @@ namespace TaekwondoOrchestration.ApiService.Services
             // 6. Handle Additions & Updates
             foreach (var spørgsmålDto in updatedSpørgsmål)
             {
-                if (spørgsmålDto.SpørgsmålID == Guid.Empty)
+                var existing = existingSpørgsmål.FirstOrDefault(s => s.SpørgsmålID == spørgsmålDto.SpørgsmålID);
+
+                if (existing == null)
                 {
-                    // New spørgsmål
+                    // Not found = new
                     spørgsmålDto.QuizID = updatedDto.QuizID;
                     var createResult = await _spørgsmålService.CreateSpørgsmålAsync(spørgsmålDto);
                     if (createResult.Failure)
@@ -171,12 +173,8 @@ namespace TaekwondoOrchestration.ApiService.Services
                 }
                 else
                 {
-                    // Update existing spørgsmål
-                    var existing = existingSpørgsmål.FirstOrDefault(s => s.SpørgsmålID == spørgsmålDto.SpørgsmålID);
-                    if (existing != null)
-                    {
-                        await _spørgsmålService.UpdateSpørgsmålAsync(spørgsmålDto.SpørgsmålID, spørgsmålDto);
-                    }
+                    // Found = update
+                    await _spørgsmålService.UpdateSpørgsmålAsync(spørgsmålDto.SpørgsmålID, spørgsmålDto);
                 }
             }
 
