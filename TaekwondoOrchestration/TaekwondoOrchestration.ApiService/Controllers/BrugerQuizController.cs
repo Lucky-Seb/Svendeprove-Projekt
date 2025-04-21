@@ -41,7 +41,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         public async Task<IActionResult> DeleteBrugerQuiz(Guid brugerId, Guid quizId)
         {
             var success = await _brugerQuizService.DeleteBrugerQuizAsync(brugerId, quizId);
-            if (!success)
+            if (success.Failure)
                 return NotFound();
             return NoContent();
         }

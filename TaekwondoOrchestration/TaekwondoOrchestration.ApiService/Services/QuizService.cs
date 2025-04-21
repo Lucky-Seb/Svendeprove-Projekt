@@ -114,7 +114,7 @@ namespace TaekwondoOrchestration.ApiService.Services
         }
 
         // Update Existing Quiz
-        public async Task<Result<QuizDTO>> UpdateQuizAsync(Guid quizId, QuizDTO quizDto)
+        public async Task<Result<QuizDTO>> UpdateQuizAsync(Guid quizId, QuizDTO updatedDto)
         {
             // 1. Validate QuizNavn
             if (string.IsNullOrEmpty(updatedDto.QuizNavn))

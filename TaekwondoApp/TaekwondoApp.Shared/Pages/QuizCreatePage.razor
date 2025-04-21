@@ -143,14 +143,14 @@
             Spørgsmål = new List<SpørgsmålDTO>(),
             ETag = "some-etag-value",    // You need to generate or provide a valid ETag
             ModifiedBy = "user-id",      // The user who is making the changes (this can be set dynamically)
-            ChangeHistoryJson = "{}"     // An empty JSON object or a valid history record
+            ChangeHistoryJson = "[]"
         };
 
     private SpørgsmålDTO newSpørgsmål = new()
         {
             ETag = "some-etag-value",    // Set for each question
             ModifiedBy = "user-id",      // The user making the change
-            ChangeHistoryJson = "{}"     // The change history for the question
+            ChangeHistoryJson = "[]"
         };
 
     private List<TeoriDTO> teorier = new();
@@ -256,16 +256,16 @@
 
     private void AddSpørgsmål()
     {
-        // Add question to the list
         newSpørgsmål.SpørgsmålID = Guid.NewGuid();
         newQuiz.Spørgsmål.Add(newSpørgsmål);
 
         // Reset form
-        newSpørgsmål = new SpørgsmålDTO();
+        newSpørgsmål = CreateNewSpørgsmål();
         selectedTeori = null;
         selectedTeknik = null;
         selectedØvelse = null;
     }
+
 
     private void RemoveSpørgsmål(Guid spørgsmålId)
     {
@@ -301,8 +301,15 @@
             errorMessage = $"Error creating quiz: {ex.Message}";
         }
     }
-
-
+    private SpørgsmålDTO CreateNewSpørgsmål()
+    {
+        return new SpørgsmålDTO
+            {
+                ETag = "some-etag-value",
+                ModifiedBy = "user-id",
+                ChangeHistoryJson = "[]"
+            };
+    }
     private void Cancel()
     {
         NavigationManager.NavigateTo("/account");

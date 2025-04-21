@@ -42,7 +42,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         public async Task<IActionResult> DeleteKlubQuiz(Guid klubId, Guid quizId)
         {
             var success = await _klubQuizService.DeleteKlubQuizAsync(klubId, quizId);
-            if (!success)
+            if (success.Failure)
                 return NotFound();
             return NoContent();
         }
