@@ -116,20 +116,73 @@ namespace TaekwondoOrchestration.ApiService.Services
         // Update Existing Quiz
         public async Task<Result<QuizDTO>> UpdateQuizAsync(Guid quizId, QuizDTO quizDto)
         {
-            if (string.IsNullOrEmpty(quizDto.QuizNavn))
-            {
-                return Result<QuizDTO>.Fail("Quiz Name is required.");
-            }
+            // 1. Validate QuizNavn
+            if (string.IsNullOrEmpty(updatedDto.QuizNavn))
+                return Result<QuizDTO>.Fail("Quiz name is required.");
 
+            // 2. Fetch existing Quiz from DB
             var existingQuiz = await _quizRepository.GetQuizByIdAsync(quizId);
             if (existingQuiz == null)
                 return Result<QuizDTO>.Fail("Quiz not found.");
 
-            _mapper.Map(quizDto, existingQuiz);
-            EntityHelper.UpdateCommonFields(existingQuiz, quizDto.ModifiedBy);
-            var updateSuccess = await _quizRepository.UpdateQuizAsync(existingQuiz);
+            // 3. Update Quiz fields
+            existingQuiz.QuizNavn = updatedDto.QuizNavn;
+            existingQuiz.QuizBeskrivelse = updatedDto.QuizBeskrivelse;
+            existingQuiz.PensumID = updatedDto.PensumID;
+            EntityHelper.InitializeEntity(existingQuiz, updatedDto.ModifiedBy, "Updated Quiz");
 
-            return updateSuccess ? Result<QuizDTO>.Ok(_mapper.Map<QuizDTO>(existingQuiz)) : Result<QuizDTO>.Fail("Failed to update Quiz.");
+            await _quizRepository.UpdateQuizAsync(existingQuiz);
+
+            // 4. Get existing spørgsmål from DB
+            var spørgsmålResult = await _spørgsmålService.GetSpørgsmålByQuizIdAsync(quizId);
+            if (spørgsmålResult.Failure)
+            {
+                return Result<QuizDTO>.Fail("Failed to retrieve existing spørgsmål.");
+            }
+
+            var existingSpørgsmål = spørgsmålResult.Value.ToList();
+            var updatedSpørgsmål = updatedDto.Spørgsmål ?? new List<SpørgsmålDTO>();
+
+            // 5. Handle Deletions
+            var spørgsmålIdsToKeep = updatedSpørgsmål
+                .Where(s => s.SpørgsmålID != Guid.Empty)
+                .Select(s => s.SpørgsmålID)
+                .ToHashSet();
+
+            var spørgsmålToDelete = existingSpørgsmål
+                .Where(es => !spørgsmålIdsToKeep.Contains(es.SpørgsmålID))
+                .ToList();
+
+            foreach (var spørgsmål in spørgsmålToDelete)
+            {
+                await _spørgsmålService.DeleteSpørgsmålAsync(spørgsmål.SpørgsmålID);
+            }
+
+            // 6. Handle Additions & Updates
+            foreach (var spørgsmålDto in updatedSpørgsmål)
+            {
+                if (spørgsmålDto.SpørgsmålID == Guid.Empty)
+                {
+                    // New spørgsmål
+                    spørgsmålDto.QuizID = updatedDto.QuizID;
+                    var createResult = await _spørgsmålService.CreateSpørgsmålAsync(spørgsmålDto);
+                    if (createResult.Failure)
+                        return Result<QuizDTO>.Fail($"Failed to add spørgsmål: {createResult.Failure}");
+                }
+                else
+                {
+                    // Update existing spørgsmål
+                    var existing = existingSpørgsmål.FirstOrDefault(s => s.SpørgsmålID == spørgsmålDto.SpørgsmålID);
+                    if (existing != null)
+                    {
+                        await _spørgsmålService.UpdateSpørgsmålAsync(spørgsmålDto.SpørgsmålID, spørgsmålDto);
+                    }
+                }
+            }
+
+            // 7. Return updated QuizDTO
+            var mappedQuiz = _mapper.Map<QuizDTO>(existingQuiz);
+            return Result<QuizDTO>.Ok(mappedQuiz);
         }
 
         // Soft Delete Quiz
