@@ -1,0 +1,181 @@
+﻿@page "/quiz/update/{quizId:guid}"
+
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h3>Edit Quiz</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (newQuiz is not null)
+{
+    <EditForm Model="newQuiz" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Quiz Name:</label>
+            <InputText @bind-Value="newQuiz.QuizNavn" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Quiz Description:</label>
+            <InputTextArea @bind-Value="newQuiz.QuizBeskrivelse" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Pensum:</label>
+            <select class="form-control" @bind="newQuiz.PensumID">
+                <option value="">-- Select Pensum --</option>
+                @foreach (var pensum in pensumGradList)
+                {
+                    <option value="@pensum.PensumID">@pensum.PensumGrad</option>
+                }
+            </select>
+        </div>
+
+        <h5>Questions</h5>
+        <ul class="list-group mb-3">
+            @foreach (var spørgsmål in newQuiz.Spørgsmål)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <strong>@spørgsmål.SpørgsmålRækkefølge</strong> - @spørgsmål.SpørgsmålTid sec
+                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveSpørgsmål(spørgsmål.SpørgsmålID)">Remove</button>
+                </li>
+            }
+        </ul>
+
+        <!-- Add new spørgsmål -->
+        <div class="card p-3 bg-light border">
+            <h6>Add Spørgsmål</h6>
+
+            <div class="mb-2">
+                <label>Rækkefølge:</label>
+                <InputNumber @bind-Value="newSpørgsmål.SpørgsmålRækkefølge" class="form-control" />
+            </div>
+            <div class="mb-2">
+                <label>Tid (sec):</label>
+                <InputNumber @bind-Value="newSpørgsmål.SpørgsmålTid" class="form-control" />
+            </div>
+
+            <button type="button" class="btn btn-primary mt-2" @onclick="AddSpørgsmål">Add</button>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3">Save Changes</button>
+        <button type="button" class="btn btn-secondary mt-3" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+else
+{
+    <p>Loading quiz...</p>
+}
+
+@code {
+    [Parameter] public Guid quizId { get; set; }
+
+    private QuizDTO newQuiz = new();
+    private SpørgsmålDTO newSpørgsmål = new();
+    private List<Pensum> pensumGradList = new();
+    private string errorMessage = "";
+    private HttpClient _apiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+        try
+        {
+            var quizResp = await _apiClient.GetFromJsonAsync<ApiResponse<QuizDTO>>($"api/quiz/{quizId}");
+            if (quizResp?.Success == true && quizResp.Data is not null)
+            {
+                newQuiz = quizResp.Data;
+            }
+            else
+            {
+                errorMessage = "Could not load quiz data.";
+            }
+
+            var pensumResp = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
+            if (pensumResp?.Success == true && pensumResp.Data is not null)
+            {
+                pensumGradList = pensumResp.Data;
+            }
+            else
+            {
+                errorMessage = "Could not load pensum list.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading data: {ex.Message}";
+        }
+
+        newSpørgsmål = CreateNewSpørgsmål();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var response = await _apiClient.PutAsJsonAsync($"api/quiz/{quizId}", newQuiz);
+
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo("/account");
+            }
+            else
+            {
+                var details = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Failed to update quiz. Status: {response.StatusCode}\nDetails: {details}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating quiz: {ex.Message}";
+        }
+    }
+
+    private void AddSpørgsmål()
+    {
+        newSpørgsmål.SpørgsmålID = Guid.NewGuid();
+        newSpørgsmål.QuizID = newQuiz.QuizID;
+        newQuiz.Spørgsmål.Add(newSpørgsmål);
+        newSpørgsmål = CreateNewSpørgsmål();
+    }
+
+    private void RemoveSpørgsmål(Guid id)
+    {
+        var match = newQuiz.Spørgsmål.FirstOrDefault(s => s.SpørgsmålID == id);
+        if (match != null)
+        {
+            newQuiz.Spørgsmål.Remove(match);
+        }
+    }
+
+    private SpørgsmålDTO CreateNewSpørgsmål() => new()
+        {
+            ETag = "some-etag",
+            ModifiedBy = "user-id",
+            ChangeHistoryJson = "[]"
+        };
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/account");
+    }
+}

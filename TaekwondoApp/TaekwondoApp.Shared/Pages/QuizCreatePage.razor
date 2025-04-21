@@ -298,7 +298,9 @@
 
     private async Task HandleValidSubmit()
     {
-
+        var token = await AuthenticationService.GetTokenAsync();
+        var brugerId = JwtParser.GetUserIdFromJwt(token);
+        newQuiz.BrugerID = brugerId;
         try
         {
             var response = await _apiClient.PostAsJsonAsync("api/quiz", newQuiz);
