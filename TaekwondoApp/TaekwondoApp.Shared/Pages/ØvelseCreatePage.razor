@@ -142,7 +142,7 @@
                 Console.WriteLine("✔ Exercise created successfully.");
 
                 if (klubId.HasValue)
-                    NavigationManager.NavigateTo($"/admin/klub/{klubId}/exercises");
+                    NavigationManager.NavigateTo($"/admin/klub/{klubId}");
                 else
                     NavigationManager.NavigateTo("/account");
             }
@@ -165,7 +165,7 @@
     private void Cancel()
     {
         if (klubId.HasValue)
-            NavigationManager.NavigateTo($"/admin/klub/{klubId}/exercises");
+            NavigationManager.NavigateTo($"/admin/klub/{klubId}");
         else
             NavigationManager.NavigateTo("/account");
     }

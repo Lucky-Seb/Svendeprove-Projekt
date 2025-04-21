@@ -200,7 +200,7 @@ else
             {
                 Console.WriteLine("✅ Program Plan updated.");
                 if (klubId.HasValue)
-                    NavigationManager.NavigateTo($"/admin/klub/{klubId}/programplans");
+                    NavigationManager.NavigateTo($"/admin/klub/{klubId}");
                 else
                     NavigationManager.NavigateTo("/account");
             }
@@ -219,7 +219,7 @@ else
     private void Cancel()
     {
         if (klubId.HasValue)
-            NavigationManager.NavigateTo($"/admin/klub/{klubId}/programplans");
+            NavigationManager.NavigateTo($"/admin/klub/{klubId}");
         else
             NavigationManager.NavigateTo("/account");
     }

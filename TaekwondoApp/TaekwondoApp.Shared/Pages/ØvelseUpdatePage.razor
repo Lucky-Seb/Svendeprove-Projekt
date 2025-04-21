@@ -172,7 +172,7 @@ else
                 // Redirect depending on whether it's admin or user
                 if (klubId.HasValue)
                 {
-                    NavigationManager.NavigateTo($"/admin/klub/{klubId}/exercises");
+                    NavigationManager.NavigateTo($"/admin/klub/{klubId}");
                 }
                 else
                 {
@@ -199,7 +199,7 @@ else
     {
         if (klubId.HasValue)
         {
-            NavigationManager.NavigateTo($"/admin/klub/{klubId}/exercises");
+            NavigationManager.NavigateTo($"/admin/klub/{klubId}");
         }
         else
         {

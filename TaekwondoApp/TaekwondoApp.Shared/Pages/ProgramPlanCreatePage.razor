@@ -373,7 +373,7 @@
             if (response.IsSuccessStatusCode)
             {
                 if (klubId.HasValue)
-                    NavigationManager.NavigateTo($"/admin/klub/{klubId}/programmer");
+                    NavigationManager.NavigateTo($"/admin/klub/{klubId}");
                 else
                     NavigationManager.NavigateTo("/account");
             }
@@ -393,7 +393,7 @@
     private void Cancel()
     {
         if (klubId.HasValue)
-            NavigationManager.NavigateTo($"/admin/klub/{klubId}/programmer");
+            NavigationManager.NavigateTo($"/admin/klub/{klubId}");
         else
             NavigationManager.NavigateTo("/account");
     }

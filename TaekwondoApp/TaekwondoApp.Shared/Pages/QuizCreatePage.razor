@@ -323,7 +323,10 @@
                 // Reset form after successful submission
                 newQuiz = new QuizDTO(); // Resetting the model
                 StateHasChanged(); // Trigger a re-render
-                NavigationManager.NavigateTo("/account");
+                if (klubId.HasValue)
+                    NavigationManager.NavigateTo($"/admin/klub/{klubId}");
+                else
+                    NavigationManager.NavigateTo("/account");      
             }
             else
             {
@@ -348,7 +351,7 @@
     private void Cancel()
     {
         if (klubId.HasValue)
-            NavigationManager.NavigateTo($"/admin/klub/{klubId}/programmer");
+            NavigationManager.NavigateTo($"/admin/klub/{klubId}");
         else
             NavigationManager.NavigateTo("/account");
     }
