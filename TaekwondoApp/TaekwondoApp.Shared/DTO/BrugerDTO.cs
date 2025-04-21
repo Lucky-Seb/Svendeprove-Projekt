@@ -20,6 +20,7 @@
         public List<ProgramPlanDTO> Programmer { get; set; }  // Programs associated with the user
         public List<QuizDTO> Quizzer { get; set; }  // Quizzes associated with the user
         public List<ØvelseDTO> Øvelser { get; set; }  // Exercises associated with the user
+        public List<BrugerKlubDTO> BrugerKlubber { get; set; }  // Clubs associated with the user
 
     }
 }

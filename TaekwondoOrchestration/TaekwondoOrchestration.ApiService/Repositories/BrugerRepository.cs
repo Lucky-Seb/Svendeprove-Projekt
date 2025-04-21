@@ -127,6 +127,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             var brugerDetails = await _context.Brugere
                 .Where(b => b.BrugerID == brugerId)
                 .Include(b => b.BrugerKlubber)  // Klubber
+                .Include(b => b.BrugerKlubber)  // Klubber
                     .ThenInclude(bk => bk.Klub) // Ensure that the Klub data inside BrugerKlubber is included
                 .Include(b => b.BrugerProgrammer)
                     .ThenInclude(bp => bp.Plan) // Ensure that the Program data inside BrugerProgrammer is included// Programmer
