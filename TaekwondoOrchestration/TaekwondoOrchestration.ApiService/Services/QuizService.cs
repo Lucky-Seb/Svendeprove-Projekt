@@ -11,17 +11,17 @@ namespace TaekwondoOrchestration.ApiService.Services
     public class QuizService : IQuizService
     {
         private readonly IQuizRepository _quizRepository;
-        private readonly ISpørgsmålRepository _spørgsmålRepository;
-        private readonly IBrugerQuizRepository _brugerQuizRepository;
-        private readonly IKlubQuizRepository _klubQuizRepository;
+        private readonly ISpørgsmålService _spørgsmålService;
+        private readonly IBrugerQuizService _brugerQuizService;
+        private readonly IKlubQuizService _klubQuizService;
         private readonly IMapper _mapper;
 
-        public QuizService(IQuizRepository quizRepository, ISpørgsmålRepository spørgsmålRepository, IBrugerQuizRepository brugerQuizRepository, IKlubQuizRepository klubQuizRepository, IMapper mapper)
+        public QuizService(IQuizRepository quizRepository, ISpørgsmålService spørgsmålService, IBrugerQuizService brugerQuizService, IKlubQuizService klubQuizService, IMapper mapper)
         {
             _quizRepository = quizRepository;
-            _spørgsmålRepository = spørgsmålRepository;
-            _brugerQuizRepository = brugerQuizRepository;
-            _klubQuizRepository = klubQuizRepository;
+            _spørgsmålService = spørgsmålService;
+            _brugerQuizService = brugerQuizService;
+            _klubQuizService = klubQuizService;
             _mapper = mapper;
         }
 
@@ -49,37 +49,138 @@ namespace TaekwondoOrchestration.ApiService.Services
         // Create New Quiz
         public async Task<Result<QuizDTO>> CreateQuizAsync(QuizDTO quizDto)
         {
-            // Validation if necessary
+            // Validate DTO
             if (string.IsNullOrEmpty(quizDto.QuizNavn))
             {
-                return Result<QuizDTO>.Fail("Quiz Name is required.");
+                return Result<QuizDTO>.Fail("Quiz name is required.");
             }
 
             var newQuiz = _mapper.Map<Quiz>(quizDto);
             EntityHelper.InitializeEntity(newQuiz, quizDto.ModifiedBy, "Created new Quiz.");
+
+            // Create the Quiz
             var createdQuiz = await _quizRepository.CreateQuizAsync(newQuiz);
 
-            var mapped = _mapper.Map<QuizDTO>(createdQuiz);
-            return Result<QuizDTO>.Ok(mapped);
+            // Create the appropriate relation (BrugerQuiz or KlubQuiz)
+            if (quizDto.BrugerID.HasValue && quizDto.BrugerID.Value != Guid.Empty)
+            {
+                var brugerQuizDto = new BrugerQuizDTO
+                {
+                    BrugerID = quizDto.BrugerID.Value,
+                    QuizID = createdQuiz.QuizID
+                };
+
+                var createdBrugerQuiz = await _brugerQuizService.CreateBrugerQuizAsync(brugerQuizDto);
+                if (createdBrugerQuiz == null)
+                {
+                    return Result<QuizDTO>.Fail("Failed to create BrugerQuiz.");
+                }
+            }
+            else if (quizDto.KlubID.HasValue && quizDto.KlubID.Value != Guid.Empty)
+            {
+                var klubQuizDto = new KlubQuizDTO
+                {
+                    KlubID = quizDto.KlubID.Value,
+                    QuizID = createdQuiz.QuizID
+                };
+
+                var createdKlubQuiz = await _klubQuizService.CreateKlubQuizAsync(klubQuizDto);
+                if (createdKlubQuiz == null)
+                {
+                    return Result<QuizDTO>.Fail("Failed to create KlubQuiz.");
+                }
+            }
+            else
+            {
+                return Result<QuizDTO>.Fail("Either BrugerID or KlubID must be provided.");
+            }
+
+            // Create associated Spørgsmål entities
+            if (quizDto.Spørgsmål != null && quizDto.Spørgsmål.Any())
+            {
+                foreach (var spørgsmålDto in quizDto.Spørgsmål)
+                {
+                    spørgsmålDto.QuizID = createdQuiz.QuizID; // Ensure correct foreign key
+                    var spørgsmålResult = await _spørgsmålService.CreateSpørgsmålAsync(spørgsmålDto);
+                    if (spørgsmålResult.Failure)
+                    {
+                        return Result<QuizDTO>.Fail($"Failed to create Spørgsmål. Error: {spørgsmålResult.Failure}");
+                    }
+                }
+            }
+
+            var mappedQuiz = _mapper.Map<QuizDTO>(createdQuiz);
+            return Result<QuizDTO>.Ok(mappedQuiz);
         }
 
         // Update Existing Quiz
-        public async Task<Result<QuizDTO>> UpdateQuizAsync(Guid quizId, QuizDTO quizDto)
+        public async Task<Result<QuizDTO>> UpdateQuizAsync(Guid quizId, QuizDTO updatedDto)
         {
-            if (string.IsNullOrEmpty(quizDto.QuizNavn))
-            {
-                return Result<QuizDTO>.Fail("Quiz Name is required.");
-            }
+            // 1. Validate QuizNavn
+            if (string.IsNullOrEmpty(updatedDto.QuizNavn))
+                return Result<QuizDTO>.Fail("Quiz name is required.");
 
+            // 2. Fetch existing Quiz from DB
             var existingQuiz = await _quizRepository.GetQuizByIdAsync(quizId);
             if (existingQuiz == null)
                 return Result<QuizDTO>.Fail("Quiz not found.");
 
-            _mapper.Map(quizDto, existingQuiz);
-            EntityHelper.UpdateCommonFields(existingQuiz, quizDto.ModifiedBy);
-            var updateSuccess = await _quizRepository.UpdateQuizAsync(existingQuiz);
+            // 3. Update Quiz fields
+            existingQuiz.QuizNavn = updatedDto.QuizNavn;
+            existingQuiz.QuizBeskrivelse = updatedDto.QuizBeskrivelse;
+            existingQuiz.PensumID = updatedDto.PensumID;
+            EntityHelper.InitializeEntity(existingQuiz, updatedDto.ModifiedBy, "Updated Quiz");
 
-            return updateSuccess ? Result<QuizDTO>.Ok(_mapper.Map<QuizDTO>(existingQuiz)) : Result<QuizDTO>.Fail("Failed to update Quiz.");
+            await _quizRepository.UpdateQuizAsync(existingQuiz);
+
+            // 4. Get existing spørgsmål from DB
+            var spørgsmålResult = await _spørgsmålService.GetSpørgsmålByQuizIdAsync(quizId);
+            if (spørgsmålResult.Failure)
+            {
+                return Result<QuizDTO>.Fail("Failed to retrieve existing spørgsmål.");
+            }
+
+            var existingSpørgsmål = spørgsmålResult.Value.ToList();
+            var updatedSpørgsmål = updatedDto.Spørgsmål ?? new List<SpørgsmålDTO>();
+
+            // 5. Handle Deletions
+            var spørgsmålIdsToKeep = updatedSpørgsmål
+                .Where(s => s.SpørgsmålID != Guid.Empty)
+                .Select(s => s.SpørgsmålID)
+                .ToHashSet();
+
+            var spørgsmålToDelete = existingSpørgsmål
+                .Where(es => !spørgsmålIdsToKeep.Contains(es.SpørgsmålID))
+                .ToList();
+
+            foreach (var spørgsmål in spørgsmålToDelete)
+            {
+                await _spørgsmålService.DeleteSpørgsmålAsync(spørgsmål.SpørgsmålID);
+            }
+
+            // 6. Handle Additions & Updates
+            foreach (var spørgsmålDto in updatedSpørgsmål)
+            {
+                var existing = existingSpørgsmål.FirstOrDefault(s => s.SpørgsmålID == spørgsmålDto.SpørgsmålID);
+
+                if (existing == null)
+                {
+                    // Not found = new
+                    spørgsmålDto.QuizID = updatedDto.QuizID;
+                    var createResult = await _spørgsmålService.CreateSpørgsmålAsync(spørgsmålDto);
+                    if (createResult.Failure)
+                        return Result<QuizDTO>.Fail($"Failed to add spørgsmål: {createResult.Failure}");
+                }
+                else
+                {
+                    // Found = update
+                    await _spørgsmålService.UpdateSpørgsmålAsync(spørgsmålDto.SpørgsmålID, spørgsmålDto);
+                }
+            }
+
+            // 7. Return updated QuizDTO
+            var mappedQuiz = _mapper.Map<QuizDTO>(existingQuiz);
+            return Result<QuizDTO>.Ok(mappedQuiz);
         }
 
         // Soft Delete Quiz

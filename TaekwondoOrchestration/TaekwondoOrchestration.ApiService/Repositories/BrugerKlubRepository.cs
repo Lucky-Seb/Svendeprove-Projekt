@@ -2,9 +2,9 @@
 using TaekwondoOrchestration.ApiService.Data;
 using TaekwondoApp.Shared.Models;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
-
 
 namespace TaekwondoOrchestration.ApiService.Repositories
 {
@@ -28,8 +28,10 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                 .FirstOrDefaultAsync(bk => bk.BrugerID == brugerId && bk.KlubID == klubId);
         }
 
-        public async Task<BrugerKlub> CreateBrugerKlubAsync(BrugerKlub brugerKlub)
+        public async Task<BrugerKlub?> CreateBrugerKlubAsync(BrugerKlub brugerKlub)
         {
+            if (brugerKlub == null) return null;
+
             _context.BrugerKlubber.Add(brugerKlub);
             await _context.SaveChangesAsync();
             return brugerKlub;

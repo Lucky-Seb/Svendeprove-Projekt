@@ -1,0 +1,181 @@
+﻿@page "/øvelse/update/{Id:guid}"
+
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Text.Json
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory HttpClientFactory
+@inject IAuthenticationService AuthenticationService
+
+<h3>Edit Exercise</h3>
+
+@if (loading)
+{
+    <p>Loading...</p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else
+{
+    <EditForm Model="editModel" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>Name:</label>
+            <InputText @bind-Value="editModel.ØvelseNavn" class="form-control" />
+        </div>
+
+        <div>
+            <label>Description:</label>
+            <InputTextArea @bind-Value="editModel.ØvelseBeskrivelse" class="form-control" />
+        </div>
+
+        <div>
+            <label>Image URL:</label>
+            <InputText @bind-Value="editModel.ØvelseBillede" class="form-control" />
+        </div>
+
+        <div>
+            <label>Video URL:</label>
+            <InputText @bind-Value="editModel.ØvelseVideo" class="form-control" />
+        </div>
+
+        <div>
+            <label>Duration (seconds):</label>
+            <InputNumber @bind-Value="editModel.ØvelseTid" class="form-control" />
+        </div>
+
+        <div>
+            <label>Difficulty:</label>
+            <InputText @bind-Value="editModel.ØvelseSværhed" class="form-control" />
+        </div>
+
+        <div>
+            <label>Pensum:</label>
+            <select @bind="editModel.PensumID" class="form-control">
+                <option value="">-- Select Pensum --</option>
+                @foreach (var pensum in pensumGradList)
+                {
+                    <option value="@pensum.PensumID">@pensum.PensumGrad</option>
+                }
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private ØvelseDTO editModel = new();
+    private bool loading = true;
+    private string errorMessage = "";
+    private HttpClient _apiClient;
+    private List<Pensum> pensumGradList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+            var token = await AuthenticationService.GetTokenAsync();
+            var brugerId = JwtParser.GetUserIdFromJwt(token);
+            Console.WriteLine($"Loaded BrugerID: {brugerId}");
+
+            // Fetch exercise
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<ØvelseDTO>>($"api/øvelse/{Id}");
+            if (response?.Success == true && response.Data != null)
+            {
+                editModel = response.Data;
+                Console.WriteLine($"Loaded Øvelse: {JsonSerializer.Serialize(editModel)}");
+            }
+            else
+            {
+                errorMessage = "Failed to load exercise.";
+            }
+
+            // Fetch Pensum list
+            var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
+            if (pensumResponse?.Success == true && pensumResponse.Data != null)
+            {
+                pensumGradList = pensumResponse.Data;
+                Console.WriteLine("Pensum list loaded.");
+            }
+            else
+            {
+                errorMessage = "Failed to load PensumGrads.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading exercise or PensumGrads: {ex.Message}";
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            Console.WriteLine("Submitting update...");
+            Console.WriteLine($"ØvelseID: {editModel.ØvelseID}");
+            Console.WriteLine($"PensumID: {editModel.PensumID}");
+
+            // Add/Update sync fields if needed
+            editModel.ModifiedBy = "system";
+            editModel.ETag ??= Guid.NewGuid().ToString();
+            editModel.ChangeHistoryJson ??= "[]";
+
+            var jsonPayload = JsonSerializer.Serialize(editModel);
+            Console.WriteLine($"Payload: {jsonPayload}");
+
+            var response = await _apiClient.PutAsJsonAsync($"api/øvelse/{editModel.ØvelseID}", editModel);
+
+            Console.WriteLine($"Response Status: {response.StatusCode}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("✔ Exercise updated.");
+                NavigationManager.NavigateTo("/account");
+            }
+            else
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("❌ Failed to update exercise.");
+                Console.WriteLine($"Response Body: {body}");
+                errorMessage = $"Failed to update exercise. Status: {response.StatusCode}\nDetails: {body}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+            errorMessage = $"Error updating exercise: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/account");
+    }
+
+    public class Pensum
+    {
+        public Guid PensumID { get; set; }
+        public string PensumGrad { get; set; }
+    }
+}

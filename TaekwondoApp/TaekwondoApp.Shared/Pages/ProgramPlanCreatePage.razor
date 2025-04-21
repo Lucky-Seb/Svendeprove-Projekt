@@ -1,0 +1,381 @@
+﻿@page "/programplan/create"
+
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h3>Create New Program Plan</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<EditForm Model="newProgramPlan" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Program Name:</label>
+        <InputText @bind-Value="newProgramPlan.ProgramNavn" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Description:</label>
+        <InputTextArea @bind-Value="newProgramPlan.Beskrivelse" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Length (in days):</label>
+        <InputNumber @bind-Value="newProgramPlan.Længde" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Start Date:</label>
+        <InputDate @bind-Value="newProgramPlan.OprettelseDato" class="form-control" />
+    </div>
+    <div class="mb-4">
+        <h5>Træning(s) for the Program</h5>
+        <ul class="list-group mb-3">
+            @foreach (var træning in newProgramPlan.Træninger)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Rækkefølge: @træning.TræningRækkefølge (ID: @træning.TræningID)
+                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveTræning(træning.TræningID)">Remove</button>
+                </li>
+            }
+        </ul>
+
+        <!-- Add New Træning -->
+        <div class="card p-3 bg-light border">
+            <h6>Add Træning</h6>
+
+            <div class="mb-2">
+                <label>Træning Rækkefølge:</label>
+                <InputNumber @bind-Value="newTræning.TræningRækkefølge" class="form-control" />
+            </div>
+            <div class="mb-2">
+                <label>Træning Tid:</label>
+                <InputNumber @bind-Value="newTræning.Tid" class="form-control" />
+            </div>
+
+            <!-- Dropdowns with Previews -->
+
+            <div class="mb-2">
+                <label>Quiz:</label>
+                <select class="form-control" @onchange="OnQuizChanged">
+                    <option value="">-- Select Quiz --</option>
+                    @foreach (var quiz in quizzes)
+                    {
+                        <option value="@quiz.QuizID">@quiz.QuizNavn</option>
+                    }
+                </select>
+                @if (selectedQuiz != null)
+                {
+                    <div class="mt-1 p-2 border rounded bg-white">
+                        <strong>@selectedQuiz.QuizNavn</strong><br />
+                        <small>@selectedQuiz.QuizBeskrivelse</small>
+                    </div>
+                }
+            </div>
+
+            <div class="mb-2">
+                <label>Teori:</label>
+                <select class="form-control" @onchange="OnTeoriChanged">
+                    <option value="">-- Select Teori --</option>
+                    @foreach (var teori in teorier)
+                    {
+                        <option value="@teori.TeoriID">@teori.TeoriNavn</option>
+                    }
+                </select>
+                @if (selectedTeori != null)
+                {
+                    <div class="mt-1 p-2 border rounded bg-white">
+                        <strong>@selectedTeori.TeoriNavn</strong><br />
+                        <small>@selectedTeori.TeoriBeskrivelse</small>
+                    </div>
+                }
+            </div>
+
+            <div class="mb-2">
+                <label>Teknik:</label>
+                <select class="form-control" @onchange="OnTeknikChanged">
+                    <option value="">-- Select Teknik --</option>
+                    @foreach (var teknik in teknikker)
+                    {
+                        <option value="@teknik.TeknikID">@teknik.TeknikNavn</option>
+                    }
+                </select>
+                @if (selectedTeknik != null)
+                {
+                    <div class="mt-1 p-2 border rounded bg-white">
+                        <strong>@selectedTeknik.TeknikNavn</strong><br />
+                        <small>@selectedTeknik.TeknikBeskrivelse</small>
+                    </div>
+                }
+            </div>
+
+            <div class="mb-2">
+                <label>Øvelse:</label>
+                <select class="form-control" @onchange="OnØvelseChanged">
+                    <option value="">-- Select Øvelse --</option>
+                    @foreach (var øvelse in øvelser)
+                    {
+                        <option value="@øvelse.ØvelseID">@øvelse.ØvelseNavn</option>
+                    }
+                </select>
+                @if (selectedØvelse != null)
+                {
+                    <div class="mt-1 p-2 border rounded bg-white">
+                        <strong>@selectedØvelse.ØvelseNavn</strong><br />
+                        <small>@selectedØvelse.ØvelseBeskrivelse</small>
+                    </div>
+                }
+            </div>
+
+            <button type="button" class="btn btn-primary mt-2" @onclick="AddTræning">Add Træning</button>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Create Program Plan</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+@code {
+    private string errorMessage = "";
+    private HttpClient _apiClient;
+
+    private ProgramPlanDTO newProgramPlan = new()
+        {
+            Træninger = new List<TræningDTO>(),
+            ETag = Guid.NewGuid().ToString(),
+            ModifiedBy = "system",
+            ChangeHistoryJson = "[]"
+        };
+
+    private TræningDTO newTræning = new()
+        {
+            ETag = Guid.NewGuid().ToString(),
+            ModifiedBy = "system",
+            ChangeHistoryJson = "[]"
+        };
+
+    private List<QuizDTO> quizzes = new();
+    private List<TeoriDTO> teorier = new();
+    private List<TeknikDTO> teknikker = new();
+    private List<ØvelseDTO> øvelser = new();
+
+    private QuizDTO? selectedQuiz;
+    private TeoriDTO? selectedTeori;
+    private TeknikDTO? selectedTeknik;
+    private ØvelseDTO? selectedØvelse;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+        var token = await AuthenticationService.GetTokenAsync();
+
+        try
+        {
+            // Fetch quizzes with a response wrapper
+            var quizzesResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>("api/quiz");
+            if (quizzesResponse?.Success == true && quizzesResponse.Data != null)
+            {
+                quizzes = quizzesResponse.Data;
+            }
+            else
+            {
+                errorMessage = "Failed to load quizzes.";
+            }
+
+            // Fetch theories with a response wrapper
+            var teorierResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeoriDTO>>>("api/teori");
+            if (teorierResponse?.Success == true && teorierResponse.Data != null)
+            {
+                teorier = teorierResponse.Data;
+            }
+            else
+            {
+                errorMessage = "Failed to load theories.";
+            }
+
+            // Fetch techniques with a response wrapper
+            var teknikkerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeknikDTO>>>("api/teknik");
+            if (teknikkerResponse?.Success == true && teknikkerResponse.Data != null)
+            {
+                teknikker = teknikkerResponse.Data;
+            }
+            else
+            {
+                errorMessage = "Failed to load techniques.";
+            }
+
+            // Fetch exercises with a response wrapper
+            var øvelserResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
+            if (øvelserResponse?.Success == true && øvelserResponse.Data != null)
+            {
+                øvelser = øvelserResponse.Data;
+            }
+            else
+            {
+                errorMessage = "Failed to load exercises.";
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle general errors
+            errorMessage = $"An error occurred while loading data: {ex.Message}";
+        }
+    }
+
+    private void OnQuizChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var id))
+        {
+            selectedQuiz = quizzes.FirstOrDefault(q => q.QuizID == id);
+            newTræning.QuizID = id;
+        }
+    }
+
+    private void OnTeoriChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var id))
+        {
+            selectedTeori = teorier.FirstOrDefault(t => t.TeoriID == id);
+            newTræning.TeoriID = id;
+        }
+    }
+
+    private void OnTeknikChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var id))
+        {
+            selectedTeknik = teknikker.FirstOrDefault(t => t.TeknikID == id);
+            newTræning.TeknikID = id;
+        }
+    }
+
+    private void OnØvelseChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var id))
+        {
+            selectedØvelse = øvelser.FirstOrDefault(o => o.ØvelseID == id);
+            newTræning.ØvelseID = id;
+        }
+    }
+
+    private string selectedType = ""; // Holds "quiz", "teori", "teknik", or "øvelse"
+
+    private void AddTræning()
+    {
+        // Reset all GUIDs
+        newTræning.QuizID = null;
+        newTræning.TeoriID = null;
+        newTræning.TeknikID = null;
+        newTræning.ØvelseID = null;
+
+        // Set only the selected one
+        switch (selectedType)
+        {
+            case "quiz":
+                if (selectedQuiz != null)
+                    newTræning.QuizID = selectedQuiz.QuizID;
+                break;
+            case "teori":
+                if (selectedTeori != null)
+                    newTræning.TeoriID = selectedTeori.TeoriID;
+                break;
+            case "teknik":
+                if (selectedTeknik != null)
+                    newTræning.TeknikID = selectedTeknik.TeknikID;
+                break;
+            case "øvelse":
+                if (selectedØvelse != null)
+                    newTræning.ØvelseID = selectedØvelse.ØvelseID;
+                break;
+        }
+
+        // Basic validation
+        if (newTræning.TræningRækkefølge <= 0 || newTræning.Tid <= 0)
+        {
+            errorMessage = "Please provide valid rækkefølge, time.";
+            return;
+        }
+
+        // Finalize and add
+        newTræning.TræningID = Guid.NewGuid();
+        newTræning.ProgramID = newProgramPlan.ProgramID;
+        newProgramPlan.Træninger.Add(newTræning);
+
+        // Reset form
+        newTræning = new TræningDTO
+            {
+                ETag = Guid.NewGuid().ToString(),
+                ModifiedBy = "system",
+                ChangeHistoryJson = "[]"
+            };
+        selectedQuiz = null;
+        selectedTeori = null;
+        selectedTeknik = null;
+        selectedØvelse = null;
+        selectedType = "";
+    }
+
+    private void RemoveTræning(Guid træningId)
+    {
+        var træningToRemove = newProgramPlan.Træninger.FirstOrDefault(t => t.TræningID == træningId);
+        if (træningToRemove != null)
+        {
+            newProgramPlan.Træninger.Remove(træningToRemove);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var token = await AuthenticationService.GetTokenAsync();
+            var brugerId = JwtParser.GetUserIdFromJwt(token);
+            newProgramPlan.BrugerID = brugerId;
+            newProgramPlan.ProgramID = Guid.NewGuid();
+
+            foreach (var træning in newProgramPlan.Træninger)
+            {
+                træning.ProgramID = newProgramPlan.ProgramID;
+            }
+
+            var response = await _apiClient.PostAsJsonAsync("api/programplan", newProgramPlan);
+
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo("/account");
+            }
+            else
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Failed to create program plan. Status: {response.StatusCode}\nDetails: {responseBody}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating program plan: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/account");
+    }
+
+}

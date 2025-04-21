@@ -28,38 +28,38 @@ else
         @if (isEditing)
         {
             <h3>Edit Your Profile</h3>
-            <EditForm Model="brugerModel" OnValidSubmit="HandleValidSubmit">
+            <EditForm Model="brugerDTO" OnValidSubmit="HandleValidSubmit">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
                 <div>
                     <label for="brugernavn">Username:</label>
-                    <InputText id="brugernavn" @bind-Value="brugerModel.Brugernavn" />
+                    <InputText id="brugernavn" @bind-Value="brugerDTO.Brugernavn" />
                 </div>
 
                 <div>
                     <label for="fornavn">First Name:</label>
-                    <InputText id="fornavn" @bind-Value="brugerModel.Fornavn" />
+                    <InputText id="fornavn" @bind-Value="brugerDTO.Fornavn" />
                 </div>
 
                 <div>
                     <label for="efternavn">Last Name:</label>
-                    <InputText id="efternavn" @bind-Value="brugerModel.Efternavn" />
+                    <InputText id="efternavn" @bind-Value="brugerDTO.Efternavn" />
                 </div>
 
                 <div>
                     <label for="email">Email:</label>
-                    <InputText id="email" @bind-Value="brugerModel.Email" />
+                    <InputText id="email" @bind-Value="brugerDTO.Email" />
                 </div>
 
                 <div>
                     <label for="address">Address:</label>
-                    <InputText id="address" @bind-Value="brugerModel.Address" />
+                    <InputText id="address" @bind-Value="brugerDTO.Address" />
                 </div>
 
                 <div>
                     <label for="bæltegrad">Belt Grade:</label>
-                    <InputText id="bæltegrad" @bind-Value="brugerModel.Bæltegrad" />
+                    <InputText id="bæltegrad" @bind-Value="brugerDTO.Bæltegrad" />
                 </div>
 
                 <div class="actions">
@@ -71,49 +71,171 @@ else
         else
         {
             <h3>Your Profile</h3>
-            <p><strong>Username:</strong> @brugerModel.Brugernavn</p>
-            <p><strong>First Name:</strong> @brugerModel.Fornavn</p>
-            <p><strong>Last Name:</strong> @brugerModel.Efternavn</p>
-            <p><strong>Email:</strong> @brugerModel.Email</p>
-            <p><strong>Address:</strong> @brugerModel.Address</p>
-            <p><strong>Belt Grade:</strong> @brugerModel.Bæltegrad</p>
-
-            <h4>Clubs:</h4>
-            <ul>
-                @foreach (var klub in brugerModel.Klubber)
-                {
-                    <li>@klub.KlubNavn</li>
-                }
-            </ul>
-
-            <h4>Programs:</h4>
-            <ul>
-                @foreach (var program in brugerModel.Programmer)
-                {
-                    <li>@program.ProgramNavn</li>
-                }
-            </ul>
-
-            <h4>Quizzes:</h4>
-            <ul>
-                @foreach (var quiz in brugerModel.Quizzer)
-                {
-                    <li>@quiz.QuizNavn</li>
-                }
-            </ul>
+            <p><strong>Username:</strong> @brugerDTO.Brugernavn</p>
+            <p><strong>First Name:</strong> @brugerDTO.Fornavn</p>
+            <p><strong>Last Name:</strong> @brugerDTO.Efternavn</p>
+            <p><strong>Email:</strong> @brugerDTO.Email</p>
+            <p><strong>Address:</strong> @brugerDTO.Address</p>
+            <p><strong>Belt Grade:</strong> @brugerDTO.Bæltegrad</p>
 
             <h4>Exercises:</h4>
-            <ul>
-                @foreach (var øvelse in brugerModel.Øvelser)
-                {
-                    <li>@øvelse.ØvelseNavn</li>
-                }
-            </ul>
+            @if (brugerDTO.Øvelser?.Any() == true)
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Difficulty</th>
+                            <th>Duration</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var øvelse in brugerDTO.Øvelser)
+                        {
+                            <tr>
+                                <td>@øvelse.ØvelseNavn</td>
+                                <td>@øvelse.ØvelseSværhed</td>
+                                <td>@øvelse.ØvelseTid sec</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" @onclick="() => EditExercise(øvelse.ØvelseID)">Edit</button>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => PromptDelete(øvelse.ØvelseID)">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No exercises available.</p>
+            }
 
-            <div class="actions">
-                <button @onclick="EditProfile">Edit Profile</button>
-                <button @onclick="DeleteProfile">Delete Account</button>
-            </div>
+            <button class="btn btn-primary" @onclick="NavigateToCreateExercise">Create New Exercise</button>
+
+            <hr>
+
+            <h4>Clubs:</h4>
+
+            @if (brugerDTO.Klubber?.Any() == true)
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Club Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var klub in brugerDTO.Klubber)
+                        {
+                            <tr>
+                                <td>@klub.KlubNavn</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => DropOutClub(klub.KlubID)">Drop Out</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No clubs available.</p>
+            }
+
+            <h4>Join a Club:</h4>
+
+            @if (availableKlubs?.Any() == true)
+            {
+                <div>
+                    <label for="clubDropdown">Select a club to join:</label>
+                    <select id="clubDropdown" @bind="selectedClubId">
+                        <option value="">-- Select Club --</option>
+                        @foreach (var klub in availableKlubs)
+                        {
+                            <option value="@klub.KlubID">@klub.KlubNavn</option>
+                        }
+                    </select>
+                    <button class="btn btn-primary" @onclick="JoinClub">Join Club</button>
+                </div>
+            }
+            else
+            {
+                <p>No clubs available to join.</p>
+            }
+
+            <hr>
+
+            <h4>Programs:</h4>
+            @if (brugerDTO.Programmer?.Any() == true)
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Program Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var program in brugerDTO.Programmer)
+                        {
+                            <tr>
+                                <td>@program.ProgramNavn</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" @onclick="() => EditProgram(program.ProgramID)">Edit</button>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => PromptDeleteProgram(program.ProgramID)">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No programs available.</p>
+            }
+
+            <button class="btn btn-primary" @onclick="NavigateToCreateProgram">Create New Program</button>
+
+            <hr>
+
+            <h4>Quizzes:</h4>
+            @if (brugerDTO.Quizzer?.Any() == true)
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Quiz Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var quiz in brugerDTO.Quizzer)
+                        {
+                            <tr>
+                                <td>@quiz.QuizNavn</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" @onclick="() => EditQuiz(quiz.QuizID)">Edit</button>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => PromptDeleteQuiz(quiz.QuizID)">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No quizzes available.</p>
+            }
+
+            <button class="btn btn-primary" @onclick="NavigateToCreateQuiz">Create New Quiz</button>
+
+            <hr>
+
+
+
+
         }
     </div>
 
@@ -123,10 +245,14 @@ else
             <p>@errorMessage</p>
         </div>
     }
+
 }
 
 @code {
-    private BrugerDTO brugerModel = null;
+    private BrugerDTO brugerDTO = null;
+    private BrugerKlubDTO BrugerklubDTO = new();
+    private KlubDTO KlubDTO = new();
+    private QuizDTO QuizDTO = null;
     private bool isEditing = false;
     private bool isAuthenticated;
     private string errorMessage = string.Empty;
@@ -134,8 +260,9 @@ else
     private Guid brugerId = new Guid();
     private HttpClient _apiClient;
     private HubConnection _hubConnection;
+    private List<KlubDTO> availableKlubs = new List<KlubDTO>();
+    private Guid selectedClubId;
 
-    // ========== Lifecycle ==========
     protected override async Task OnInitializedAsync()
     {
         try
@@ -151,8 +278,8 @@ else
             isAuthenticated = true;
             _apiClient = HttpClientFactory.CreateClient("ApiClient");
 
-            // Call the API endpoint to fetch user details
             await LoadBruger();
+            await LoadKluber();
 
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl("https://localhost:7478/brugerhub")
@@ -164,6 +291,10 @@ else
                 await LoadBruger();
                 await InvokeAsync(StateHasChanged);
             });
+            // // Fetch available clubs (this can come from your API, e.g. GET request)
+            // availableClubs = await _apiClient.GetFromJsonAsync<List<Klub>>("api/klub");
+
+            // await _apiClient.GetFromJsonAsync<List<Klub>>("api/user/clubs");
 
             await _hubConnection.StartAsync();
         }
@@ -177,11 +308,30 @@ else
     {
         try
         {
-            // Call the new API endpoint to fetch user with details
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
             if (response?.Success == true && response.Data != null)
             {
-                brugerModel = response.Data;
+                brugerDTO = response.Data;
+                StateHasChanged();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch user data.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading user data: {ex.Message}";
+        }
+    }
+    private async Task LoadKluber()
+    {
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<KlubDTO>>>($"api/klub");
+            if (response?.Success == true && response.Data != null)
+            {
+                availableKlubs = _mapper.Map<List<KlubDTO>>(response.Data);
             }
             else
             {
@@ -194,52 +344,250 @@ else
         }
     }
 
-    private void EditProfile()
-    {
-        isEditing = true;
-    }
-
-    private void CancelEdit()
-    {
-        isEditing = false;
-    }
-
     private async Task HandleValidSubmit()
     {
         try
         {
-            var response = await _apiClient.PutAsJsonAsync($"api/bruger/{brugerModel.BrugerID}", brugerModel);
+            // Send the updated user data to the API for saving
+            var response = await _apiClient.PutAsJsonAsync($"api/bruger/update/{brugerId}", brugerDTO);
             if (response.IsSuccessStatusCode)
             {
+                // Successfully updated the profile
                 isEditing = false;
                 await LoadBruger();
             }
             else
             {
-                errorMessage = "Failed to update user data.";
+                errorMessage = "Failed to update the profile. Please try again.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error updating user data: {ex.Message}";
+            errorMessage = $"Error updating profile: {ex.Message}";
         }
     }
 
-    private async Task DeleteProfile()
+    private void CancelEdit()
     {
-        var response = await _apiClient.DeleteAsync($"api/bruger/{brugerModel.BrugerID}");
-        if (response.IsSuccessStatusCode)
-        {
-            NavigationManager.NavigateTo("/logout");
-        }
-        else
-        {
-            errorMessage = "Failed to delete profile.";
-        }
+        // Reset the model to the original values and stop editing.
+        isEditing = false;
+        // Reload the user data to discard any unsaved changes.
+        LoadBruger();
     }
 
     private void NavigateToLogin()
     {
         NavigationManager.NavigateTo("/login");
     }
+
+    // Edit methods
+    private void EditExercise(Guid exerciseId)
+    {
+        // Redirect to the exercise update page with the provided exercise ID
+        Console.WriteLine($"Editing exercise {exerciseId}");
+        NavigationManager.NavigateTo($"/øvelse/update/{exerciseId}");
+    }
+
+    private void EditProgram(Guid programId)
+    {
+        // Redirect to the program plan update page with the provided program ID
+        Console.WriteLine($"Editing program {programId}");
+        NavigationManager.NavigateTo($"/programplan/update/{programId}");
+    }
+
+    private void EditQuiz(Guid quizId)
+    {
+        // Redirect to the quiz update page with the provided quiz ID
+        Console.WriteLine($"Editing quiz {quizId}");
+        NavigationManager.NavigateTo($"/quiz/update/{quizId}");
+    }
+
+
+    // Prompt delete methods
+    private void PromptDelete(Guid exerciseId)
+    {
+        // Prompt the user for confirmation
+        // This part depends on how you want to implement the confirmation (e.g., a dialog box or simple alert)
+        bool userConfirmed = true; // This should be your actual confirmation logic
+
+        if (userConfirmed)
+        {
+            // Call the delete method if the user confirmed
+            DeleteExercise(exerciseId);
+        }
+    }
+    private async Task DeleteExercise(Guid exerciseId)
+    {
+        try
+        {
+            var response = await _apiClient.DeleteAsync($"api/øvelse/{exerciseId}");
+
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Remove the exercise from the list
+                var exerciseToRemove = brugerDTO.Øvelser.FirstOrDefault(e => e.ØvelseID == exerciseId);
+                if (exerciseToRemove != null)
+                {
+                    await _apiClient.DeleteAsync($"api/øvelse/{exerciseId}");
+                }
+            }
+            else
+            {
+                errorMessage = "Failed to delete exercise. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting exercise: {ex.Message}";
+        }
+    }
+
+    private void PromptDeleteProgram(Guid programId)
+    {
+        // Prompt the user for confirmation
+        // This part depends on how you want to implement the confirmation (e.g., a dialog box or simple alert)
+        bool userConfirmed = true; // This should be your actual confirmation logic
+
+        if (userConfirmed)
+        {
+            // Call the delete method if the user confirmed
+            DeleteProgram(programId);
+        }
+    }
+    private async Task DeleteProgram(Guid programId)
+    {
+        try
+        {
+            var response = await _apiClient.DeleteAsync($"api/programplan/{programId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Remove the program from the list
+                var programToRemove = brugerDTO.Programmer.FirstOrDefault(p => p.ProgramID == programId);
+                if (programToRemove != null)
+                {
+                    brugerDTO.Programmer.Remove(programToRemove);
+                }
+            }
+            else
+            {
+                errorMessage = "Failed to delete program. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting program: {ex.Message}";
+        }
+    }
+
+    private void PromptDeleteQuiz(Guid quizId)
+    {
+        // Prompt the user for confirmation
+        // This part depends on how you want to implement the confirmation (e.g., a dialog box or simple alert)
+        bool userConfirmed = true; // This should be your actual confirmation logic
+
+        if (userConfirmed)
+        {
+            // Call the delete method if the user confirmed
+            DeleteQuiz(quizId);
+        }
+    }
+    private async Task DeleteQuiz(Guid quizId)
+    {
+        try
+        {
+            var response = await _apiClient.DeleteAsync($"api/quiz/{quizId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Remove the program from the list
+                var quizToRemove = brugerDTO.Quizzer.FirstOrDefault(q => q.QuizID == quizId);
+                if (quizToRemove != null)
+                {
+                    brugerDTO.Quizzer.Remove(quizToRemove);
+                }
+            }
+            else
+            {
+                errorMessage = "Failed to delete program. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting program: {ex.Message}";
+        }
+    }
+    // Navigation methods
+    private void NavigateToCreateExercise()
+    {
+        NavigationManager.NavigateTo("/øvelse/create");
+    }
+
+    private void NavigateToCreateClub()
+    {
+        NavigationManager.NavigateTo("/create/club");
+    }
+
+    private void NavigateToCreateProgram()
+    {
+        NavigationManager.NavigateTo("/programplan/create");
+    }
+
+    private void NavigateToCreateQuiz()
+    {
+        NavigationManager.NavigateTo("/quiz/create");
+    }
+
+    private async Task JoinClub()
+    {
+        if (selectedClubId == Guid.Empty)
+        {
+            // Optionally add a check for selectedClubId
+            return;
+        }
+
+        var brugerKlubDto = new BrugerKlubDTO
+            {
+                BrugerID = brugerDTO.BrugerID,// This should come from the logged-in user
+                KlubID = selectedClubId
+            };
+
+        // Send a POST request to join the club
+        var response = await _apiClient.PostAsJsonAsync("api/brugerklub", brugerKlubDto);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Update the UI after the user has joined the club
+            // For example, refresh the clubs list or add the joined club to the user's list
+            var joinedClub = await response.Content.ReadFromJsonAsync<BrugerKlubDTO>();
+            // brugerDTO.Klubber.Add(klubDTO); // Add KlubDTO, not Klub model
+            LoadKluber();
+        }
+        else
+        {
+            // Handle errors here (e.g., show an error message)
+        }
+    }
+
+    private async Task DropOutClub(Guid klubId)
+    {
+        // Send a DELETE request to remove the user from the club
+        var response = await _apiClient.DeleteAsync($"api/brugerklub/{brugerDTO.BrugerID}/{klubId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Remove the club from the list of user's clubs
+            var klubToRemove = brugerDTO.Klubber.FirstOrDefault(k => k.KlubID == klubId);
+            if (klubToRemove != null)
+            {
+                brugerDTO.Klubber.Remove(klubToRemove);
+            }
+        }
+        else
+        {
+            // Handle errors (e.g., show an error message)
+        }
+    }
 }
+

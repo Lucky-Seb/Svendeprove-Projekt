@@ -130,7 +130,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         // GET: api/quiz/{id}
-        [HttpGet("{id}")]
+        [HttpGet("including-deleted/{id}")]
         public async Task<IActionResult> GetQuizByIdIncludingDeleted(Guid id)
         {
             var result = await _quizService.GetQuizByIdIncludingDeletedAsync(id);

@@ -1,76 +1,54 @@
-﻿using TaekwondoApp.Shared.DTO;
+﻿using AutoMapper;
+using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
-using TaekwondoOrchestration.ApiService.Repositories;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using TaekwondoOrchestration.ApiService.Helpers;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class KlubQuizService
+    public class KlubQuizService : IKlubQuizService
     {
         private readonly IKlubQuizRepository _klubQuizRepository;
+        private readonly IMapper _mapper;
 
-        public KlubQuizService(IKlubQuizRepository klubQuizRepository)
+        public KlubQuizService(IKlubQuizRepository klubQuizRepository, IMapper mapper)
         {
             _klubQuizRepository = klubQuizRepository;
+            _mapper = mapper;
         }
 
-        public async Task<List<KlubQuizDTO>> GetAllKlubQuizzerAsync()
+        public async Task<Result<IEnumerable<KlubQuizDTO>>> GetAllKlubQuizzerAsync()
         {
             var klubQuizzer = await _klubQuizRepository.GetAllKlubQuizzerAsync();
-            return klubQuizzer.Select(k => new KlubQuizDTO
-            {
-                KlubID = k.KlubID,
-                QuizID = k.QuizID
-            }).ToList();
+            var mapped = _mapper.Map<IEnumerable<KlubQuizDTO>>(klubQuizzer);
+            return Result<IEnumerable<KlubQuizDTO>>.Ok(mapped);
         }
 
-        public async Task<KlubQuizDTO?> GetKlubQuizByIdAsync(Guid klubId, Guid quizId)
+        public async Task<Result<KlubQuizDTO>> GetKlubQuizByIdAsync(Guid klubId, Guid quizId)
         {
             var klubQuiz = await _klubQuizRepository.GetKlubQuizByIdAsync(klubId, quizId);
             if (klubQuiz == null)
-                return null;
+                return Result<KlubQuizDTO>.Fail("KlubQuiz not found.");
 
-            return new KlubQuizDTO
-            {
-                KlubID = klubQuiz.KlubID,
-                QuizID = klubQuiz.QuizID
-            };
+            var mapped = _mapper.Map<KlubQuizDTO>(klubQuiz);
+            return Result<KlubQuizDTO>.Ok(mapped);
         }
 
         public async Task<KlubQuizDTO?> CreateKlubQuizAsync(KlubQuizDTO klubQuizDto)
         {
-            // Check if the DTO is null
-            if (klubQuizDto == null) return null;
+            if (klubQuizDto == null || klubQuizDto.KlubID == Guid.Empty || klubQuizDto.QuizID == Guid.Empty)
+                return null;
 
-            // Validate required fields
-            //if (klubQuizDto.KlubID <= 0) return null;  // KlubID must be a positive integer
-            //if (klubQuizDto.QuizID <= 0) return null;  // QuizID must be a positive integer
-
-            // Create new KlubQuiz entity
-            var newKlubQuiz = new KlubQuiz
-            {
-                KlubID = klubQuizDto.KlubID,
-                QuizID = klubQuizDto.QuizID
-            };
-
-            // Save the new KlubQuiz entity
-            var createdKlubQuiz = await _klubQuizRepository.CreateKlubQuizAsync(newKlubQuiz);
-
-            // Return the newly created KlubQuizDTO
-            return new KlubQuizDTO
-            {
-                KlubID = createdKlubQuiz.KlubID,
-                QuizID = createdKlubQuiz.QuizID
-            };
+            var klubQuiz = _mapper.Map<KlubQuiz>(klubQuizDto);
+            var created = await _klubQuizRepository.CreateKlubQuizAsync(klubQuiz);
+            return created == null ? null : _mapper.Map<KlubQuizDTO>(created);
         }
 
-
-        public async Task<bool> DeleteKlubQuizAsync(Guid klubId, Guid quizId)
+        public async Task<Result<bool>> DeleteKlubQuizAsync(Guid klubId, Guid quizId)
         {
-            return await _klubQuizRepository.DeleteKlubQuizAsync(klubId, quizId);
+            var success = await _klubQuizRepository.DeleteKlubQuizAsync(klubId, quizId);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete KlubQuiz.");
         }
     }
 }

@@ -1,49 +1,62 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoOrchestration.ApiService.Services;
+using Microsoft.AspNetCore.SignalR;
 using TaekwondoApp.Shared.DTO;
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
+using TaekwondoOrchestration.ApiService.Services;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class BrugerKlubController : ControllerBase
+    public class BrugerKlubController : ApiBaseController
     {
-        private readonly BrugerKlubService _brugerKlubService;
+        private readonly IBrugerKlubService _brugerKlubService;
+        private readonly IHubContext<BrugerKlubHub> _hubContext;
 
-        public BrugerKlubController(BrugerKlubService brugerKlubService)
+        public BrugerKlubController(IBrugerKlubService brugerKlubService, IHubContext<BrugerKlubHub> hubContext)
         {
             _brugerKlubService = brugerKlubService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BrugerKlubDTO>>> GetBrugerKlubs()
+        public async Task<IActionResult> GetAllBrugerKlubs()
         {
-            return Ok(await _brugerKlubService.GetAllBrugerKlubsAsync());
+            var result = await _brugerKlubService.GetAllBrugerKlubsAsync();
+            return result.ToApiResponse();
         }
 
         [HttpGet("{brugerId}/{klubId}")]
-        public async Task<ActionResult<BrugerKlubDTO>> GetBrugerKlub(Guid brugerId, Guid klubId)
+        public async Task<IActionResult> GetBrugerKlubById(Guid brugerId, Guid klubId)
         {
-            var brugerKlub = await _brugerKlubService.GetBrugerKlubByIdAsync(brugerId, klubId);
-            if (brugerKlub == null)
-                return NotFound();
-            return Ok(brugerKlub);
+            var result = await _brugerKlubService.GetBrugerKlubByIdAsync(brugerId, klubId);
+            return result.ToApiResponse();
         }
 
         [HttpPost]
-        public async Task<ActionResult<BrugerKlubDTO>> PostBrugerKlub(BrugerKlubDTO brugerKlubDto)
+        public async Task<IActionResult> CreateBrugerKlub(BrugerKlubDTO brugerKlubDto)
         {
-            var createdBrugerKlub = await _brugerKlubService.CreateBrugerKlubAsync(brugerKlubDto);
-            return CreatedAtAction(nameof(GetBrugerKlub), new { brugerId = createdBrugerKlub.BrugerID, klubId = createdBrugerKlub.KlubID }, createdBrugerKlub);
+            var result = await _brugerKlubService.CreateBrugerKlubAsync(brugerKlubDto);
+            if (result.Success)
+            {
+                await _hubContext.Clients.All.SendAsync("BrugerKlubCreated", result.Value); // Optional: Notify clients
+                return CreatedAtAction(nameof(GetBrugerKlubById), new { brugerId = result.Value.BrugerID, klubId = result.Value.KlubID }, result.Value);
+            }
+            return result.ToApiResponse(); // Converts failure to BadRequest
         }
 
         [HttpDelete("{brugerId}/{klubId}")]
         public async Task<IActionResult> DeleteBrugerKlub(Guid brugerId, Guid klubId)
         {
-            var success = await _brugerKlubService.DeleteBrugerKlubAsync(brugerId, klubId);
-            if (!success)
-                return NotFound();
-            return NoContent();
+            var result = await _brugerKlubService.DeleteBrugerKlubAsync(brugerId, klubId);
+            if (result.Success)
+            {
+                await _hubContext.Clients.All.SendAsync("BrugerKlubDeleted", new { brugerId, klubId }); // Optional: Notify clients
+                return NoContent();
+            }
+            return result.ToApiResponse(); // Converts failure to BadRequest
         }
     }
 }

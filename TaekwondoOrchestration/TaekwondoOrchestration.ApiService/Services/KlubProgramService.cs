@@ -1,14 +1,16 @@
 ﻿using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class KlubProgramService
+    public class KlubProgramService : IKlubProgramService
     {
         private readonly IKlubProgramRepository _klubProgramRepository;
 
@@ -42,31 +44,22 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<KlubProgramDTO?> CreateKlubProgramAsync(KlubProgramDTO klubProgramDto)
         {
-            // Check if the DTO is null
             if (klubProgramDto == null) return null;
 
-            // Validate required fields
-            //if (klubProgramDto.KlubID <= 0) return null;  // KlubID must be a positive integer
-            //if (klubProgramDto.ProgramID <= 0) return null;  // ProgramID must be a positive integer
-
-            // Create new KlubProgram entity
             var newKlubProgram = new KlubProgram
             {
                 KlubID = klubProgramDto.KlubID,
                 ProgramID = klubProgramDto.ProgramID
             };
 
-            // Save the new KlubProgram entity
             var createdKlubProgram = await _klubProgramRepository.CreateKlubProgramAsync(newKlubProgram);
 
-            // Return the newly created KlubProgramDTO
             return new KlubProgramDTO
             {
                 KlubID = createdKlubProgram.KlubID,
                 ProgramID = createdKlubProgram.ProgramID
             };
         }
-
 
         public async Task<bool> DeleteKlubProgramAsync(Guid klubId, Guid programId)
         {

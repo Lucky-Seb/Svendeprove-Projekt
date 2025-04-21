@@ -10,16 +10,10 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
     {
         #region CRUD Operations
 
-        Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansAsync();
+        Task<Result<ProgramPlanDTO>> CreateProgramPlanWithBrugerOrKlubAsync(ProgramPlanDTO dto);
 
-        Task<Result<ProgramPlanDTO>> GetProgramPlanByIdAsync(Guid id);
-
-        Task<Result<ProgramPlanDTO>> CreateProgramPlanWithBrugerAndKlubAsync(ProgramPlanDTO dto);
-
-        Task<Result<ProgramPlanDTO>> UpdateProgramPlanWithBrugerAndKlubAsync(Guid id, ProgramPlanDTO dto);
-
-        Task<Result<bool>> UpdateProgramPlanAsync(Guid id, ProgramPlanDTO programPlanDto);
-
+        Task<Result<ProgramPlanDTO>> UpdateProgramPlanWithBrugerOrKlubAsync(Guid id, ProgramPlanDTO dto);
+        Task<Result<ProgramPlanDTO>> UpdateProgramPlanAsync(Guid programId, ProgramPlanDTO updatedDto);
         Task<Result<bool>> DeleteProgramPlanAsync(Guid id);
 
         #endregion
@@ -28,9 +22,9 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
 
         // Get all programs with their training, quiz, theory, technique, and exercise
         Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramsAsync();
+        Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansAsync();
 
-        // Get a program by ID
-        Task<Result<ProgramPlanDTO>> GetProgramByIdAsync(Guid id);
+        Task<Result<ProgramPlanDTO>> GetProgramPlanByIdAsync(Guid id);
 
         // Get programs by user (Bruger)
         Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansByBrugerIdAsync(Guid brugerId);

@@ -1,14 +1,16 @@
 ﻿using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class BrugerProgramService
+    public class BrugerProgramService : IBrugerProgramService
     {
         private readonly IBrugerProgramRepository _brugerProgramRepository;
 
@@ -42,32 +44,23 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<BrugerProgramDTO?> CreateBrugerProgramAsync(BrugerProgramDTO brugerProgramDto)
         {
-            // Check if the DTO is null
             if (brugerProgramDto == null) return null;
 
-            //// Validate required fields
-            //if (brugerProgramDto.BrugerID <= 0) return null;  // BrugerID must be a positive integer
-            //if (brugerProgramDto.ProgramID <= 0) return null;  // ProgramID must be a positive integer
-
-            // Create new BrugerProgram entity
             var newBrugerProgram = new BrugerProgram
             {
                 BrugerID = brugerProgramDto.BrugerID,
                 ProgramID = brugerProgramDto.ProgramID
             };
 
-            // Save the new BrugerProgram entity to the repository
             var createdBrugerProgram = await _brugerProgramRepository.CreateBrugerProgramAsync(newBrugerProgram);
-            if (createdBrugerProgram == null) return null;  // Return null if creation fails
+            if (createdBrugerProgram == null) return null;
 
-            // Return the newly created BrugerProgramDTO
             return new BrugerProgramDTO
             {
                 BrugerID = createdBrugerProgram.BrugerID,
                 ProgramID = createdBrugerProgram.ProgramID
             };
         }
-
 
         public async Task<bool> DeleteBrugerProgramAsync(Guid brugerId, Guid programId)
         {

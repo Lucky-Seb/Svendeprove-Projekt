@@ -1,0 +1,172 @@
+﻿@page "/øvelse/create"
+
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h3>Create New Exercise</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<EditForm Model="newExercise" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Name:</label>
+        <InputText @bind-Value="newExercise.ØvelseNavn" class="form-control" />
+    </div>
+
+    <div>
+        <label>Description:</label>
+        <InputTextArea @bind-Value="newExercise.ØvelseBeskrivelse" class="form-control" />
+    </div>
+
+    <div>
+        <label>Image URL:</label>
+        <InputText @bind-Value="newExercise.ØvelseBillede" class="form-control" />
+    </div>
+
+    <div>
+        <label>Video URL:</label>
+        <InputText @bind-Value="newExercise.ØvelseVideo" class="form-control" />
+    </div>
+
+    <div>
+        <label>Duration (seconds):</label>
+        <InputNumber @bind-Value="newExercise.ØvelseTid" class="form-control" />
+    </div>
+
+    <div>
+        <label>Difficulty:</label>
+        <InputText @bind-Value="newExercise.ØvelseSværhed" class="form-control" />
+    </div>
+
+    <div>
+        <label>Pensum:</label>
+        <select @bind="newExercise.PensumID" class="form-control">
+            <option value="">-- Select Pensum --</option>
+            @foreach (var pensum in pensumGradList)
+            {
+                <option value="@pensum.PensumID">@pensum.PensumGrad</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Create</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+@code {
+    private ØvelseDTO newExercise = new();
+    private string errorMessage = "";
+    private HttpClient _apiClient;
+
+    // List of PensumGrad options
+    private List<Pensum> pensumGradList = new List<Pensum>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+        var token = await AuthenticationService.GetTokenAsync();
+        var brugerId = JwtParser.GetUserIdFromJwt(token);
+
+        newExercise.BrugerID = brugerId;
+        newExercise.ØvelseID = Guid.NewGuid();
+
+        // Fetch the list of PensumGrad options for the dropdown
+        try
+        {
+            var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
+            if (pensumResponse?.Success == true && pensumResponse.Data != null)
+            {
+                pensumGradList = pensumResponse.Data;
+            }
+            else
+            {
+                errorMessage = "Failed to load PensumGrads.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading PensumGrads: {ex.Message}";
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            Console.WriteLine("Submitting new exercise...");
+
+            // Debug log of key fields
+            Console.WriteLine($"ØvelseNavn: {newExercise.ØvelseNavn}");
+            Console.WriteLine($"PensumID: {newExercise.PensumID}");
+            Console.WriteLine($"BrugerID: {newExercise.BrugerID}");
+            Console.WriteLine($"Sværhed: {newExercise.ØvelseSværhed}");
+
+            // Syncable fields
+            newExercise.ETag = Guid.NewGuid().ToString();
+            newExercise.ModifiedBy = "system";
+            newExercise.ChangeHistoryJson = "[]";
+
+            // Log full object as JSON
+            var payloadJson = System.Text.Json.JsonSerializer.Serialize(newExercise);
+            Console.WriteLine($"Payload: {payloadJson}");
+
+            var response = await _apiClient.PostAsJsonAsync("api/øvelse", newExercise);
+
+            Console.WriteLine($"Response Status: {response.StatusCode}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Exercise created successfully.");
+                NavigationManager.NavigateTo("/account");
+            }
+            else
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("❌ Failed to create exercise.");
+                Console.WriteLine($"Response Body:\n{responseBody}");
+
+                errorMessage = $"Failed to create exercise. Status: {response.StatusCode}\nDetails: {responseBody}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception occurred: {ex.Message}");
+            Console.WriteLine(ex.StackTrace);
+            errorMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/account");
+    }
+
+    public class Pensum
+    {
+        public Guid PensumID { get; set; }
+        public string PensumGrad { get; set; }
+    }
+
+}
+
