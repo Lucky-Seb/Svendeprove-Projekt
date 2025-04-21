@@ -101,8 +101,6 @@ namespace TaekwondoApp.Shared.Mapping
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role));
 
-
-
             // Bruger -> BrugerDTO
             CreateMap<Bruger, BrugerDTO>()
                 .ForMember(dest => dest.Klubber, opt => opt.MapFrom(src => src.BrugerKlubber.Select(bk => bk.Klub)))
@@ -111,7 +109,11 @@ namespace TaekwondoApp.Shared.Mapping
                 .ForMember(dest => dest.Øvelser, opt => opt.MapFrom(src => src.BrugerØvelser.Select(bø => bø.Øvelse)));
 
             // Klub -> KlubDTO
-            CreateMap<Klub, KlubDTO>();
+            CreateMap<Klub, KlubDTO>()
+                .ForMember(dest => dest.Programmer, opt => opt.MapFrom(src => src.KlubProgrammer.Select(bp => bp.Plan)))
+                .ForMember(dest => dest.Quizzer, opt => opt.MapFrom(src => src.KlubQuizzer.Select(bq => bq.Quiz)))
+                .ForMember(dest => dest.Øvelser, opt => opt.MapFrom(src => src.KlubØvelser.Select(bø => bø.Øvelse)));
+
 
             // ProgramPlan -> ProgramPlanDTO
             CreateMap<ProgramPlan, ProgramPlanDTO>()
@@ -138,6 +140,8 @@ namespace TaekwondoApp.Shared.Mapping
 
             // Teori -> TeoriDTO
             CreateMap<Teori, TeoriDTO>();
+
+
         }
     }
 }

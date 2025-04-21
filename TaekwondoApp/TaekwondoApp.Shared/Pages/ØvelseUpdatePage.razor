@@ -1,4 +1,5 @@
-﻿@page "/øvelse/update/{Id:guid}"
+﻿@page "/øvelse/update/{øvelseId:guid}"
+@page "/admin/klub/{klubId:guid}/edit-øvelse/{øvelseId:guid}"
 
 @* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
@@ -75,7 +76,8 @@ else
 }
 
 @code {
-    [Parameter] public Guid Id { get; set; }
+    [Parameter] public Guid? klubId { get; set; } // Optional parameter for admin route
+    [Parameter] public Guid øvelseId { get; set; }
 
     private ØvelseDTO editModel = new();
     private bool loading = true;
@@ -94,7 +96,7 @@ else
             Console.WriteLine($"Loaded BrugerID: {brugerId}");
 
             // Fetch exercise
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<ØvelseDTO>>($"api/øvelse/{Id}");
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<ØvelseDTO>>($"api/øvelse/{øvelseId}");
             if (response?.Success == true && response.Data != null)
             {
                 editModel = response.Data;
@@ -141,6 +143,21 @@ else
             editModel.ETag ??= Guid.NewGuid().ToString();
             editModel.ChangeHistoryJson ??= "[]";
 
+            // Check if exercise is owned by a klub or a bruger
+            if (klubId.HasValue)
+            {
+                Console.WriteLine("Exercise is owned by a Klub.");
+                // If it's owned by a Klub, make sure the KlubID is in the model or modify accordingly
+                editModel.KlubID = klubId.Value; // Assuming the exercise has a property like KlubId
+            }
+            else
+            {
+                Console.WriteLine("Exercise is owned by a Bruger.");
+                // If it's owned by a Bruger (user), set the BrugerId in the model (if necessary)
+                var brugerId = JwtParser.GetUserIdFromJwt(await AuthenticationService.GetTokenAsync());
+                editModel.BrugerID = brugerId; // Assuming the exercise has a property like BrugerId
+            }
+
             var jsonPayload = JsonSerializer.Serialize(editModel);
             Console.WriteLine($"Payload: {jsonPayload}");
 
@@ -151,7 +168,16 @@ else
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("✔ Exercise updated.");
-                NavigationManager.NavigateTo("/account");
+
+                // Redirect depending on whether it's admin or user
+                if (klubId.HasValue)
+                {
+                    NavigationManager.NavigateTo($"/admin/klub/{klubId}");
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/account");
+                }
             }
             else
             {
@@ -168,9 +194,17 @@ else
         }
     }
 
+
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/account");
+        if (klubId.HasValue)
+        {
+            NavigationManager.NavigateTo($"/admin/klub/{klubId}");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/account");
+        }
     }
 
     public class Pensum

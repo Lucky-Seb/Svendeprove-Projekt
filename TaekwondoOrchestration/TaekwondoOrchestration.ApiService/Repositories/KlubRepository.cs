@@ -6,16 +6,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using TaekwondoApp.Shared.DTO;
+using AutoMapper;
 
 namespace TaekwondoOrchestration.ApiService.Repositories
 {
     public class KlubRepository : IKlubRepository
     {
         private readonly ApiDbContext _context;
+        private readonly IMapper _mapper;
 
-        public KlubRepository(ApiDbContext context)
+        public KlubRepository(ApiDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<List<Klub>> GetAllKlubberAsync()
@@ -55,5 +59,27 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             _context.Klubber.Remove(klub);
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<KlubDTO?> GetKlubWithDetailsAsync(Guid klubId)
+        {
+            var klubDetails = await _context.Klubber
+                .Where(k => k.KlubID == klubId)
+                .Include(k => k.KlubProgrammer)
+                    .ThenInclude(kp => kp.Plan)
+                .Include(k => k.KlubQuizzer)
+                    .ThenInclude(kq => kq.Quiz)
+                .Include(k => k.KlubØvelser)
+                    .ThenInclude(kø => kø.Øvelse)
+                .Include(k => k.BrugerKlubber)
+                    .ThenInclude(bk => bk.Bruger)
+                .FirstOrDefaultAsync();
+
+            if (klubDetails == null)
+                return null;
+
+            var klubDTO = _mapper.Map<KlubDTO>(klubDetails);
+
+            return klubDTO;
+        }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿@page "/programplan/create"
+@page "/admin/klub/{klubId:guid}/create-program"
 
 @* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
@@ -153,6 +154,7 @@
 </EditForm>
 
 @code {
+    [Parameter] public Guid? klubId { get; set; } // Optional: if this comes from admin route
     private string errorMessage = "";
     private HttpClient _apiClient;
 
@@ -346,8 +348,19 @@
         try
         {
             var token = await AuthenticationService.GetTokenAsync();
-            var brugerId = JwtParser.GetUserIdFromJwt(token);
-            newProgramPlan.BrugerID = brugerId;
+
+            if (klubId.HasValue)
+            {
+                newProgramPlan.KlubID = klubId.Value;
+                newProgramPlan.BrugerID = Guid.Empty;
+            }
+            else
+            {
+                var brugerId = JwtParser.GetUserIdFromJwt(token);
+                newProgramPlan.BrugerID = brugerId;
+                newProgramPlan.KlubID = Guid.Empty;
+            }
+
             newProgramPlan.ProgramID = Guid.NewGuid();
 
             foreach (var træning in newProgramPlan.Træninger)
@@ -359,7 +372,10 @@
 
             if (response.IsSuccessStatusCode)
             {
-                NavigationManager.NavigateTo("/account");
+                if (klubId.HasValue)
+                    NavigationManager.NavigateTo($"/admin/klub/{klubId}");
+                else
+                    NavigationManager.NavigateTo("/account");
             }
             else
             {
@@ -373,9 +389,12 @@
         }
     }
 
+
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/account");
+        if (klubId.HasValue)
+            NavigationManager.NavigateTo($"/admin/klub/{klubId}");
+        else
+            NavigationManager.NavigateTo("/account");
     }
-
 }

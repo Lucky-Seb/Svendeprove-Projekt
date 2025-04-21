@@ -55,6 +55,17 @@ namespace TaekwondoOrchestration.ApiService.Services
             var mapped = _mapper.Map<KlubDTO>(klub);
             return Result<KlubDTO>.Ok(mapped);
         }
+        public async Task<Result<KlubDTO>> GetKlubWithDetailsAsync(Guid klubId)
+        {
+            var klubDTO = await _klubRepository.GetKlubWithDetailsAsync(klubId);
+
+            if (klubDTO == null)
+            {
+                return Result<KlubDTO>.Fail("Klub not found.");
+            }
+
+            return Result<KlubDTO>.Ok(klubDTO);
+        }
 
         // Create New Klub
         public async Task<Result<KlubDTO>> CreateKlubAsync(KlubDTO klubDto)

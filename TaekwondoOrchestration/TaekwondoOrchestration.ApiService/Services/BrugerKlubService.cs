@@ -8,6 +8,8 @@ using TaekwondoOrchestration.ApiService.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using TaekwondoApp.Shared.Helper;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -79,6 +81,17 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             var success = await _brugerKlubRepository.DeleteBrugerKlubAsync(brugerId, klubId);
             return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete BrugerKlub.");
+        }
+
+        public async Task<Result<bool>> CheckIfUserIsAdminAsync(Guid brugerId, Guid klubId)
+        {
+            var brugerKlub = await _brugerKlubRepository.GetBrugerKlubByIdAsync(brugerId, klubId);
+
+            if (brugerKlub == null)
+                return Result<bool>.Fail("User is not in the club.");
+
+            bool isAdmin = brugerKlub.KlubRole == "Admin";
+            return Result<bool>.Ok(isAdmin);
         }
 
         #endregion

@@ -129,10 +129,14 @@ else
                     <tbody>
                         @foreach (var klub in brugerDTO.Klubber)
                         {
+                            var role = brugerDTO.BrugerKlubber.FirstOrDefault(r => r.KlubID == klub.KlubID)?.KlubRole;
                             <tr>
                                 <td>@klub.KlubNavn</td>
                                 <td>
-                                    <button class="btn btn-sm btn-danger" @onclick="() => DropOutClub(klub.KlubID)">Drop Out</button>
+                                    @if (role == "Admin")
+                                    {
+                                        <button @onclick="() => NavigateToKlubAdminPage(klub.KlubID)">Go to Klub Admin</button>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -166,6 +170,7 @@ else
             }
 
             <hr>
+
 
             <h4>Programs:</h4>
             @if (brugerDTO.Programmer?.Any() == true)
@@ -550,7 +555,7 @@ else
         var brugerKlubDto = new BrugerKlubDTO
             {
                 BrugerID = brugerDTO.BrugerID,// This should come from the logged-in user
-                KlubID = selectedClubId
+                KlubID = selectedClubId,
             };
 
         // Send a POST request to join the club
@@ -589,5 +594,11 @@ else
             // Handle errors (e.g., show an error message)
         }
     }
+
+    private void NavigateToKlubAdminPage(Guid klubId)
+    {
+        NavigationManager.NavigateTo($"/admin/klub/{klubId}");
+    }
+    
 }
 

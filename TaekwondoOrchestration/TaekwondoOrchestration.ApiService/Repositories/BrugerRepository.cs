@@ -59,24 +59,32 @@ namespace TaekwondoOrchestration.ApiService.Repositories
 
         public async Task<List<BrugerDTO>> GetBrugereByKlubAsync(Guid klubId)
         {
-            return await _context.BrugerKlubber
+            var brugere = await _context.BrugerKlubber
                 .Where(bk => bk.KlubID == klubId)
                 .Select(bk => bk.Bruger)
-                .Include(b => b.BrugerKlubber)
-                .ThenInclude(bk => bk.Klub)
-                .ProjectTo<BrugerDTO>(_mapper.ConfigurationProvider)
+                .Distinct() // Avoid duplicates if any
                 .ToListAsync();
+
+            return _mapper.Map<List<BrugerDTO>>(brugere);
         }
 
         public async Task<List<BrugerDTO>> GetBrugereByKlubAndBæltegradAsync(Guid klubId, string bæltegrad)
         {
-            return await _context.BrugerKlubber
+            var brugere = await _context.BrugerKlubber
                 .Where(bk => bk.KlubID == klubId && bk.Bruger.Bæltegrad == bæltegrad)
                 .Select(bk => bk.Bruger)
+                .Distinct() // Just in case
                 .Include(b => b.BrugerKlubber)
-                .ThenInclude(bk => bk.Klub)
-                .ProjectTo<BrugerDTO>(_mapper.ConfigurationProvider)
+                    .ThenInclude(bk => bk.Klub)
+                .Include(b => b.BrugerProgrammer)
+                    .ThenInclude(bp => bp.Plan)
+                .Include(b => b.BrugerQuizzer)
+                    .ThenInclude(bq => bq.Quiz)
+                .Include(b => b.BrugerØvelser)
+                    .ThenInclude(bo => bo.Øvelse)
                 .ToListAsync();
+
+            return _mapper.Map<List<BrugerDTO>>(brugere);
         }
 
         public async Task<Bruger?> GetBrugerByBrugernavnAsync(string brugernavn)
@@ -126,6 +134,7 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             // Fetch the bruker along with related data using eager loading (Include)
             var brugerDetails = await _context.Brugere
                 .Where(b => b.BrugerID == brugerId)
+                .Include(b => b.BrugerKlubber)  // Klubber
                 .Include(b => b.BrugerKlubber)  // Klubber
                     .ThenInclude(bk => bk.Klub) // Ensure that the Klub data inside BrugerKlubber is included
                 .Include(b => b.BrugerProgrammer)
