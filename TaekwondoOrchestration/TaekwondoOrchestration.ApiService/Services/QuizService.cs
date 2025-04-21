@@ -11,17 +11,17 @@ namespace TaekwondoOrchestration.ApiService.Services
     public class QuizService : IQuizService
     {
         private readonly IQuizRepository _quizRepository;
-        private readonly ISpørgsmålRepository _spørgsmålRepository;
-        private readonly IBrugerQuizRepository _brugerQuizRepository;
-        private readonly IKlubQuizRepository _klubQuizRepository;
+        private readonly ISpørgsmålService _spørgsmålService;
+        private readonly IBrugerQuizService _brugerQuizService;
+        private readonly IKlubQuizService _klubQuizService;
         private readonly IMapper _mapper;
 
-        public QuizService(IQuizRepository quizRepository, ISpørgsmålRepository spørgsmålRepository, IBrugerQuizRepository brugerQuizRepository, IKlubQuizRepository klubQuizRepository, IMapper mapper)
+        public QuizService(IQuizRepository quizRepository, ISpørgsmålService spørgsmålService, IBrugerQuizService brugerQuizService, IKlubQuizService klubQuizService, IMapper mapper)
         {
             _quizRepository = quizRepository;
-            _spørgsmålRepository = spørgsmålRepository;
-            _brugerQuizRepository = brugerQuizRepository;
-            _klubQuizRepository = klubQuizRepository;
+            _spørgsmålService = spørgsmålService;
+            _brugerQuizService = brugerQuizService;
+            _klubQuizService = klubQuizService;
             _mapper = mapper;
         }
 
