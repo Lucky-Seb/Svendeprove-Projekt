@@ -62,21 +62,10 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         // 🔐 Check if current user is Admin in a specific club
-        [HttpGet("admin/{klubId}")]
+        [HttpGet("admin/{brugerId}/{klubId}")]
         [Authorize]
-        public async Task<IActionResult> CheckIfUserIsAdmin(Guid klubId)
+        public async Task<IActionResult> CheckIfUserIsAdmin(Guid brugerId, Guid klubId)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null)
-            {
-                return Unauthorized(ApiResponse<bool>.Fail("User not logged in", 401));
-            }
-
-            if (!Guid.TryParse(userIdClaim, out Guid brugerId))
-            {
-                return BadRequest(ApiResponse<bool>.Fail("Invalid user ID"));
-            }
-
             var result = await _brugerKlubService.CheckIfUserIsAdminAsync(brugerId, klubId);
 
             if (result.Success)

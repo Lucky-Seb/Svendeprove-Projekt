@@ -195,14 +195,17 @@ else
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<bool>>($"api/klub/admin/{klubId}");
+            var token = await AuthenticationService.GetTokenAsync();
+            var brugerId = JwtParser.GetUserIdFromJwt(token);
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<bool>>($"api/brugerklub/admin/{brugerId}/{klubId}");
+
             if (response?.Success == true)
             {
                 isKlubAdmin = response.Data;
             }
             else
             {
-                errorMessage = "You are not an admin of this klub.";
+                errorMessage = response?.Errors?.FirstOrDefault() ?? "You are not an admin of this klub.";
             }
         }
         catch (Exception ex)
@@ -210,6 +213,7 @@ else
             errorMessage = $"Error checking admin status: {ex.Message}";
         }
     }
+
 
     private void NavigateToLogin()
     {
