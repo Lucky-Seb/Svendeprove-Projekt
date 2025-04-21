@@ -21,6 +21,6 @@
         public ICollection<ProgramPlanDTO> Programmer { get; set; } = new List<ProgramPlanDTO>();
         public ICollection<QuizDTO> Quizzer { get; set; } = new List<QuizDTO>();
         public ICollection<ØvelseDTO> Øvelser { get; set; } = new List<ØvelseDTO>();
-
+        public ICollection<BrugerKlubDTO> BrugerKlubber { get; set; } = new List<BrugerKlubDTO>();
     }
 }

@@ -33,7 +33,7 @@ else
         <p><strong>Description:</strong> @klubDTO.KlubNavn</p>
 
         <h4>Members:</h4>
-        @if (klubDTO.Bruger?.Any() == true)
+        @if (klubBrugere?.Any() == true)
         {
             <table class="table">
                 <thead>
@@ -43,7 +43,7 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var member in klubDTO.Bruger)
+                    @foreach (var member in klubBrugere)
                     {
                         <tr>
                             <td>@member.Brugernavn</td>
@@ -59,10 +59,6 @@ else
         {
             <p>No members in this klub yet.</p>
         }
-
-        <button class="btn btn-primary" @onclick="NavigateToAddMember">Add New Member</button>
-
-        <hr>
 
         <h4>Klub Programs:</h4>
         @if (klubDTO.Programmer?.Any() == true)
@@ -210,6 +206,7 @@ else
     private string errorMessage = string.Empty;
     private HttpClient _apiClient;
     private string token = "";
+    private List<BrugerDTO> klubBrugere = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -226,6 +223,7 @@ else
             _apiClient = HttpClientFactory.CreateClient("ApiClient");
 
             await LoadKlub();
+            await LoadBrugere();
             await CheckIfAdmin();
 
         }
@@ -252,6 +250,25 @@ else
         catch (Exception ex)
         {
             errorMessage = $"Error loading klub data: {ex.Message}";
+        }
+    }
+    private async Task LoadBrugere()
+    {
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<BrugerDTO>>>($"api/klub/{klubId}");
+            if (response?.Success == true)
+            {
+                klubBrugere = response.Data ?? new List<BrugerDTO>();
+            }
+            else
+            {
+                errorMessage = response?.Errors?.FirstOrDefault() ?? "Failed to load brugere.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading brugere: {ex.Message}";
         }
     }
 
