@@ -239,8 +239,7 @@ else
     {
         try
         {
-            // Fetch klub info
-            var klubResponse = await _apiClient.GetFromJsonAsync<ApiResponse<KlubDTO>>($"api/klub/{klubId}");
+            var klubResponse = await _apiClient.GetFromJsonAsync<ApiResponse<KlubDTO>>($"api/klub/details/{klubId}");
             if (klubResponse?.Success == true && klubResponse.Data != null)
             {
                 klubDTO = klubResponse.Data;
@@ -248,40 +247,13 @@ else
             else
             {
                 errorMessage = klubResponse?.Errors?.FirstOrDefault() ?? "Failed to fetch klub data.";
-                return;
             }
-
-            // Fetch klub members separately
-            var membersResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<BrugerDTO>>>($"api/bruger/klub/{klubId}");
-            if (membersResponse?.Success == true && membersResponse.Data != null)
-            {
-                klubDTO.Bruger = membersResponse.Data;
-            }
-            else
-            {
-                errorMessage = membersResponse?.Errors?.FirstOrDefault() ?? "Failed to fetch klub members.";
-            }
-            // Fetch klub quizzer
-            var quizResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>($"api/klub/{klubId}/quizzer");
-            if (quizResponse?.Success == true)
-            {
-                klubDTO.Quizzer = quizResponse.Data;
-            }
-
-            // Fetch klub øvelser
-            var øvelseResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>($"api/klub/{klubId}/øvelser");
-            if (øvelseResponse?.Success == true)
-            {
-                klubDTO.Øvelser = øvelseResponse.Data;
-            }
-
         }
         catch (Exception ex)
         {
             errorMessage = $"Error loading klub data: {ex.Message}";
         }
     }
-
 
     private async Task CheckIfAdmin()
     {
