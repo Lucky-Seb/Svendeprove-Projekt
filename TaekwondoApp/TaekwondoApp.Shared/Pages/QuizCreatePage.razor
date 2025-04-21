@@ -1,4 +1,5 @@
 ﻿@page "/quiz/create"
+@page "/admin/klub/{klubId:guid}/create-quiz"
 
 @* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
@@ -140,6 +141,8 @@
     <div class="alert alert-danger">@errorMessage</div>
 }
 @code {
+    [Parameter] public Guid? klubId { get; set; } // Optional: if this comes from admin route
+
     private string errorMessage = "";
     private HttpClient _apiClient;
 
@@ -298,11 +301,21 @@
 
     private async Task HandleValidSubmit()
     {
-        var token = await AuthenticationService.GetTokenAsync();
-        var brugerId = JwtParser.GetUserIdFromJwt(token);
-        newQuiz.BrugerID = brugerId;
         try
         {
+            var token = await AuthenticationService.GetTokenAsync();
+
+            if (klubId.HasValue)
+            {
+                newQuiz.KlubID = klubId.Value;
+                newQuiz.BrugerID = Guid.Empty;
+            }
+            else
+            {
+                var brugerId = JwtParser.GetUserIdFromJwt(token);
+                newQuiz.BrugerID = brugerId;
+                newQuiz.KlubID = Guid.Empty;
+            }
             var response = await _apiClient.PostAsJsonAsync("api/quiz", newQuiz);
 
             if (response.IsSuccessStatusCode)
@@ -334,6 +347,9 @@
     }
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/account");
+        if (klubId.HasValue)
+            NavigationManager.NavigateTo($"/admin/klub/{klubId}/programmer");
+        else
+            NavigationManager.NavigateTo("/account");
     }
 }

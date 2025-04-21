@@ -1,4 +1,5 @@
 ﻿@page "/quiz/update/{quizId:guid}"
+@page "/admin/klub/{klubId:guid}/edit-quiz/{Id:guid}"
 
 @* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
@@ -87,6 +88,7 @@ else
 
 @code {
     [Parameter] public Guid quizId { get; set; }
+    [Parameter] public Guid? klubId { get; set; }
 
     private QuizDTO newQuiz = new();
     private SpørgsmålDTO newSpørgsmål = new();
@@ -132,6 +134,17 @@ else
     {
         try
         {
+            if (klubId.HasValue)
+            {
+                Console.WriteLine("Program Plan owned by Klub.");
+                newQuiz.KlubID = klubId.Value;
+            }
+            else
+            {
+                var brugerId = JwtParser.GetUserIdFromJwt(await AuthenticationService.GetTokenAsync());
+                newQuiz.BrugerID = brugerId;
+            }
+
             var response = await _apiClient.PutAsJsonAsync($"api/quiz/{quizId}", newQuiz);
 
             if (response.IsSuccessStatusCode)
@@ -174,8 +187,12 @@ else
             ChangeHistoryJson = "[]"
         };
 
+
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/account");
+        if (klubId.HasValue)
+            NavigationManager.NavigateTo($"/admin/klub/{klubId}/programplans");
+        else
+            NavigationManager.NavigateTo("/account");
     }
 }

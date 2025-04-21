@@ -1,4 +1,5 @@
 ﻿@page "/programplan/update/{Id:guid}"
+@page "/admin/klub/{klubId:guid}/edit-programplan/{Id:guid}"
 
 @* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
@@ -9,7 +10,6 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using System.Text.Json
 
-@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory HttpClientFactory
 @inject IAuthenticationService AuthenticationService
@@ -97,13 +97,14 @@ else
             }
         </ul>
 
-        <button type="submit" class="btn btn-success">Save</button>
+        <button type="submit" class="btn btn-primary">Save</button>
         <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
     </EditForm>
 }
 
 @code {
     [Parameter] public Guid Id { get; set; }
+    [Parameter] public Guid? klubId { get; set; }
 
     private ProgramPlanDTO editModel = new();
     private List<ØvelseDTO> exerciseList = new();
@@ -117,12 +118,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _apiClient = HttpClientFactory.CreateClient("ApiClient");
-
         try
         {
+            _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
             var token = await AuthenticationService.GetTokenAsync();
             var brugerId = JwtParser.GetUserIdFromJwt(token);
+            Console.WriteLine($"Loaded BrugerID: {brugerId}");
 
             // Load Program Plan
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<ProgramPlanDTO>>($"api/programplan/{Id}");
@@ -137,42 +139,12 @@ else
                 return;
             }
 
-            // Load Øvelser
-            var øResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
-            if (øResponse?.Success == true && øResponse.Data != null)
-            {
-                exerciseList = øResponse.Data;
-                Console.WriteLine("✅ Øvelser loaded.");
-            }
-
-            // Load Quiz (Teori)
-            var teoriResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeoriDTO>>>("api/teori");
-            if (teoriResponse?.Success == true && teoriResponse.Data != null)
-            {
-                quizList = teoriResponse.Data;
-                Console.WriteLine("✅ Teori loaded.");
-            }
-
-            // Load Teknik
-            var teknikResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeknikDTO>>>("api/teknik");
-            if (teknikResponse?.Success == true && teknikResponse.Data != null)
-            {
-                teknikList = teknikResponse.Data;
-                Console.WriteLine("✅ Teknik loaded.");
-            }
-
-            // Load Pensum
-            var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
-            if (pensumResponse?.Success == true && pensumResponse.Data != null)
-            {
-                pensumGradList = pensumResponse.Data;
-                Console.WriteLine("✅ Pensum loaded.");
-            }
+            // Load data lists
+            await LoadSelectLists();
         }
         catch (Exception ex)
         {
-            errorMessage = $"❌ Error: {ex.Message}";
-            Console.WriteLine(errorMessage);
+            errorMessage = $"❌ Error loading Program Plan: {ex.Message}";
         }
         finally
         {
@@ -180,29 +152,57 @@ else
         }
     }
 
+    private async Task LoadSelectLists()
+    {
+        var øResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
+        if (øResponse?.Success == true)
+            exerciseList = øResponse.Data;
+
+        var teoriResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeoriDTO>>>("api/teori");
+        if (teoriResponse?.Success == true)
+            quizList = teoriResponse.Data;
+
+        var teknikResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeknikDTO>>>("api/teknik");
+        if (teknikResponse?.Success == true)
+            teknikList = teknikResponse.Data;
+
+        var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
+        if (pensumResponse?.Success == true)
+            pensumGradList = pensumResponse.Data;
+    }
+
     private async Task HandleValidSubmit()
     {
         try
         {
             Console.WriteLine("📤 Submitting update...");
-            Console.WriteLine($"ProgramID: {editModel.ProgramID}");
-
-            // Update metadata
             editModel.ModifiedBy = "system";
             editModel.ETag ??= Guid.NewGuid().ToString();
             editModel.ChangeHistoryJson ??= "[]";
+
+            if (klubId.HasValue)
+            {
+                Console.WriteLine("Program Plan owned by Klub.");
+                editModel.KlubID = klubId.Value;
+            }
+            else
+            {
+                var brugerId = JwtParser.GetUserIdFromJwt(await AuthenticationService.GetTokenAsync());
+                editModel.BrugerID = brugerId;
+            }
 
             var jsonPayload = JsonSerializer.Serialize(editModel);
             Console.WriteLine($"Payload: {jsonPayload}");
 
             var response = await _apiClient.PutAsJsonAsync($"api/programplan/{editModel.ProgramID}", editModel);
 
-            Console.WriteLine($"Response Status: {response.StatusCode}");
-
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("✅ Program Plan updated successfully.");
-                NavigationManager.NavigateTo("/account");
+                Console.WriteLine("✅ Program Plan updated.");
+                if (klubId.HasValue)
+                    NavigationManager.NavigateTo($"/admin/klub/{klubId}/programplans");
+                else
+                    NavigationManager.NavigateTo("/account");
             }
             else
             {
@@ -218,7 +218,10 @@ else
 
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/account");
+        if (klubId.HasValue)
+            NavigationManager.NavigateTo($"/admin/klub/{klubId}/programplans");
+        else
+            NavigationManager.NavigateTo("/account");
     }
 
     public class Pensum
