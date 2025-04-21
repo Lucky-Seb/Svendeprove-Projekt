@@ -97,6 +97,71 @@ else
 
         <hr>
 
+        <hr>
+
+        <h4>Klub Øvelser:</h4>
+        @if (klubDTO.Øvelser?.Any() == true)
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Øvelse Navn</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var øvelse in klubDTO.Øvelser)
+                    {
+                        <tr>
+                            <td>@øvelse.ØvelseNavn</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" @onclick="() => EditØvelse(øvelse.ØvelseID)">Edit</button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteØvelse(øvelse.ØvelseID)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No øvelser available.</p>
+        }
+        <button class="btn btn-primary" @onclick="NavigateToCreateØvelse">Create New Øvelse</button>
+
+        <hr>
+
+        <h4>Klub Quizzer:</h4>
+        @if (klubDTO.Quizzer?.Any() == true)
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Quiz Navn</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var quiz in klubDTO.Quizzer)
+                    {
+                        <tr>
+                            <td>@quiz.QuizNavn</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" @onclick="() => EditQuiz(quiz.QuizID)">Edit</button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteQuiz(quiz.QuizID)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No quizzer available.</p>
+        }
+        <button class="btn btn-primary" @onclick="NavigateToCreateQuiz">Create New Quiz</button>
+
+
 @*         <h4>Klub Events:</h4>
         @if (klubDTO.Events?.Any() == true)
         {
@@ -174,22 +239,49 @@ else
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<KlubDTO>>($"api/klub/{klubId}");
-            if (response?.Success == true && response.Data != null)
+            // Fetch klub info
+            var klubResponse = await _apiClient.GetFromJsonAsync<ApiResponse<KlubDTO>>($"api/klub/{klubId}");
+            if (klubResponse?.Success == true && klubResponse.Data != null)
             {
-                klubDTO = response.Data;
-                StateHasChanged();
+                klubDTO = klubResponse.Data;
             }
             else
             {
-                errorMessage = "Failed to fetch klub data.";
+                errorMessage = klubResponse?.Errors?.FirstOrDefault() ?? "Failed to fetch klub data.";
+                return;
             }
+
+            // Fetch klub members separately
+            var membersResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<BrugerDTO>>>($"api/bruger/klub/{klubId}");
+            if (membersResponse?.Success == true && membersResponse.Data != null)
+            {
+                klubDTO.Bruger = membersResponse.Data;
+            }
+            else
+            {
+                errorMessage = membersResponse?.Errors?.FirstOrDefault() ?? "Failed to fetch klub members.";
+            }
+            // Fetch klub quizzer
+            var quizResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>($"api/klub/{klubId}/quizzer");
+            if (quizResponse?.Success == true)
+            {
+                klubDTO.Quizzer = quizResponse.Data;
+            }
+
+            // Fetch klub øvelser
+            var øvelseResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>($"api/klub/{klubId}/øvelser");
+            if (øvelseResponse?.Success == true)
+            {
+                klubDTO.Øvelser = øvelseResponse.Data;
+            }
+
         }
         catch (Exception ex)
         {
             errorMessage = $"Error loading klub data: {ex.Message}";
         }
     }
+
 
     private async Task CheckIfAdmin()
     {
@@ -273,6 +365,30 @@ else
         {
             errorMessage = $"Error deleting {type}: {ex.Message}";
         }
+    }
+    private void NavigateToCreateØvelse()
+    {
+        NavigationManager.NavigateTo($"/admin/klub/{klubId}/create-øvelse");
+    }
+    private void NavigateToCreateQuiz()
+    {
+        NavigationManager.NavigateTo($"/admin/klub/{klubId}/create-quiz");
+    }
+    private void EditØvelse(Guid øvelseId)
+    {
+        NavigationManager.NavigateTo($"/admin/klub/{klubId}/edit-øvelse/{øvelseId}");
+    }
+    private void EditQuiz(Guid quizId)
+    {
+        NavigationManager.NavigateTo($"/admin/klub/{klubId}/edit-quiz/{quizId}");
+    }
+    private void DeleteØvelse(Guid øvelseId)
+    {
+        DeleteItem("øvelse", øvelseId);
+    }
+    private void DeleteQuiz(Guid quizId)
+    {
+        DeleteItem("quiz", quizId);
     }
 
     private async Task RemoveMember(Guid memberId)
