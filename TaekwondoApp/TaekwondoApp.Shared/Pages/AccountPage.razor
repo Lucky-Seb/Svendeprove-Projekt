@@ -129,12 +129,13 @@ else
                     <tbody>
                         @foreach (var klub in brugerDTO.Klubber)
                         {
-                            <tr>
-                                <td>@klub.KlubNavn</td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger" @onclick="() => DropOutClub(klub.KlubID)">Drop Out</button>
-                                </td>
-                            </tr>
+                            <div>
+                                <p>@klub.KlubNavn</p>
+                                @if (BrugerklubDTO.KlubRole == "Admin")  @* Assuming IsAdmin is a boolean property indicating admin status *@
+                                {
+                                    <button @onclick="() => NavigateToKlubAdminPage(klub.KlubID)">Go to Klub Admin</button>
+                                }
+                            </div>
                         }
                     </tbody>
                 </table>
@@ -589,5 +590,11 @@ else
             // Handle errors (e.g., show an error message)
         }
     }
+
+    private void NavigateToKlubAdminPage(Guid klubId)
+    {
+        NavigationManager.NavigateTo($"/klubadmin/{klubId}");
+    }
+    
 }
 

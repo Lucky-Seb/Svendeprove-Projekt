@@ -51,6 +51,8 @@
         public Guid BrugerID { get; set; }
         public Guid KlubID { get; set; }
 
+        public string KlubRole { get; set; } // Role of the user in the club
+
         public Bruger Bruger { get; set; }
         public Klub Klub { get; set; }
     }
