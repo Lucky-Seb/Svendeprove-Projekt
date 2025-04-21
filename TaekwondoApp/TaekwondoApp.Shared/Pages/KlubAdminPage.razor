@@ -1,0 +1,293 @@
+﻿@page "/klub/admin/{klubId:guid}"
+
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h1>Manage Klub</h1>
+
+@if (!isAuthenticated)
+{
+    <p>You are not logged in or do not have sufficient privileges to view this page.</p>
+    <button @onclick="NavigateToLogin">Go to Login</button>
+}
+else if (!isKlubAdmin)
+{
+    <p>You are not an admin of this klub.</p>
+}
+else
+{
+    <div class="klub-details">
+        <h3>@klubDTO.KlubNavn</h3>
+        <p><strong>Description:</strong> @klubDTO.KlubNavn</p>
+
+        <h4>Members:</h4>
+        @if (klubDTO.Bruger?.Any() == true)
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var member in klubDTO.Bruger)
+                    {
+                        <tr>
+                            <td>@member.Brugernavn</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" @onclick="() => RemoveMember(member.BrugerID)">Remove</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No members in this klub yet.</p>
+        }
+
+        <button class="btn btn-primary" @onclick="NavigateToAddMember">Add New Member</button>
+
+        <hr>
+
+        <h4>Klub Programs:</h4>
+        @if (klubDTO.Programmer?.Any() == true)
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Program Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var program in klubDTO.Programmer)
+                    {
+                        <tr>
+                            <td>@program.ProgramNavn</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" @onclick="() => EditProgram(program.ProgramID)">Edit</button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteProgram(program.ProgramID)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No programs available.</p>
+        }
+
+        <button class="btn btn-primary" @onclick="NavigateToCreateProgram">Create New Program</button>
+
+        <hr>
+
+@*         <h4>Klub Events:</h4>
+        @if (klubDTO.Events?.Any() == true)
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Event Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var eventItem in klubDTO.Events)
+                    {
+                        <tr>
+                            <td>@eventItem.EventName</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" @onclick="() => EditEvent(eventItem.EventID)">Edit</button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteEvent(eventItem.EventID)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No events available.</p>
+        }
+
+        <button class="btn btn-primary" @onclick="NavigateToCreateEvent">Create New Event</button> *@
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            <p>@errorMessage</p>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public Guid klubId { get; set; }
+    private KlubDTO klubDTO = new();
+    private bool isAuthenticated;
+    private bool isKlubAdmin = false;
+    private string errorMessage = string.Empty;
+    private HttpClient _apiClient;
+    private string token = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            token = await AuthenticationService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            isAuthenticated = true;
+            _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+            await LoadKlub();
+            await CheckIfAdmin();
+
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error during initialization: {ex.Message}";
+        }
+    }
+
+    private async Task LoadKlub()
+    {
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<KlubDTO>>($"api/klub/{klubId}");
+            if (response?.Success == true && response.Data != null)
+            {
+                klubDTO = response.Data;
+                StateHasChanged();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch klub data.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading klub data: {ex.Message}";
+        }
+    }
+
+    private async Task CheckIfAdmin()
+    {
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<bool>>($"api/klub/admin/{klubId}");
+            if (response?.Success == true)
+            {
+                isKlubAdmin = response.Data;
+            }
+            else
+            {
+                errorMessage = "You are not an admin of this klub.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error checking admin status: {ex.Message}";
+        }
+    }
+
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+
+    private void NavigateToAddMember()
+    {
+        NavigationManager.NavigateTo($"/admin/klub/{klubId}/add-member");
+    }
+
+    private void NavigateToCreateProgram()
+    {
+        NavigationManager.NavigateTo($"/admin/klub/{klubId}/create-program");
+    }
+
+    private void NavigateToCreateEvent()
+    {
+        NavigationManager.NavigateTo($"/admin/klub/{klubId}/create-event");
+    }
+
+    private void EditProgram(Guid programId)
+    {
+        NavigationManager.NavigateTo($"/admin/klub/{klubId}/edit-program/{programId}");
+    }
+
+    private void DeleteProgram(Guid programId)
+    {
+        DeleteItem("program", programId);
+    }
+
+    private void EditEvent(Guid eventId)
+    {
+        NavigationManager.NavigateTo($"/admin/klub/{klubId}/edit-event/{eventId}");
+    }
+
+    private void DeleteEvent(Guid eventId)
+    {
+        DeleteItem("event", eventId);
+    }
+
+    private async Task DeleteItem(string type, Guid id)
+    {
+        try
+        {
+            var response = await _apiClient.DeleteAsync($"api/{type}/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadKlub();
+            }
+            else
+            {
+                errorMessage = $"Failed to delete {type}. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting {type}: {ex.Message}";
+        }
+    }
+
+    private async Task RemoveMember(Guid memberId)
+    {
+        try
+        {
+            var response = await _apiClient.DeleteAsync($"api/klub/{klubId}/remove-member/{memberId}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadKlub();
+            }
+            else
+            {
+                errorMessage = "Failed to remove member.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error removing member: {ex.Message}";
+        }
+    }
+}
