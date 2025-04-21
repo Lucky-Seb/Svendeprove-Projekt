@@ -5,10 +5,10 @@
         public Guid KlubID { get; set; }
         public string KlubNavn { get; set; }
 
-        // Using ICollection<T> for a modifiable collection (flexible)
-        public ICollection<BrugerDTO> Bruger { get; set; } = new List<BrugerDTO>();
-        public ICollection<ProgramPlanDTO> Programmer { get; set; } = new List<ProgramPlanDTO>();
-        public ICollection<QuizDTO> Quizzer { get; set; } = new List<QuizDTO>();
-        public ICollection<ØvelseDTO> Øvelser { get; set; } = new List<ØvelseDTO>();
+        public List<ProgramPlanDTO> Programmer { get; set; }  // Programs associated with the user
+        public List<QuizDTO> Quizzer { get; set; }  // Quizzes associated with the user
+        public List<ØvelseDTO> Øvelser { get; set; }  // Exercises associated with the user
+        public List<BrugerDTO> Bruger { get; set; }  // Clubs associated with the user
+
     }
 }
