@@ -153,7 +153,7 @@ namespace TaekwondoOrchestration.Tests.BrugerTests
             // Arrange
             var id = Guid.NewGuid();
             var existingBruger = new Bruger { BrugerID = id, Brugernavn = "OldUser" };
-            var updatedBrugerDto = new BrugerDTO { Brugernavn = "UpdatedUser", ModifiedBy = "Admin" };
+            var updatedBrugerDto = new BrugerUpdateDTO { Brugernavn = "UpdatedUser", ModifiedBy = "Admin" };
 
             _brugerRepositoryMock.Setup(repo => repo.GetBrugerByIdAsync(id)).ReturnsAsync(existingBruger);
             _mapperMock.Setup(mapper => mapper.Map(It.IsAny<BrugerDTO>(), It.IsAny<Bruger>())).Callback<BrugerDTO, Bruger>((src, dest) => dest.Brugernavn = src.Brugernavn);
@@ -171,7 +171,7 @@ namespace TaekwondoOrchestration.Tests.BrugerTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var updatedBrugerDto = new BrugerDTO { Brugernavn = "UpdatedUser", ModifiedBy = "Admin" };
+            var updatedBrugerDto = new BrugerUpdateDTO { Brugernavn = "UpdatedUser", ModifiedBy = "Admin" };
             _brugerRepositoryMock.Setup(repo => repo.GetBrugerByIdAsync(id)).ReturnsAsync((Bruger)null);
 
             // Act
@@ -411,7 +411,7 @@ namespace TaekwondoOrchestration.Tests.BrugerTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var brugerDto = new BrugerDTO { ModifiedBy = "Admin" };
+            var brugerDto = new BrugerUpdateDTO { ModifiedBy = "Admin" };
             var deletedBruger = new Bruger { BrugerID = id, IsDeleted = true, ModifiedBy = "Admin" };
 
             // Mock the repository to return a deleted user
@@ -433,7 +433,7 @@ namespace TaekwondoOrchestration.Tests.BrugerTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var brugerDto = new BrugerDTO { ModifiedBy = "Admin" };
+            var brugerDto = new BrugerUpdateDTO { ModifiedBy = "Admin" };
 
             // Mock the repository to return a non-deleted user
             _brugerRepositoryMock.Setup(repo => repo.GetBrugerByIdIncludingDeletedAsync(id))
