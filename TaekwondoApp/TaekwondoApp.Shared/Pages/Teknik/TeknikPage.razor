@@ -1,17 +1,24 @@
 ﻿@page "/teknik"
-@inject HttpClient Http
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
 
 <h1>Teknik Management</h1>
 
 <!-- Search Filters -->
 <div class="row mb-3">
     <div class="col-md-4">
-        <label>Search by Name:</label>
-        <input class="form-control" @bind="searchName" placeholder="Enter Teknik name..." />
-    </div>
-    <div class="col-md-4">
-        <label>Filter by Pensum:</label>
-        <input class="form-control" @bind="filterPensum" placeholder="Enter Pensum ID or Grad..." />
+        <label>Search by Teknik Name:</label>
+        <input class="form-control" @bind="searchTeknikName" placeholder="Enter Teknik name..." />
     </div>
     <div class="col-md-4 d-flex align-items-end">
         <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
@@ -19,47 +26,31 @@
     </div>
 </div>
 
-
 <!-- Display Table -->
-@if (filteredTekniks == null)
+@if (filteredTeknikker == null)
 {
     <p><em>Loading...</em></p>
 }
-else if (filteredTekniks.Count == 0)
+else if (filteredTeknikker.Count == 0)
 {
-    <p><em>No teknik records match your search.</em></p>
+    <p><em>No Teknik records match your search.</em></p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Teknik ID</th>
                 <th>Name</th>
-                <th>Description</th>
-                <th>Image</th>
-                <th>Video</th>
-                <th>Audio</th>
-                <th>Pensum Grad</th> <!-- Changed header to show Pensum Grad -->
-                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var teknik in filteredTekniks)
+            @foreach (var teknik in filteredTeknikker)
             {
-                var pensumGrad = pensumList.FirstOrDefault(p => p.PensumID == teknik.PensumID)?.PensumGrad ?? "Unknown";
-
                 <tr>
-                    <td>@teknik.TeknikID</td>
-                    <td>@teknik.TeknikNavn</td>
-                    <td>@teknik.TeknikBeskrivelse</td>
-                    <td><img src="@teknik.TeknikBillede" alt="Teknik Image" width="50" /></td>
-                    <td><a href="@teknik.TeknikVideo" target="_blank">Watch</a></td>
-                    <td><a href="@teknik.TeknikLyd" target="_blank">Listen</a></td>
-                    <td>@pensumGrad</td> <!-- Show Pensum Grad -->
                     <td>
-                        <button class="btn btn-primary" @onclick="() => EditTeknik(teknik)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteTeknik(teknik.TeknikID)">Delete</button>
+                        <a @onclick="() => NavigateToTeknik(teknik.TeknikID)" style="cursor:pointer; text-decoration: underline;">
+                            @teknik.TeknikNavn
+                        </a>
                     </td>
                 </tr>
             }
@@ -69,215 +60,63 @@ else
 
 <hr />
 
-<h3>@(isEditing ? "Edit Teknik" : "Add New Teknik")</h3>
-
-<EditForm Model="@teknik" OnValidSubmit="@(isEditing ? UpdateTeknik : CreateTeknik)">
-    <DataAnnotationsValidator />
-
-    <div class="form-group">
-        <label>Teknik Name:</label>
-        <InputText class="form-control" @bind-Value="teknik.TeknikNavn" required />
-    </div>
-
-    <div class="form-group">
-        <label>Description:</label>
-        <InputTextArea class="form-control" @bind-Value="teknik.TeknikBeskrivelse" required />
-    </div>
-
-    <div class="form-group">
-        <label>Image URL:</label>
-        <InputText class="form-control" @bind-Value="teknik.TeknikBillede" />
-    </div>
-
-    <div class="form-group">
-        <label>Video URL:</label>
-        <InputText class="form-control" @bind-Value="teknik.TeknikVideo" />
-    </div>
-
-    <div class="form-group">
-        <label>Audio URL:</label>
-        <InputText class="form-control" @bind-Value="teknik.TeknikLyd" />
-    </div>
-
-    <div class="form-group">
-        <label>Pensum:</label>
-        <select class="form-control" @bind="teknik.PensumID">
-            <option value="">Select Pensum</option>
-            @foreach (var pensum in pensumList)
-            {
-                <option value="@pensum.PensumID">@pensum.PensumGrad</option>
-            }
-        </select>
-    </div>
-
-    <button type="submit" class="btn btn-success">@(isEditing ? "Update" : "Create")</button>
-    <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
-</EditForm>
-
 @if (errorMessage != null)
 {
     <div class="alert alert-danger">@errorMessage</div>
 }
 
 @code {
-    private List<TeknikDTO> tekniks = new();
-    private List<TeknikDTO> filteredTekniks = new();
-    private List<PensumDTO> pensumList = new(); // New list for Pensum
+    private List<TeknikDTO> availableTeknikker = new();
+    private List<TeknikDTO> filteredTeknikker = new();
     private TeknikDTO teknik = new();
     private bool isEditing = false;
     private string? errorMessage;
+    private HttpClient _apiClient;
 
-    private string searchName = "";
-    private string filterPensum = ""; // Changed to string to handle both ID and Grad
+    private string searchTeknikName = "";
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadTekniks();
-        await LoadPensum();  // Fetch Pensum data
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+        await LoadTeknikker();
     }
 
-    private async Task LoadTekniks()
+    private async Task LoadTeknikker()
     {
         try
         {
-            tekniks = await Http.GetFromJsonAsync<List<TeknikDTO>>("https://localhost:7478/api/teknik");
-            ApplyFilters();
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeknikDTO>>>($"api/teknik");
+            if (response?.Success == true && response.Data != null)
+            {
+                availableTeknikker = _mapper.Map<List<TeknikDTO>>(response.Data);
+                ApplyFilters();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch teknik data.";
+            }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading teknik records: {ex.Message}";
-        }
-    }
-
-    private async Task LoadPensum()
-    {
-        try
-        {
-            pensumList = await Http.GetFromJsonAsync<List<PensumDTO>>("https://localhost:7478/api/pensum");
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error loading pensum records: {ex.Message}";
+            errorMessage = $"Error loading teknik data: {ex.Message}";
         }
     }
 
     private void ApplyFilters()
     {
-        filteredTekniks = tekniks
-            .Where(t => (string.IsNullOrEmpty(searchName) || t.TeknikNavn.Contains(searchName, StringComparison.OrdinalIgnoreCase)) &&
-                        (string.IsNullOrEmpty(filterPensum) ||
-                         t.PensumID.ToString().Contains(filterPensum) || // Match PensumID
-                         pensumList.Any(p => p.PensumID == t.PensumID && p.PensumGrad.Contains(filterPensum, StringComparison.OrdinalIgnoreCase))) // Match PensumGrad
-            )
+        filteredTeknikker = availableTeknikker
+            .Where(t => string.IsNullOrEmpty(searchTeknikName) || t.TeknikNavn.Contains(searchTeknikName, StringComparison.OrdinalIgnoreCase))
             .ToList();
     }
 
     private void ClearFilters()
     {
-        searchName = "";
-        filterPensum = "";
+        searchTeknikName = "";
         ApplyFilters();
     }
 
-    private async Task CreateTeknik()
+    private void NavigateToTeknik(Guid teknikId)
     {
-        try
-        {
-            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/teknik", teknik);
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadTekniks();
-                teknik = new TeknikDTO();
-            }
-            else
-            {
-                errorMessage = "Failed to create teknik.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error creating teknik: {ex.Message}";
-        }
-    }
-
-    private void EditTeknik(TeknikDTO selectedTeknik)
-    {
-        teknik = selectedTeknik;
-        isEditing = true;
-    }
-
-    private async Task UpdateTeknik()
-    {
-        try
-        {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/teknik/{teknik.TeknikID}", teknik);
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadTekniks();
-                teknik = new TeknikDTO();
-                isEditing = false;
-            }
-            else
-            {
-                errorMessage = "Failed to update teknik.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error updating teknik: {ex.Message}";
-        }
-    }
-
-    private async Task DeleteTeknik(int id)
-    {
-        if (!await ConfirmDelete())
-        {
-            return;
-        }
-
-        try
-        {
-            var response = await Http.DeleteAsync($"https://localhost:7478/api/teknik/{id}");
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadTekniks();
-            }
-            else
-            {
-                errorMessage = "Failed to delete teknik.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error deleting teknik: {ex.Message}";
-        }
-    }
-
-    private void CancelEdit()
-    {
-        teknik = new TeknikDTO();
-        isEditing = false;
-    }
-
-    private async Task<bool> ConfirmDelete()
-    {
-        return await Task.FromResult(true);
-    }
-
-    private class TeknikDTO
-    {
-        public int TeknikID { get; set; }
-        public string TeknikNavn { get; set; }
-        public string TeknikBeskrivelse { get; set; }
-        public string TeknikBillede { get; set; }
-        public string TeknikVideo { get; set; }
-        public string TeknikLyd { get; set; }
-        public int PensumID { get; set; }
-    }
-
-    private class PensumDTO
-    {
-        public int PensumID { get; set; }
-        public string PensumGrad { get; set; }
+        NavigationManager.NavigateTo($"/teknik/{teknikId}");
     }
 }

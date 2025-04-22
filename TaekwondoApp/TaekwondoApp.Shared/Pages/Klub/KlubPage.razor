@@ -1,5 +1,4 @@
 ﻿@page "/klub"
-@* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
@@ -7,13 +6,11 @@
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
 
-@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
 @inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
-
 
 <h1>Klub Management</h1>
 
@@ -44,18 +41,17 @@ else
         <thead>
             <tr>
                 <th>Name</th>
-@*                 <th>Actions</th> *@
             </tr>
         </thead>
         <tbody>
             @foreach (var klub in filteredKlubber)
             {
                 <tr>
-                    <td>@klub.KlubNavn</td>
-@*                     <td>
-                        <button class="btn btn-primary" @onclick="() => EditKlub(klub)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteKlub(klub.KlubID)">Delete</button>
-                    </td> *@
+                    <td>
+                        <a @onclick="() => NavigateToKlub(klub.KlubID)" style="cursor:pointer; text-decoration: underline;">
+                            @klub.KlubNavn
+                        </a>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -63,20 +59,6 @@ else
 }
 
 <hr />
-
-@* <h3>@(isEditing ? "Edit Klub" : "Add New Klub")</h3>
-
-<EditForm Model="@klub" OnValidSubmit="@(isEditing ? UpdateKlub : CreateKlub)">
-    <DataAnnotationsValidator />
-
-    <div class="form-group">
-        <label>Klub Name:</label>
-        <InputText class="form-control" @bind-Value="klub.KlubNavn" required />
-    </div>
-
-    <button type="submit" class="btn btn-success">@(isEditing ? "Update" : "Create")</button>
-    <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
-</EditForm> *@
 
 @if (errorMessage != null)
 {
@@ -111,12 +93,12 @@ else
             }
             else
             {
-                errorMessage = "Failed to fetch user data.";
+                errorMessage = "Failed to fetch klub data.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading user data: {ex.Message}";
+            errorMessage = $"Error loading klub data: {ex.Message}";
         }
     }
 
@@ -133,93 +115,8 @@ else
         ApplyFilters();
     }
 
-    // private async Task CreateKlub()
-    // {
-    //     try
-    //     {
-    //         var response = await _apiClient.PostAsJsonAsync("https://localhost:7478/api/klub", klub);
-    //         if (response.IsSuccessStatusCode)
-    //         {
-    //             await LoadKlubber();
-    //             klub = new KlubDTO();
-    //         }
-    //         else
-    //         {
-    //             errorMessage = "Failed to create Klub.";
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         errorMessage = $"Error creating Klub: {ex.Message}";
-    //     }
-    // }
-
-    // private void EditKlub(KlubDTO selectedKlub)
-    // {
-    //     klub = selectedKlub;
-    //     isEditing = true;
-    // }
-
-    // private async Task UpdateKlub()
-    // {
-    //     try
-    //     {
-    //         var response = await _apiClient.PutAsJsonAsync($"https://localhost:7478/api/klub/{klub.KlubID}", klub);
-    //         if (response.IsSuccessStatusCode)
-    //         {
-    //             await LoadKlubber();
-    //             klub = new KlubDTO();
-    //             isEditing = false;
-    //         }
-    //         else
-    //         {
-    //             errorMessage = "Failed to update Klub.";
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         errorMessage = $"Error updating Klub: {ex.Message}";
-    //     }
-    // }
-
-    // private async Task DeleteKlub(Guid id)
-    // {
-    //     if (!await ConfirmDelete())
-    //     {
-    //         return;
-    //     }
-
-    //     try
-    //     {
-    //         var response = await _apiClient.DeleteAsync($"https://localhost:7478/api/klub/{id}");
-    //         if (response.IsSuccessStatusCode)
-    //         {
-    //             await LoadKlubber();
-    //         }
-    //         else
-    //         {
-    //             errorMessage = "Failed to delete Klub.";
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         errorMessage = $"Error deleting Klub: {ex.Message}";
-    //     }
-    // }
-
-    // private void CancelEdit()
-    // {
-    //     klub = new KlubDTO();
-    //     isEditing = false;
-    // }
-
-    // private async Task<bool> ConfirmDelete()
-    // {
-    //     return await Task.FromResult(true);
-    // }
-    // public class KlubDTO
-    // {
-    //     public Guid KlubID { get; set; }
-    //     public string KlubNavn { get; set; }
-    // }
+    private void NavigateToKlub(Guid klubId)
+    {
+        NavigationManager.NavigateTo($"/klub/{klubId}");
+    }
 }
