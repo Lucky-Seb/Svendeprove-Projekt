@@ -1,24 +1,30 @@
 ﻿@page "/øvelse"
-@inject HttpClient Http
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
 
 <h1>Øvelse Management</h1>
 
 <!-- Search Filters -->
 <div class="row mb-3">
     <div class="col-md-4">
-        <label>Search by Name:</label>
-        <input class="form-control" @bind="searchName" placeholder="Enter Øvelse name..." />
-    </div>
-    <div class="col-md-4">
-        <label>Filter by Pensum:</label>
-        <input class="form-control" @bind="filterPensum" placeholder="Enter Pensum Grad..." />
+        <label>Search by Øvelse Name:</label>
+        <input class="form-control" @bind="searchØvelseName" placeholder="Enter Øvelse name..." />
     </div>
     <div class="col-md-4 d-flex align-items-end">
         <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
         <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
     </div>
 </div>
-
 
 <!-- Display Table -->
 @if (filteredØvelser == null)
@@ -34,40 +40,17 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Øvelse ID</th>
                 <th>Name</th>
-                <th>Description</th>
-                <th>Image</th>
-                <th>Video</th>
-                <th>Time (min)</th>
-                <th>Difficulty</th>
-                <th>Pensum Grad</th>
-                <th>Bruger</th>
-                <th>Klub</th>
-                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var øvelse in filteredØvelser)
             {
-                var pensumGrad = pensumList.FirstOrDefault(p => p.PensumID == øvelse.PensumID)?.PensumGrad ?? "Unknown";
-                var brugerName = GetBrugerNameForØvelse(øvelse.ØvelseID);
-                var klubName = GetKlubNameForØvelse(øvelse.ØvelseID);
-
                 <tr>
-                    <td>@øvelse.ØvelseID</td>
-                    <td>@øvelse.ØvelseNavn</td>
-                    <td>@øvelse.ØvelseBeskrivelse</td>
-                    <td><img src="@øvelse.ØvelseBillede" alt="Øvelse Image" width="50" /></td>
-                    <td><a href="@øvelse.ØvelseVideo" target="_blank">Watch</a></td>
-                    <td>@øvelse.ØvelseTid</td>
-                    <td>@øvelse.ØvelseSværhed</td>
-                    <td>@pensumGrad</td>
-                    <td>@brugerName</td>
-                    <td>@klubName</td>
                     <td>
-                        <button class="btn btn-primary" @onclick="() => EditØvelse(øvelse)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteØvelse(øvelse.ØvelseID)">Delete</button>
+                        <a @onclick="() => NavigateToØvelse(øvelse.ØvelseID)" style="cursor:pointer; text-decoration: underline;">
+                            @øvelse.ØvelseNavn
+                        </a>
                     </td>
                 </tr>
             }
@@ -76,345 +59,63 @@ else
 }
 
 <hr />
-
-<h3>@(isEditing ? "Edit Øvelse" : "Add New Øvelse")</h3>
-
-<EditForm Model="@øvelse" OnValidSubmit="@(isEditing ? UpdateØvelse : CreateØvelse)">
-    <DataAnnotationsValidator />
-
-    <div class="form-group">
-        <label>Øvelse Name:</label>
-        <InputText class="form-control" @bind-Value="øvelse.ØvelseNavn" required />
-    </div>
-
-    <div class="form-group">
-        <label>Description:</label>
-        <InputTextArea class="form-control" @bind-Value="øvelse.ØvelseBeskrivelse" required />
-    </div>
-
-    <div class="form-group">
-        <label>Image URL:</label>
-        <InputText class="form-control" @bind-Value="øvelse.ØvelseBillede" />
-    </div>
-
-    <div class="form-group">
-        <label>Video URL:</label>
-        <InputText class="form-control" @bind-Value="øvelse.ØvelseVideo" />
-    </div>
-
-    <div class="form-group">
-        <label>Time (min):</label>
-        <InputNumber class="form-control" @bind-Value="øvelse.ØvelseTid" />
-    </div>
-
-    <div class="form-group">
-        <label>Difficulty:</label>
-        <InputText class="form-control" @bind-Value="øvelse.ØvelseSværhed" />
-    </div>
-
-    <div class="form-group">
-        <label>Pensum:</label>
-        <select class="form-control" @bind="øvelse.PensumID">
-            <option value="">Select Pensum</option>
-            @foreach (var pensum in pensumList)
-            {
-                <option value="@pensum.PensumID">@pensum.PensumGrad</option>
-            }
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Bruger:</label>
-        <select class="form-control" @bind="øvelse.BrugerID">
-            <option value="">Select Bruger</option>
-            @foreach (var bruger in brugerList)
-            {
-                <option value="@bruger.BrugerID">@bruger.BrugerNavn</option>
-            }
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Klub:</label>
-        <select class="form-control" @bind="øvelse.KlubID">
-            <option value="">Select Klub</option>
-            @foreach (var klub in klubList)
-            {
-                <option value="@klub.KlubID">@klub.KlubNavn</option>
-            }
-        </select>
-    </div>
-
-    <button type="submit" class="btn btn-success">@(isEditing ? "Update" : "Create")</button>
-    <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
-</EditForm>
-
 @if (errorMessage != null)
 {
     <div class="alert alert-danger">@errorMessage</div>
 }
 
 @code {
-    private List<ØvelseDTO> øvelser = new();
+    private List<ØvelseDTO> availableØvelser = new();
     private List<ØvelseDTO> filteredØvelser = new();
-    private List<PensumDTO> pensumList = new();
-    private List<BrugerDTO> brugerList = new(); // New list for Bruger data
-    private List<KlubDTO> klubList = new(); // New list for Klub data
-    private List<BrugerØvelseDTO> brugerØvelseList = new(); // Joint table for Bruger
-    private List<KlubØvelseDTO> klubØvelseList = new(); // Joint table for Klub
     private ØvelseDTO øvelse = new();
     private bool isEditing = false;
     private string? errorMessage;
+    private HttpClient _apiClient;
 
-    private string searchName = "";
-    private string filterPensum = "";
-    private string filterBruger = "";
-    private string filterKlub = "";
+    private string searchØvelseName = "";
 
     protected override async Task OnInitializedAsync()
     {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
         await LoadØvelser();
-        await LoadPensum();
-        await LoadBruger();  // Fetch Bruger data
-        await LoadKlub();    // Fetch Klub data
-        await LoadBrugerØvelse();  // Fetch BrugerØvelse data
-        await LoadKlubØvelse();    // Fetch KlubØvelse data
     }
 
     private async Task LoadØvelser()
     {
         try
         {
-            øvelser = await Http.GetFromJsonAsync<List<ØvelseDTO>>("https://localhost:7478/api/øvelse");
-            ApplyFilters();
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>($"api/øvelse");
+            if (response?.Success == true && response.Data != null)
+            {
+                availableØvelser = _mapper.Map<List<ØvelseDTO>>(response.Data);
+                ApplyFilters();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch øvelse data.";
+            }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading øvelse records: {ex.Message}";
+            errorMessage = $"Error loading øvelse data: {ex.Message}";
         }
-    }
-
-    private async Task LoadPensum()
-    {
-        try
-        {
-            pensumList = await Http.GetFromJsonAsync<List<PensumDTO>>("https://localhost:7478/api/pensum");
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error loading pensum records: {ex.Message}";
-        }
-    }
-
-    private async Task LoadBruger()
-    {
-        try
-        {
-            brugerList = await Http.GetFromJsonAsync<List<BrugerDTO>>("https://localhost:7478/api/bruger");
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error loading bruger records: {ex.Message}";
-        }
-    }
-
-    private async Task LoadKlub()
-    {
-        try
-        {
-            klubList = await Http.GetFromJsonAsync<List<KlubDTO>>("https://localhost:7478/api/klub");
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error loading klub records: {ex.Message}";
-        }
-    }
-
-    private async Task LoadBrugerØvelse()
-    {
-        try
-        {
-            brugerØvelseList = await Http.GetFromJsonAsync<List<BrugerØvelseDTO>>("https://localhost:7478/api/brugerøvelse");
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error loading brugerøvelse records: {ex.Message}";
-        }
-    }
-
-    private async Task LoadKlubØvelse()
-    {
-        try
-        {
-            klubØvelseList = await Http.GetFromJsonAsync<List<KlubØvelseDTO>>("https://localhost:7478/api/klubøvelse");
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error loading klubøvelse records: {ex.Message}";
-        }
-    }
-
-    private string GetBrugerNameForØvelse(int øvelseId)
-    {
-        var brugerØvelse = brugerØvelseList.FirstOrDefault(b => b.ØvelseID == øvelseId);
-        return brugerList.FirstOrDefault(b => b.BrugerID == brugerØvelse?.BrugerID)?.BrugerNavn ?? "Unknown";
-    }
-
-    private string GetKlubNameForØvelse(int øvelseId)
-    {
-        var klubØvelse = klubØvelseList.FirstOrDefault(k => k.ØvelseID == øvelseId);
-        return klubList.FirstOrDefault(k => k.KlubID == klubØvelse?.KlubID)?.KlubNavn ?? "Unknown";
     }
 
     private void ApplyFilters()
     {
-        filteredØvelser = øvelser
-            .Where(o => (string.IsNullOrEmpty(searchName) || o.ØvelseNavn.Contains(searchName, StringComparison.OrdinalIgnoreCase)) &&
-                        (string.IsNullOrEmpty(filterPensum) ||
-                         pensumList.Any(p => p.PensumID == o.PensumID && p.PensumGrad.Contains(filterPensum, StringComparison.OrdinalIgnoreCase)) // Use PensumGrad from PensumDTO
-                        ) // Lookup in KlubØvelseDTO
-                )
+        filteredØvelser = availableØvelser
+            .Where(o => string.IsNullOrEmpty(searchØvelseName) || o.ØvelseNavn.Contains(searchØvelseName, StringComparison.OrdinalIgnoreCase))
             .ToList();
     }
 
     private void ClearFilters()
     {
-        searchName = "";
-        filterPensum = "";
+        searchØvelseName = "";
         ApplyFilters();
     }
 
-    private async Task CreateØvelse()
+    private void NavigateToØvelse(Guid øvelseId)
     {
-        try
-        {
-            // Send POST request to create a new Øvelse
-            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/øvelse", øvelse);
-
-            if (response.IsSuccessStatusCode)
-            {
-                // Reload the Øvelser
-                await LoadØvelser();
-
-                // Refresh the joint tables
-                await LoadBrugerØvelse();  // Refresh BrugerØvelse data
-                await LoadKlubØvelse();    // Refresh KlubØvelse data
-
-                // Clear the form after successful creation
-                øvelse = new ØvelseDTO();
-            }
-            else
-            {
-                errorMessage = "Failed to create Øvelse.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error creating Øvelse: {ex.Message}";
-        }
-    }
-    private void EditØvelse(ØvelseDTO selectedØvelse)
-    {
-        øvelse = selectedØvelse;
-        isEditing = true;
-    }
-
-    private async Task UpdateØvelse()
-    {
-        try
-        {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/øvelse/{øvelse.ØvelseID}", øvelse);
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadØvelser();
-                øvelse = new ØvelseDTO();
-                isEditing = false;
-            }
-            else
-            {
-                errorMessage = "Failed to update øvelse.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error updating øvelse: {ex.Message}";
-        }
-    }
-
-    private async Task DeleteØvelse(int id)
-    {
-        if (!await ConfirmDelete())
-        {
-            return;
-        }
-
-        try
-        {
-            var response = await Http.DeleteAsync($"https://localhost:7478/api/øvelse/{id}");
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadØvelser();
-            }
-            else
-            {
-                errorMessage = "Failed to delete øvelse.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error deleting øvelse: {ex.Message}";
-        }
-    }
-
-    private void CancelEdit()
-    {
-        øvelse = new ØvelseDTO();
-        isEditing = false;
-    }
-
-    private async Task<bool> ConfirmDelete()
-    {
-        return await Task.FromResult(true);
-    }
-    private class ØvelseDTO
-    {
-        public int ØvelseID { get; set; }
-        public string ØvelseNavn { get; set; }
-        public string ØvelseBeskrivelse { get; set; }
-        public string ØvelseBillede { get; set; }
-        public string ØvelseVideo { get; set; }
-        public int ØvelseTid { get; set; }
-        public string ØvelseSværhed { get; set; }
-        public int PensumID { get; set; }
-        public int? BrugerID { get; set; }
-        public int? KlubID { get; set; }
-    }
-
-    private class PensumDTO
-    {
-        public int PensumID { get; set; }
-        public string PensumGrad { get; set; }
-    }
-
-    private class BrugerDTO
-    {
-        public int BrugerID { get; set; }
-        public string BrugerNavn { get; set; }
-    }
-
-    private class KlubDTO
-    {
-        public int KlubID { get; set; }
-        public string KlubNavn { get; set; }
-    }
-    public class BrugerØvelseDTO
-    {
-        public int BrugerID { get; set; }
-        public int ØvelseID { get; set; }
-    }
-    public class KlubØvelseDTO
-    {
-        public int KlubID { get; set; }
-        public int ØvelseID { get; set; }
+        NavigationManager.NavigateTo($"/øvelse/{øvelseId}");
     }
 }
