@@ -45,6 +45,7 @@ else
         }
     </div>
 }
+<button class="btn btn-secondary mb-3" @onclick="GoBack">← Back to tekniker</button>
 
 @code {
     [Parameter]
@@ -66,5 +67,9 @@ else
         {
             Console.WriteLine("Failed to load teori: " + ex.Message);
         }
+    }
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/teknik"); 
     }
 }
