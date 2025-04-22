@@ -1,6 +1,8 @@
 using TaekwondoApp.Shared.Services;
 using TaekwondoApp.Web.Components;
 using TaekwondoApp.Web.Services;
+using TaekwondoApp.Shared.Services;
+using TaekwondoApp.Shared.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,28 @@ builder.Services.AddRazorComponents()
 
 // Add device-specific services used by the TaekwondoApp.Shared project
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
+
+// HttpClientFactory registration
+builder.Services.AddHttpClient(); // fallback/default client
+                                  // Scoped auth service
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+// Register JWT Auth message handler
+builder.Services.AddScoped<JwtAuthMessageHandler>();
+
+// Authenticated HttpClient (named "ApiClient")
+builder.Services.AddHttpClient("ApiClient", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7478/");
+}).AddHttpMessageHandler<JwtAuthMessageHandler>();
+
+
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+// Blazor
+builder.Services.AddSingleton<AuthStateProvider>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
