@@ -49,35 +49,41 @@ else
     private string frontendRole = "null";
     private string fronttoken = "null";
 
-    protected override async Task OnInitializedAsync()
+    // We are using OnAfterRenderAsync to perform the logic after the component has rendered
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        fronttoken = await AuthenticationService.GetTokenAsync();
-        isAuthenticated = !string.IsNullOrEmpty(fronttoken);
-
-        if (!isAuthenticated)
+        // Make sure this is only executed after client-side rendering
+        if (firstRender)
         {
-            NavigationManager.NavigateTo("/login", true);
-            return;
-        }
+            fronttoken = await AuthenticationService.GetTokenAsync();
+            isAuthenticated = !string.IsNullOrEmpty(fronttoken);
 
-        frontendRole = JwtParser.GetRole(fronttoken);  // Make sure this is set correctly
-        try
-        {
-            var client = HttpClientFactory.CreateClient("ApiClient");
-            var response = await client.GetAsync("api/test/debug");
-
-            if (response.IsSuccessStatusCode)
+            if (!isAuthenticated)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                debugInfo = JsonSerializer.Deserialize<DebugResponse>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                NavigationManager.NavigateTo("/login", true);
+                return;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to fetch debug info: {ex.Message}");
+
+            frontendRole = JwtParser.GetRole(fronttoken);  // Make sure this is set correctly
+
+            try
+            {
+                var client = HttpClientFactory.CreateClient("ApiClient");
+                var response = await client.GetAsync("api/test/debug");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    debugInfo = JsonSerializer.Deserialize<DebugResponse>(json, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to fetch debug info: {ex.Message}");
+            }
         }
     }
 

@@ -1,9 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-#if ANDROID || IOS || WINDOWS || MACCATALYST
-using Microsoft.Maui.Storage;
-#else
-using Blazored.LocalStorage;
-#endif
+﻿using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using TaekwondoApp.Shared.Services;
 
@@ -12,7 +8,6 @@ public class AuthStateProvider : AuthenticationStateProvider
     public event Action? OnChange;
 
     private readonly ILocalStorageService _localStorage;
-
     private string? _token;
     private string? _role;
 
@@ -33,10 +28,9 @@ public class AuthStateProvider : AuthenticationStateProvider
 #else
         _localStorage = localStorage;
 #endif
-        _ = InitializeAsync(); // Fire and forget initialization
     }
 
-    private async Task InitializeAsync()
+    public async Task InitializeAsync()
     {
         string? token = null;
 

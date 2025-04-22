@@ -6,6 +6,7 @@
 @inject NavigationManager NavigationManager
 @inject HttpClient HttpClient
 @inject IAuthenticationService AuthenticationService
+@inject AuthStateProvider AuthStateProvider  // Inject the AuthStateProvider
 
 <h3>Login</h3>
 
@@ -54,6 +55,12 @@
     private LoginModel loginModel = new();
     private List<string> validationErrors = new();
     private List<string> logs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize AuthStateProvider (get the token from localStorage)
+        await AuthStateProvider.InitializeAsync();
+    }
 
     private async Task HandleLogin()
     {
