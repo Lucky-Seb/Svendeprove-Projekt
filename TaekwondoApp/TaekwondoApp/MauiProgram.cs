@@ -32,10 +32,14 @@ namespace TaekwondoApp
             builder.Services.AddScoped<JwtAuthMessageHandler>();
 
             // Authenticated HttpClient (named "ApiClient")
+            builder.Services.AddTransient<CustomHttpClientHandler>();
             builder.Services.AddHttpClient("ApiClient", client =>
             {
                 client.BaseAddress = new Uri("https://localhost:7478/");
-            }).AddHttpMessageHandler<JwtAuthMessageHandler>();
+            })
+            .AddHttpMessageHandler<CustomHttpClientHandler>() // Add SSL handler
+            .AddHttpMessageHandler<JwtAuthMessageHandler>();  // Add JWT handler
+
 
             // AutoMapper
             builder.Services.AddAutoMapper(typeof(MappingProfile));
@@ -58,6 +62,18 @@ namespace TaekwondoApp
 #endif
 
             return builder.Build();
+        }
+        // Custom handler that wraps HttpClientHandler for SSL bypass
+    }
+    // Custom SSL Validation Handler
+    public class CustomHttpClientHandler : DelegatingHandler
+    {
+        public CustomHttpClientHandler()
+        {
+            InnerHandler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true // Disable SSL validation
+            };
         }
     }
 }

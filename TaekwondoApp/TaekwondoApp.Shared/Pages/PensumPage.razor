@@ -167,6 +167,8 @@ else
     {
         try
         {
+
+
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<PensumDTO>>>("api/Pensum");
 
             if (response != null && response.Success)
