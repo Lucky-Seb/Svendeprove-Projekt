@@ -1,0 +1,121 @@
+﻿@page "/programplan/{programId:guid}"
+
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h2>@programPlan?.ProgramNavn</h2>
+
+@if (isLoading)
+{
+    <p><em>Loading program info...</em></p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (programPlan == null)
+{
+    <p>This program could not be found.</p>
+}
+else
+{
+    <div class="card p-4 shadow-sm mb-4">
+        <h4>@programPlan.ProgramNavn</h4>
+        <p><strong>Description:</strong> @programPlan.Beskrivelse</p>
+        <p><strong>Created:</strong> @programPlan.OprettelseDato.ToShortDateString()</p>
+        <p><strong>Length:</strong> @programPlan.Længde minutes</p>
+    </div>
+
+    @if (programPlan.Træninger?.Any() == true)
+    {
+        <h5 class="mt-4">Træningsplan</h5>
+        <ol class="list-group list-group-numbered">
+            @foreach (var træning in programPlan.Træninger.OrderBy(t => t.TræningRækkefølge))
+            {
+                <li class="list-group-item">
+                    <div>
+                        <strong>Step @træning.TræningRækkefølge</strong> – <span>@træning.Tid min</span>
+                    </div>
+
+                    @if (træning.Quiz != null)
+                    {
+                        <div><strong>Quiz:</strong> @træning.Quiz.QuizNavn</div>
+                    }
+                    else if (træning.Teori != null)
+                    {
+                        <div><strong>Teori:</strong> @træning.Teori.TeoriNavn</div>
+                        <p>@træning.Teori.TeoriBeskrivelse</p>
+                    }
+                    else if (træning.Teknik != null)
+                    {
+                        <div><strong>Teknik:</strong> @træning.Teknik.TeknikNavn</div>
+                        <p>@træning.Teknik.TeknikBeskrivelse</p>
+                    }
+                    else if (træning.Øvelse != null)
+                    {
+                        <div><strong>Øvelse:</strong> @træning.Øvelse.ØvelseNavn</div>
+                        <p>@træning.Øvelse.ØvelseBeskrivelse</p>
+                    }
+                    else
+                    {
+                        <div><em>No content attached</em></div>
+                    }
+                </li>
+            }
+        </ol>
+    }
+    else
+    {
+        <p>No træninger are linked to this program.</p>
+    }
+}
+
+<button class="btn btn-secondary mt-4" @onclick="GoBack">← Back to Overview</button>
+
+@code {
+    [Parameter] public Guid programId { get; set; }
+    private ProgramPlanDTO? programPlan;
+    private HttpClient _apiClient;
+    private string? errorMessage;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<ProgramPlanDTO>>($"api/programplan/details/{programId}");
+            if (response?.Success == true && response.Data != null)
+            {
+                programPlan = response.Data;
+            }
+            else
+            {
+                errorMessage = "Could not load program details.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/programplan");
+    }
+}

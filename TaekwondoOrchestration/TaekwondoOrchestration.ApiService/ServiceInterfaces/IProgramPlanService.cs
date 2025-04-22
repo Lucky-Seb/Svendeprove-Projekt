@@ -25,6 +25,7 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
         Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansAsync();
 
         Task<Result<ProgramPlanDTO>> GetProgramPlanByIdAsync(Guid id);
+        Task<Result<ProgramPlanDTO>> GetProgramPlanWithDetailsAsync(Guid id);
 
         // Get programs by user (Bruger)
         Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansByBrugerIdAsync(Guid brugerId);

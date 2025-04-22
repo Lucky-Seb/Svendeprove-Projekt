@@ -29,9 +29,7 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Program ID</th>
                 <th>Name</th>
-                <th>Created On</th>
                 <th>Length</th>
                 <th>Description</th>
                 <th>Actions</th>
@@ -41,14 +39,11 @@ else
             @foreach (var program in programPlans)
             {
                 <tr>
-                    <td>@program.ProgramID</td>
                     <td>@program.ProgramNavn</td>
-                    <td>@program.OprettelseDato.ToShortDateString()</td>
                     <td>@program.Længde minutes</td>
                     <td>@program.Beskrivelse</td>
                     <td>
-                        <button class="btn btn-primary" @onclick="() => EditProgramPlan(program)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteProgramPlan(program.ProgramID)">Delete</button>
+                        <button class="btn btn-link" @onclick="() => NavigateToProgram(program.ProgramID)">Vis</button>
                     </td>
                 </tr>
             }
@@ -57,37 +52,6 @@ else
 }
 
 <hr />
-
-<h3>@(isEditing ? "Edit Program Plan" : "Add New Program Plan")</h3>
-
-<EditForm Model="@programPlan" OnValidSubmit="@(isEditing ? UpdateProgramPlan : CreateProgramPlan)">
-    <DataAnnotationsValidator />
-
-    <div class="form-group">
-        <label>Program Name:</label>
-        <InputText class="form-control" @bind-Value="programPlan.ProgramNavn" required />
-    </div>
-
-    <div class="form-group">
-        <label>Description:</label>
-        <InputTextArea class="form-control" @bind-Value="programPlan.Beskrivelse" required />
-    </div>
-
-    <div class="form-group">
-        <label>Length (minutes):</label>
-        <InputNumber class="form-control" @bind-Value="programPlan.Længde" required />
-    </div>
-
-    <div class="form-group">
-        <label>Bruger ID:</label>
-        <InputNumber class="form-control" @bind-Value="programPlan.BrugerID" required />
-    </div>
-
-    <div class="form-group">
-        <label>Klub ID:</label>
-        <InputNumber class="form-control" @bind-Value="programPlan.KlubID" required />
-    </div>
-</EditForm>
 
 @if (errorMessage != null)
 {
@@ -126,99 +90,9 @@ else
             errorMessage = $"Error loading program plans: {ex.Message}";
         }
     }
-
-    private async Task CreateProgramPlan()
+    private void NavigateToProgram(Guid programId)
     {
-        try
-        {
-            var response = await _apiClient.PostAsJsonAsync("https://localhost:7478/api/programplan", programPlan);
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadProgramPlans();
-                programPlan = new ProgramPlanDTO();
-            }
-            else
-            {
-                errorMessage = "Failed to create program plan.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error creating program plan: {ex.Message}";
-        }
+        NavigationManager.NavigateTo($"/programplan/{programId}");
     }
 
-    private void EditProgramPlan(ProgramPlanDTO selectedProgram)
-    {
-        programPlan = selectedProgram;
-        isEditing = true;
-    }
-
-    private async Task UpdateProgramPlan()
-    {
-        try
-        {
-            var response = await _apiClient.PutAsJsonAsync($"https://localhost:7478/api/programplan/{programPlan.ProgramID}", programPlan);
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadProgramPlans();
-                programPlan = new ProgramPlanDTO();
-                isEditing = false;
-            }
-            else
-            {
-                errorMessage = "Failed to update program plan.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error updating program plan: {ex.Message}";
-        }
-    }
-
-    private async Task DeleteProgramPlan(Guid id)
-    {
-        if (!await ConfirmDelete())
-        {
-            return;
-        }
-
-        try
-        {
-            var response = await _apiClient.DeleteAsync($"https://localhost:7478/api/programplan/{id}");
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadProgramPlans();
-            }
-            else
-            {
-                errorMessage = "Failed to delete program plan.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error deleting program plan: {ex.Message}";
-        }
-    }
-
-    private void CancelEdit()
-    {
-        programPlan = new ProgramPlanDTO();
-        isEditing = false;
-    }
-
-    private void AddTræning()
-    {
-        programPlan.Træninger.Add(new TræningDTO());
-    }
-
-    private void RemoveTræning(TræningDTO træning)
-    {
-        programPlan.Træninger.Remove(træning);
-    }
-
-    private async Task<bool> ConfirmDelete()
-    {
-        return await Task.FromResult(true);
-    }
 }

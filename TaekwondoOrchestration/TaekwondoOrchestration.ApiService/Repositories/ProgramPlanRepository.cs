@@ -5,6 +5,8 @@ using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TaekwondoApp.Shared.DTO;
+using SQLite;
 
 namespace TaekwondoOrchestration.ApiService.Repositories
 {
@@ -114,6 +116,31 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                 .ToListAsync();
 
             return programPlans;
+        }
+        public async Task<ProgramPlan?> GetProgramPlanWithDetailsAsync(Guid programPlanId)
+        {
+            var programPlanDetails = await _context.ProgramPlans
+                .Where(pp => pp.ProgramID == programPlanId)
+                .Include(pp => pp.KlubProgrammer)
+                    .ThenInclude(kp => kp.Klub)
+                .Include(pp => pp.BrugerProgrammer)
+                    .ThenInclude(bp => bp.Bruger)
+                .Include(pp => pp.Træninger)
+                    .ThenInclude(t => t.Quiz)
+                .Include(pp => pp.Træninger)
+                    .ThenInclude(t => t.Teori)
+                .Include(pp => pp.Træninger)
+                    .ThenInclude(t => t.Teknik)
+                .Include(pp => pp.Træninger)
+                    .ThenInclude(t => t.Øvelse)
+                .Include(pp => pp.Træninger)
+                    .ThenInclude(t => t.Pensum)
+                .FirstOrDefaultAsync();
+
+            if (programPlanDetails == null)
+                return null;
+
+            return programPlanDetails;
         }
 
         public async Task<ProgramPlan?> UpdateProgramPlanIncludingDeletedAsync(Guid programPlanId, ProgramPlan programPlan)

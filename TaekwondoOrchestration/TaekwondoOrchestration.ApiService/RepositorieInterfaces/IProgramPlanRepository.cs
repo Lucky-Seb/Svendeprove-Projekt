@@ -16,5 +16,6 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
         Task<List<ProgramPlan>> GetAllProgramPlansByBrugerIdAsync(Guid brugerId);
         Task<List<ProgramPlan>> GetAllProgramPlansByKlubIdAsync(Guid klubId);
         Task<ProgramPlan?> UpdateProgramPlanIncludingDeletedAsync(Guid programPlanId, ProgramPlan programPlan);
+        Task<ProgramPlan?> GetProgramPlanWithDetailsAsync(Guid programPlanId);
     }
 }
