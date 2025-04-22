@@ -43,7 +43,6 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Klub ID</th>
                 <th>Name</th>
 @*                 <th>Actions</th> *@
             </tr>
@@ -52,7 +51,6 @@ else
             @foreach (var klub in filteredKlubber)
             {
                 <tr>
-                    <td>@klub.KlubID</td>
                     <td>@klub.KlubNavn</td>
 @*                     <td>
                         <button class="btn btn-primary" @onclick="() => EditKlub(klub)">Edit</button>
