@@ -70,7 +70,7 @@ else
 
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<ØvelseDTO>>($"api/øvelse/details/{øvelseId}");
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<ØvelseDTO>>($"api/øvelse/{øvelseId}");
 
             if (response?.Success == true && response.Data != null)
             {

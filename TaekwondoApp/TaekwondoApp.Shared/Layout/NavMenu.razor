@@ -18,26 +18,14 @@
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="ordbog">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Ordbog
+            </NavLink>
+        </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="pensum">
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Pensum
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="klub">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Klub
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="programplan">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> ProgramPlan
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="quiz">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Quiz
             </NavLink>
         </div>
         <div class="nav-item px-3">
@@ -56,26 +44,51 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="ordbog">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Ordbog
+            <NavLink class="nav-link" href="klub">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Klub
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="login">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Login
+            <NavLink class="nav-link" href="programplan">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> ProgramPlan
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="register">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Register
+            <NavLink class="nav-link" href="quiz">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Quiz
             </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            @if (role == null)
+            {
+                <NavLink class="nav-link" href="login">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Login
+                </NavLink>
+            }
+        </div>
+        <div class="nav-item px-3">
+            @if (role == null)
+            {
+                <NavLink class="nav-link" href="register">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Register
+                </NavLink>
+            }
+        </div>
+        <div class="nav-item px-3">
+            @* This link will only be visible to users with "Instructor" or "Elev" roles *@
+            @if (role == "Instructor" || role == "Elev" || role == "Bruger")
+            {
+                <NavLink class="nav-link" href="account">
+                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Konto Side
+                </NavLink>
+            }
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="testpage">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Test
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Tokens
             </NavLink>
         </div>
-        @if (role == "Admin")
+        @*         @if (role == "Admin")
         {
             <NavLink href="/admin" Match="NavLinkMatch.All">Admin Panel</NavLink>
         }
@@ -94,17 +107,11 @@
                     <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Konto Side
                 </NavLink>
             </div>
-        }
+        } *@
         <div class="nav-item px-3">
-                <a class="nav-link" href="" @onclick="Logout">Logout</a>
-        </div>
-        <div class="nav-item px-3">
-            @* This link will only be visible to users with "Instructor" or "Elev" roles *@
-            @if (role == "Instructor" || role == "Elev" || role == "Bruger")
+            @if(role != null)
             {
-                <NavLink class="nav-link" href="account">
-                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Konto Side
-                </NavLink>
+                <a class="nav-link" href="" @onclick="Logout">Logout</a>
             }
         </div>
     </nav>
@@ -129,7 +136,6 @@
     private async Task Logout()
     {
         await AuthStateProvider.ClearAuth();
-        NavigationManager.NavigateTo("/login", forceLoad: true);
     }
 
     public void Dispose()
