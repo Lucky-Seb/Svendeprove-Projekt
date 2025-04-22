@@ -1,8 +1,8 @@
 using TaekwondoApp.Shared.Services;
 using TaekwondoApp.Web.Components;
 using TaekwondoApp.Web.Services;
-using TaekwondoApp.Shared.Services;
 using TaekwondoApp.Shared.Mapping;
+using Blazored.LocalStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +38,8 @@ builder.Services.AddHttpClient("ApiClient", client =>
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Blazor
-builder.Services.AddSingleton<AuthStateProvider>();
+builder.Services.AddScoped<AuthStateProvider>();
+builder.Services.AddBlazoredLocalStorage();
 
 var app = builder.Build();
 

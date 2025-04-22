@@ -1,11 +1,17 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
+#if ANDROID || IOS || WINDOWS || MACCATALYST
 using Microsoft.Maui.Storage;
+#else
+using Blazored.LocalStorage;
+#endif
 using System.Security.Claims;
 using TaekwondoApp.Shared.Services;
 
-public class AuthStateProvider
+public class AuthStateProvider : AuthenticationStateProvider
 {
     public event Action? OnChange;
+
+    private readonly ILocalStorageService _localStorage;
 
     private string? _token;
     private string? _role;
@@ -14,14 +20,31 @@ public class AuthStateProvider
     public string? Role => _role;
     public bool IsAuthenticated => !string.IsNullOrEmpty(_token);
 
-    public AuthStateProvider()
+    public AuthStateProvider(
+#if ANDROID || IOS || WINDOWS || MACCATALYST
+        // No localStorage dependency needed for MAUI (use SecureStorage)
+#else
+        ILocalStorageService localStorage
+#endif
+    )
     {
+#if ANDROID || IOS || WINDOWS || MACCATALYST
+        // No localStorage needed for MAUI, it's handled with SecureStorage
+#else
+        _localStorage = localStorage;
+#endif
         _ = InitializeAsync(); // Fire and forget initialization
     }
 
     private async Task InitializeAsync()
     {
-        var token = await SecureStorage.GetAsync("jwt_token");
+        string? token = null;
+
+#if ANDROID || IOS || WINDOWS || MACCATALYST
+        token = await SecureStorage.GetAsync("jwt_token");
+#else
+        token = await _localStorage.GetItemAsync<string>("jwt_token");
+#endif
 
         if (!string.IsNullOrEmpty(token))
         {
@@ -35,7 +58,13 @@ public class AuthStateProvider
     {
         _token = token;
         _role = JwtParser.GetRole(token);
+
+#if ANDROID || IOS || WINDOWS || MACCATALYST
         await SecureStorage.SetAsync("jwt_token", token);
+#else
+        await _localStorage.SetItemAsync("jwt_token", token);
+#endif
+
         NotifyStateChanged();
     }
 
@@ -43,11 +72,17 @@ public class AuthStateProvider
     {
         _token = null;
         _role = null;
-        await SecureStorage.SetAsync("jwt_token", string.Empty);
+
+#if ANDROID || IOS || WINDOWS || MACCATALYST
+        SecureStorage.Remove("jwt_token");
+#else
+        await _localStorage.RemoveItemAsync("jwt_token");
+#endif
+
         NotifyStateChanged();
     }
 
-    public async Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var identity = IsAuthenticated
             ? new ClaimsIdentity(new[]

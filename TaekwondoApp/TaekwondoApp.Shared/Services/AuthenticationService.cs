@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.Maui.Storage; // <-- Make sure this is included
-using System.Net.Http.Headers;
+#if ANDROID || IOS || WINDOWS || MACCATALYST
+using Microsoft.Maui.Storage;
+#else
+using Blazored.LocalStorage;
+#endif
 using TaekwondoApp.Shared.Services;
 
 namespace TaekwondoApp.Shared.Services
@@ -10,38 +13,57 @@ namespace TaekwondoApp.Shared.Services
         private readonly NavigationManager _navigationManager;
         private readonly AuthStateProvider _authStateProvider;
 
-        public AuthenticationService(NavigationManager navigationManager, AuthStateProvider authStateProvider)
+#if ANDROID || IOS || WINDOWS || MACCATALYST
+        // No local storage dependency needed for MAUI
+#else
+        private readonly ILocalStorageService _localStorage;
+#endif
+
+        public AuthenticationService(
+            NavigationManager navigationManager,
+            AuthStateProvider authStateProvider
+#if ANDROID || IOS || WINDOWS || MACCATALYST
+            // No DI for SecureStorage, it's static
+#else
+            , ILocalStorageService localStorage
+#endif
+        )
         {
             _navigationManager = navigationManager;
             _authStateProvider = authStateProvider;
+#if ANDROID || IOS || WINDOWS || MACCATALYST
+            // No assignment needed for SecureStorage
+#else
+            _localStorage = localStorage;
+#endif
         }
 
         public async Task SetTokenAsync(string token)
         {
-            if (!OperatingSystem.IsBrowser())
-            {
-                await SecureStorage.SetAsync("jwt_token", token);
-            }
-
+#if ANDROID || IOS || WINDOWS || MACCATALYST
+            await SecureStorage.SetAsync("jwt_token", token);
+#else
+            await _localStorage.SetItemAsync("jwt_token", token);
+#endif
             _authStateProvider.SetAuth(token);
         }
 
         public async Task<string?> GetTokenAsync()
         {
-            if (OperatingSystem.IsBrowser())
-            {
-                return null;
-            }
+#if ANDROID || IOS || WINDOWS || MACCATALYST
             return await SecureStorage.GetAsync("jwt_token");
+#else
+            return await _localStorage.GetItemAsync<string>("jwt_token");
+#endif
         }
 
         public async Task RemoveTokenAsync()
         {
-            if (!OperatingSystem.IsBrowser())
-            {
-                SecureStorage.Remove("jwt_token");
-            }
-
+#if ANDROID || IOS || WINDOWS || MACCATALYST
+            SecureStorage.Remove("jwt_token");
+#else
+            await _localStorage.RemoveItemAsync("jwt_token");
+#endif
             _authStateProvider.ClearAuth();
         }
     }
