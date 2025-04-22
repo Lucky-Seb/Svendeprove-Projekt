@@ -1,6 +1,17 @@
 ﻿@page "/teori/{TeoriId:guid}"
 @using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
 
 <h3>Teori Detail</h3>
 
@@ -48,7 +59,8 @@ else
 
         try
         {
-            teori = await _apiClient.GetFromJsonAsync<TeoriDTO>($"api/teori/{TeoriId}");
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<TeoriDTO>>($"api/teori/{TeoriId}");
+            teori = response.Data;
         }
         catch (Exception ex)
         {

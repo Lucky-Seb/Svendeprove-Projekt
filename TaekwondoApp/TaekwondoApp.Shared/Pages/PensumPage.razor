@@ -16,7 +16,26 @@
 
 <h1>Pensum Management</h1>
 
-<input type="text" @bind="searchTerm" @bind:event="oninput" placeholder="Search Pensum, Teknik, or Teori..." class="form-control mb-3" />
+@if (pensums != null)
+{
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label class="form-label">Filter by Pensum Grad:</label>
+            <select class="form-select" @bind="selectedPensumGrad" @bind:after="ApplyFilter">
+                <option value="">All</option>
+                @foreach (var grad in pensums.Select(p => p.PensumGrad).Distinct())
+                {
+                    <option value="@grad">@grad</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Search Teknik or Teori:</label>
+            <input class="form-control" type="text" placeholder="Search..." @bind="searchTerm" @bind:event="oninput" />
+        </div>
+    </div>
+}
 
 @if (filteredPensums == null)
 {
@@ -53,14 +72,19 @@ else
                         <td colspan="3">
                             <div>
                                 <h5>Teknik:</h5>
-                                @if (pensum.Teknik.Count == 0)
+                                @{
+                                    var matchingTeknik = pensum.Teknik
+                                    .Where(t => string.IsNullOrWhiteSpace(searchTerm) || t.TeknikNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                                    .ToList();
+                                }
+
+                                @if (matchingTeknik.Count == 0)
                                 {
                                     <p><em>No teknik found.</em></p>
                                 }
                                 else
                                 {
-                                    @foreach (var teknik in pensum.Teknik
-                                   .Where(t => string.IsNullOrWhiteSpace(searchTerm) || t.TeknikNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
+                                    @foreach (var teknik in matchingTeknik)
                                     {
                                         <div class="border p-2 mb-2 rounded">
                                             <h6>
@@ -74,33 +98,24 @@ else
                                             {
                                                 <img src="@teknik.TeknikBillede" alt="Teknik Billede" class="img-thumbnail mb-2" style="max-width: 200px;" />
                                             }
-
-                                            @if (!string.IsNullOrWhiteSpace(teknik.TeknikVideo))
-                                            {
-                                                <video controls class="mb-2" style="max-width: 300px;">
-                                                    <source src="@teknik.TeknikVideo" type="video/mp4" />
-                                                </video>
-                                            }
-
-                                            @if (!string.IsNullOrWhiteSpace(teknik.TeknikLyd))
-                                            {
-                                                <audio controls class="mb-2">
-                                                    <source src="@teknik.TeknikLyd" type="audio/mpeg" />
-                                                </audio>
-                                            }
                                         </div>
                                     }
                                 }
 
                                 <h5>Teori:</h5>
-                                @if (pensum.Teori.Count == 0)
+                                @{
+                                    var matchingTeori = pensum.Teori
+                                    .Where(t => string.IsNullOrWhiteSpace(searchTerm) || t.TeoriNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                                    .ToList();
+                                }
+
+                                @if (matchingTeori.Count == 0)
                                 {
                                     <p><em>No teori found.</em></p>
                                 }
                                 else
                                 {
-                                    @foreach (var teori in pensum.Teori
-                                   .Where(t => string.IsNullOrWhiteSpace(searchTerm) || t.TeoriNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
+                                    @foreach (var teori in matchingTeori)
                                     {
                                         <div class="border p-2 mb-2 rounded">
                                             <h6>
@@ -113,20 +128,6 @@ else
                                             @if (!string.IsNullOrWhiteSpace(teori.TeoriBillede))
                                             {
                                                 <img src="@teori.TeoriBillede" alt="Teori Billede" class="img-thumbnail mb-2" style="max-width: 200px;" />
-                                            }
-
-                                            @if (!string.IsNullOrWhiteSpace(teori.TeoriVideo))
-                                            {
-                                                <video controls class="mb-2" style="max-width: 300px;">
-                                                    <source src="@teori.TeoriVideo" type="video/mp4" />
-                                                </video>
-                                            }
-
-                                            @if (!string.IsNullOrWhiteSpace(teori.TeoriLyd))
-                                            {
-                                                <audio controls class="mb-2">
-                                                    <source src="@teori.TeoriLyd" type="audio/mpeg" />
-                                                </audio>
                                             }
                                         </div>
                                     }
@@ -154,6 +155,7 @@ else
     private HttpClient _apiClient;
     private string searchTerm = "";
     private HashSet<Guid> expandedPensums = new();
+    private string selectedPensumGrad = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -205,12 +207,16 @@ else
 
     private void ApplyFilter()
     {
-        filteredPensums = pensums.Where(p =>
-            string.IsNullOrWhiteSpace(searchTerm) ||
-            p.PensumGrad.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-            p.Teknik.Any(t => t.TeknikNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-            p.Teori.Any(t => t.TeoriNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-        ).ToArray();
+        filteredPensums = pensums
+            .Where(p =>
+                (string.IsNullOrWhiteSpace(selectedPensumGrad) || p.PensumGrad == selectedPensumGrad) &&
+                (
+                    string.IsNullOrWhiteSpace(searchTerm) ||
+                    p.Teknik.Any(t => t.TeknikNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                    p.Teori.Any(t => t.TeoriNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                )
+            )
+            .ToArray();
     }
 
     private void OnSearchChanged(ChangeEventArgs e)
@@ -219,9 +225,9 @@ else
         ApplyFilter();
     }
 
-    private async Task OnSearchTermChanged(ChangeEventArgs e)
+    private void OnFilterChanged(ChangeEventArgs e)
     {
-        searchTerm = e.Value?.ToString() ?? "";
+        selectedPensumGrad = e.Value?.ToString() ?? "";
         ApplyFilter();
     }
 }

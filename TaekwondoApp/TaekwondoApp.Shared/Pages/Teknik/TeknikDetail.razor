@@ -1,7 +1,17 @@
 ﻿@page "/teknik/{TeknikId:guid}"
 @using TaekwondoApp.Shared.DTO
-@inject IHttpClientFactory HttpClientFactory
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
 
 <h3>Teknik Detail</h3>
 
@@ -49,11 +59,12 @@ else
 
         try
         {
-            teknik = await _apiClient.GetFromJsonAsync<TeknikDTO>($"api/teknik/{TeknikId}");
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<TeknikDTO>>($"api/teknik/{TeknikId}");
+            teknik = response.Data;
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Failed to load teknik: " + ex.Message);
+            Console.WriteLine("Failed to load teori: " + ex.Message);
         }
     }
 }
