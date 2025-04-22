@@ -271,6 +271,17 @@ namespace TaekwondoOrchestration.ApiService.Services
             var mapped = _mapper.Map<ProgramPlanDTO>(programPlan);
             return Result<ProgramPlanDTO>.Ok(mapped);
         }
+        // Get Program Plan with all details by ID
+        public async Task<Result<ProgramPlanDTO>> GetProgramPlanWithDetailsAsync(Guid id)
+        {
+            var programPlan = await _programPlanRepository.GetProgramPlanWithDetailsAsync(id);
+            if (programPlan == null)
+                return Result<ProgramPlanDTO>.Fail("Program Plan not found.");
+
+            var mapped = _mapper.Map<ProgramPlanDTO>(programPlan);
+            return Result<ProgramPlanDTO>.Ok(mapped);
+        }
+
         #endregion
     }
 }

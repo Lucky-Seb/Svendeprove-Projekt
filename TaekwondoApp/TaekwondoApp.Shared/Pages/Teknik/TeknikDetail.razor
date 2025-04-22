@@ -1,0 +1,75 @@
+﻿@page "/teknik/{TeknikId:guid}"
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h3>Teknik Detail</h3>
+
+@if (teknik == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="card p-3">
+        <h4>@teknik.TeknikNavn</h4>
+        <p><strong>Beskrivelse:</strong> @teknik.TeknikBeskrivelse</p>
+
+        @if (!string.IsNullOrWhiteSpace(teknik.TeknikBillede))
+        {
+            <img src="@teknik.TeknikBillede" alt="Billede" class="img-thumbnail mb-2" style="max-width: 300px;" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(teknik.TeknikVideo))
+        {
+            <video controls style="max-width: 400px;" class="mb-2">
+                <source src="@teknik.TeknikVideo" type="video/mp4" />
+            </video>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(teknik.TeknikLyd))
+        {
+            <audio controls class="mb-2">
+                <source src="@teknik.TeknikLyd" type="audio/mpeg" />
+            </audio>
+        }
+    </div>
+}
+<button class="btn btn-secondary mb-3" @onclick="GoBack">← Back to tekniker</button>
+
+@code {
+    [Parameter]
+    public Guid TeknikId { get; set; }
+
+    private TeknikDTO? teknik;
+    private HttpClient _apiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<TeknikDTO>>($"api/teknik/{TeknikId}");
+            teknik = response.Data;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to load teori: " + ex.Message);
+        }
+    }
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/teknik"); 
+    }
+}

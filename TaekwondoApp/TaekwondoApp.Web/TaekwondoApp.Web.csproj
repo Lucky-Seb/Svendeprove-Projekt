@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\TaekwondoOrchestration\TaekwondoOrchestration.ServiceDefaults\TaekwondoOrchestration.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\TaekwondoApp.Shared\TaekwondoApp.Shared.csproj" />
     <ProjectReference Include="..\TaekwondoApp.Web.Client\TaekwondoApp.Web.Client.csproj" />
     <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" Version="9.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.4" />

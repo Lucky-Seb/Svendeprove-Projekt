@@ -1,0 +1,121 @@
+﻿@page "/øvelse"
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h1>Øvelse Management</h1>
+
+<!-- Search Filters -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Search by Øvelse Name:</label>
+        <input class="form-control" @bind="searchØvelseName" placeholder="Enter Øvelse name..." />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+    </div>
+</div>
+
+<!-- Display Table -->
+@if (filteredØvelser == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (filteredØvelser.Count == 0)
+{
+    <p><em>No Øvelse records match your search.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var øvelse in filteredØvelser)
+            {
+                <tr>
+                    <td>
+                        <a @onclick="() => NavigateToØvelse(øvelse.ØvelseID)" style="cursor:pointer; text-decoration: underline;">
+                            @øvelse.ØvelseNavn
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@code {
+    private List<ØvelseDTO> availableØvelser = new();
+    private List<ØvelseDTO> filteredØvelser = new();
+    private ØvelseDTO øvelse = new();
+    private bool isEditing = false;
+    private string? errorMessage;
+    private HttpClient _apiClient;
+
+    private string searchØvelseName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+        await LoadØvelser();
+    }
+
+    private async Task LoadØvelser()
+    {
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>($"api/øvelse");
+            if (response?.Success == true && response.Data != null)
+            {
+                availableØvelser = _mapper.Map<List<ØvelseDTO>>(response.Data);
+                ApplyFilters();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch øvelse data.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading øvelse data: {ex.Message}";
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        filteredØvelser = availableØvelser
+            .Where(o => string.IsNullOrEmpty(searchØvelseName) || o.ØvelseNavn.Contains(searchØvelseName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchØvelseName = "";
+        ApplyFilters();
+    }
+
+    private void NavigateToØvelse(Guid øvelseId)
+    {
+        NavigationManager.NavigateTo($"/øvelse/{øvelseId}");
+    }
+}

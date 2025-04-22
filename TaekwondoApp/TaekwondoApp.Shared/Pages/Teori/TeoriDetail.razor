@@ -1,0 +1,75 @@
+﻿@page "/teori/{TeoriId:guid}"
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h3>Teori Detail</h3>
+
+@if (teori == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="card p-3">
+        <h4>@teori.TeoriNavn</h4>
+        <p><strong>Beskrivelse:</strong> @teori.TeoriBeskrivelse</p>
+
+        @if (!string.IsNullOrWhiteSpace(teori.TeoriBillede))
+        {
+            <img src="@teori.TeoriBillede" alt="Billede" class="img-thumbnail mb-2" style="max-width: 300px;" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(teori.TeoriVideo))
+        {
+            <video controls style="max-width: 400px;" class="mb-2">
+                <source src="@teori.TeoriVideo" type="video/mp4" />
+            </video>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(teori.TeoriLyd))
+        {
+            <audio controls class="mb-2">
+                <source src="@teori.TeoriLyd" type="audio/mpeg" />
+            </audio>
+        }
+    </div>
+}
+<button class="btn btn-secondary mb-3" @onclick="GoBack">← Back to teorier</button>
+
+@code {
+    [Parameter]
+    public Guid TeoriId { get; set; }
+
+    private TeoriDTO? teori;
+    private HttpClient _apiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<TeoriDTO>>($"api/teori/{TeoriId}");
+            teori = response.Data;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to load teori: " + ex.Message);
+        }
+    }
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/teori");
+    }
+}

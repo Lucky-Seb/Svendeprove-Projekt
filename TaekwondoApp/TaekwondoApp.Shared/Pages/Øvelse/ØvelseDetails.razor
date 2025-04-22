@@ -1,0 +1,98 @@
+﻿@page "/øvelse/{øvelseId:guid}"
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h2>@øvelse?.ØvelseNavn</h2>
+
+@if (isLoading)
+{
+    <p><em>Loading øvelse info...</em></p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (øvelse == null)
+{
+    <p>This øvelse could not be found.</p>
+}
+else
+{
+    <div class="card p-4 shadow-sm mb-4">
+        <h4>Welcome to @øvelse.ØvelseNavn!</h4>
+        <p>@øvelse.ØvelseBeskrivelse</p>
+        <div class="row">
+            <div class="col-md-6">
+                @if (!string.IsNullOrEmpty(øvelse.ØvelseBillede))
+                {
+                    <img src="@øvelse.ØvelseBillede" class="img-fluid" alt="Øvelse Image" />
+                }
+            </div>
+            <div class="col-md-6">
+                @if (!string.IsNullOrEmpty(øvelse.ØvelseVideo))
+                {
+                    <video width="100%" controls>
+                        <source src="@øvelse.ØvelseVideo" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                }
+            </div>
+        </div>
+        <p><strong>Duration:</strong> @øvelse.ØvelseTid minutes</p>
+        <p><strong>Difficulty:</strong> @øvelse.ØvelseSværhed</p>
+    </div>
+}
+
+<button class="btn btn-secondary mb-3" @onclick="GoBack">← Back to Øvelser</button>
+
+@code {
+    [Parameter] public Guid øvelseId { get; set; }
+
+    private HttpClient _apiClient;
+    private ØvelseDTO? øvelse;
+    private string? errorMessage;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<ØvelseDTO>>($"api/øvelse/{øvelseId}");
+
+            if (response?.Success == true && response.Data != null)
+            {
+                øvelse = response.Data;
+            }
+            else
+            {
+                errorMessage = "Could not load øvelse details.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/øvelse");
+    }
+}

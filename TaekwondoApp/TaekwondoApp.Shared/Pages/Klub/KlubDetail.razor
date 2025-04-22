@@ -1,0 +1,110 @@
+﻿@page "/klub/{klubId:guid}"
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h2>@klub?.KlubNavn</h2>
+
+@if (isLoading)
+{
+    <p><em>Loading klub info...</em></p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (klub == null)
+{
+    <p>This klub could not be found.</p>
+}
+else
+{
+    <div class="card p-4 shadow-sm mb-4">
+        <h4>Welcome to @klub.KlubNavn!</h4>
+        <p>This klub offers a variety of activities and resources for members.</p>
+    </div>
+
+    @if (klub.Programmer?.Any() == true)
+    {
+        <h5>Programs</h5>
+        <ul>
+            @foreach (var program in klub.Programmer)
+            {
+                <li>@program.ProgramNavn</li>
+            }
+        </ul>
+    }
+
+    @if (klub.Øvelser?.Any() == true)
+    {
+        <h5>Exercises</h5>
+        <ul>
+            @foreach (var øvelse in klub.Øvelser)
+            {
+                <li>@øvelse.ØvelseNavn</li>
+            }
+        </ul>
+    }
+
+    @if (klub.Quizzer?.Any() == true)
+    {
+        <h5>Quizzes</h5>
+        <ul>
+            @foreach (var quiz in klub.Quizzer)
+            {
+                <li>@quiz.QuizNavn</li>
+            }
+        </ul>
+    }
+}
+<button class="btn btn-secondary mb-3" @onclick="GoBack">← Back to tekniker</button>
+
+@code {
+    [Parameter] public Guid klubId { get; set; }
+
+    private HttpClient _apiClient;
+    private KlubDTO? klub;
+    private string? errorMessage;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<KlubDTO>>($"api/klub/details/{klubId}");
+
+            if (response?.Success == true && response.Data != null)
+            {
+                klub = response.Data;
+            }
+            else
+            {
+                errorMessage = "Could not load klub details.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/klub");
+    }
+}

@@ -38,6 +38,13 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             var result = await _programPlanService.GetProgramPlanByIdAsync(id);
             return result.ToApiResponse(); // Assuming result is a Response object that has the ToApiResponse method
         }
+        // GET: api/programplan/details/5
+        [HttpGet("details/{id}")]
+        public async Task<IActionResult> GetProgramPlanWithDetails(Guid id)
+        {
+            var result = await _programPlanService.GetProgramPlanWithDetailsAsync(id);
+            return result.ToApiResponse(); // Assumes Result<T> has a ToApiResponse() extension method
+        }
 
         // POST: api/programplan
         [HttpPost]

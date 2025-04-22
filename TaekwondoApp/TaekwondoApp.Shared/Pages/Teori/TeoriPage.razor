@@ -1,0 +1,121 @@
+﻿@page "/teori"
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h1>Teori Management</h1>
+
+<!-- Search Filters -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Search by Teori Name:</label>
+        <input class="form-control" @bind="searchTeoriName" placeholder="Enter Teori name..." />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+    </div>
+</div>
+
+<!-- Display Table -->
+@if (filteredTeorier == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (filteredTeorier.Count == 0)
+{
+    <p><em>No Teori records match your search.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var teori in filteredTeorier)
+            {
+                <tr>
+                    <td>
+                        <a @onclick="() => NavigateToTeori(teori.TeoriID)" style="cursor:pointer; text-decoration: underline;">
+                            @teori.TeoriNavn
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@code {
+    private List<TeoriDTO> availableTeorier = new();
+    private List<TeoriDTO> filteredTeorier = new();
+    private TeoriDTO teori = new();
+    private bool isEditing = false;
+    private string? errorMessage;
+    private HttpClient _apiClient;
+
+    private string searchTeoriName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+        await LoadTeorier();
+    }
+
+    private async Task LoadTeorier()
+    {
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeoriDTO>>>($"api/teori");
+            if (response?.Success == true && response.Data != null)
+            {
+                availableTeorier = _mapper.Map<List<TeoriDTO>>(response.Data);
+                ApplyFilters();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch teori data.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading teori data: {ex.Message}";
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        filteredTeorier = availableTeorier
+            .Where(t => string.IsNullOrEmpty(searchTeoriName) || t.TeoriNavn.Contains(searchTeoriName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchTeoriName = "";
+        ApplyFilters();
+    }
+
+    private void NavigateToTeori(Guid teoriId)
+    {
+        NavigationManager.NavigateTo($"/teori/{teoriId}");
+    }
+}

@@ -1,0 +1,122 @@
+﻿@page "/teknik"
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h1>Teknik Management</h1>
+
+<!-- Search Filters -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Search by Teknik Name:</label>
+        <input class="form-control" @bind="searchTeknikName" placeholder="Enter Teknik name..." />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+    </div>
+</div>
+
+<!-- Display Table -->
+@if (filteredTeknikker == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (filteredTeknikker.Count == 0)
+{
+    <p><em>No Teknik records match your search.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var teknik in filteredTeknikker)
+            {
+                <tr>
+                    <td>
+                        <a @onclick="() => NavigateToTeknik(teknik.TeknikID)" style="cursor:pointer; text-decoration: underline;">
+                            @teknik.TeknikNavn
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@code {
+    private List<TeknikDTO> availableTeknikker = new();
+    private List<TeknikDTO> filteredTeknikker = new();
+    private TeknikDTO teknik = new();
+    private bool isEditing = false;
+    private string? errorMessage;
+    private HttpClient _apiClient;
+
+    private string searchTeknikName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+        await LoadTeknikker();
+    }
+
+    private async Task LoadTeknikker()
+    {
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeknikDTO>>>($"api/teknik");
+            if (response?.Success == true && response.Data != null)
+            {
+                availableTeknikker = _mapper.Map<List<TeknikDTO>>(response.Data);
+                ApplyFilters();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch teknik data.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading teknik data: {ex.Message}";
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        filteredTeknikker = availableTeknikker
+            .Where(t => string.IsNullOrEmpty(searchTeknikName) || t.TeknikNavn.Contains(searchTeknikName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchTeknikName = "";
+        ApplyFilters();
+    }
+
+    private void NavigateToTeknik(Guid teknikId)
+    {
+        NavigationManager.NavigateTo($"/teknik/{teknikId}");
+    }
+}

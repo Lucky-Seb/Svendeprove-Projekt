@@ -1,0 +1,98 @@
+﻿@page "/programplan"
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
+
+<h1>Program Plan Management</h1>
+
+@if (programPlans == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (programPlans.Count == 0)
+{
+    <p><em>No program plans available.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Length</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var program in programPlans)
+            {
+                <tr>
+                    <td>@program.ProgramNavn</td>
+                    <td>@program.Længde minutes</td>
+                    <td>@program.Beskrivelse</td>
+                    <td>
+                        <button class="btn btn-link" @onclick="() => NavigateToProgram(program.ProgramID)">Vis</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@code {
+    private List<ProgramPlanDTO> programPlans = new();
+    private ProgramPlanDTO programPlan = new();
+    private bool isEditing = false;
+    private string? errorMessage;
+    private HttpClient _apiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+        await LoadProgramPlans();
+    }
+
+    private async Task LoadProgramPlans()
+    {
+        try
+        {
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>("api/programplan");
+            if (response?.Success == true && response.Data != null)
+            {
+                programPlans = _mapper.Map<List<ProgramPlanDTO>>(response.Data);
+            }
+            else
+            {
+                errorMessage = "Failed to fetch program plans.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading program plans: {ex.Message}";
+        }
+    }
+    private void NavigateToProgram(Guid programId)
+    {
+        NavigationManager.NavigateTo($"/programplan/{programId}");
+    }
+
+}

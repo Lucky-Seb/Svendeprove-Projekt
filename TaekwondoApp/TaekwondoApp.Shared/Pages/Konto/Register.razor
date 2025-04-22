@@ -11,61 +11,61 @@
 
 <h3>Register</h3>
 
-<EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+<EditForm Model="@registerDTO" OnValidSubmit="HandleRegister">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div>
         <label for="email">Email:</label>
-        <InputText id="email" @bind-Value="registerModel.Email" class="form-control" />
+        <InputText id="email" @bind-Value="registerDTO.Email" class="form-control" />
         <small class="form-text text-muted">Enter a valid email address.</small>
     </div>
 
     <div>
         <label for="brugernavn">Username:</label>
-        <InputText id="brugernavn" @bind-Value="registerModel.Brugernavn" class="form-control" />
+        <InputText id="brugernavn" @bind-Value="registerDTO.Brugernavn" class="form-control" />
         <small class="form-text text-muted">Your username (at least 3 characters). This will be visible to others.</small>
     </div>
 
     <div>
         <label for="fornavn">First Name:</label>
-        <InputText id="fornavn" @bind-Value="registerModel.Fornavn" class="form-control" />
+        <InputText id="fornavn" @bind-Value="registerDTO.Fornavn" class="form-control" />
         <small class="form-text text-muted">Enter your first name.</small>
     </div>
 
     <div>
         <label for="efternavn">Last Name:</label>
-        <InputText id="efternavn" @bind-Value="registerModel.Efternavn" class="form-control" />
+        <InputText id="efternavn" @bind-Value="registerDTO.Efternavn" class="form-control" />
         <small class="form-text text-muted">Enter your last name.</small>
     </div>
 
     <div>
         <label for="password">Password:</label>
-        <InputText id="password" type="password" @bind-Value="registerModel.Password" class="form-control" />
+        <InputText id="password" type="password" @bind-Value="registerDTO.Password" class="form-control" />
         <small class="form-text text-muted">Your password (at least 8 characters).</small>
     </div>
 
     <div>
         <label for="confirmPassword">Confirm Password:</label>
-        <InputText id="confirmPassword" type="password" @bind-Value="registerModel.ConfirmPassword" class="form-control" />
+        <InputText id="confirmPassword" type="password" @bind-Value="registerDTO.ConfirmPassword" class="form-control" />
         <small class="form-text text-muted">Re-enter your password for confirmation.</small>
     </div>
 
     <div>
         <label for="bæltegrad">Bæltegrad (Belt Level):</label>
-        <InputText id="bæltegrad" @bind-Value="registerModel.Bæltegrad" class="form-control" />
+        <InputText id="bæltegrad" @bind-Value="registerDTO.Bæltegrad" class="form-control" />
         <small class="form-text text-muted">Enter your belt level (e.g., White, Yellow, Black).</small>
     </div>
 
     <div>
         <label for="address">Address:</label>
-        <InputText id="address" @bind-Value="registerModel.Address" class="form-control" />
+        <InputText id="address" @bind-Value="registerDTO.Address" class="form-control" />
         <small class="form-text text-muted">Enter your address.</small>
     </div>
 
     <div>
         <label for="role">Role:</label>
-        <InputText id="role" @bind-Value="registerModel.Role" class="form-control" />
+        <InputText id="role" @bind-Value="registerDTO.Role" class="form-control" />
         <small class="form-text text-muted">Define your role (e.g., Student, Instructor).</small>
     </div>
 
@@ -95,7 +95,7 @@
 </div>
 
 @code {
-    private RegisterModel registerModel = new();
+    private RegisterDTO registerDTO = new();
     private List<string> validationErrors = new();
     private List<string> logs = new();
 
@@ -104,19 +104,19 @@
         validationErrors.Clear();
 
         // Validate input fields
-        if (string.IsNullOrWhiteSpace(registerModel.Email) || string.IsNullOrWhiteSpace(registerModel.Password) || string.IsNullOrWhiteSpace(registerModel.ConfirmPassword))
+        if (string.IsNullOrWhiteSpace(registerDTO.Email) || string.IsNullOrWhiteSpace(registerDTO.Password) || string.IsNullOrWhiteSpace(registerDTO.ConfirmPassword))
         {
             validationErrors.Add("Email, password, and confirm password are required.");
             return;
         }
 
-        if (registerModel.Password != registerModel.ConfirmPassword)
+        if (registerDTO.Password != registerDTO.ConfirmPassword)
         {
             validationErrors.Add("Passwords do not match.");
             return;
         }
 
-        if (!IsValidEmail(registerModel.Email))
+        if (!IsValidEmail(registerDTO.Email))
         {
             validationErrors.Add("Please enter a valid email address.");
             return;
@@ -125,21 +125,21 @@
         try
         {
             LogAction("Registering user with the following data:");
-            LogAction($"Email: {registerModel.Email}");
-            LogAction($"Username: {registerModel.Brugernavn}");
-            LogAction($"First Name: {registerModel.Fornavn}");
-            LogAction($"Last Name: {registerModel.Efternavn}");
-            LogAction($"Password: {registerModel.Password}");
-            LogAction($"Confirm Password: {registerModel.ConfirmPassword}");
-            LogAction($"Belt Level: {registerModel.Bæltegrad}");
-            LogAction($"Address: {registerModel.Address}");
-            LogAction($"Role: {registerModel.Role}");
+            LogAction($"Email: {registerDTO.Email}");
+            LogAction($"Username: {registerDTO.Brugernavn}");
+            LogAction($"First Name: {registerDTO.Fornavn}");
+            LogAction($"Last Name: {registerDTO.Efternavn}");
+            LogAction($"Password: {registerDTO.Password}");
+            LogAction($"Confirm Password: {registerDTO.ConfirmPassword}");
+            LogAction($"Belt Level: {registerDTO.Bæltegrad}");
+            LogAction($"Address: {registerDTO.Address}");
+            LogAction($"Role: {registerDTO.Role}");
 
-            // Map RegisterModel to BrugerDTO (don't hash the password here)
-            var brugerDTO = Mapper.Map<BrugerDTO>(registerModel);
+            // Map registerDTO to BrugerDTO (don't hash the password here)
+            var brugerDTO = Mapper.Map<BrugerDTO>(registerDTO);
 
             // Manually populate the fields inherited from SyncableEntityDTO
-            brugerDTO.Brugerkode = registerModel.ConfirmPassword; // Set Brugerkode (must be at least 6 chars, handled above)
+            brugerDTO.Brugerkode = registerDTO.ConfirmPassword; // Set Brugerkode (must be at least 6 chars, handled above)
             brugerDTO.ETag = "12345"; // Generate a new ETag (or set as required by your backend)
             brugerDTO.ModifiedBy = "system"; // Set a value for ModifiedBy (or use a specific user identifier)
             brugerDTO.ChangeHistoryJson = "[]"; // Set a default value for ChangeHistoryJson (empty JSON array)
@@ -153,7 +153,7 @@
             LogAction($"Belt Level: {brugerDTO.Bæltegrad}");
             LogAction($"Address: {brugerDTO.Address}");
             LogAction($"Role: {brugerDTO.Role}");
-            brugerDTO.Brugerkode = registerModel.ConfirmPassword;
+            brugerDTO.Brugerkode = registerDTO.ConfirmPassword;
             // Send the registration request to the backend
             var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger", brugerDTO);
             LogAction($"Response status code: {response.StatusCode}");
@@ -217,19 +217,6 @@
     private bool IsValidEmail(string email)
     {
         return email.Contains("@") && email.Contains(".");
-    }
-
-    public class RegisterModel
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Brugernavn { get; set; } = string.Empty;
-        public string Fornavn { get; set; } = string.Empty;
-        public string Efternavn { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string ConfirmPassword { get; set; } = string.Empty;
-        public string Bæltegrad { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
-        public string Role { get; set; } = string.Empty;
     }
 
     public class ErrorResponse
