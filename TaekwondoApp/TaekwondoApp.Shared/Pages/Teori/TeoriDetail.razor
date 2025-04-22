@@ -1,0 +1,58 @@
+﻿@page "/teori/{TeoriId:guid}"
+@using TaekwondoApp.Shared.DTO
+@inject IHttpClientFactory HttpClientFactory
+
+<h3>Teori Detail</h3>
+
+@if (teori == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="card p-3">
+        <h4>@teori.TeoriNavn</h4>
+        <p><strong>Beskrivelse:</strong> @teori.TeoriBeskrivelse</p>
+
+        @if (!string.IsNullOrWhiteSpace(teori.TeoriBillede))
+        {
+            <img src="@teori.TeoriBillede" alt="Billede" class="img-thumbnail mb-2" style="max-width: 300px;" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(teori.TeoriVideo))
+        {
+            <video controls style="max-width: 400px;" class="mb-2">
+                <source src="@teori.TeoriVideo" type="video/mp4" />
+            </video>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(teori.TeoriLyd))
+        {
+            <audio controls class="mb-2">
+                <source src="@teori.TeoriLyd" type="audio/mpeg" />
+            </audio>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Guid TeoriId { get; set; }
+
+    private TeoriDTO? teori;
+    private HttpClient _apiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+        try
+        {
+            teori = await _apiClient.GetFromJsonAsync<TeoriDTO>($"api/teori/{TeoriId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to load teori: " + ex.Message);
+        }
+    }
+}

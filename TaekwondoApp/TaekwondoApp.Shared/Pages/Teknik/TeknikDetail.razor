@@ -1,0 +1,59 @@
+﻿@page "/teknik/{TeknikId:guid}"
+@using TaekwondoApp.Shared.DTO
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+
+<h3>Teknik Detail</h3>
+
+@if (teknik == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="card p-3">
+        <h4>@teknik.TeknikNavn</h4>
+        <p><strong>Beskrivelse:</strong> @teknik.TeknikBeskrivelse</p>
+
+        @if (!string.IsNullOrWhiteSpace(teknik.TeknikBillede))
+        {
+            <img src="@teknik.TeknikBillede" alt="Billede" class="img-thumbnail mb-2" style="max-width: 300px;" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(teknik.TeknikVideo))
+        {
+            <video controls style="max-width: 400px;" class="mb-2">
+                <source src="@teknik.TeknikVideo" type="video/mp4" />
+            </video>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(teknik.TeknikLyd))
+        {
+            <audio controls class="mb-2">
+                <source src="@teknik.TeknikLyd" type="audio/mpeg" />
+            </audio>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Guid TeknikId { get; set; }
+
+    private TeknikDTO? teknik;
+    private HttpClient _apiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
+        try
+        {
+            teknik = await _apiClient.GetFromJsonAsync<TeknikDTO>($"api/teknik/{TeknikId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to load teknik: " + ex.Message);
+        }
+    }
+}
