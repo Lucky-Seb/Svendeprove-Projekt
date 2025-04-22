@@ -1,54 +1,144 @@
 ﻿@page "/pensum"
-@inject NavigationManager Navigation
-@inject IHttpClientFactory HttpClientFactory
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
 
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
 
 <h1>Pensum Management</h1>
-<p>This component demonstrates full CRUD operations on the Pensum API.</p>
 
-@if (pensums == null)
+<input type="text" @bind="searchTerm" @bind:event="oninput" placeholder="Search Pensum, Teknik, or Teori..." class="form-control mb-3" />
+
+@if (filteredPensums == null)
 {
     <p><em>Loading...</em></p>
 }
-else if (pensums.Length == 0)
+else if (filteredPensums.Length == 0)
 {
     <p><em>No pensum data available.</em></p>
 }
 else
 {
-    <table class="table">
+    <table class="table table-striped">
         <thead>
             <tr>
-                <th>Pensum ID</th>
                 <th>Pensum Grad</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var pensum in pensums)
+            @foreach (var pensum in filteredPensums)
             {
                 <tr>
-                    <td>@pensum.PensumID</td>
                     <td>@pensum.PensumGrad</td>
                     <td>
-                        <button class="btn btn-warning" @onclick="() => EditPensum(pensum)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeletePensum(pensum.PensumID)">Delete</button>
+                        <button class="btn btn-sm btn-outline-primary" @onclick="() => ToggleExpand(pensum.PensumID)">
+                            @(expandedPensums.Contains(pensum.PensumID) ? "Hide Details" : "Show Details")
+                        </button>
                     </td>
                 </tr>
+
+                @if (expandedPensums.Contains(pensum.PensumID))
+                {
+                    <tr>
+                        <td colspan="3">
+                            <div>
+                                <h5>Teknik:</h5>
+                                @if (pensum.Teknik.Count == 0)
+                                {
+                                    <p><em>No teknik found.</em></p>
+                                }
+                                else
+                                {
+                                    @foreach (var teknik in pensum.Teknik
+                                   .Where(t => string.IsNullOrWhiteSpace(searchTerm) || t.TeknikNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
+                                    {
+                                        <div class="border p-2 mb-2 rounded">
+                                            <h6>
+                                                <a @onclick="() => NavigateToTeknik(teknik.TeknikID)" style="cursor:pointer;">
+                                                    @teknik.TeknikNavn
+                                                </a>
+                                            </h6>
+                                            <p><strong>Beskrivelse:</strong> @teknik.TeknikBeskrivelse</p>
+
+                                            @if (!string.IsNullOrWhiteSpace(teknik.TeknikBillede))
+                                            {
+                                                <img src="@teknik.TeknikBillede" alt="Teknik Billede" class="img-thumbnail mb-2" style="max-width: 200px;" />
+                                            }
+
+                                            @if (!string.IsNullOrWhiteSpace(teknik.TeknikVideo))
+                                            {
+                                                <video controls class="mb-2" style="max-width: 300px;">
+                                                    <source src="@teknik.TeknikVideo" type="video/mp4" />
+                                                </video>
+                                            }
+
+                                            @if (!string.IsNullOrWhiteSpace(teknik.TeknikLyd))
+                                            {
+                                                <audio controls class="mb-2">
+                                                    <source src="@teknik.TeknikLyd" type="audio/mpeg" />
+                                                </audio>
+                                            }
+                                        </div>
+                                    }
+                                }
+
+                                <h5>Teori:</h5>
+                                @if (pensum.Teori.Count == 0)
+                                {
+                                    <p><em>No teori found.</em></p>
+                                }
+                                else
+                                {
+                                    @foreach (var teori in pensum.Teori
+                                   .Where(t => string.IsNullOrWhiteSpace(searchTerm) || t.TeoriNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
+                                    {
+                                        <div class="border p-2 mb-2 rounded">
+                                            <h6>
+                                                <a @onclick="() => NavigateToTeori(teori.TeoriID)" style="cursor:pointer;">
+                                                    @teori.TeoriNavn
+                                                </a>
+                                            </h6>
+                                            <p><strong>Beskrivelse:</strong> @teori.TeoriBeskrivelse</p>
+
+                                            @if (!string.IsNullOrWhiteSpace(teori.TeoriBillede))
+                                            {
+                                                <img src="@teori.TeoriBillede" alt="Teori Billede" class="img-thumbnail mb-2" style="max-width: 200px;" />
+                                            }
+
+                                            @if (!string.IsNullOrWhiteSpace(teori.TeoriVideo))
+                                            {
+                                                <video controls class="mb-2" style="max-width: 300px;">
+                                                    <source src="@teori.TeoriVideo" type="video/mp4" />
+                                                </video>
+                                            }
+
+                                            @if (!string.IsNullOrWhiteSpace(teori.TeoriLyd))
+                                            {
+                                                <audio controls class="mb-2">
+                                                    <source src="@teori.TeoriLyd" type="audio/mpeg" />
+                                                </audio>
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
             }
         </tbody>
     </table>
 }
-
-<h3>@(editingPensum.PensumID == null ? "Add New Pensum" : "Edit Pensum")</h3>
-<form @onsubmit="HandleSubmit">
-    <div class="mb-3">
-        <label for="pensumGrad" class="form-label">Pensum Grad</label>
-        <input id="pensumGrad" class="form-control" @bind="editingPensum.PensumGrad" required />
-    </div>
-    <button type="submit" class="btn btn-primary">@(editingPensum.PensumID == null ? "Create" : "Update")</button>
-    <button type="button" class="btn btn-secondary" @onclick="ResetForm">Cancel</button>
-</form>
 
 @if (errorMessage != null)
 {
@@ -58,107 +148,80 @@ else
 }
 
 @code {
-    private PensumData[]? pensums;
-    private PensumData editingPensum = new PensumData();
+    private PensumDTO[] pensums;
+    private PensumDTO[] filteredPensums;
     private string? errorMessage;
-    private HttpClient _apiClient; // <--- This must be declared at the class level
+    private HttpClient _apiClient;
+    private string searchTerm = "";
+    private HashSet<Guid> expandedPensums = new();
 
     protected override async Task OnInitializedAsync()
     {
         _apiClient = HttpClientFactory.CreateClient("ApiClient");
         await LoadPensums();
-
     }
 
     private async Task LoadPensums()
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<PensumData>>>("api/Pensum");
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<PensumDTO>>>("api/Pensum");
 
-            // Log the raw JSON response for debugging purposes
-            var rawResponse = await _apiClient.GetStringAsync("api/Pensum");
-            Console.WriteLine(rawResponse);
-
-            // Check if the response is valid
             if (response != null && response.Success)
             {
-                pensums = response.Data.ToArray(); // Use the Data property to get the list of pensums
+                pensums = response.Data.ToArray();
+                ApplyFilter();
             }
             else
             {
-                errorMessage = "Failed to load data from the server.";
+                errorMessage = "Failed to load data.";
                 if (response?.Errors != null)
-                {
                     errorMessage += " Errors: " + string.Join(", ", response.Errors);
-                }
             }
         }
         catch (Exception ex)
         {
-            errorMessage = "An error occurred while fetching data: " + ex.Message;
+            errorMessage = "Error fetching data: " + ex.Message;
         }
     }
 
-    private async Task HandleSubmit()
+    private void ToggleExpand(Guid pensumId)
     {
-        try
-        {
-            HttpResponseMessage response;
-            if (editingPensum.PensumID == null)
-            {
-                response = await _apiClient.PostAsJsonAsync("api/Pensum", editingPensum);
-            }
-            else
-            {
-                response = await _apiClient.PutAsJsonAsync($"{"api/Pensum"}/{editingPensum.PensumID}", editingPensum);
-            }
-
-            // Reset form and reload data after submission
-            ResetForm();
-            await LoadPensums();
-        }
-        catch (Exception ex)
-        {
-            errorMessage = "An error occurred while saving: " + ex.Message;
-        }
+        if (expandedPensums.Contains(pensumId))
+            expandedPensums.Remove(pensumId);
+        else
+            expandedPensums.Add(pensumId);
     }
 
-    private async Task DeletePensum(Guid id)
+    private void NavigateToTeknik(Guid teknikId)
     {
-        try
-        {
-            await _apiClient.DeleteAsync($"{"api/Pensum"}/{id}");
-            await LoadPensums();
-        }
-        catch (Exception ex)
-        {
-            errorMessage = "An error occurred while deleting: " + ex.Message;
-        }
+        NavigationManager.NavigateTo($"/teknik/{teknikId}");
     }
 
-    private void EditPensum(PensumData pensum)
+    private void NavigateToTeori(Guid teoriId)
     {
-        editingPensum = new PensumData { PensumID = pensum.PensumID, PensumGrad = pensum.PensumGrad };
+        NavigationManager.NavigateTo($"/teori/{teoriId}");
     }
 
-    private void ResetForm()
+    private void ApplyFilter()
     {
-        editingPensum = new PensumData();
+        filteredPensums = pensums.Where(p =>
+            string.IsNullOrWhiteSpace(searchTerm) ||
+            p.PensumGrad.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            p.Teknik.Any(t => t.TeknikNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+            p.Teori.Any(t => t.TeoriNavn.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        ).ToArray();
     }
 
-    private class PensumData
+    private void OnSearchChanged(ChangeEventArgs e)
     {
-        public Guid PensumID { get; set; }
-        public string PensumGrad { get; set; }
+        searchTerm = e.Value?.ToString() ?? "";
+        ApplyFilter();
     }
 
-    private class ApiResponse<T>
+    private async Task OnSearchTermChanged(ChangeEventArgs e)
     {
-        public bool Success { get; set; }
-        public T Data { get; set; }
-        public List<string> Errors { get; set; }
-        public int StatusCode { get; set; } // Ensure this is an integer
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        searchTerm = e.Value?.ToString() ?? "";
+        ApplyFilter();
     }
 }

@@ -20,6 +20,8 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         public async Task<List<Pensum>> GetAllPensumAsync()
         {
             return await _context.Pensum
+                .Include(p => p.Teorier)
+                .Include(p => p.Teknikker)
                 .ToListAsync();
         }
 
