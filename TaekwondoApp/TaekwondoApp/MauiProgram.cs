@@ -31,14 +31,34 @@ namespace TaekwondoApp
             // Register JWT Auth message handler
             builder.Services.AddScoped<JwtAuthMessageHandler>();
 
-            // Authenticated HttpClient (named "ApiClient")
-            builder.Services.AddTransient<CustomHttpClientHandler>();
+#if ANDROID
+            // Custom handler for Android to bypass SSL for dev
+            builder.Services.AddSingleton<HttpMessageHandler>(_ =>
+            {
+                return new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+                };
+            });
+
+            // Register named HttpClient using the custom handler
+            builder.Services.AddHttpClient("ApiClient", client =>
+            {
+                client.BaseAddress = new Uri("https://10.0.2.2:7478/");
+            })
+            .ConfigurePrimaryHttpMessageHandler(sp => sp.GetRequiredService<HttpMessageHandler>())
+            .AddHttpMessageHandler<JwtAuthMessageHandler>();
+
+#else
+
+            // Register standard HttpClient for other platforms
             builder.Services.AddHttpClient("ApiClient", client =>
             {
                 client.BaseAddress = new Uri("https://localhost:7478/");
             })
-            .AddHttpMessageHandler<CustomHttpClientHandler>() // Add SSL handler
-            .AddHttpMessageHandler<JwtAuthMessageHandler>();  // Add JWT handler
+            .AddHttpMessageHandler<JwtAuthMessageHandler>();
+
+#endif
 
 
             // AutoMapper
@@ -64,16 +84,5 @@ namespace TaekwondoApp
             return builder.Build();
         }
         // Custom handler that wraps HttpClientHandler for SSL bypass
-    }
-    // Custom SSL Validation Handler
-    public class CustomHttpClientHandler : DelegatingHandler
-    {
-        public CustomHttpClientHandler()
-        {
-            InnerHandler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true // Disable SSL validation
-            };
-        }
     }
 }
