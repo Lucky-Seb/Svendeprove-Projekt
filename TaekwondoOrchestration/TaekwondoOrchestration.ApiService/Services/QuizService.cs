@@ -45,7 +45,16 @@ namespace TaekwondoOrchestration.ApiService.Services
             var mapped = _mapper.Map<QuizDTO>(quiz);
             return Result<QuizDTO>.Ok(mapped);
         }
+        // Get Quiz with all details by ID
+        public async Task<Result<QuizDTO>> GetQuizWithDetailsAsync(Guid id)
+        {
+            var quiz = await _quizRepository.GetQuizWithDetailsAsync(id);
+            if (quiz == null)
+                return Result<QuizDTO>.Fail("Quiz not found.");
 
+            var mapped = _mapper.Map<QuizDTO>(quiz);
+            return Result<QuizDTO>.Ok(mapped);
+        }
         // Create New Quiz
         public async Task<Result<QuizDTO>> CreateQuizAsync(QuizDTO quizDto)
         {

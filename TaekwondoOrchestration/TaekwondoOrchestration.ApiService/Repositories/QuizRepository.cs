@@ -41,6 +41,28 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                 .FirstOrDefaultAsync(q => q.QuizID == quizID);
         }
 
+        public async Task<Quiz?> GetQuizWithDetailsAsync(Guid quizId)
+        {
+            var quizDetails = await _context.Quizzer
+                .Where(q => q.QuizID == quizId)
+                .Include(q => q.KlubQuizzer)
+                    .ThenInclude(kq => kq.Klub)
+                .Include(q => q.BrugerQuizzer)
+                    .ThenInclude(bq => bq.Bruger)
+                .Include(q => q.Spørgsmåls)
+                    .ThenInclude(s => s.Teknik)
+                .Include(q => q.Spørgsmåls)
+                    .ThenInclude(s => s.Teori)
+                .Include(q => q.Spørgsmåls)
+                    .ThenInclude(s => s.Øvelse)
+                .FirstOrDefaultAsync();
+
+            if (quizDetails == null)
+                return null;
+
+            return quizDetails;
+        }
+
         public async Task<Quiz?> GetQuizByIdIncludingDeletedAsync(Guid quizID)
         {
             return await _context.Quizzer
