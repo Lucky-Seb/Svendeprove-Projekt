@@ -32,6 +32,17 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return result.ToApiResponse();
         }
 
+        [HttpGet("own")]
+        public async Task<IActionResult> GetØvelser([FromQuery] Guid? brugerId = null, [FromQuery] string klubIds = "")
+        {
+            var klubIdList = klubIds?
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(Guid.Parse)
+                .ToList() ?? new List<Guid>();
+
+            var result = await _øvelseService.GetFilteredØvelserAsync(brugerId, klubIdList);
+            return result.ToApiResponse();
+        }
         // GET: api/Øvelse/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetØvelse(Guid id)

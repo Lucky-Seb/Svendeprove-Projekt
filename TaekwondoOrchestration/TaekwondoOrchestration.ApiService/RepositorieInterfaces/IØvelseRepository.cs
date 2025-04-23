@@ -22,5 +22,7 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
         Task<List<Øvelse>> GetAllØvelserIncludingDeletedAsync(); // Fetch all Øvelser including deleted ones
         Task<Øvelse?> GetØvelseByIdIncludingDeletedAsync(Guid id); // Fetch Øvelse by Id including deleted ones
         Task<Øvelse?> UpdateØvelseIncludingDeletedAsync(Guid id, Øvelse øvelse); // Update Øvelse including deleted ones
+        Task<IEnumerable<Øvelse>> GetFilteredØvelserAsync(Guid? brugerId, List<Guid> klubIds);
+
     }
 }

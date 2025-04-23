@@ -71,8 +71,9 @@ else
     private bool isEditing = false;
     private string? errorMessage;
     private HttpClient _apiClient;
-
+    private string token = string.Empty;
     private string searchØvelseName = "";
+    private BrugerDTO brugerDTO = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -84,7 +85,38 @@ else
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>($"api/øvelse");
+            token = await AuthenticationService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            var brugerId = JwtParser.GetUserIdFromJwt(token);
+            try
+            {
+                var brugerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
+                if (brugerResponse?.Success == true && brugerResponse.Data != null)
+                {
+                    brugerDTO = brugerResponse.Data;
+                    StateHasChanged();
+                }
+                else
+                {
+                    errorMessage = "Failed to fetch user data.";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error loading user data: {ex.Message}";
+            }
+
+            var klubIds = brugerDTO.BrugerKlubber.Select(k => k.KlubID).ToList();
+            var klubIdsString = string.Join(",", klubIds);
+
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>(
+                $"api/øvelse/own/?brugerId={brugerDTO.BrugerID}&klubIds={klubIdsString}");
+
             if (response?.Success == true && response.Data != null)
             {
                 availableØvelser = _mapper.Map<List<ØvelseDTO>>(response.Data);
@@ -100,6 +132,7 @@ else
             errorMessage = $"Error loading øvelse data: {ex.Message}";
         }
     }
+
 
     private void ApplyFilters()
     {
