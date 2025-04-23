@@ -3,7 +3,7 @@ using Microsoft.Maui.Storage;
 using System.Security.Claims;
 using TaekwondoApp.Shared.Services;
 
-public class AuthStateProvider
+public class AuthStateProvider : AuthenticationStateProvider
 {
     public event Action? OnChange;
 
@@ -47,7 +47,7 @@ public class AuthStateProvider
         NotifyStateChanged();
     }
 
-    public async Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var identity = IsAuthenticated
             ? new ClaimsIdentity(new[]
@@ -57,8 +57,12 @@ public class AuthStateProvider
             }, "jwt")
             : new ClaimsIdentity();
 
-        return new AuthenticationState(new ClaimsPrincipal(identity));
+        return await Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
     }
 
-    private void NotifyStateChanged() => OnChange?.Invoke();
+    private void NotifyStateChanged()
+    {
+        OnChange?.Invoke();
+        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+    }
 }

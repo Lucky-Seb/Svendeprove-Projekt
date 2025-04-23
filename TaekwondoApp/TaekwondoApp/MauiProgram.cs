@@ -30,6 +30,21 @@ namespace TaekwondoApp
 
             // Register JWT Auth message handler
             builder.Services.AddScoped<JwtAuthMessageHandler>();
+#if ANDROID
+            // Android-specific SignalR hub URL
+            builder.Services.AddSingleton(sp =>
+            {
+                var hubUrl = "https://10.0.2.2:7478/ordboghub"; // Use Android emulator's localhost
+                return new SignalRService(hubUrl);
+            });
+#else
+            // Default SignalR hub URL for other platforms
+            builder.Services.AddSingleton(sp =>
+            {
+                var hubUrl = "https://localhost:7478/ordboghub"; // Use localhost for other platforms
+                return new SignalRService(hubUrl);
+            });
+#endif
 
 #if ANDROID
             // Custom handler for Android to bypass SSL for dev

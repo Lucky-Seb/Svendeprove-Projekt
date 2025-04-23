@@ -167,7 +167,7 @@ else
     {
         try
         {
-
+            Console.WriteLine($"BaseAddress: {_apiClient.BaseAddress}");
 
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<PensumDTO>>>("api/Pensum");
 
