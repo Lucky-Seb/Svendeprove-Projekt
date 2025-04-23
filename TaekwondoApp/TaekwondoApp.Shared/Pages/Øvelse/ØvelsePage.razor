@@ -113,7 +113,7 @@ else
 
             var klubIds = brugerDTO.BrugerKlubber.Select(k => k.KlubID).ToList();
             var klubIdsString = string.Join(",", klubIds);
-
+            // Fetching Øvelse data
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>(
                 $"api/øvelse/own/?brugerId={brugerDTO.BrugerID}&klubIds={klubIdsString}");
 
