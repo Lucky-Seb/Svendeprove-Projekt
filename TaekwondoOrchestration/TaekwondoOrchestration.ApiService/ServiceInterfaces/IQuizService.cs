@@ -20,7 +20,7 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
         #endregion
 
         #region Get Operations
-
+        Task<Result<QuizDTO>> GetQuizWithDetailsAsync(Guid id);
         Task<Result<IEnumerable<QuizDTO>>> GetAllQuizzesByBrugerIdAsync(Guid brugerId); // Get quizzes by user
         Task<Result<IEnumerable<QuizDTO>>> GetAllQuizzesByKlubIdAsync(Guid klubId); // Get quizzes by club
         Task<Result<IEnumerable<QuizDTO>>> GetAllQuizzesIncludingDeletedAsync(); // Get all quizzes including deleted

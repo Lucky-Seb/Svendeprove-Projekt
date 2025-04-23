@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TaekwondoOrchestration.ApiService.Services;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -38,6 +39,14 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         {
             var result = await _quizService.GetQuizByIdAsync(id);
             return result.ToApiResponse(); // Assuming result is a Response object that has the ToApiResponse method
+        }
+
+        // GET: api/quiz/details/5
+        [HttpGet("details/{id}")]
+        public async Task<IActionResult> GetQuizWithDetails(Guid id)
+        {
+            var result = await _quizService.GetQuizWithDetailsAsync(id);
+            return result.ToApiResponse(); // Assumes Result<T> has a ToApiResponse() extension method
         }
 
         // POST: api/quiz (Create Quiz with Bruger or Klub)
