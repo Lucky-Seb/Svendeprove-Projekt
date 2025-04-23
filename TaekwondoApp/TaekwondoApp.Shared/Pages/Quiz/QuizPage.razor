@@ -1,58 +1,47 @@
 ﻿@page "/quiz"
-@inject HttpClient Http
+@* --- Using Statements --- *@
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.Helper
+@using AutoMapper
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* --- Dependency Injection --- *@
+@inject NavigationManager NavigationManager
+@inject IMapper _mapper
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthStateProvider AuthStateProvider
+@inject IAuthenticationService AuthenticationService
 
 <h1>Quiz Management</h1>
 
-<!-- Filter/Search -->
-<div class="mb-3 row">
-    <div class="col-md-4">
-        <label>Search Quiz by Name:</label>
-        <InputText class="form-control" @bind-Value="searchName" />
-    </div>
-    <div class="col-md-4 d-flex align-items-end">
-        <button class="btn btn-primary me-2" @onclick="ApplyFilters">Apply</button>
-        <button class="btn btn-secondary" @onclick="ClearFilters">Clear</button>
-    </div>
-</div>
-
-<!-- Quiz List -->
-@if (filteredQuizzes == null)
+@if (quizzes == null)
 {
-    <p><em>Loading quizzes...</em></p>
+    <p><em>Loading...</em></p>
 }
-else if (!filteredQuizzes.Any())
+else if (quizzes.Count == 0)
 {
-    <p><em>No quizzes found.</em></p>
+    <p><em>No quizzes available.</em></p>
 }
 else
 {
-    <table class="table table-striped">
+    <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Navn</th>
-                <th>Beskrivelse</th>
-                <th>PensumID</th>
-                <th>Bruger</th>
-                <th>Klub</th>
-                <th>Spørgsmål Count</th>
+                <th>Name</th>
+                <th>Description</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var quiz in filteredQuizzes)
+            @foreach (var quiz in quizzes)
             {
                 <tr>
-                    <td>@quiz.QuizID</td>
                     <td>@quiz.QuizNavn</td>
                     <td>@quiz.QuizBeskrivelse</td>
-                    <td>@quiz.PensumID</td>
-                    <td>@(quiz.BrugerID.HasValue ? quiz.BrugerID : "None")</td>
-                    <td>@(quiz.KlubID.HasValue ? quiz.KlubID : "None")</td>
-                    <td>@quiz.Spørgsmål.Count</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" @onclick="() => EditQuiz(quiz)">Edit</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteQuiz(quiz.QuizID)">Delete</button>
+                        <button class="btn btn-link" @onclick="() => NavigateToQuiz(quiz.QuizID)">Vis</button>
                     </td>
                 </tr>
             }
@@ -62,56 +51,19 @@ else
 
 <hr />
 
-<h3>@(isEditing ? "Edit Quiz" : "Add New Quiz")</h3>
-
-<EditForm Model="quizModel" OnValidSubmit="@(isEditing ? UpdateQuiz : CreateQuiz)">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="form-group mb-2">
-        <label>Quiz Name:</label>
-        <InputText class="form-control" @bind-Value="quizModel.QuizNavn" required />
-    </div>
-
-    <div class="form-group mb-2">
-        <label>Quiz Description:</label>
-        <InputTextArea class="form-control" @bind-Value="quizModel.QuizBeskrivelse" />
-    </div>
-
-    <div class="form-group mb-2">
-        <label>Pensum ID:</label>
-        <InputNumber class="form-control" @bind-Value="quizModel.PensumID" required />
-    </div>
-
-    <div class="form-group mb-2">
-        <label>Bruger ID (optional):</label>
-        <InputNumber class="form-control" @bind-Value="quizModel.BrugerID" />
-    </div>
-
-    <div class="form-group mb-2">
-        <label>Klub ID (optional):</label>
-        <InputNumber class="form-control" @bind-Value="quizModel.KlubID" />
-    </div>
-
-    <button type="submit" class="btn btn-success">@((isEditing ? "Update" : "Create"))</button>
-    <button type="button" class="btn btn-secondary ms-2" @onclick="CancelEdit">Cancel</button>
-</EditForm>
-
-@if (!string.IsNullOrEmpty(errorMessage))
+@if (errorMessage != null)
 {
-    <div class="alert alert-danger mt-3">@errorMessage</div>
+    <div class="alert alert-danger">@errorMessage</div>
 }
 
 @code {
-    private List<QuizDTO> quizList = new();
-    private List<QuizDTO> filteredQuizzes = new();
-    private QuizDTO quizModel = new();
-    private string searchName = "";
-    private bool isEditing = false;
+    private List<QuizDTO> quizzes = new();
     private string? errorMessage;
+    private HttpClient _apiClient;
 
     protected override async Task OnInitializedAsync()
     {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
         await LoadQuizzes();
     }
 
@@ -119,140 +71,24 @@ else
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<List<QuizDTO>>("https://localhost:7478/api/quiz");
-            if (response != null)
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>("api/quiz");
+            if (response?.Success == true && response.Data != null)
             {
-                quizList = response;
-                ApplyFilters();
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Failed to load quizzes: {ex.Message}";
-        }
-    }
-
-    private void ApplyFilters()
-    {
-        filteredQuizzes = quizList
-            .Where(q => string.IsNullOrEmpty(searchName) ||
-                        q.QuizNavn.Contains(searchName, StringComparison.OrdinalIgnoreCase))
-            .ToList();
-    }
-
-    private void ClearFilters()
-    {
-        searchName = "";
-        ApplyFilters();
-    }
-
-    private async Task CreateQuiz()
-    {
-        try
-        {
-            var response = await Http.PostAsJsonAsync("https://localhost:7478/api/quiz", quizModel);
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadQuizzes();
-                quizModel = new QuizDTO();
+                quizzes = _mapper.Map<List<QuizDTO>>(response.Data);
             }
             else
             {
-                errorMessage = "Failed to create quiz.";
+                errorMessage = "Failed to fetch quizzes.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error creating quiz: {ex.Message}";
+            errorMessage = $"Error loading quizzes: {ex.Message}";
         }
     }
 
-    private void EditQuiz(QuizDTO quiz)
+    private void NavigateToQuiz(Guid quizId)
     {
-        quizModel = new QuizDTO
-            {
-                QuizID = quiz.QuizID,
-                QuizNavn = quiz.QuizNavn,
-                QuizBeskrivelse = quiz.QuizBeskrivelse,
-                PensumID = quiz.PensumID,
-                BrugerID = quiz.BrugerID,
-                KlubID = quiz.KlubID,
-                Spørgsmål = new List<SpørgsmålDTO>(quiz.Spørgsmål)
-            };
-        isEditing = true;
-    }
-
-    private async Task UpdateQuiz()
-    {
-        try
-        {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7478/api/quiz/{quizModel.QuizID}", quizModel);
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadQuizzes();
-                quizModel = new QuizDTO();
-                isEditing = false;
-            }
-            else
-            {
-                errorMessage = "Failed to update quiz.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error updating quiz: {ex.Message}";
-        }
-    }
-
-    private async Task DeleteQuiz(int quizId)
-    {
-        if (!await ConfirmDelete()) return;
-
-        try
-        {
-            var response = await Http.DeleteAsync($"https://localhost:7478/api/quiz/{quizId}");
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadQuizzes();
-            }
-            else
-            {
-                errorMessage = "Failed to delete quiz.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error deleting quiz: {ex.Message}";
-        }
-    }
-
-    private async Task<bool> ConfirmDelete()
-    {
-        // Placeholder - add a real confirmation modal if needed
-        return await Task.FromResult(true);
-    }
-
-    private void CancelEdit()
-    {
-        quizModel = new QuizDTO();
-        isEditing = false;
-        errorMessage = null;
-    }
-
-    public class QuizDTO
-    {
-        public int QuizID { get; set; }
-        public string QuizNavn { get; set; } = string.Empty;
-        public string QuizBeskrivelse { get; set; } = string.Empty;
-        public int PensumID { get; set; }
-        public int? BrugerID { get; set; }
-        public int? KlubID { get; set; }
-        public List<SpørgsmålDTO> Spørgsmål { get; set; } = new();
-    }
-
-    public class SpørgsmålDTO
-    {
-        public int SpørgsmålID { get; set; }
-        public string SpørgsmålTekst { get; set; } = string.Empty;
+        NavigationManager.NavigateTo($"/quiz/{quizId}");
     }
 }

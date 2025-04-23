@@ -1,8 +1,7 @@
 ﻿@using TaekwondoApp.Shared.Services
-@* @inject AuthStateProvider AuthStateProvider
- *@
+@inject AuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
-@* @implements IDisposable *@
+@implements IDisposable
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -89,7 +88,7 @@
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Tokens
             </NavLink>
         </div>
-        @*         @if (role == "Admin")
+@*         @if (role == "Admin")
         {
             <NavLink href="/admin" Match="NavLinkMatch.All">Admin Panel</NavLink>
         }
@@ -108,8 +107,8 @@
                     <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Konto Side
                 </NavLink>
             </div>
-        } *@
-@*         <div class="nav-item px-3">
+        } 
+       <div class="nav-item px-3">
             @if(role != null)
             {
                 <a class="nav-link" href="" @onclick="Logout">Logout</a>
@@ -124,24 +123,24 @@
     protected override void OnInitialized()
     {
 
-        // AuthStateProvider.OnChange += StateChanged;
-        // StateChanged(); // Initialize state
+        AuthStateProvider.OnChange += StateChanged;
+        StateChanged(); // Initialize state
     }
 
-    // private void StateChanged()
-    // {
-    //     isAuthenticated = AuthStateProvider.IsAuthenticated;
-    //     role = AuthStateProvider.Role;
-    //     InvokeAsync(StateHasChanged); // Refresh UI
-    // }
+    private void StateChanged()
+    {
+        isAuthenticated = AuthStateProvider.IsAuthenticated;
+        role = AuthStateProvider.Role;
+        InvokeAsync(StateHasChanged); // Refresh UI
+    }
 
-    // private async Task Logout()
-    // {
-    //     await AuthStateProvider.ClearAuth();
-    // }
+    private async Task Logout()
+    {
+        await AuthStateProvider.ClearAuth();
+    }
 
-    // public void Dispose()
-    // {
-    //     AuthStateProvider.OnChange -= StateChanged;
-    // }
+    public void Dispose()
+    {
+        AuthStateProvider.OnChange -= StateChanged;
+    }
 }
