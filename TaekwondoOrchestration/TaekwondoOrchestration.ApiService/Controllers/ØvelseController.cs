@@ -114,5 +114,23 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
             return result.ToApiResponse();
         }
+        [HttpPost("upload/øvelse/{øvelseNavn}/{fileName}")]
+        public async Task<IActionResult> UploadFile(string øvelseNavn, string fileName)
+        {
+            var file = Request.Form.Files.FirstOrDefault();
+            if (file == null) return BadRequest("No file uploaded");
+
+            var folderPath = Path.Combine("C:\\inetpub\\wwwroot\\øvelse", øvelseNavn);
+            Directory.CreateDirectory(folderPath);
+
+            var filePath = Path.Combine(folderPath, fileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok();
+        }
+
     }
 }
