@@ -11,12 +11,20 @@ namespace TaekwondoApp.Shared.Services
     {
         private readonly HubConnection _hubConnection;
 
-        public SignalRService(string hubUrl)
+        public SignalRService(string hubUrl, HttpMessageHandler? httpMessageHandler = null)
         {
-            _hubConnection = new HubConnectionBuilder()
-                .WithUrl(hubUrl)
-                .WithAutomaticReconnect()
-                .Build();
+            var hubConnectionBuilder = new HubConnectionBuilder()
+                .WithUrl(hubUrl, options =>
+                {
+                    if (httpMessageHandler != null)
+                    {
+                        // Wrap the handler to prevent disposal
+                        options.HttpMessageHandlerFactory = _ => new NonDisposableHttpMessageHandler(httpMessageHandler);
+                    }
+                })
+                .WithAutomaticReconnect();
+
+            _hubConnection = hubConnectionBuilder.Build();
         }
 
         public HubConnection HubConnection => _hubConnection;
@@ -36,6 +44,17 @@ namespace TaekwondoApp.Shared.Services
                 await _hubConnection.StopAsync();
             }
         }
-    }
+        public class NonDisposableHttpMessageHandler : DelegatingHandler
+        {
+            public NonDisposableHttpMessageHandler(HttpMessageHandler innerHandler)
+                : base(innerHandler)
+            {
+            }
 
+            protected override void Dispose(bool disposing)
+            {
+                // Prevent disposal of the inner handler
+            }
+        }
+    }
 }

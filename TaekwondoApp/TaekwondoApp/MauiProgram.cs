@@ -3,7 +3,6 @@ using TaekwondoApp.Services;
 using TaekwondoApp.Shared.Services;
 using TaekwondoApp.Shared.Mapping;
 
-
 namespace TaekwondoApp
 {
     public static class MauiProgram
@@ -19,7 +18,7 @@ namespace TaekwondoApp
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
-            // Device-specific services do not use @ in git commets
+            // Device-specific services
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
 
             // HttpClientFactory registration
@@ -30,21 +29,6 @@ namespace TaekwondoApp
 
             // Register JWT Auth message handler
             builder.Services.AddScoped<JwtAuthMessageHandler>();
-#if ANDROID
-            // Android-specific SignalR hub URL
-            builder.Services.AddSingleton(sp =>
-            {
-                var hubUrl = "https://10.0.2.2:7478/ordboghub"; // Use Android emulator's localhost
-                return new SignalRService(hubUrl);
-            });
-#else
-            // Default SignalR hub URL for other platforms
-            builder.Services.AddSingleton(sp =>
-            {
-                var hubUrl = "https://localhost:7478/ordboghub"; // Use localhost for other platforms
-                return new SignalRService(hubUrl);
-            });
-#endif
 
 #if ANDROID
             // Custom handler for Android to bypass SSL for dev
@@ -56,6 +40,14 @@ namespace TaekwondoApp
                 };
             });
 
+            // Android-specific SignalR hub URL with custom handler for SSL bypass
+            builder.Services.AddSingleton(sp =>
+            {
+                var hubUrl = "https://10.0.2.2:7478/ordboghub"; // Use Android emulator's localhost
+                var httpMessageHandler = sp.GetRequiredService<HttpMessageHandler>();
+                return new SignalRService(hubUrl, httpMessageHandler);
+            });
+
             // Register named HttpClient using the custom handler
             builder.Services.AddHttpClient("ApiClient", client =>
             {
@@ -63,8 +55,13 @@ namespace TaekwondoApp
             })
             .ConfigurePrimaryHttpMessageHandler(sp => sp.GetRequiredService<HttpMessageHandler>())
             .AddHttpMessageHandler<JwtAuthMessageHandler>();
-
 #else
+            // Default SignalR hub URL for other platforms
+            builder.Services.AddSingleton(sp =>
+            {
+                var hubUrl = "https://localhost:7478/ordboghub"; // Use localhost for other platforms
+                return new SignalRService(hubUrl);
+            });
 
             // Register standard HttpClient for other platforms
             builder.Services.AddHttpClient("ApiClient", client =>
@@ -72,9 +69,7 @@ namespace TaekwondoApp
                 client.BaseAddress = new Uri("https://localhost:7478/");
             })
             .AddHttpMessageHandler<JwtAuthMessageHandler>();
-
 #endif
-
 
             // AutoMapper
             builder.Services.AddAutoMapper(typeof(MappingProfile));
@@ -98,6 +93,5 @@ namespace TaekwondoApp
 
             return builder.Build();
         }
-        // Custom handler that wraps HttpClientHandler for SSL bypass
     }
 }

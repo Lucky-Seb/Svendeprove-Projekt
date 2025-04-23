@@ -87,7 +87,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             EntityHelper.UpdateCommonFields(existingOrdbog, ordbogDto.ModifiedBy);
             var updatedOrdbog = await _ordbogRepository.UpdateOrdbogAsync(existingOrdbog);
 
-            var mapped = _mapper.Map<OrdbogDTO>(updatedOrdbog);
+            var mapped = _mapper.Map<OrdbogDTO>(existingOrdbog);
             return Result<OrdbogDTO>.Ok(mapped);
         }
 

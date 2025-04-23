@@ -16,6 +16,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
+@inject SignalRService SignalRService
 @implements IAsyncDisposable
 
 <h1>Ordbog</h1>
@@ -227,7 +228,7 @@ else
     private string errorMessage = string.Empty;
     private bool showDeleted = false;
     private string token = "";
-
+    private string brugerToken = "";
     private HttpClient _apiClient;
     private HubConnection _hubConnection;
 
@@ -265,40 +266,33 @@ else
                     LogAction("❌ Error syncing: " + ex.Message);
                 }
             }
-
+            // Start the SignalR connection
+            await SignalRService.StartConnectionAsync();
+            Console.WriteLine("✅ SignalR connection established.");
             await LoadEntries();
             LogAction("✅ Entries loaded.");
-
-            _hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7478/ordboghub") // Directly specify the URL
-                .WithAutomaticReconnect()
-                .Build();
-
-            _hubConnection.On("OrdbogUpdated", async () =>
-            {
-                LogAction("🔄 Received OrdbogUpdated from server.");
-                await LoadEntries();
-                await InvokeAsync(StateHasChanged); // Use InvokeAsync for Blazor-specific updates
-            });
-
-            await _hubConnection.StartAsync();
-            LogAction("✅ SignalR connection established.");
         }
         catch (Exception ex)
         {
             LogAction($"❌ Initialization error: {ex.Message}");
             errorMessage = $"Error during initialization: {ex.Message}\n{ex.StackTrace}";
         }
+        SignalRService.HubConnection.On("OrdbogUpdated", async () =>
+        {
+        Console.WriteLine("🔄 OrdbogUpdated event received. Reloading entries...");
+        await LoadEntries(); // Reload the data
+        });
     }
 
     public async ValueTask DisposeAsync()
     {
         AuthStateProvider.OnChange -= StateChanged;
 
-        if (_hubConnection is not null)
-        {
-            await _hubConnection.DisposeAsync();
-        }
+        // Remove the event handler when the component is disposed
+        SignalRService.HubConnection.Remove("OrdbogUpdated");
+
+        // Existing disposal code...
+        await SignalRService.StopConnectionAsync();
     }
 
     private void StateChanged()
@@ -392,8 +386,24 @@ else
         {
             Ordbog entry = _mapper.Map<Ordbog>(entryModel);
             entry.ETag = GenerateETag(entry);
-            entry.ModifiedBy = JwtParser.GetBruger(token);
+            try
+            {
+                brugerToken = JwtParser.GetBruger(token);
 
+            }
+            catch
+            {
+                Console.WriteLine("no token");
+            }
+            if(brugerToken != null)
+            {
+                entry.ModifiedBy = JwtParser.GetBruger(token);
+            }
+            else
+            {
+                entry.ModifiedBy = "system";
+
+            }
             if (internet)
             {
                 var response = await _apiClient.PostAsJsonAsync("api/ordbog", entry);
@@ -431,8 +441,24 @@ else
     {
         try
         {
-            entry.ModifiedBy = JwtParser.GetBruger(token);
+            try
+            {
+                brugerToken = JwtParser.GetBruger(token);
 
+            }
+            catch
+            {
+                Console.WriteLine("no token");
+            }
+            if (brugerToken != null)
+            {
+                entry.ModifiedBy = JwtParser.GetBruger(token);
+            }
+            else
+            {
+                entry.ModifiedBy = "system";
+
+            }
             if (internet)
             {
                 var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{entry.OrdbogId}", entry);

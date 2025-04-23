@@ -22,10 +22,6 @@ namespace TaekwondoApp.Shared.Mapping
             CreateMap<Klub, KlubDTO>();
             CreateMap<KlubDTO, Klub>(); // Reverse Mapping
 
-            // Ordbog and OrdbogDTO Mapping
-            CreateMap<Ordbog, OrdbogDTO>();
-            CreateMap<OrdbogDTO, Ordbog>(); // Reverse Mapping
-
             // Øvelse and ØvelseDTO Mapping
             CreateMap<Øvelse, ØvelseDTO>()
                 .ForMember(dest => dest.PensumID, opt => opt.MapFrom(src => src.Pensum.PensumID));
@@ -139,6 +135,10 @@ namespace TaekwondoApp.Shared.Mapping
 
             // Teori -> TeoriDTO
             CreateMap<Teori, TeoriDTO>();
+
+            // Ordbog and OrdbogDTO Mapping
+            CreateMap<Ordbog, OrdbogDTO>();
+            CreateMap<OrdbogDTO, Ordbog>(); // Reverse Mapping
         }
     }
 }
