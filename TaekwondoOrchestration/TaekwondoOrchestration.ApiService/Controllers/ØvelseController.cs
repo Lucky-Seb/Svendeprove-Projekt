@@ -125,11 +125,15 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
             return result.ToApiResponse();
         }
+        // POST: api/Øvelse/upload/øvelseNavn/{øvelseNavn}/{fileName}
         [HttpPost("upload/øvelse/{øvelseNavn}/{fileName}")]
         public async Task<IActionResult> UploadFile(string øvelseNavn, string fileName)
         {
             var file = Request.Form.Files.FirstOrDefault();
-            if (file == null) return BadRequest("No file uploaded");
+            if (file == null)
+            {
+                return BadRequest("No file uploaded.");
+            }
 
             var folderPath = Path.Combine("C:\\inetpub\\wwwroot\\øvelse", øvelseNavn);
             Directory.CreateDirectory(folderPath);
@@ -140,8 +144,8 @@ namespace TaekwondoOrchestration.ApiService.Controllers
                 await file.CopyToAsync(stream);
             }
 
-            return Ok();
+            // Return a custom response, similar to how your GET method returns a response
+            return Ok(new { Message = "File uploaded successfully." });
         }
-
     }
 }
