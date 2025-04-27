@@ -18,6 +18,7 @@ namespace TaekwondoOrchestration.ApiService.RepositorieInterfaces
         Task<List<Quiz>> GetAllQuizzesByKlubAsync(Guid klubId); // Get all quizzes for a specific klub (club)
         Task<List<Quiz>> GetAllQuizzesByPensumAsync(Guid pensumId); // Get all quizzes for a specific pensum (curriculum)
         Task<Quiz?> GetQuizWithDetailsAsync(Guid quizId);
+        Task<List<Quiz>> GetFilteredQuizzesAsync(Guid? brugerId, List<Guid> klubIds); 
 
     }
 }
