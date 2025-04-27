@@ -76,13 +76,11 @@ else
 @code {
     private List<ProgramPlanDTO> availableProgramPlans = new();
     private List<ProgramPlanDTO> filteredProgramPlans = new();
-    private ProgramPlanDTO programPlan = new();
-    private bool isEditing = false;
     private string? errorMessage;
     private HttpClient _apiClient;
     private string token = string.Empty;
     private string searchProgramPlanName = "";
-    private BrugerDTO brugerDTO = null;
+    private BrugerDTO? brugerDTO = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -95,36 +93,47 @@ else
         try
         {
             token = await AuthenticationService.GetTokenAsync();
+
             if (string.IsNullOrEmpty(token))
             {
-                NavigationManager.NavigateTo("/login");
-                return;
+                // If not logged in, fetch program plans that are not owned by any club or bruger
+                await LoadProgramPlansForNonLoggedInUser();
+            }
+            else
+            {
+                // If logged in, fetch program plans that belong to the user and their clubs
+                await LoadProgramPlansForLoggedInUser();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading program plans: {ex.Message}";
+        }
+    }
+
+    private async Task LoadProgramPlansForLoggedInUser()
+    {
+        var brugerId = JwtParser.GetUserIdFromJwt(token);
+
+        try
+        {
+            var brugerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
+            if (brugerResponse?.Success == true && brugerResponse.Data != null)
+            {
+                brugerDTO = brugerResponse.Data;
+                StateHasChanged();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch user data.";
             }
 
-            var brugerId = JwtParser.GetUserIdFromJwt(token);
-            try
-            {
-                var brugerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
-                if (brugerResponse?.Success == true && brugerResponse.Data != null)
-                {
-                    brugerDTO = brugerResponse.Data;
-                    StateHasChanged();
-                }
-                else
-                {
-                    errorMessage = "Failed to fetch user data.";
-                }
-            }
-            catch (Exception ex)
-            {
-                errorMessage = $"Error loading user data: {ex.Message}";
-            }
+            var klubIds = brugerDTO?.BrugerKlubber.Select(k => k.KlubID).ToList();
+            var klubIdsString = klubIds != null ? string.Join(",", klubIds) : string.Empty;
 
-            var klubIds = brugerDTO.BrugerKlubber.Select(k => k.KlubID).ToList();
-            var klubIdsString = string.Join(",", klubIds);
-            // Fetching Program Plan data
+            // Fetching Program Plan data for logged-in user with the necessary query parameters
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>(
-                $"api/programplan/own/?brugerId={brugerDTO.BrugerID}&klubIds={klubIdsString}");
+                $"api/programplan/own/?brugerId={brugerDTO?.BrugerID}&klubIds={klubIdsString}");
 
             if (response?.Success == true && response.Data != null)
             {
@@ -134,6 +143,29 @@ else
             else
             {
                 errorMessage = "Failed to fetch program plans.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading user data: {ex.Message}";
+        }
+    }
+
+    private async Task LoadProgramPlansForNonLoggedInUser()
+    {
+        try
+        {
+            // Fetching Program Plan data without any specific parameters for non-logged-in users
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>("api/programplan/own");
+
+            if (response?.Success == true && response.Data != null)
+            {
+                availableProgramPlans = _mapper.Map<List<ProgramPlanDTO>>(response.Data);
+                ApplyFilters();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch available program plans.";
             }
         }
         catch (Exception ex)
