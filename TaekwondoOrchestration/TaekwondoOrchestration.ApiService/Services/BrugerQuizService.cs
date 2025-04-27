@@ -4,6 +4,11 @@ using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Helpers;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -20,35 +25,83 @@ namespace TaekwondoOrchestration.ApiService.Services
 
         public async Task<Result<IEnumerable<BrugerQuizDTO>>> GetAllBrugerQuizzesAsync()
         {
-            var brugerQuizzes = await _brugerQuizRepository.GetAllBrugerQuizzesAsync();
-            var mapped = _mapper.Map<IEnumerable<BrugerQuizDTO>>(brugerQuizzes);
-            return Result<IEnumerable<BrugerQuizDTO>>.Ok(mapped);
+            try
+            {
+                var quizzes = await _brugerQuizRepository.GetAllBrugerQuizzesAsync();
+
+                if (quizzes == null || !quizzes.Any())
+                {
+                    return Result<IEnumerable<BrugerQuizDTO>>.Fail("No quizzes found.");
+                }
+
+                var mappedQuizzes = _mapper.Map<IEnumerable<BrugerQuizDTO>>(quizzes);
+                return Result<IEnumerable<BrugerQuizDTO>>.Ok(mappedQuizzes);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (optional, depending on your logging strategy)
+                return Result<IEnumerable<BrugerQuizDTO>>.Fail($"Error occurred: {ex.Message}");
+            }
         }
 
         public async Task<Result<BrugerQuizDTO>> GetBrugerQuizByIdAsync(Guid brugerId, Guid quizId)
         {
-            var brugerQuiz = await _brugerQuizRepository.GetBrugerQuizByIdAsync(brugerId, quizId);
-            if (brugerQuiz == null)
-                return Result<BrugerQuizDTO>.Fail("BrugerQuiz not found.");
+            try
+            {
+                var brugerQuiz = await _brugerQuizRepository.GetBrugerQuizByIdAsync(brugerId, quizId);
+                if (brugerQuiz == null)
+                {
+                    return Result<BrugerQuizDTO>.Fail("BrugerQuiz not found.");
+                }
 
-            var mapped = _mapper.Map<BrugerQuizDTO>(brugerQuiz);
-            return Result<BrugerQuizDTO>.Ok(mapped);
+                var mapped = _mapper.Map<BrugerQuizDTO>(brugerQuiz);
+                return Result<BrugerQuizDTO>.Ok(mapped);
+            }
+            catch (Exception ex)
+            {
+                return Result<BrugerQuizDTO>.Fail($"Error occurred: {ex.Message}");
+            }
         }
 
-        public async Task<BrugerQuizDTO?> CreateBrugerQuizAsync(BrugerQuizDTO brugerQuizDto)
+        public async Task<Result<BrugerQuizDTO>> CreateBrugerQuizAsync(BrugerQuizDTO brugerQuizDto)
         {
-            if (brugerQuizDto == null || brugerQuizDto.BrugerID == Guid.Empty || brugerQuizDto.QuizID == Guid.Empty)
-                return null;
+            try
+            {
+                if (brugerQuizDto == null || brugerQuizDto.BrugerID == Guid.Empty || brugerQuizDto.QuizID == Guid.Empty)
+                    return Result<BrugerQuizDTO>.Fail("Invalid data.");
 
-            var brugerQuiz = _mapper.Map<BrugerQuiz>(brugerQuizDto);
-            var created = await _brugerQuizRepository.CreateBrugerQuizAsync(brugerQuiz);
-            return created == null ? null : _mapper.Map<BrugerQuizDTO>(created);
+                var brugerQuiz = _mapper.Map<BrugerQuiz>(brugerQuizDto);
+                var created = await _brugerQuizRepository.CreateBrugerQuizAsync(brugerQuiz);
+
+                if (created == null)
+                    return Result<BrugerQuizDTO>.Fail("Failed to create BrugerQuiz.");
+
+                var mapped = _mapper.Map<BrugerQuizDTO>(created);
+                return Result<BrugerQuizDTO>.Ok(mapped);
+            }
+            catch (Exception ex)
+            {
+                return Result<BrugerQuizDTO>.Fail($"Error occurred: {ex.Message}");
+            }
         }
 
         public async Task<Result<bool>> DeleteBrugerQuizAsync(Guid brugerId, Guid quizId)
         {
-            var success = await _brugerQuizRepository.DeleteBrugerQuizAsync(brugerId, quizId);
-            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete BrugerQuiz.");
+            try
+            {
+                var success = await _brugerQuizRepository.DeleteBrugerQuizAsync(brugerId, quizId);
+
+                if (!success)
+                {
+                    return Result<bool>.Fail("Failed to delete BrugerQuiz.");
+                }
+
+                return Result<bool>.Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Fail($"Error occurred: {ex.Message}");
+            }
         }
     }
 }
