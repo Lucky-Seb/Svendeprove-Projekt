@@ -125,68 +125,66 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
             return result.ToApiResponse();
         }
-        // POST: api/Øvelse/upload/øvelseNavn/{øvelseNavn}/{fileName}
-        [HttpPost("upload/øvelse/{øvelseNavn}/{fileName}")]
-        // POST: api/Øvelse/upload/øvelse/{øvelseNavn}/{fileName}
-        [HttpPost("upload/øvelse/{øvelseNavn}/{fileName}")]
-        public async Task<IActionResult> UploadFile(string øvelseNavn, string fileName)
-        {
-            try
-            {
-                // Ensure that the request has a Content-Type header indicating multipart/form-data
-                if (!Request.ContentType.Contains("multipart/form-data"))
-                {
-                    return BadRequest("Content-Type must be multipart/form-data.");
-                }
+        //// POST: api/Øvelse/upload/øvelse/{øvelseNavn}/{fileName}
+        //[HttpPost("upload/øvelse/{øvelseNavn}/{fileName}")]
+        //public async Task<IActionResult> UploadFile(string øvelseNavn, string fileName)
+        //{
+        //    try
+        //    {
+        //        // Ensure that the request has a Content-Type header indicating multipart/form-data
+        //        if (!Request.ContentType.Contains("multipart/form-data"))
+        //        {
+        //            return BadRequest("Content-Type must be multipart/form-data.");
+        //        }
 
-                // Check if the file is included in the request
-                var file = Request.Form.Files.FirstOrDefault();
-                if (file == null)
-                {
-                    return BadRequest("No file uploaded.");
-                }
+        //        // Check if the file is included in the request
+        //        var file = Request.Form.Files.FirstOrDefault();
+        //        if (file == null)
+        //        {
+        //            return BadRequest("No file uploaded.");
+        //        }
 
-                // Validate file size or type if necessary (optional, based on your use case)
-                if (file.Length == 0)
-                {
-                    return BadRequest("Uploaded file is empty.");
-                }
+        //        // Validate file size or type if necessary (optional, based on your use case)
+        //        if (file.Length == 0)
+        //        {
+        //            return BadRequest("Uploaded file is empty.");
+        //        }
 
-                // Optional: Check file extension (for example, allow only images or specific file types)
-                string[] allowedExtensions = { ".jpg", ".png", ".txt", ".pdf" }; // Modify as needed
-                var fileExtension = Path.GetExtension(file.FileName).ToLower();
-                if (!allowedExtensions.Contains(fileExtension))
-                {
-                    return BadRequest($"Invalid file type. Allowed types are: {string.Join(", ", allowedExtensions)}.");
-                }
+        //        // Optional: Check file extension (for example, allow only images or specific file types)
+        //        string[] allowedExtensions = { ".jpg", ".png", ".txt", ".pdf" }; // Modify as needed
+        //        var fileExtension = Path.GetExtension(file.FileName).ToLower();
+        //        if (!allowedExtensions.Contains(fileExtension))
+        //        {
+        //            return BadRequest($"Invalid file type. Allowed types are: {string.Join(", ", allowedExtensions)}.");
+        //        }
 
-                // Create folder path
-                var folderPath = Path.Combine("C:\\inetpub\\wwwroot\\øvelse", øvelseNavn);
+        //        // Create folder path
+        //        var folderPath = Path.Combine("C:\\inetpub\\wwwroot\\øvelse", øvelseNavn);
 
-                // Ensure folder exists
-                if (!Directory.Exists(folderPath))
-                {
-                    Directory.CreateDirectory(folderPath);
-                }
+        //        // Ensure folder exists
+        //        if (!Directory.Exists(folderPath))
+        //        {
+        //            Directory.CreateDirectory(folderPath);
+        //        }
 
-                // Set file path
-                var filePath = Path.Combine(folderPath, fileName);
+        //        // Set file path
+        //        var filePath = Path.Combine(folderPath, fileName);
 
-                // Save the file to the server
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
+        //        // Save the file to the server
+        //        using (var stream = new FileStream(filePath, FileMode.Create))
+        //        {
+        //            await file.CopyToAsync(stream);
+        //        }
 
-                // Return success response with a message
-                return Ok(new { Message = "File uploaded successfully." });
-            }
-            catch (Exception ex)
-            {
-                // Log exception (logging can be done here)
-                // Return a generic error message with the exception details for debugging
-                return StatusCode(500, new { Message = "An error occurred while uploading the file.", Error = ex.Message });
-            }
-        }
+        //        // Return success response with a message
+        //        return Ok(new { Message = "File uploaded successfully." });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Log exception (logging can be done here)
+        //        // Return a generic error message with the exception details for debugging
+        //        return StatusCode(500, new { Message = "An error occurred while uploading the file.", Error = ex.Message });
+        //    }
+        //}
     }
 }
