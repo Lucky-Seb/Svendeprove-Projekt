@@ -32,6 +32,7 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
 
         // Get programs by club (Klub)
         Task<Result<IEnumerable<ProgramPlanDTO>>> GetAllProgramPlansByKlubIdAsync(Guid klubId);
+        Task<Result<IEnumerable<ProgramPlanDTO>>> GetFilteredProgramPlansAsync(Guid? brugerId, List<Guid> klubIds);
 
         #endregion
     }

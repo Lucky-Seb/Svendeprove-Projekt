@@ -39,6 +39,18 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
         }
 
+        public async Task<Result<IEnumerable<ProgramPlanDTO>>> GetFilteredProgramPlansAsync(Guid? brugerId, List<Guid> klubIds)
+        {
+            // Fetch filtered program plans from repository
+            var programPlans = await _programPlanRepository.GetFilteredProgramPlansAsync(brugerId, klubIds);
+
+            // Map the result to ProgramPlanDTO using AutoMapper
+            var mapped = _mapper.Map<IEnumerable<ProgramPlanDTO>>(programPlans);
+
+            // Return a successful Result with the mapped DTOs
+            return Result<IEnumerable<ProgramPlanDTO>>.Ok(mapped);
+        }
+
         // Create New Program Plan with associated Bruger or Klub and Træning entities
         public async Task<Result<ProgramPlanDTO>> CreateProgramPlanWithBrugerOrKlubAsync(ProgramPlanDTO programPlanDto)
         {

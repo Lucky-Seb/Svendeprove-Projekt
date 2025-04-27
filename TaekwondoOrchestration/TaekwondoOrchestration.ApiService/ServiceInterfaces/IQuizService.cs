@@ -26,7 +26,8 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
         Task<Result<IEnumerable<QuizDTO>>> GetAllQuizzesIncludingDeletedAsync(); // Get all quizzes including deleted
         Task<Result<QuizDTO>> GetQuizByIdIncludingDeletedAsync(Guid quizId); // Get quiz by ID, including deleted quizzes
         Task<Result<IEnumerable<QuizDTO>>> GetAllQuizzesByPensumIdAsync(Guid pensumId); // Get quizzes by pensum
-        
+        Task<Result<IEnumerable<QuizDTO>>> GetFilteredQuizzesAsync(Guid? brugerId, List<Guid> klubIds);
+
         #endregion
     }
 }
