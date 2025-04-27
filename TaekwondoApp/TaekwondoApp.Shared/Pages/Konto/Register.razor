@@ -4,7 +4,6 @@
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Mapping
 @using AutoMapper
-@using BCrypt;
 @inject NavigationManager NavigationManager
 @inject HttpClient HttpClient
 @inject IMapper Mapper
@@ -24,7 +23,7 @@
     <div>
         <label for="brugernavn">Brugernavn:</label>
         <InputText id="brugernavn" @bind-Value="registerDTO.Brugernavn" class="form-control" />
-        <small class="form-text text-muted">Dit brugernavn (mindst 3 tegn). Dette vil være synligt for andre.</small>
+        <small class="form-text text-muted">Mindst 3 tegn. Vil være synligt for andre.</small>
     </div>
 
     <div>
@@ -42,19 +41,28 @@
     <div>
         <label for="password">Adgangskode:</label>
         <InputText id="password" type="password" @bind-Value="registerDTO.Password" class="form-control" />
-        <small class="form-text text-muted">Din adgangskode (mindst 8 tegn).</small>
+        <small class="form-text text-muted">
+            Minimum 8 tegn og maksimum 256 tegn.<br />
+            Skal indeholde mindst tre af følgende: store bogstaver, små bogstaver, tal og specialtegn.
+        </small>
     </div>
 
     <div>
-        <label for="confirmPassword">Bekræft Adgangskode:</label>
-        <InputText id="confirmPassword" type="password" @bind-Value="registerDTO.ConfirmPassword" class="form-control" />
-        <small class="form-text text-muted">Indtast din adgangskode igen for at bekræfte.</small>
+        <label for="password">Adgangskode:</label>
+        <InputText id="password" type="password" @bind-Value="registerDTO.Password" class="form-control" @oninput="CheckPasswordStrength" />
+        <small class="form-text text-muted">
+            Minimum 8 tegn og maksimum 256 tegn.<br />
+            Skal indeholde mindst tre af følgende: store bogstaver, små bogstaver, tal og specialtegn.
+        </small>
+        <div class="mt-1">
+            <span style="color:@PasswordStrengthColor">@PasswordStrengthText</span>
+        </div>
     </div>
 
     <div>
         <label for="bæltegrad">Bæltegrad:</label>
         <InputText id="bæltegrad" @bind-Value="registerDTO.Bæltegrad" class="form-control" />
-        <small class="form-text text-muted">Indtast din bæltegrad (f.eks. Hvid, Gul, Sort).</small>
+        <small class="form-text text-muted">F.eks. Hvid, Gul, Sort.</small>
     </div>
 
     <div>
@@ -75,7 +83,7 @@
         <small class="form-text text-muted">Vælg din rolle.</small>
     </div>
 
-    <button type="submit" class="btn btn-primary">Registrer</button>
+    <button type="submit" class="btn btn-primary mt-3">Registrer</button>
 </EditForm>
 
 @if (validationErrors.Any())
@@ -90,7 +98,6 @@
     </div>
 }
 
-<!-- App Logs -->
 <div class="log-box mt-4" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
     <h5>App Logfiler</h5>
     <button class="btn btn-sm btn-secondary mb-2" @onclick="() => logs.Clear()">Ryd logfiler</button>
@@ -104,13 +111,16 @@
     private RegisterDTO registerDTO = new();
     private List<string> validationErrors = new();
     private List<string> logs = new();
+    private string PasswordStrengthText = string.Empty;
+    private string PasswordStrengthColor = "black";
 
     private async Task HandleRegister()
     {
         validationErrors.Clear();
 
-        // Validate input fields
-        if (string.IsNullOrWhiteSpace(registerDTO.Email) || string.IsNullOrWhiteSpace(registerDTO.Password) || string.IsNullOrWhiteSpace(registerDTO.ConfirmPassword))
+        if (string.IsNullOrWhiteSpace(registerDTO.Email) ||
+            string.IsNullOrWhiteSpace(registerDTO.Password) ||
+            string.IsNullOrWhiteSpace(registerDTO.ConfirmPassword))
         {
             validationErrors.Add("Email, adgangskode og bekræft adgangskode er påkrævet.");
             return;
@@ -122,45 +132,18 @@
             return;
         }
 
-        if (!IsValidEmail(registerDTO.Email))
-        {
-            validationErrors.Add("Indtast venligst en gyldig emailadresse.");
-            return;
-        }
-
         try
         {
-            LogAction("Bruger bliver registreret med følgende data:");
+            LogAction("Bruger bliver registreret:");
             LogAction($"Email: {registerDTO.Email}");
-            LogAction($"Brugernavn: {registerDTO.Brugernavn}");
-            LogAction($"Fornavn: {registerDTO.Fornavn}");
-            LogAction($"Efternavn: {registerDTO.Efternavn}");
-            LogAction($"Adgangskode: {registerDTO.Password}");
-            LogAction($"Bekræft Adgangskode: {registerDTO.ConfirmPassword}");
-            LogAction($"Bæltegrad: {registerDTO.Bæltegrad}");
-            LogAction($"Adresse: {registerDTO.Address}");
-            LogAction($"Rolle: {registerDTO.Role}");
 
-            // Map registerDTO to BrugerDTO (don't hash the password here)
             var brugerDTO = Mapper.Map<BrugerDTO>(registerDTO);
 
-            // Manually populate the fields inherited from SyncableEntityDTO
-            brugerDTO.Brugerkode = registerDTO.ConfirmPassword; // Set Brugerkode (must be at least 6 chars, handled above)
-            brugerDTO.ETag = "12345"; // Generate a new ETag (or set as required by your backend)
-            brugerDTO.ModifiedBy = "system"; // Set a value for ModifiedBy (or use a specific user identifier)
-            brugerDTO.ChangeHistoryJson = "[]"; // Set a default value for ChangeHistoryJson (empty JSON array)
+            brugerDTO.Brugerkode = registerDTO.Password;
+            brugerDTO.ETag = "12345";
+            brugerDTO.ModifiedBy = "system";
+            brugerDTO.ChangeHistoryJson = "[]";
 
-
-            LogAction("Mapped BrugerDTO:");
-            LogAction($"Email: {brugerDTO.Email}");
-            LogAction($"Brugernavn: {brugerDTO.Brugernavn}");
-            LogAction($"Fornavn: {brugerDTO.Fornavn}");
-            LogAction($"Efternavn: {brugerDTO.Efternavn}");
-            LogAction($"Bæltegrad: {brugerDTO.Bæltegrad}");
-            LogAction($"Adresse: {brugerDTO.Address}");
-            LogAction($"Rolle: {brugerDTO.Role}");
-            brugerDTO.Brugerkode = registerDTO.ConfirmPassword;
-            // Send the registration request to the backend
             var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger", brugerDTO);
             LogAction($"Response status code: {response.StatusCode}");
 
@@ -170,43 +153,40 @@
             }
             else
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                LogAction($"Fejl respons: {responseContent}");
-
-                // Handle different types of errors based on the status code
-                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                {
-                    var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-                    if (errorResponse?.ValidationErrors != null)
-                    {
-                        foreach (var error in errorResponse.ValidationErrors)
-                        {
-                            validationErrors.Add(error);
-                        }
-                    }
-                    else
-                    {
-                        validationErrors.Add("Registreringen mislykkedes på grund af en dårlig anmodning.");
-                    }
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
-                {
-                    validationErrors.Add("En konto med denne emailadresse eksisterer allerede.");
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
-                {
-                    validationErrors.Add("Der opstod en serverfejl. Prøv venligst igen senere.");
-                }
-                else
-                {
-                    validationErrors.Add("Registreringen mislykkedes. Prøv venligst igen.");
-                }
+                await HandleErrorResponse(response);
             }
         }
         catch (Exception ex)
         {
             validationErrors.Add($"Registreringen mislykkedes. Fejl: {ex.Message}");
             LogAction($"Registreringsfejl: {ex.Message}");
+        }
+    }
+
+    private async Task HandleErrorResponse(HttpResponseMessage response)
+    {
+        var responseContent = await response.Content.ReadAsStringAsync();
+        LogAction($"Fejl respons: {responseContent}");
+
+        if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+        {
+            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            if (errorResponse?.ValidationErrors != null)
+            {
+                validationErrors.AddRange(errorResponse.ValidationErrors);
+            }
+            else
+            {
+                validationErrors.Add("Registreringen mislykkedes på grund af en dårlig anmodning.");
+            }
+        }
+        else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            validationErrors.Add("En konto med denne email eksisterer allerede.");
+        }
+        else
+        {
+            validationErrors.Add("Registreringen mislykkedes. Prøv igen senere.");
         }
     }
 
@@ -220,14 +200,44 @@
         logs.Insert(0, $"{DateTime.Now:HH:mm:ss}: {message}");
     }
 
-    private bool IsValidEmail(string email)
-    {
-        return email.Contains("@") && email.Contains(".");
-    }
-
     public class ErrorResponse
     {
         public string Message { get; set; } = string.Empty;
         public List<string> ValidationErrors { get; set; } = new();
     }
+
+    private void CheckPasswordStrength(ChangeEventArgs e)
+    {
+        var password = e.Value?.ToString() ?? string.Empty;
+        if (string.IsNullOrEmpty(password))
+        {
+            PasswordStrengthText = "";
+            return;
+        }
+
+        int score = 0;
+
+        if (password.Length >= 8) score++;
+        if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[A-Z]")) score++;
+        if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[a-z]")) score++;
+        if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[0-9]")) score++;
+        if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[\W_]")) score++;
+
+        if (score <= 2)
+        {
+            PasswordStrengthText = "Svag adgangskode";
+            PasswordStrengthColor = "red";
+        }
+        else if (score == 3 || score == 4)
+        {
+            PasswordStrengthText = "Middelstærk adgangskode";
+            PasswordStrengthColor = "orange";
+        }
+        else
+        {
+            PasswordStrengthText = "Stærk adgangskode";
+            PasswordStrengthColor = "green";
+        }
+    }
+
 }

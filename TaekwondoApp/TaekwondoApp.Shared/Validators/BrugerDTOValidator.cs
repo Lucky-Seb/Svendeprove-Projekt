@@ -25,9 +25,10 @@ namespace TaekwondoOrchestration.ApiService.Validators
                 .MaximumLength(50).WithMessage("Efternavn must be less than 50 characters.");
 
             RuleFor(x => x.Brugerkode)
-                .NotEmpty().WithMessage("Brugerkode is required.")
-                .MinimumLength(6).WithMessage("Brugerkode must be at least 6 characters long.")
-                .MaximumLength(100).WithMessage("Brugerkode must be less than 100 characters.");
+                .NotEmpty().WithMessage("Password is required.")
+                .MinimumLength(8).WithMessage("Password must be at least 8 characters.")
+                .MaximumLength(256).WithMessage("Password must be less than 256 characters.")
+                .Must(HasThreeOfFourCharacterTypes).WithMessage("Password must contain at least three of the following: uppercase letter, lowercase letter, number, and special character.");
 
             RuleFor(x => x.Address)
                 .MaximumLength(200).WithMessage("Address must be less than 200 characters.")
@@ -40,6 +41,25 @@ namespace TaekwondoOrchestration.ApiService.Validators
             RuleFor(x => x.Role)
                 .NotEmpty().WithMessage("Role is required.")
                 .MaximumLength(50).WithMessage("Role must be less than 50 characters.");
+        }
+
+        private bool HasThreeOfFourCharacterTypes(string password)
+        {
+            if (string.IsNullOrEmpty(password))
+                return false;
+
+            int types = 0;
+
+            if (password.Any(char.IsUpper))
+                types++;
+            if (password.Any(char.IsLower))
+                types++;
+            if (password.Any(char.IsDigit))
+                types++;
+            if (password.Any(c => !char.IsLetterOrDigit(c)))
+                types++;
+
+            return types >= 3;
         }
     }
 }
