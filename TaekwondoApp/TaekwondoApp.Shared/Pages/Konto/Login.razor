@@ -14,15 +14,15 @@
     <ValidationSummary />
 
     <div>
-        <label for="emailOrUsername">Email or Username:</label>
+        <label for="emailOrUsername">Email eller Brugernavn:</label>
         <InputText id="emailOrUsername" @bind-Value="loginModel.EmailOrBrugernavn" class="form-control" />
-        <small class="form-text text-muted">Enter your registered email or username.</small>
+        <small class="form-text text-muted">Indtast din registrerede email eller brugernavn.</small>
     </div>
 
     <div>
-        <label for="password">Password:</label>
+        <label for="password">Adgangskode:</label>
         <InputText id="password" type="password" @bind-Value="loginModel.Brugerkode" class="form-control" />
-        <small class="form-text text-muted">Enter your password.</small>
+        <small class="form-text text-muted">Indtast din adgangskode.</small>
     </div>
 
     <button type="submit" class="btn btn-primary mt-2">Login</button>
@@ -43,7 +43,7 @@
 <!-- App Logs -->
 <div class="log-box mt-4" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
     <h5>App Logs</h5>
-    <button class="btn btn-sm btn-secondary mb-2" @onclick="() => logs.Clear()">Clear Logs</button>
+    <button class="btn btn-sm btn-secondary mb-2" @onclick="() => logs.Clear()">Ryd Logs</button>
     @foreach (var log in logs)
     {
         <div>@log</div>
@@ -61,19 +61,19 @@
 
         if (string.IsNullOrWhiteSpace(loginModel.EmailOrBrugernavn) || string.IsNullOrWhiteSpace(loginModel.Brugerkode))
         {
-            validationErrors.Add("Email/Username and password are required.");
+            validationErrors.Add("Email/Brugernavn og adgangskode er påkrævet.");
             return;
         }
 
         try
         {
-            LogAction("Attempting login withs:");
-            LogAction($"Email/Username: {loginModel.EmailOrBrugernavn}");
-            LogAction($"Password being sent: {loginModel.Brugerkode}");
+            LogAction("Forsøger at logge ind med:");
+            LogAction($"Email/Brugernavn: {loginModel.EmailOrBrugernavn}");
+            LogAction($"Adgangskode sendt: {loginModel.Brugerkode}");
 
             // Send the login request
             var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger/login", loginModel);
-            LogAction($"Response status code: {response.StatusCode}");
+            LogAction($"Svar statuskode: {response.StatusCode}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -85,8 +85,8 @@
                 }
                 catch (Exception ex)
                 {
-                    validationErrors.Add($"Error deserializing login response: {ex.Message}");
-                    LogAction($"Error deserializing login response: {ex.Message}");
+                    validationErrors.Add($"Fejl ved deserialisering af login svar: {ex.Message}");
+                    LogAction($"Fejl ved deserialisering af login svar: {ex.Message}");
                 }
 
                 if (apiResponse != null && apiResponse.Success)
@@ -98,32 +98,32 @@
                         // Store the token using AuthenticationService
                         await AuthenticationService.SetTokenAsync(loginResponse.Token);
 
-                        LogAction("Login successful and token stored.");
+                        LogAction("Login succesfuld og token gemt.");
                         // Redirect to the dashboard or home page
                         NavigationManager.NavigateTo("/testpage");
                     }
                     else
                     {
-                        validationErrors.Add("Invalid credentials.");
-                        LogAction("Invalid credentials.");
+                        validationErrors.Add("Ugyldige loginoplysninger.");
+                        LogAction("Ugyldige loginoplysninger.");
                     }
                 }
                 else
                 {
-                    validationErrors.Add("Login failed. " + string.Join(", ", apiResponse?.Errors ?? new List<string>()));
-                    LogAction($"Login failed. Errors: {string.Join(", ", apiResponse?.Errors ?? new List<string>())}");
+                    validationErrors.Add("Login mislykkedes. " + string.Join(", ", apiResponse?.Errors ?? new List<string>()));
+                    LogAction($"Login mislykkedes. Fejl: {string.Join(", ", apiResponse?.Errors ?? new List<string>())}");
                 }
             }
             else
             {
-                validationErrors.Add("Login failed.");
-                LogAction("Login failed.");
+                validationErrors.Add("Login mislykkedes.");
+                LogAction("Login mislykkedes.");
             }
         }
         catch (Exception ex)
         {
-            validationErrors.Add($"Login failed. Error: {ex.Message}");
-            LogAction($"Login exception: {ex.Message}");
+            validationErrors.Add($"Login mislykkedes. Fejl: {ex.Message}");
+            LogAction($"Login undtagelse: {ex.Message}");
         }
     }
 
