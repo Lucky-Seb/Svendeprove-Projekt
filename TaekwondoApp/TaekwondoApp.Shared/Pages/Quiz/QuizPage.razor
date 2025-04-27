@@ -1,5 +1,4 @@
 ﻿@page "/quiz"
-@* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
@@ -7,7 +6,6 @@
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
 
-@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
@@ -41,7 +39,7 @@ else
                     <td>@quiz.QuizNavn</td>
                     <td>@quiz.QuizBeskrivelse</td>
                     <td>
-                        <button class="btn btn-link" @onclick="() => NavigateToQuiz(quiz.QuizID)">Vis</button>
+                        <button class="btn btn-link" @onclick="() => NavigateToQuiz(quiz.QuizID)">View</button>
                     </td>
                 </tr>
             }
@@ -71,7 +69,16 @@ else
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>("api/quiz");
+            var token = await AuthenticationService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            var brugerId = JwtParser.GetUserIdFromJwt(token);
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>($"api/quiz/own/?brugerId={brugerId}");
+
             if (response?.Success == true && response.Data != null)
             {
                 quizzes = _mapper.Map<List<QuizDTO>>(response.Data);

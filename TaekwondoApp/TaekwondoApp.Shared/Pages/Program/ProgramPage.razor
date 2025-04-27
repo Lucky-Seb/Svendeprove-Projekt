@@ -1,5 +1,4 @@
 ﻿@page "/programplan"
-@* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
@@ -7,7 +6,6 @@
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
 
-@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
@@ -43,7 +41,7 @@ else
                     <td>@program.Længde minutes</td>
                     <td>@program.Beskrivelse</td>
                     <td>
-                        <button class="btn btn-link" @onclick="() => NavigateToProgram(program.ProgramID)">Vis</button>
+                        <button class="btn btn-link" @onclick="() => NavigateToProgram(program.ProgramID)">View</button>
                     </td>
                 </tr>
             }
@@ -60,8 +58,6 @@ else
 
 @code {
     private List<ProgramPlanDTO> programPlans = new();
-    private ProgramPlanDTO programPlan = new();
-    private bool isEditing = false;
     private string? errorMessage;
     private HttpClient _apiClient;
 
@@ -75,7 +71,19 @@ else
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>("api/programplan");
+            // Getting the token and extracting the user id
+            var token = await AuthenticationService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            var brugerId = JwtParser.GetUserIdFromJwt(token);
+
+            // Fetching program plans by brukerId
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>($"api/programplan/own/?brugerId={brugerId}");
+
             if (response?.Success == true && response.Data != null)
             {
                 programPlans = _mapper.Map<List<ProgramPlanDTO>>(response.Data);
@@ -90,9 +98,9 @@ else
             errorMessage = $"Error loading program plans: {ex.Message}";
         }
     }
+
     private void NavigateToProgram(Guid programId)
     {
         NavigationManager.NavigateTo($"/programplan/{programId}");
     }
-
 }
