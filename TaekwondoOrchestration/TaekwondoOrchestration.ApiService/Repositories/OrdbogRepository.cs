@@ -63,15 +63,15 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         public async Task<Ordbog?> GetOrdbogByDanskOrdAsync(string danskOrd)
         {
             return await _context.Ordboger
-                .Where(o => o.DanskOrd.Equals(danskOrd, StringComparison.OrdinalIgnoreCase))
-                .FirstOrDefaultAsync();  // No need to filter out IsDeleted
+                .Where(o => EF.Functions.Like(o.DanskOrd, danskOrd))
+                .FirstOrDefaultAsync();
         }
 
         public async Task<Ordbog?> GetOrdbogByKoranskOrdAsync(string koranOrd)
         {
             return await _context.Ordboger
-                .Where(o => o.KoranskOrd.Equals(koranOrd, StringComparison.OrdinalIgnoreCase))
-                .FirstOrDefaultAsync();  // No need to filter out IsDeleted
+                .Where(o => EF.Functions.Like(o.KoranskOrd, koranOrd))
+                .FirstOrDefaultAsync();
         }
         public async Task<List<Ordbog>> GetAllOrdbogIncludingDeletedAsync()
         {
