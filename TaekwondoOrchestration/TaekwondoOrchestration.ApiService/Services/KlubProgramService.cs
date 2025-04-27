@@ -2,68 +2,78 @@
 using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using AutoMapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
     public class KlubProgramService : IKlubProgramService
     {
         private readonly IKlubProgramRepository _klubProgramRepository;
+        private readonly IMapper _mapper;
 
-        public KlubProgramService(IKlubProgramRepository klubProgramRepository)
+        // Constructor for Dependency Injection (Repository and Mapper)
+        public KlubProgramService(IKlubProgramRepository klubProgramRepository, IMapper mapper)
         {
             _klubProgramRepository = klubProgramRepository;
+            _mapper = mapper;
         }
 
-        public async Task<List<KlubProgramDTO>> GetAllKlubProgrammerAsync()
+        #region CRUD Operations
+
+        // Get all KlubProgrammer
+        public async Task<Result<IEnumerable<KlubProgramDTO>>> GetAllKlubProgrammerAsync()
         {
             var klubProgrammer = await _klubProgramRepository.GetAllKlubProgrammerAsync();
-            return klubProgrammer.Select(k => new KlubProgramDTO
-            {
-                KlubID = k.KlubID,
-                ProgramID = k.ProgramID
-            }).ToList();
+            if (klubProgrammer == null || !klubProgrammer.Any())
+                return Result<IEnumerable<KlubProgramDTO>>.Fail("No KlubProgrammer found.");
+
+            var mapped = _mapper.Map<IEnumerable<KlubProgramDTO>>(klubProgrammer);
+            return Result<IEnumerable<KlubProgramDTO>>.Ok(mapped);
         }
 
-        public async Task<KlubProgramDTO?> GetKlubProgramByIdAsync(Guid klubId, Guid programId)
+        // Get specific KlubProgram by its IDs (KlubID, ProgramID)
+        public async Task<Result<KlubProgramDTO>> GetKlubProgramByIdAsync(Guid klubId, Guid programId)
         {
             var klubProgram = await _klubProgramRepository.GetKlubProgramByIdAsync(klubId, programId);
             if (klubProgram == null)
-                return null;
+                return Result<KlubProgramDTO>.Fail("KlubProgram not found.");
 
-            return new KlubProgramDTO
-            {
-                KlubID = klubProgram.KlubID,
-                ProgramID = klubProgram.ProgramID
-            };
+            var mapped = _mapper.Map<KlubProgramDTO>(klubProgram);
+            return Result<KlubProgramDTO>.Ok(mapped);
         }
 
-        public async Task<KlubProgramDTO?> CreateKlubProgramAsync(KlubProgramDTO klubProgramDto)
+        // Create a new KlubProgram
+        public async Task<Result<KlubProgramDTO>> CreateKlubProgramAsync(KlubProgramDTO klubProgramDto)
         {
-            if (klubProgramDto == null) return null;
+            if (klubProgramDto == null)
+                return Result<KlubProgramDTO>.Fail("Invalid input data.");
 
-            var newKlubProgram = new KlubProgram
-            {
-                KlubID = klubProgramDto.KlubID,
-                ProgramID = klubProgramDto.ProgramID
-            };
-
+            var newKlubProgram = _mapper.Map<KlubProgram>(klubProgramDto);
             var createdKlubProgram = await _klubProgramRepository.CreateKlubProgramAsync(newKlubProgram);
+            if (createdKlubProgram == null)
+                return Result<KlubProgramDTO>.Fail("Failed to create KlubProgram.");
 
-            return new KlubProgramDTO
-            {
-                KlubID = createdKlubProgram.KlubID,
-                ProgramID = createdKlubProgram.ProgramID
-            };
+            var mapped = _mapper.Map<KlubProgramDTO>(createdKlubProgram);
+            return Result<KlubProgramDTO>.Ok(mapped);
         }
 
-        public async Task<bool> DeleteKlubProgramAsync(Guid klubId, Guid programId)
+        // Delete a KlubProgram by its IDs (KlubID, ProgramID)
+        public async Task<Result<bool>> DeleteKlubProgramAsync(Guid klubId, Guid programId)
         {
-            return await _klubProgramRepository.DeleteKlubProgramAsync(klubId, programId);
+            var klubProgram = await _klubProgramRepository.GetKlubProgramByIdAsync(klubId, programId);
+            if (klubProgram == null)
+                return Result<bool>.Fail("KlubProgram not found.");
+
+            var success = await _klubProgramRepository.DeleteKlubProgramAsync(klubId, programId);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete KlubProgram.");
         }
+
+        #endregion
     }
 }
