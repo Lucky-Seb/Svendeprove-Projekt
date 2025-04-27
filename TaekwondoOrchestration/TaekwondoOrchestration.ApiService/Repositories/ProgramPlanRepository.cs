@@ -34,13 +34,13 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         {
             return await _context.ProgramPlans
                 .Where(pp =>
-                    // Global program plans (if necessary)
-                    !pp.BrugerProgrammer.Any(b => b.BrugerID != null) && !pp.KlubProgrammer.Any(k => k.KlubID != null) ||
+                    // Global program plans (no user or club associated)
+                    (pp.BrugerProgrammer.All(b => b.BrugerID == null) && pp.KlubProgrammer.All(k => k.KlubID == null)) ||
 
-                    // Program plans created by user
+                    // Program plans created by the user (if a user ID is provided)
                     (brugerId != null && pp.BrugerProgrammer.Any(b => b.BrugerID == brugerId)) ||
 
-                    // Program plans associated with any of the user's clubs
+                    // Program plans associated with any of the user's clubs (if club IDs are provided)
                     (klubIds.Any() && pp.KlubProgrammer.Any(k => klubIds.Contains(k.KlubID)))
                 )
                 .Include(pp => pp.Træninger) // Include training sessions

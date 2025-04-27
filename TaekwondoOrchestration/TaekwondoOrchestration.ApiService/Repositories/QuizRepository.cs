@@ -155,13 +155,13 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         {
             return await _context.Quizzer
                 .Where(q =>
-                    // Global quizzes (if necessary, adjust the logic for global quizzes)
-                    !q.BrugerQuizzer.Any(bq => bq.BrugerID != null) && !q.KlubQuizzer.Any(kq => kq.KlubID != null) ||
+                    // Global quizzes (no user or club associated)
+                    (q.BrugerQuizzer.All(bq => bq.BrugerID == null) && q.KlubQuizzer.All(kq => kq.KlubID == null)) ||
 
-                    // Quizzes created by the user
+                    // Quizzes created by the user (if a user ID is provided)
                     (brugerId != null && q.BrugerQuizzer.Any(bq => bq.BrugerID == brugerId)) ||
 
-                    // Quizzes associated with any of the user's clubs
+                    // Quizzes associated with any of the user's clubs (if club IDs are provided)
                     (klubIds.Any() && q.KlubQuizzer.Any(kq => klubIds.Contains(kq.KlubID)))
                 )
                 .Include(q => q.Spørgsmåls) // Include questions
@@ -172,6 +172,5 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                     .ThenInclude(s => s.Øvelse) // Include Øvelse
                 .ToListAsync();
         }
-
     }
 }
