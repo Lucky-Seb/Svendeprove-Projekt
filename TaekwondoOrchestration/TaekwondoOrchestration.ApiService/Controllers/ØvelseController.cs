@@ -129,22 +129,52 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         [HttpPost("upload/øvelse/{øvelseNavn}/{fileName}")]
         public async Task<IActionResult> UploadFile(string øvelseNavn, string fileName)
         {
+            // Ensure that the request has a Content-Type header indicating multipart/form-data
+            if (!Request.ContentType.Contains("multipart/form-data"))
+            {
+                return BadRequest("Content-Type must be multipart/form-data.");
+            }
+
+            // Check if the file is included in the request
             var file = Request.Form.Files.FirstOrDefault();
             if (file == null)
             {
                 return BadRequest("No file uploaded.");
             }
 
-            var folderPath = Path.Combine("C:\\inetpub\\wwwroot\\øvelse", øvelseNavn);
-            Directory.CreateDirectory(folderPath);
+            // Validate file size or type if necessary (optional, based on your use case)
+            if (file.Length == 0)
+            {
+                return BadRequest("Uploaded file is empty.");
+            }
 
+            // Optional: Check file extension (for example, allow only images or specific file types)
+            string[] allowedExtensions = { ".jpg", ".png", ".txt", ".pdf" }; // Modify as needed
+            var fileExtension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                return BadRequest($"Invalid file type. Allowed types are: {string.Join(", ", allowedExtensions)}.");
+            }
+
+            // Create folder path
+            var folderPath = Path.Combine("C:\\inetpub\\wwwroot\\øvelse", øvelseNavn);
+
+            // Ensure folder exists
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            // Set file path
             var filePath = Path.Combine(folderPath, fileName);
+
+            // Save the file to the server
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
-            // Return a custom response, similar to how your GET method returns a response
+            // Return success response with a message
             return Ok(new { Message = "File uploaded successfully." });
         }
     }
