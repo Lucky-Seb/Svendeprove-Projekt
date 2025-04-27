@@ -29,7 +29,7 @@ namespace TaekwondoApp
             // HttpClientFactory registration
             builder.Services.AddHttpClient(); // fallback/default client
 
-            builder.Services.AddValidatorsFromAssemblyContaining<BrugerDTOValidator>();
+            builder.Services.AddValidatorsFromAssemblyContaining<RegisterDTO>();
 
             // Scoped auth service
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
