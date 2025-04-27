@@ -40,15 +40,6 @@
 
     <div>
         <label for="password">Adgangskode:</label>
-        <InputText id="password" type="password" @bind-Value="registerDTO.Password" class="form-control" />
-        <small class="form-text text-muted">
-            Minimum 8 tegn og maksimum 256 tegn.<br />
-            Skal indeholde mindst tre af følgende: store bogstaver, små bogstaver, tal og specialtegn.
-        </small>
-    </div>
-
-    <div>
-        <label for="password">Adgangskode:</label>
         <InputText id="password" type="password" @bind-Value="registerDTO.Password" class="form-control" @oninput="CheckPasswordStrength" />
         <small class="form-text text-muted">
             Minimum 8 tegn og maksimum 256 tegn.<br />
@@ -57,6 +48,11 @@
         <div class="mt-1">
             <span style="color:@PasswordStrengthColor">@PasswordStrengthText</span>
         </div>
+    </div>
+
+    <div>
+        <label for="confirmpassword">Bekærft Adgangskode:</label>
+        <InputText id="confirmpassword" type="password" @bind-Value="registerDTO.ConfirmPassword" class="form-control"/>
     </div>
 
     <div>

@@ -5,7 +5,6 @@ using TaekwondoApp.Shared.Mapping;
 using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
 using FluentValidation;
-using TaekwondoOrchestration.ApiService.Validators;
 
 
 namespace TaekwondoApp

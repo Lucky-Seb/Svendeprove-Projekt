@@ -137,6 +137,7 @@ else
                                     {
                                         <button @onclick="() => NavigateToKlubAdminPage(klub.KlubID)">Gå til Klub Admin</button>
                                     }
+                                    <button @onclick="() => LeaveClub(klub.KlubID)">Forlad Klub</button>
                                 </td>
                             </tr>
                         }
@@ -336,6 +337,7 @@ else
             if (response?.Success == true && response.Data != null)
             {
                 availableKlubs = _mapper.Map<List<KlubDTO>>(response.Data);
+                StateHasChanged(); // Refresh UI
             }
             else
             {
@@ -538,12 +540,34 @@ else
         {
             // Update the UI after the user has joined the club
             var joinedClub = await response.Content.ReadFromJsonAsync<BrugerKlubDTO>();
-            LoadKluber();
+            LoadBruger();
         }
         else
         {
             // Handle errors here (e.g., show an error message)
             errorMessage = "Kunne ikke slutte dig til klubben. Prøv venligst igen.";
+        }
+    }
+    private async Task LeaveClub(Guid klubId)
+    {
+        try
+        {
+            // Create a DTO to represent the user's club membership to be deleted
+            var response = await _apiClient.DeleteAsync($"api/brugerklub/{brugerDTO.BrugerID}/{klubId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // After successfully leaving the club, reload user data to reflect the changes
+                await LoadBruger();
+            }
+            else
+            {
+                errorMessage = "Kunne ikke forlade klubben. Prøv venligst igen.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Fejl ved at forlade klubben: {ex.Message}";
         }
     }
 
