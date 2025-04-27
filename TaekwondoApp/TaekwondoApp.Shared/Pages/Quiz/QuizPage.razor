@@ -14,13 +14,26 @@
 
 <h1>Quiz Management</h1>
 
-@if (quizzes == null)
+<!-- Search Filters -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Search by Quiz Name:</label>
+        <input class="form-control" @bind="searchQuizName" placeholder="Enter Quiz name..." />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+    </div>
+</div>
+
+<!-- Display Table -->
+@if (filteredQuizzes == null)
 {
     <p><em>Loading...</em></p>
 }
-else if (quizzes.Count == 0)
+else if (filteredQuizzes.Count == 0)
 {
-    <p><em>No quizzes available.</em></p>
+    <p><em>No quizzes match your search.</em></p>
 }
 else
 {
@@ -33,7 +46,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var quiz in quizzes)
+            @foreach (var quiz in filteredQuizzes)
             {
                 <tr>
                     <td>@quiz.QuizNavn</td>
@@ -55,9 +68,13 @@ else
 }
 
 @code {
-    private List<QuizDTO> quizzes = new();
+    private List<QuizDTO> availableQuizzes = new();
+    private List<QuizDTO> filteredQuizzes = new();
     private string? errorMessage;
     private HttpClient _apiClient;
+    private string token = string.Empty;
+    private string searchQuizName = "";
+    private BrugerDTO brugerDTO = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,7 +86,7 @@ else
     {
         try
         {
-            var token = await AuthenticationService.GetTokenAsync();
+            token = await AuthenticationService.GetTokenAsync();
             if (string.IsNullOrEmpty(token))
             {
                 NavigationManager.NavigateTo("/login");
@@ -77,11 +94,34 @@ else
             }
 
             var brugerId = JwtParser.GetUserIdFromJwt(token);
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>($"api/quiz/own/?brugerId={brugerId}");
+            try
+            {
+                var brugerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
+                if (brugerResponse?.Success == true && brugerResponse.Data != null)
+                {
+                    brugerDTO = brugerResponse.Data;
+                    StateHasChanged();
+                }
+                else
+                {
+                    errorMessage = "Failed to fetch user data.";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error loading user data: {ex.Message}";
+            }
+
+            var klubIds = brugerDTO.BrugerKlubber.Select(k => k.KlubID).ToList();
+            var klubIdsString = string.Join(",", klubIds);
+            // Fetching Quiz data
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>(
+                $"api/quiz/own/?brugerId={brugerDTO.BrugerID}&klubIds={klubIdsString}");
 
             if (response?.Success == true && response.Data != null)
             {
-                quizzes = _mapper.Map<List<QuizDTO>>(response.Data);
+                availableQuizzes = _mapper.Map<List<QuizDTO>>(response.Data);
+                ApplyFilters();
             }
             else
             {
@@ -92,6 +132,19 @@ else
         {
             errorMessage = $"Error loading quizzes: {ex.Message}";
         }
+    }
+
+    private void ApplyFilters()
+    {
+        filteredQuizzes = availableQuizzes
+            .Where(q => string.IsNullOrEmpty(searchQuizName) || q.QuizNavn.Contains(searchQuizName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchQuizName = "";
+        ApplyFilters();
     }
 
     private void NavigateToQuiz(Guid quizId)

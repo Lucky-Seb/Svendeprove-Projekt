@@ -14,13 +14,26 @@
 
 <h1>Program Plan Management</h1>
 
-@if (programPlans == null)
+<!-- Search Filters -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Search by Program Plan Name:</label>
+        <input class="form-control" @bind="searchProgramPlanName" placeholder="Enter Program Plan name..." />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+    </div>
+</div>
+
+<!-- Display Table -->
+@if (filteredProgramPlans == null)
 {
     <p><em>Loading...</em></p>
 }
-else if (programPlans.Count == 0)
+else if (filteredProgramPlans.Count == 0)
 {
-    <p><em>No program plans available.</em></p>
+    <p><em>No Program Plan records match your search.</em></p>
 }
 else
 {
@@ -34,10 +47,14 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var program in programPlans)
+            @foreach (var program in filteredProgramPlans)
             {
                 <tr>
-                    <td>@program.ProgramNavn</td>
+                    <td>
+                        <a @onclick="() => NavigateToProgram(program.ProgramID)" style="cursor:pointer; text-decoration: underline;">
+                            @program.ProgramNavn
+                        </a>
+                    </td>
                     <td>@program.Længde minutes</td>
                     <td>@program.Beskrivelse</td>
                     <td>
@@ -57,9 +74,15 @@ else
 }
 
 @code {
-    private List<ProgramPlanDTO> programPlans = new();
+    private List<ProgramPlanDTO> availableProgramPlans = new();
+    private List<ProgramPlanDTO> filteredProgramPlans = new();
+    private ProgramPlanDTO programPlan = new();
+    private bool isEditing = false;
     private string? errorMessage;
     private HttpClient _apiClient;
+    private string token = string.Empty;
+    private string searchProgramPlanName = "";
+    private BrugerDTO brugerDTO = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,8 +94,7 @@ else
     {
         try
         {
-            // Getting the token and extracting the user id
-            var token = await AuthenticationService.GetTokenAsync();
+            token = await AuthenticationService.GetTokenAsync();
             if (string.IsNullOrEmpty(token))
             {
                 NavigationManager.NavigateTo("/login");
@@ -80,13 +102,34 @@ else
             }
 
             var brugerId = JwtParser.GetUserIdFromJwt(token);
+            try
+            {
+                var brugerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
+                if (brugerResponse?.Success == true && brugerResponse.Data != null)
+                {
+                    brugerDTO = brugerResponse.Data;
+                    StateHasChanged();
+                }
+                else
+                {
+                    errorMessage = "Failed to fetch user data.";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error loading user data: {ex.Message}";
+            }
 
-            // Fetching program plans by brukerId
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>($"api/programplan/own/?brugerId={brugerId}");
+            var klubIds = brugerDTO.BrugerKlubber.Select(k => k.KlubID).ToList();
+            var klubIdsString = string.Join(",", klubIds);
+            // Fetching Program Plan data
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>(
+                $"api/programplan/own/?brugerId={brugerDTO.BrugerID}&klubIds={klubIdsString}");
 
             if (response?.Success == true && response.Data != null)
             {
-                programPlans = _mapper.Map<List<ProgramPlanDTO>>(response.Data);
+                availableProgramPlans = _mapper.Map<List<ProgramPlanDTO>>(response.Data);
+                ApplyFilters();
             }
             else
             {
@@ -97,6 +140,19 @@ else
         {
             errorMessage = $"Error loading program plans: {ex.Message}";
         }
+    }
+
+    private void ApplyFilters()
+    {
+        filteredProgramPlans = availableProgramPlans
+            .Where(p => string.IsNullOrEmpty(searchProgramPlanName) || p.ProgramNavn.Contains(searchProgramPlanName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchProgramPlanName = "";
+        ApplyFilters();
     }
 
     private void NavigateToProgram(Guid programId)
