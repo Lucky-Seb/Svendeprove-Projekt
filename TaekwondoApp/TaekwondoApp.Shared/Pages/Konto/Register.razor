@@ -9,7 +9,7 @@
 @inject HttpClient HttpClient
 @inject IMapper Mapper
 
-<h3>Register</h3>
+<h3>Registrering</h3>
 
 <EditForm Model="@registerDTO" OnValidSubmit="HandleRegister">
     <DataAnnotationsValidator />
@@ -18,64 +18,64 @@
     <div>
         <label for="email">Email:</label>
         <InputText id="email" @bind-Value="registerDTO.Email" class="form-control" />
-        <small class="form-text text-muted">Enter a valid email address.</small>
+        <small class="form-text text-muted">Indtast en gyldig emailadresse.</small>
     </div>
 
     <div>
-        <label for="brugernavn">Username:</label>
+        <label for="brugernavn">Brugernavn:</label>
         <InputText id="brugernavn" @bind-Value="registerDTO.Brugernavn" class="form-control" />
-        <small class="form-text text-muted">Your username (at least 3 characters). This will be visible to others.</small>
+        <small class="form-text text-muted">Dit brugernavn (mindst 3 tegn). Dette vil være synligt for andre.</small>
     </div>
 
     <div>
-        <label for="fornavn">First Name:</label>
+        <label for="fornavn">Fornavn:</label>
         <InputText id="fornavn" @bind-Value="registerDTO.Fornavn" class="form-control" />
-        <small class="form-text text-muted">Enter your first name.</small>
+        <small class="form-text text-muted">Indtast dit fornavn.</small>
     </div>
 
     <div>
-        <label for="efternavn">Last Name:</label>
+        <label for="efternavn">Efternavn:</label>
         <InputText id="efternavn" @bind-Value="registerDTO.Efternavn" class="form-control" />
-        <small class="form-text text-muted">Enter your last name.</small>
+        <small class="form-text text-muted">Indtast dit efternavn.</small>
     </div>
 
     <div>
-        <label for="password">Password:</label>
+        <label for="password">Adgangskode:</label>
         <InputText id="password" type="password" @bind-Value="registerDTO.Password" class="form-control" />
-        <small class="form-text text-muted">Your password (at least 8 characters).</small>
+        <small class="form-text text-muted">Din adgangskode (mindst 8 tegn).</small>
     </div>
 
     <div>
-        <label for="confirmPassword">Confirm Password:</label>
+        <label for="confirmPassword">Bekræft Adgangskode:</label>
         <InputText id="confirmPassword" type="password" @bind-Value="registerDTO.ConfirmPassword" class="form-control" />
-        <small class="form-text text-muted">Re-enter your password for confirmation.</small>
+        <small class="form-text text-muted">Indtast din adgangskode igen for at bekræfte.</small>
     </div>
 
     <div>
-        <label for="bæltegrad">Bæltegrad (Belt Level):</label>
+        <label for="bæltegrad">Bæltegrad:</label>
         <InputText id="bæltegrad" @bind-Value="registerDTO.Bæltegrad" class="form-control" />
-        <small class="form-text text-muted">Enter your belt level (e.g., White, Yellow, Black).</small>
+        <small class="form-text text-muted">Indtast din bæltegrad (f.eks. Hvid, Gul, Sort).</small>
     </div>
 
     <div>
-        <label for="address">Address:</label>
+        <label for="address">Adresse:</label>
         <InputText id="address" @bind-Value="registerDTO.Address" class="form-control" />
-        <small class="form-text text-muted">Enter your address.</small>
+        <small class="form-text text-muted">Indtast din adresse.</small>
     </div>
 
     <div>
-        <label for="role">Role:</label>
+        <label for="role">Rolle:</label>
         <InputSelect id="role" @bind-Value="registerDTO.Role" class="form-control">
-            <option value="">Select a role</option>
+            <option value="">Vælg en rolle</option>
             <option value="Elev">Elev</option>
             <option value="Admin">Admin</option>
-            <option value="Instructor">Instructor</option>
+            <option value="Instructor">Instruktør</option>
             <option value="Bruger">Bruger</option>
         </InputSelect>
-        <small class="form-text text-muted">Select your role.</small>
+        <small class="form-text text-muted">Vælg din rolle.</small>
     </div>
 
-    <button type="submit" class="btn btn-primary">Register</button>
+    <button type="submit" class="btn btn-primary">Registrer</button>
 </EditForm>
 
 @if (validationErrors.Any())
@@ -92,8 +92,8 @@
 
 <!-- App Logs -->
 <div class="log-box mt-4" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
-    <h5>App Logs</h5>
-    <button class="btn btn-sm btn-secondary mb-2" @onclick="() => logs.Clear()">Clear Logs</button>
+    <h5>App Logfiler</h5>
+    <button class="btn btn-sm btn-secondary mb-2" @onclick="() => logs.Clear()">Ryd logfiler</button>
     @foreach (var log in logs)
     {
         <div>@log</div>
@@ -112,34 +112,34 @@
         // Validate input fields
         if (string.IsNullOrWhiteSpace(registerDTO.Email) || string.IsNullOrWhiteSpace(registerDTO.Password) || string.IsNullOrWhiteSpace(registerDTO.ConfirmPassword))
         {
-            validationErrors.Add("Email, password, and confirm password are required.");
+            validationErrors.Add("Email, adgangskode og bekræft adgangskode er påkrævet.");
             return;
         }
 
         if (registerDTO.Password != registerDTO.ConfirmPassword)
         {
-            validationErrors.Add("Passwords do not match.");
+            validationErrors.Add("Adgangskoderne stemmer ikke overens.");
             return;
         }
 
         if (!IsValidEmail(registerDTO.Email))
         {
-            validationErrors.Add("Please enter a valid email address.");
+            validationErrors.Add("Indtast venligst en gyldig emailadresse.");
             return;
         }
 
         try
         {
-            LogAction("Registering user with the following data:");
+            LogAction("Bruger bliver registreret med følgende data:");
             LogAction($"Email: {registerDTO.Email}");
-            LogAction($"Username: {registerDTO.Brugernavn}");
-            LogAction($"First Name: {registerDTO.Fornavn}");
-            LogAction($"Last Name: {registerDTO.Efternavn}");
-            LogAction($"Password: {registerDTO.Password}");
-            LogAction($"Confirm Password: {registerDTO.ConfirmPassword}");
-            LogAction($"Belt Level: {registerDTO.Bæltegrad}");
-            LogAction($"Address: {registerDTO.Address}");
-            LogAction($"Role: {registerDTO.Role}");
+            LogAction($"Brugernavn: {registerDTO.Brugernavn}");
+            LogAction($"Fornavn: {registerDTO.Fornavn}");
+            LogAction($"Efternavn: {registerDTO.Efternavn}");
+            LogAction($"Adgangskode: {registerDTO.Password}");
+            LogAction($"Bekræft Adgangskode: {registerDTO.ConfirmPassword}");
+            LogAction($"Bæltegrad: {registerDTO.Bæltegrad}");
+            LogAction($"Adresse: {registerDTO.Address}");
+            LogAction($"Rolle: {registerDTO.Role}");
 
             // Map registerDTO to BrugerDTO (don't hash the password here)
             var brugerDTO = Mapper.Map<BrugerDTO>(registerDTO);
@@ -153,12 +153,12 @@
 
             LogAction("Mapped BrugerDTO:");
             LogAction($"Email: {brugerDTO.Email}");
-            LogAction($"Username: {brugerDTO.Brugernavn}");
-            LogAction($"First Name: {brugerDTO.Fornavn}");
-            LogAction($"Last Name: {brugerDTO.Efternavn}");
-            LogAction($"Belt Level: {brugerDTO.Bæltegrad}");
-            LogAction($"Address: {brugerDTO.Address}");
-            LogAction($"Role: {brugerDTO.Role}");
+            LogAction($"Brugernavn: {brugerDTO.Brugernavn}");
+            LogAction($"Fornavn: {brugerDTO.Fornavn}");
+            LogAction($"Efternavn: {brugerDTO.Efternavn}");
+            LogAction($"Bæltegrad: {brugerDTO.Bæltegrad}");
+            LogAction($"Adresse: {brugerDTO.Address}");
+            LogAction($"Rolle: {brugerDTO.Role}");
             brugerDTO.Brugerkode = registerDTO.ConfirmPassword;
             // Send the registration request to the backend
             var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger", brugerDTO);
@@ -171,7 +171,7 @@
             else
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
-                LogAction($"Error Response: {responseContent}");
+                LogAction($"Fejl respons: {responseContent}");
 
                 // Handle different types of errors based on the status code
                 if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
@@ -186,27 +186,27 @@
                     }
                     else
                     {
-                        validationErrors.Add("Registration failed due to bad request.");
+                        validationErrors.Add("Registreringen mislykkedes på grund af en dårlig anmodning.");
                     }
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
                 {
-                    validationErrors.Add("An account with this email already exists.");
+                    validationErrors.Add("En konto med denne emailadresse eksisterer allerede.");
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                 {
-                    validationErrors.Add("Server error occurred. Please try again later.");
+                    validationErrors.Add("Der opstod en serverfejl. Prøv venligst igen senere.");
                 }
                 else
                 {
-                    validationErrors.Add("Registration failed. Please try again.");
+                    validationErrors.Add("Registreringen mislykkedes. Prøv venligst igen.");
                 }
             }
         }
         catch (Exception ex)
         {
-            validationErrors.Add($"Registration failed. Error: {ex.Message}");
-            LogAction($"Registration exception: {ex.Message}");
+            validationErrors.Add($"Registreringen mislykkedes. Fejl: {ex.Message}");
+            LogAction($"Registreringsfejl: {ex.Message}");
         }
     }
 
