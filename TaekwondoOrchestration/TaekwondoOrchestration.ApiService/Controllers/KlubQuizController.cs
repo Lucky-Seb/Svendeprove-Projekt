@@ -1,50 +1,63 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaekwondoOrchestration.ApiService.Services;
+using Microsoft.AspNetCore.SignalR;
 using TaekwondoApp.Shared.DTO;
-
+using TaekwondoOrchestration.ApiService.NotificationHubs;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class KlubQuizController : ControllerBase
+    public class KlubQuizController : ApiBaseController
     {
-        private readonly KlubQuizService _klubQuizService;
+        private readonly IKlubQuizService _klubQuizService;
+        private readonly IHubContext<KlubQuizHub> _hubContext;
 
-        public KlubQuizController(KlubQuizService klubQuizService)
+        public KlubQuizController(IKlubQuizService klubQuizService, IHubContext<KlubQuizHub> hubContext)
         {
             _klubQuizService = klubQuizService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<KlubQuizDTO>>> GetKlubQuizzer()
+        public async Task<IActionResult> GetAllKlubQuizzer()
         {
-            return Ok(await _klubQuizService.GetAllKlubQuizzerAsync());
+            var result = await _klubQuizService.GetAllKlubQuizzerAsync();
+            return result.ToApiResponse(); // Converts result to the appropriate API response
         }
 
         [HttpGet("{klubId}/{quizId}")]
-        public async Task<ActionResult<KlubQuizDTO>> GetKlubQuiz(Guid klubId, Guid quizId)
+        public async Task<IActionResult> GetKlubQuiz(Guid klubId, Guid quizId)
         {
-            var klubQuiz = await _klubQuizService.GetKlubQuizByIdAsync(klubId, quizId);
-            if (klubQuiz == null)
-                return NotFound();
-            return Ok(klubQuiz);
+            var result = await _klubQuizService.GetKlubQuizByIdAsync(klubId, quizId);
+            return result.ToApiResponse(); // Converts result to the appropriate API response
         }
 
         [HttpPost]
-        public async Task<ActionResult<KlubQuizDTO>> PostKlubQuiz(KlubQuizDTO klubQuizDto)
+        public async Task<IActionResult> CreateKlubQuiz(KlubQuizDTO klubQuizDto)
         {
-            var createdKlubQuiz = await _klubQuizService.CreateKlubQuizAsync(klubQuizDto);
-            return CreatedAtAction(nameof(GetKlubQuiz), new { klubId = createdKlubQuiz.KlubID, quizId = createdKlubQuiz.QuizID }, createdKlubQuiz);
+            var result = await _klubQuizService.CreateKlubQuizAsync(klubQuizDto);
+            if (result.Success)
+            {
+                // Notify clients about the new KlubQuiz
+                await _hubContext.Clients.All.SendAsync("KlubQuizCreated", result.Value);
+                return CreatedAtAction(nameof(GetKlubQuiz), new { klubId = result.Value.KlubID, quizId = result.Value.QuizID }, result.Value);
+            }
+            return result.ToApiResponse(); // Converts failure to BadRequest
         }
 
         [HttpDelete("{klubId}/{quizId}")]
         public async Task<IActionResult> DeleteKlubQuiz(Guid klubId, Guid quizId)
         {
-            var success = await _klubQuizService.DeleteKlubQuizAsync(klubId, quizId);
-            if (success.Failure)
-                return NotFound();
-            return NoContent();
+            var result = await _klubQuizService.DeleteKlubQuizAsync(klubId, quizId);
+            if (result.Success)
+            {
+                // Notify clients about the deletion of KlubQuiz
+                await _hubContext.Clients.All.SendAsync("KlubQuizDeleted", new { KlubID = klubId, QuizID = quizId });
+                return NoContent();
+            }
+            return result.ToApiResponse(); // Converts failure to BadRequest
         }
     }
 }

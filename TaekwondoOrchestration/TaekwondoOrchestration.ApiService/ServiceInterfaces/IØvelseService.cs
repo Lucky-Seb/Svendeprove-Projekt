@@ -20,5 +20,6 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
         Task<Result<IEnumerable<ØvelseDTO>>> GetØvelserByBrugerAsync(Guid brugerId);
         Task<Result<IEnumerable<ØvelseDTO>>> GetØvelserByKlubAsync(Guid klubId);
         Task<Result<IEnumerable<ØvelseDTO>>> GetØvelserByNavnAsync(string navn);
+        Task<Result<IEnumerable<ØvelseDTO>>> GetFilteredØvelserAsync(Guid? brugerId, List<Guid> klubIds);
     }
 }

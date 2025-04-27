@@ -5,6 +5,7 @@ using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using AutoMapper;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 using TaekwondoOrchestration.ApiService.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -46,6 +47,12 @@ namespace TaekwondoOrchestration.ApiService.Services
 
             var mapped = _mapper.Map<ØvelseDTO>(øvelse);
             return Result<ØvelseDTO>.Ok(mapped);
+        }
+        public async Task<Result<IEnumerable<ØvelseDTO>>> GetFilteredØvelserAsync(Guid? brugerId, List<Guid> klubIds)
+        {
+            var øvelser = await _øvelseRepository.GetFilteredØvelserAsync(brugerId, klubIds);
+            var mapped = _mapper.Map<IEnumerable<ØvelseDTO>>(øvelser);
+            return Result<IEnumerable<ØvelseDTO>>.Ok(mapped);
         }
 
         // Create New Øvelse

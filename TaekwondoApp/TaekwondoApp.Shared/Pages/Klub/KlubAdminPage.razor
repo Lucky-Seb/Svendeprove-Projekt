@@ -1,4 +1,4 @@
-﻿@page "/admin/klub/{klubId:guid}"
+﻿@page "/klub/admin/{klubId:guid}"
 
 @* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
@@ -384,14 +384,23 @@ else
     {
         try
         {
-            var response = await _apiClient.DeleteAsync($"api/klub/{klubId}/remove-member/{memberId}");
+            // Make sure the memberId is valid
+            if (memberId == Guid.Empty)
+            {
+                errorMessage = "Invalid member.";
+                return;
+            }
+
+            // Send DELETE request to remove the member from the club
+            var response = await _apiClient.DeleteAsync($"api/brugerklub/{memberId}/{klubId}");
             if (response.IsSuccessStatusCode)
             {
+                // Reload the club data after successfully removing the member
                 await LoadKlub();
             }
             else
             {
-                errorMessage = "Failed to remove member.";
+                errorMessage = "Failed to remove member. Please try again.";
             }
         }
         catch (Exception ex)

@@ -35,6 +35,18 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<IEnumerable<QuizDTO>>.Ok(mapped);
         }
 
+        public async Task<Result<IEnumerable<QuizDTO>>> GetFilteredQuizzesAsync(Guid? brugerId, List<Guid> klubIds)
+        {
+            // Fetch filtered quizzes from repository
+            var quizzes = await _quizRepository.GetFilteredQuizzesAsync(brugerId, klubIds);
+
+            // Map the result to QuizDTO using AutoMapper
+            var mapped = _mapper.Map<IEnumerable<QuizDTO>>(quizzes);
+
+            // Return a successful Result with the mapped DTOs
+            return Result<IEnumerable<QuizDTO>>.Ok(mapped);
+        }
+
         // Get Quiz by ID
         public async Task<Result<QuizDTO>> GetQuizByIdAsync(Guid quizId)
         {

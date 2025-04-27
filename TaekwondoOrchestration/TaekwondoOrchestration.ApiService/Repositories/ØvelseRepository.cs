@@ -28,6 +28,21 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.Øvelser
                 .FirstOrDefaultAsync(o => o.ØvelseID == øvelseId);
         }
+        public async Task<IEnumerable<Øvelse>> GetFilteredØvelserAsync(Guid? brugerId, List<Guid> klubIds)
+        {
+            return await _context.Øvelser
+                .Where(x =>
+                    // Global øvelser
+                    (x.BrugerØvelses.All(b => b.BrugerID == null) && x.KlubØvelses.All(k => k.KlubID == null)) ||
+
+                    // Øvelser created by user
+                    (brugerId != null && x.BrugerØvelses.Any(b => b.BrugerID == brugerId)) ||
+
+                    // Øvelser from any of the user's clubs
+                    (klubIds.Any() && x.KlubØvelses.Any(k => klubIds.Contains(k.KlubID)))
+                )
+                .ToListAsync();
+        }
 
         public async Task<List<Øvelse>> GetØvelserBySværhedAsync(string sværhed)
         {

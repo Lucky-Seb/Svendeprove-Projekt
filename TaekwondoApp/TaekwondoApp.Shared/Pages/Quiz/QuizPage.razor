@@ -1,5 +1,4 @@
 ﻿@page "/quiz"
-@* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
@@ -7,7 +6,6 @@
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
 
-@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
@@ -16,13 +14,26 @@
 
 <h1>Quiz Management</h1>
 
-@if (quizzes == null)
+<!-- Search Filters -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Search by Quiz Name:</label>
+        <input class="form-control" @bind="searchQuizName" placeholder="Enter Quiz name..." />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+    </div>
+</div>
+
+<!-- Display Table -->
+@if (filteredQuizzes == null)
 {
     <p><em>Loading...</em></p>
 }
-else if (quizzes.Count == 0)
+else if (filteredQuizzes.Count == 0)
 {
-    <p><em>No quizzes available.</em></p>
+    <p><em>No quizzes match your search.</em></p>
 }
 else
 {
@@ -35,13 +46,13 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var quiz in quizzes)
+            @foreach (var quiz in filteredQuizzes)
             {
                 <tr>
                     <td>@quiz.QuizNavn</td>
                     <td>@quiz.QuizBeskrivelse</td>
                     <td>
-                        <button class="btn btn-link" @onclick="() => NavigateToQuiz(quiz.QuizID)">Vis</button>
+                        <button class="btn btn-link" @onclick="() => NavigateToQuiz(quiz.QuizID)">View</button>
                     </td>
                 </tr>
             }
@@ -57,9 +68,13 @@ else
 }
 
 @code {
-    private List<QuizDTO> quizzes = new();
+    private List<QuizDTO> availableQuizzes = new();
+    private List<QuizDTO> filteredQuizzes = new();
     private string? errorMessage;
     private HttpClient _apiClient;
+    private string token = string.Empty;
+    private string searchQuizName = "";
+    private BrugerDTO? brugerDTO = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,10 +86,53 @@ else
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>("api/quiz");
+            token = await AuthenticationService.GetTokenAsync();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                // If not logged in, fetch quizzes that are not owned by any klub or bruger
+                await LoadQuizzesForNonLoggedInUser();
+            }
+            else
+            {
+                // If logged in, fetch quizzes that belong to the user and their clubs
+                await LoadQuizzesForLoggedInUser();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading quizzes: {ex.Message}";
+        }
+    }
+
+    private async Task LoadQuizzesForLoggedInUser()
+    {
+        var brugerId = JwtParser.GetUserIdFromJwt(token);
+
+        try
+        {
+            var brugerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
+            if (brugerResponse?.Success == true && brugerResponse.Data != null)
+            {
+                brugerDTO = brugerResponse.Data;
+                StateHasChanged();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch user data.";
+            }
+
+            var klubIds = brugerDTO?.BrugerKlubber.Select(k => k.KlubID).ToList();
+            var klubIdsString = klubIds != null ? string.Join(",", klubIds) : string.Empty;
+
+            // Fetching Quiz data for logged-in user with the necessary query parameters
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>(
+                $"api/quiz/own/?brugerId={brugerDTO?.BrugerID}&klubIds={klubIdsString}");
+
             if (response?.Success == true && response.Data != null)
             {
-                quizzes = _mapper.Map<List<QuizDTO>>(response.Data);
+                availableQuizzes = _mapper.Map<List<QuizDTO>>(response.Data);
+                ApplyFilters();
             }
             else
             {
@@ -83,8 +141,44 @@ else
         }
         catch (Exception ex)
         {
+            errorMessage = $"Error loading user data: {ex.Message}";
+        }
+    }
+
+    private async Task LoadQuizzesForNonLoggedInUser()
+    {
+        try
+        {
+            // Fetching Quiz data without any specific parameters for non-logged-in users
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>("api/quiz/own");
+
+            if (response?.Success == true && response.Data != null)
+            {
+                availableQuizzes = _mapper.Map<List<QuizDTO>>(response.Data);
+                ApplyFilters();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch available quizzes.";
+            }
+        }
+        catch (Exception ex)
+        {
             errorMessage = $"Error loading quizzes: {ex.Message}";
         }
+    }
+
+    private void ApplyFilters()
+    {
+        filteredQuizzes = availableQuizzes
+            .Where(q => string.IsNullOrEmpty(searchQuizName) || q.QuizNavn.Contains(searchQuizName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchQuizName = "";
+        ApplyFilters();
     }
 
     private void NavigateToQuiz(Guid quizId)

@@ -1,5 +1,4 @@
 ﻿@page "/programplan"
-@* --- Using Statements --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
@@ -7,7 +6,6 @@
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
 
-@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
@@ -16,13 +14,26 @@
 
 <h1>Program Plan Management</h1>
 
-@if (programPlans == null)
+<!-- Search Filters -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Search by Program Plan Name:</label>
+        <input class="form-control" @bind="searchProgramPlanName" placeholder="Enter Program Plan name..." />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+    </div>
+</div>
+
+<!-- Display Table -->
+@if (filteredProgramPlans == null)
 {
     <p><em>Loading...</em></p>
 }
-else if (programPlans.Count == 0)
+else if (filteredProgramPlans.Count == 0)
 {
-    <p><em>No program plans available.</em></p>
+    <p><em>No Program Plan records match your search.</em></p>
 }
 else
 {
@@ -36,14 +47,18 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var program in programPlans)
+            @foreach (var program in filteredProgramPlans)
             {
                 <tr>
-                    <td>@program.ProgramNavn</td>
+                    <td>
+                        <a @onclick="() => NavigateToProgram(program.ProgramID)" style="cursor:pointer; text-decoration: underline;">
+                            @program.ProgramNavn
+                        </a>
+                    </td>
                     <td>@program.Længde minutes</td>
                     <td>@program.Beskrivelse</td>
                     <td>
-                        <button class="btn btn-link" @onclick="() => NavigateToProgram(program.ProgramID)">Vis</button>
+                        <button class="btn btn-link" @onclick="() => NavigateToProgram(program.ProgramID)">View</button>
                     </td>
                 </tr>
             }
@@ -59,11 +74,13 @@ else
 }
 
 @code {
-    private List<ProgramPlanDTO> programPlans = new();
-    private ProgramPlanDTO programPlan = new();
-    private bool isEditing = false;
+    private List<ProgramPlanDTO> availableProgramPlans = new();
+    private List<ProgramPlanDTO> filteredProgramPlans = new();
     private string? errorMessage;
     private HttpClient _apiClient;
+    private string token = string.Empty;
+    private string searchProgramPlanName = "";
+    private BrugerDTO? brugerDTO = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,10 +92,53 @@ else
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>("api/programplan");
+            token = await AuthenticationService.GetTokenAsync();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                // If not logged in, fetch program plans that are not owned by any club or bruger
+                await LoadProgramPlansForNonLoggedInUser();
+            }
+            else
+            {
+                // If logged in, fetch program plans that belong to the user and their clubs
+                await LoadProgramPlansForLoggedInUser();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading program plans: {ex.Message}";
+        }
+    }
+
+    private async Task LoadProgramPlansForLoggedInUser()
+    {
+        var brugerId = JwtParser.GetUserIdFromJwt(token);
+
+        try
+        {
+            var brugerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
+            if (brugerResponse?.Success == true && brugerResponse.Data != null)
+            {
+                brugerDTO = brugerResponse.Data;
+                StateHasChanged();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch user data.";
+            }
+
+            var klubIds = brugerDTO?.BrugerKlubber.Select(k => k.KlubID).ToList();
+            var klubIdsString = klubIds != null ? string.Join(",", klubIds) : string.Empty;
+
+            // Fetching Program Plan data for logged-in user with the necessary query parameters
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>(
+                $"api/programplan/own/?brugerId={brugerDTO?.BrugerID}&klubIds={klubIdsString}");
+
             if (response?.Success == true && response.Data != null)
             {
-                programPlans = _mapper.Map<List<ProgramPlanDTO>>(response.Data);
+                availableProgramPlans = _mapper.Map<List<ProgramPlanDTO>>(response.Data);
+                ApplyFilters();
             }
             else
             {
@@ -87,12 +147,48 @@ else
         }
         catch (Exception ex)
         {
+            errorMessage = $"Error loading user data: {ex.Message}";
+        }
+    }
+
+    private async Task LoadProgramPlansForNonLoggedInUser()
+    {
+        try
+        {
+            // Fetching Program Plan data without any specific parameters for non-logged-in users
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>("api/programplan/own");
+
+            if (response?.Success == true && response.Data != null)
+            {
+                availableProgramPlans = _mapper.Map<List<ProgramPlanDTO>>(response.Data);
+                ApplyFilters();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch available program plans.";
+            }
+        }
+        catch (Exception ex)
+        {
             errorMessage = $"Error loading program plans: {ex.Message}";
         }
     }
+
+    private void ApplyFilters()
+    {
+        filteredProgramPlans = availableProgramPlans
+            .Where(p => string.IsNullOrEmpty(searchProgramPlanName) || p.ProgramNavn.Contains(searchProgramPlanName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchProgramPlanName = "";
+        ApplyFilters();
+    }
+
     private void NavigateToProgram(Guid programId)
     {
         NavigationManager.NavigateTo($"/programplan/{programId}");
     }
-
 }

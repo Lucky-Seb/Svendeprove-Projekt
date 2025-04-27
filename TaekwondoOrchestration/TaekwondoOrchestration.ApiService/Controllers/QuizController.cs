@@ -33,6 +33,23 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return result.ToApiResponse(); // Assuming result is a Response object that has the ToApiResponse method
         }
 
+        [HttpGet("own")]
+        public async Task<IActionResult> GetQuizzes([FromQuery] Guid? brugerId = null, [FromQuery] string klubIds = "")
+        {
+            // Parse the klubIds query parameter into a list of GUIDs
+            var klubIdList = klubIds?
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(Guid.Parse)
+                .ToList() ?? new List<Guid>();
+
+            // Call the service to get filtered quizzes
+            var result = await _quizService.GetFilteredQuizzesAsync(brugerId, klubIdList);
+
+            // Return the result as an API response
+            return result.ToApiResponse();
+        }
+
+
         // GET: api/quiz/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetQuiz(Guid id)

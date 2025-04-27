@@ -67,12 +67,11 @@ else
 @code {
     private List<ØvelseDTO> availableØvelser = new();
     private List<ØvelseDTO> filteredØvelser = new();
-    private ØvelseDTO øvelse = new();
-    private bool isEditing = false;
     private string? errorMessage;
     private HttpClient _apiClient;
-
+    private string token = string.Empty;
     private string searchØvelseName = "";
+    private BrugerDTO? brugerDTO = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -84,7 +83,49 @@ else
     {
         try
         {
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>($"api/øvelse");
+            token = await AuthenticationService.GetTokenAsync();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                // If not logged in, fetch Øvelse data that is not owned by any klub or bruger
+                await LoadØvelserForNonLoggedInUser();
+            }
+            else
+            {
+                // If logged in, fetch Øvelse data that belongs to the user and their clubs
+                await LoadØvelserForLoggedInUser();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading Øvelse data: {ex.Message}";
+        }
+    }
+
+    private async Task LoadØvelserForLoggedInUser()
+    {
+        var brugerId = JwtParser.GetUserIdFromJwt(token);
+
+        try
+        {
+            var brugerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
+            if (brugerResponse?.Success == true && brugerResponse.Data != null)
+            {
+                brugerDTO = brugerResponse.Data;
+                StateHasChanged();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch user data.";
+            }
+
+            var klubIds = brugerDTO?.BrugerKlubber.Select(k => k.KlubID).ToList();
+            var klubIdsString = klubIds != null ? string.Join(",", klubIds) : string.Empty;
+
+            // Fetching Øvelse data for logged-in user with the necessary query parameters
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>(
+                $"api/øvelse/own/?brugerId={brugerDTO?.BrugerID}&klubIds={klubIdsString}");
+
             if (response?.Success == true && response.Data != null)
             {
                 availableØvelser = _mapper.Map<List<ØvelseDTO>>(response.Data);
@@ -92,12 +133,35 @@ else
             }
             else
             {
-                errorMessage = "Failed to fetch øvelse data.";
+                errorMessage = "Failed to fetch Øvelse data.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading øvelse data: {ex.Message}";
+            errorMessage = $"Error loading user data: {ex.Message}";
+        }
+    }
+
+    private async Task LoadØvelserForNonLoggedInUser()
+    {
+        try
+        {
+            // Fetching Øvelse data without any specific parameters for non-logged-in users
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse/own");
+
+            if (response?.Success == true && response.Data != null)
+            {
+                availableØvelser = _mapper.Map<List<ØvelseDTO>>(response.Data);
+                ApplyFilters();
+            }
+            else
+            {
+                errorMessage = "Failed to fetch available Øvelse.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading Øvelse data: {ex.Message}";
         }
     }
 

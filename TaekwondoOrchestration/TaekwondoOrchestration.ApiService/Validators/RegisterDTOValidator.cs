@@ -3,9 +3,9 @@ using TaekwondoApp.Shared.DTO;
 
 namespace TaekwondoOrchestration.ApiService.Validators
 {
-    public class BrugerDTOValidator : AbstractValidator<BrugerDTO>
+    public class RegisterDTOValidator : AbstractValidator<RegisterDTO>
     {
-        public BrugerDTOValidator()
+        public RegisterDTOValidator()
         {
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")
@@ -24,7 +24,13 @@ namespace TaekwondoOrchestration.ApiService.Validators
                 .NotEmpty().WithMessage("Efternavn is required.")
                 .MaximumLength(50).WithMessage("Efternavn must be less than 50 characters.");
 
-            RuleFor(x => x.Brugerkode)
+            RuleFor(x => x.Password)
+                .NotEmpty().WithMessage("Password is required.")
+                .MinimumLength(8).WithMessage("Password must be at least 8 characters.")
+                .MaximumLength(256).WithMessage("Password must be less than 256 characters.")
+                .Must(HasThreeOfFourCharacterTypes).WithMessage("Password must contain at least three of the following: uppercase letter, lowercase letter, number, and special character.");
+
+            RuleFor(x => x.ConfirmPassword)
                 .NotEmpty().WithMessage("Password is required.")
                 .MinimumLength(8).WithMessage("Password must be at least 8 characters.")
                 .MaximumLength(256).WithMessage("Password must be less than 256 characters.")

@@ -30,7 +30,29 @@ namespace TaekwondoOrchestration.ApiService.Repositories
             return await _context.ProgramPlans
                 .FirstOrDefaultAsync(pp => pp.ProgramID == programPlanId);
         }
+        public async Task<List<ProgramPlan>> GetFilteredProgramPlansAsync(Guid? brugerId, List<Guid> klubIds)
+        {
+            return await _context.ProgramPlans
+                .Where(pp =>
+                    // Global program plans (no user or club associated)
+                    (pp.BrugerProgrammer.All(b => b.BrugerID == null) && pp.KlubProgrammer.All(k => k.KlubID == null)) ||
 
+                    // Program plans created by the user (if a user ID is provided)
+                    (brugerId != null && pp.BrugerProgrammer.Any(b => b.BrugerID == brugerId)) ||
+
+                    // Program plans associated with any of the user's clubs (if club IDs are provided)
+                    (klubIds.Any() && pp.KlubProgrammer.Any(k => klubIds.Contains(k.KlubID)))
+                )
+                .Include(pp => pp.Træninger) // Include training sessions
+                    .ThenInclude(t => t.Quiz) // Include Quiz
+                .Include(pp => pp.Træninger)
+                    .ThenInclude(t => t.Teori) // Include Teori
+                .Include(pp => pp.Træninger)
+                    .ThenInclude(t => t.Teknik) // Include Teknik
+                .Include(pp => pp.Træninger)
+                    .ThenInclude(t => t.Øvelse) // Include Øvelse
+                .ToListAsync();
+        }
         public async Task<ProgramPlan?> GetProgramPlanByIdIncludingDeletedAsync(Guid programPlanId)
         {
             return await _context.ProgramPlans

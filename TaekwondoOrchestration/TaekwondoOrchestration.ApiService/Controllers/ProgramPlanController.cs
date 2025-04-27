@@ -31,6 +31,21 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return result.ToApiResponse(); // Assuming result is a Response object that has the ToApiResponse method
         }
 
+        [HttpGet("own")]
+        public async Task<IActionResult> GetProgramPlans([FromQuery] Guid? brugerId = null, [FromQuery] string klubIds = "")
+        {
+            // Parse the klubIds query parameter into a list of GUIDs
+            var klubIdList = klubIds?
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(Guid.Parse)
+                .ToList() ?? new List<Guid>();
+
+            // Call the service to get filtered program plans
+            var result = await _programPlanService.GetFilteredProgramPlansAsync(brugerId, klubIdList);
+
+            // Return the result as an API response
+            return result.ToApiResponse();
+        }
         // GET: api/programplan/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProgramPlan(Guid id)

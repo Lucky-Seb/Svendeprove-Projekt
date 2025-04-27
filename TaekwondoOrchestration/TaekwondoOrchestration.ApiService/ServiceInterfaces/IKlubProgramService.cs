@@ -2,21 +2,22 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
 {
     public interface IKlubProgramService
     {
-        // Asynchronously retrieves a list of all KlubProgrammer
-        Task<List<KlubProgramDTO>> GetAllKlubProgrammerAsync();
+        // Get all KlubProgrammer
+        Task<Result<IEnumerable<KlubProgramDTO>>> GetAllKlubProgrammerAsync();
 
-        // Asynchronously retrieves a KlubProgram by its KlubID and ProgramID
-        Task<KlubProgramDTO?> GetKlubProgramByIdAsync(Guid klubId, Guid programId);
+        // Get a specific KlubProgram by its IDs (KlubID, ProgramID)
+        Task<Result<KlubProgramDTO>> GetKlubProgramByIdAsync(Guid klubId, Guid programId);
 
-        // Asynchronously creates a new KlubProgram and returns the created DTO
-        Task<KlubProgramDTO?> CreateKlubProgramAsync(KlubProgramDTO klubProgramDto);
+        // Create a new KlubProgram
+        Task<Result<KlubProgramDTO>> CreateKlubProgramAsync(KlubProgramDTO klubProgramDto);
 
-        // Asynchronously deletes a KlubProgram by its KlubID and ProgramID
-        Task<bool> DeleteKlubProgramAsync(Guid klubId, Guid programId);
+        // Delete a KlubProgram by its IDs (KlubID, ProgramID)
+        Task<Result<bool>> DeleteKlubProgramAsync(Guid klubId, Guid programId);
     }
 }

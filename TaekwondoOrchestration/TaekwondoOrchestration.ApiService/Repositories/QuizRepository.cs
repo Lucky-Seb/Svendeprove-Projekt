@@ -151,5 +151,26 @@ namespace TaekwondoOrchestration.ApiService.Repositories
                     .ThenInclude(s => s.Øvelse)
                 .ToListAsync();
         }
+        public async Task<List<Quiz>> GetFilteredQuizzesAsync(Guid? brugerId, List<Guid> klubIds)
+        {
+            return await _context.Quizzer
+                .Where(q =>
+                    // Global quizzes (no user or club associated)
+                    (q.BrugerQuizzer.All(bq => bq.BrugerID == null) && q.KlubQuizzer.All(kq => kq.KlubID == null)) ||
+
+                    // Quizzes created by the user (if a user ID is provided)
+                    (brugerId != null && q.BrugerQuizzer.Any(bq => bq.BrugerID == brugerId)) ||
+
+                    // Quizzes associated with any of the user's clubs (if club IDs are provided)
+                    (klubIds.Any() && q.KlubQuizzer.Any(kq => klubIds.Contains(kq.KlubID)))
+                )
+                .Include(q => q.Spørgsmåls) // Include questions
+                    .ThenInclude(s => s.Teknik) // Include Teknik
+                .Include(q => q.Spørgsmåls)
+                    .ThenInclude(s => s.Teori) // Include Teori
+                .Include(q => q.Spørgsmåls)
+                    .ThenInclude(s => s.Øvelse) // Include Øvelse
+                .ToListAsync();
+        }
     }
 }

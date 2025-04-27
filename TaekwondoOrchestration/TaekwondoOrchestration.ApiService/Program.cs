@@ -2,8 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using FluentValidation;
-using FluentValidation.AspNetCore;
+using Polly;
 using System.Text;
 using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Mapping;
@@ -18,6 +17,8 @@ using TaekwondoOrchestration.ApiService.Validators;
 using TaekwondoOrchestration.ApiService.Helpers;
 using System.Text.Json;
 using TaekwondoOrchestration.ApiService.Middlewares;
+using FluentValidation.AspNetCore;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,10 +34,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],  // Assuming you have this set in the config
-            ValidAudience = builder.Configuration["Jwt:Audience"], // Same here
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]) // Correct reference
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"])
             )
         };
     });
@@ -70,7 +71,7 @@ builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddSingleton<IJwtHelper>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
-    var secretKey = configuration.GetValue<string>("Jwt:SecretKey"); // Ensure consistency here
+    var secretKey = configuration.GetValue<string>("Jwt:SecretKey");
     return new JwtHelper(secretKey);
 });
 
@@ -117,10 +118,16 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters(); // Optional
 
 // ---------------------
-// 🧠 EF Core & DB Context
+// 🧠 EF Core & DB Context with Resiliency & Retry Logic
 // ---------------------
 builder.Services.AddDbContext<ApiDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3, // Retry 3 times
+            TimeSpan.FromSeconds(5), // 5 seconds delay between retries
+            errorNumbersToAdd: null); // Optionally specify specific SQL error codes to retry on
+    }));
 
 // ---------------------
 // 📡 SignalR
@@ -139,7 +146,6 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1"
     });
 });
-
 
 
 
@@ -163,7 +169,7 @@ if (app.Environment.IsDevelopment())
     });
 
     app.MapHub<OrdbogHub>("/ordbogHub");
-    app.MapHub<BrugerHub>("/brugerhub"); // ✅ ADD THIS
+    app.MapHub<BrugerHub>("/brugerhub");
 }
 
 // ---------------------
@@ -176,19 +182,19 @@ app.MapControllers();
 // ---------------------
 // 🌤 Test Endpoint
 // ---------------------
-string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
+string[] summaries = { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
 
 app.MapGet("/weatherforecast", () =>
 {
-var forecast = Enumerable.Range(1, 5).Select(index =>
-    new WeatherForecast(
-        DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-        Random.Shared.Next(-20, 55),
-        summaries[Random.Shared.Next(summaries.Length)]
-    ))
-    .ToArray();
+    var forecast = Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast(
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
 
-return forecast;
+    return forecast;
 })
 .WithName("GetWeatherForecast");
 
