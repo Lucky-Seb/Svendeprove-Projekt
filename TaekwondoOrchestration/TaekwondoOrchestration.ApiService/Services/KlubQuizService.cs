@@ -4,6 +4,9 @@ using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Helpers;
 using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
@@ -18,6 +21,9 @@ namespace TaekwondoOrchestration.ApiService.Services
             _mapper = mapper;
         }
 
+        #region CRUD Operations
+
+        // Get All KlubQuizzer
         public async Task<Result<IEnumerable<KlubQuizDTO>>> GetAllKlubQuizzerAsync()
         {
             var klubQuizzer = await _klubQuizRepository.GetAllKlubQuizzerAsync();
@@ -25,6 +31,7 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<IEnumerable<KlubQuizDTO>>.Ok(mapped);
         }
 
+        // Get KlubQuiz by ID
         public async Task<Result<KlubQuizDTO>> GetKlubQuizByIdAsync(Guid klubId, Guid quizId)
         {
             var klubQuiz = await _klubQuizRepository.GetKlubQuizByIdAsync(klubId, quizId);
@@ -35,20 +42,32 @@ namespace TaekwondoOrchestration.ApiService.Services
             return Result<KlubQuizDTO>.Ok(mapped);
         }
 
-        public async Task<KlubQuizDTO?> CreateKlubQuizAsync(KlubQuizDTO klubQuizDto)
+        // Create New KlubQuiz
+        public async Task<Result<KlubQuizDTO>> CreateKlubQuizAsync(KlubQuizDTO klubQuizDto)
         {
             if (klubQuizDto == null || klubQuizDto.KlubID == Guid.Empty || klubQuizDto.QuizID == Guid.Empty)
-                return null;
+                return Result<KlubQuizDTO>.Fail("Invalid KlubQuiz data.");
 
             var klubQuiz = _mapper.Map<KlubQuiz>(klubQuizDto);
-            var created = await _klubQuizRepository.CreateKlubQuizAsync(klubQuiz);
-            return created == null ? null : _mapper.Map<KlubQuizDTO>(created);
+            var createdKlubQuiz = await _klubQuizRepository.CreateKlubQuizAsync(klubQuiz);
+
+            if (createdKlubQuiz == null)
+                return Result<KlubQuizDTO>.Fail("Failed to create KlubQuiz.");
+
+            var mapped = _mapper.Map<KlubQuizDTO>(createdKlubQuiz);
+            return Result<KlubQuizDTO>.Ok(mapped);
         }
 
+        // Delete KlubQuiz
         public async Task<Result<bool>> DeleteKlubQuizAsync(Guid klubId, Guid quizId)
         {
             var success = await _klubQuizRepository.DeleteKlubQuizAsync(klubId, quizId);
-            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete KlubQuiz.");
+            if (!success)
+                return Result<bool>.Fail("Failed to delete KlubQuiz.");
+
+            return Result<bool>.Ok(true);
         }
+
+        #endregion
     }
 }
