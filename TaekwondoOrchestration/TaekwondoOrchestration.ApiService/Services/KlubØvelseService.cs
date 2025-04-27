@@ -1,76 +1,72 @@
 ﻿using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
-using TaekwondoOrchestration.ApiService.Repositories;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using AutoMapper;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class KlubØvelseService
+    public class KlubØvelseService : IKlubØvelseService
     {
         private readonly IKlubØvelseRepository _klubØvelseRepository;
+        private readonly IMapper _mapper;
 
-        public KlubØvelseService(IKlubØvelseRepository klubØvelseRepository)
+        // Constructor: Dependency Injection of Repository and Mapper
+        public KlubØvelseService(IKlubØvelseRepository klubØvelseRepository, IMapper mapper)
         {
             _klubØvelseRepository = klubØvelseRepository;
+            _mapper = mapper;
         }
 
-        public async Task<List<KlubØvelseDTO>> GetAllKlubØvelserAsync()
+        #region CRUD Operations
+
+        // Get All KlubØvelser
+        public async Task<Result<IEnumerable<KlubØvelseDTO>>> GetAllKlubØvelserAsync()
         {
             var klubØvelser = await _klubØvelseRepository.GetAllKlubØvelserAsync();
-            return klubØvelser.Select(k => new KlubØvelseDTO
-            {
-                KlubID = k.KlubID,
-                ØvelseID = k.ØvelseID
-            }).ToList();
+            var mapped = _mapper.Map<IEnumerable<KlubØvelseDTO>>(klubØvelser);
+            return Result<IEnumerable<KlubØvelseDTO>>.Ok(mapped);
         }
 
-        public async Task<KlubØvelseDTO?> GetKlubØvelseByIdAsync(Guid klubId, Guid øvelseId)
+        // Get KlubØvelse by ID
+        public async Task<Result<KlubØvelseDTO>> GetKlubØvelseByIdAsync(Guid klubId, Guid øvelseId)
         {
             var klubØvelse = await _klubØvelseRepository.GetKlubØvelseByIdAsync(klubId, øvelseId);
             if (klubØvelse == null)
-                return null;
+                return Result<KlubØvelseDTO>.Fail("KlubØvelse not found.");
 
-            return new KlubØvelseDTO
-            {
-                KlubID = klubØvelse.KlubID,
-                ØvelseID = klubØvelse.ØvelseID
-            };
+            var mapped = _mapper.Map<KlubØvelseDTO>(klubØvelse);
+            return Result<KlubØvelseDTO>.Ok(mapped);
         }
 
-        public async Task<KlubØvelseDTO?> CreateKlubØvelseAsync(KlubØvelseDTO klubØvelseDto)
+        // Create New KlubØvelse
+        public async Task<Result<KlubØvelseDTO>> CreateKlubØvelseAsync(KlubØvelseDTO klubØvelseDto)
         {
-            // Check if the DTO is null
-            if (klubØvelseDto == null) return null;
+            if (klubØvelseDto == null)
+                return Result<KlubØvelseDTO>.Fail("Invalid KlubØvelse data.");
 
-            // Validate required fields
-            //if (klubØvelseDto.KlubID <= 0) return null;  // KlubID must be a positive integer
-            //if (klubØvelseDto.ØvelseID <= 0) return null;  // ØvelseID must be a positive integer
-
-            // Create new KlubØvelse entity
-            var newKlubØvelse = new KlubØvelse
-            {
-                KlubID = klubØvelseDto.KlubID,
-                ØvelseID = klubØvelseDto.ØvelseID
-            };
-
-            // Save the new KlubØvelse entity
+            var newKlubØvelse = _mapper.Map<KlubØvelse>(klubØvelseDto);
             var createdKlubØvelse = await _klubØvelseRepository.CreateKlubØvelseAsync(newKlubØvelse);
-
-            // Return the newly created KlubØvelseDTO
-            return new KlubØvelseDTO
-            {
-                KlubID = createdKlubØvelse.KlubID,
-                ØvelseID = createdKlubØvelse.ØvelseID
-            };
+            var mapped = _mapper.Map<KlubØvelseDTO>(createdKlubØvelse);
+            return Result<KlubØvelseDTO>.Ok(mapped);
         }
 
-
-        public async Task<bool> DeleteKlubØvelseAsync(Guid klubId, Guid øvelseId)
+        // Delete KlubØvelse
+        public async Task<Result<bool>> DeleteKlubØvelseAsync(Guid klubId, Guid øvelseId)
         {
-            return await _klubØvelseRepository.DeleteKlubØvelseAsync(klubId, øvelseId);
+            var klubØvelse = await _klubØvelseRepository.GetKlubØvelseByIdAsync(klubId, øvelseId);
+            if (klubØvelse == null)
+                return Result<bool>.Fail("KlubØvelse not found.");
+
+            var success = await _klubØvelseRepository.DeleteKlubØvelseAsync(klubId, øvelseId);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete KlubØvelse.");
         }
+
+        #endregion
     }
 }
