@@ -65,8 +65,14 @@
 
     <div>
         <label for="role">Role:</label>
-        <InputText id="role" @bind-Value="registerDTO.Role" class="form-control" />
-        <small class="form-text text-muted">Define your role (e.g., Student, Instructor).</small>
+        <InputSelect id="role" @bind-Value="registerDTO.Role" class="form-control">
+            <option value="">Select a role</option>
+            <option value="Elev">Elev</option>
+            <option value="Admin">Admin</option>
+            <option value="Instructor">Instructor</option>
+            <option value="Bruger">Bruger</option>
+        </InputSelect>
+        <small class="form-text text-muted">Select your role.</small>
     </div>
 
     <button type="submit" class="btn btn-primary">Register</button>
