@@ -1,76 +1,85 @@
 ﻿using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
 using TaekwondoOrchestration.ApiService.Repositories;
+using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
+using AutoMapper;
+using TaekwondoOrchestration.ApiService.ServiceInterfaces;
+using TaekwondoOrchestration.ApiService.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TaekwondoOrchestration.ApiService.RepositorieInterfaces;
 
 namespace TaekwondoOrchestration.ApiService.Services
 {
-    public class BrugerØvelseService
+    public class BrugerØvelseService : IBrugerØvelseService
     {
         private readonly IBrugerØvelseRepository _brugerØvelseRepository;
+        private readonly IMapper _mapper;
 
-        public BrugerØvelseService(IBrugerØvelseRepository brugerØvelseRepository)
+        // Constructor: Dependency Injection of Repository and Mapper
+        public BrugerØvelseService(IBrugerØvelseRepository brugerØvelseRepository, IMapper mapper)
         {
             _brugerØvelseRepository = brugerØvelseRepository;
+            _mapper = mapper;
         }
 
-        public async Task<List<BrugerØvelseDTO>> GetAllBrugerØvelserAsync()
+        #region CRUD Operations
+
+        // Get All BrugerØvelser
+        public async Task<Result<IEnumerable<BrugerØvelseDTO>>> GetAllBrugerØvelserAsync()
         {
             var brugerØvelser = await _brugerØvelseRepository.GetAllBrugerØvelserAsync();
-            return brugerØvelser.Select(brugerØvelse => new BrugerØvelseDTO
-            {
-                BrugerID = brugerØvelse.BrugerID,
-                ØvelseID = brugerØvelse.ØvelseID
-            }).ToList();
+            var mapped = _mapper.Map<IEnumerable<BrugerØvelseDTO>>(brugerØvelser);
+            return Result<IEnumerable<BrugerØvelseDTO>>.Ok(mapped);
         }
 
-        public async Task<BrugerØvelseDTO?> GetBrugerØvelseByIdAsync(Guid brugerId, Guid øvelseId)
+        // Get BrugerØvelse by ID
+        public async Task<Result<BrugerØvelseDTO>> GetBrugerØvelseByIdAsync(Guid brugerId, Guid øvelseId)
         {
             var brugerØvelse = await _brugerØvelseRepository.GetBrugerØvelseByIdAsync(brugerId, øvelseId);
             if (brugerØvelse == null)
-                return null;
+                return Result<BrugerØvelseDTO>.Fail("BrugerØvelse not found.");
 
-            return new BrugerØvelseDTO
-            {
-                BrugerID = brugerØvelse.BrugerID,
-                ØvelseID = brugerØvelse.ØvelseID
-            };
+            var mapped = _mapper.Map<BrugerØvelseDTO>(brugerØvelse);
+            return Result<BrugerØvelseDTO>.Ok(mapped);
         }
 
-        public async Task<BrugerØvelseDTO?> CreateBrugerØvelseAsync(BrugerØvelseDTO brugerØvelseDto)
+        // Create BrugerØvelse
+        public async Task<Result<BrugerØvelseDTO>> CreateBrugerØvelseAsync(BrugerØvelseDTO brugerØvelseDto)
         {
-            // Check if the DTO is null
-            if (brugerØvelseDto == null) return null;
+            if (brugerØvelseDto == null)
+                return Result<BrugerØvelseDTO>.Fail("Invalid BrugerØvelse data.");
 
-            // Validate required fields
-            //if (brugerØvelseDto.BrugerID <= 0) return null;  // BrugerID must be a positive integer
-            //if (brugerØvelseDto.ØvelseID <= 0) return null;  // ØvelseID must be a positive integer
-
-            // Create new BrugerØvelse entity
-            var newBrugerØvelse = new BrugerØvelse
+            // Check if the BrugerØvelse already exists
+            var existingBrugerØvelse = await _brugerØvelseRepository.GetBrugerØvelseByIdAsync(brugerØvelseDto.BrugerID, brugerØvelseDto.ØvelseID);
+            if (existingBrugerØvelse != null)
             {
-                BrugerID = brugerØvelseDto.BrugerID,
-                ØvelseID = brugerØvelseDto.ØvelseID
-            };
+                return Result<BrugerØvelseDTO>.Fail("BrugerØvelse already exists.");
+            }
 
-            // Save the new BrugerØvelse entity to the repository
+            // Proceed with creating the new BrugerØvelse
+            var newBrugerØvelse = _mapper.Map<BrugerØvelse>(brugerØvelseDto);
             var createdBrugerØvelse = await _brugerØvelseRepository.CreateBrugerØvelseAsync(newBrugerØvelse);
-            if (createdBrugerØvelse == null) return null;  // Return null if creation fails
 
-            // Return the newly created BrugerØvelseDTO
-            return new BrugerØvelseDTO
-            {
-                BrugerID = createdBrugerØvelse.BrugerID,
-                ØvelseID = createdBrugerØvelse.ØvelseID
-            };
+            if (createdBrugerØvelse == null)
+                return Result<BrugerØvelseDTO>.Fail("Failed to create BrugerØvelse.");
+
+            var mapped = _mapper.Map<BrugerØvelseDTO>(createdBrugerØvelse);
+            return Result<BrugerØvelseDTO>.Ok(mapped);
         }
 
-        public async Task<bool> DeleteBrugerØvelseAsync(Guid brugerId, Guid øvelseId)
+        // Delete BrugerØvelse
+        public async Task<Result<bool>> DeleteBrugerØvelseAsync(Guid brugerId, Guid øvelseId)
         {
-            return await _brugerØvelseRepository.DeleteBrugerØvelseAsync(brugerId, øvelseId);
+            var brugerØvelse = await _brugerØvelseRepository.GetBrugerØvelseByIdAsync(brugerId, øvelseId);
+            if (brugerØvelse == null)
+                return Result<bool>.Fail("BrugerØvelse not found.");
+
+            var success = await _brugerØvelseRepository.DeleteBrugerØvelseAsync(brugerId, øvelseId);
+            return success ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete BrugerØvelse.");
         }
+
+        #endregion
     }
 }
