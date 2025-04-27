@@ -4,8 +4,8 @@ using TaekwondoApp.Shared.Services;
 using TaekwondoApp.Shared.Mapping;
 using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
-using TaekwondoApp.Shared.Interfaces;
 using FluentValidation;
+using TaekwondoOrchestration.ApiService.Validators;
 
 
 namespace TaekwondoApp
@@ -29,7 +29,7 @@ namespace TaekwondoApp
             // HttpClientFactory registration
             builder.Services.AddHttpClient(); // fallback/default client
 
-            builder.Services.AddValidatorsFromAssemblyContaining<B>();
+            builder.Services.AddValidatorsFromAssemblyContaining<BrugerDTOValidator>();
 
             // Scoped auth service
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
