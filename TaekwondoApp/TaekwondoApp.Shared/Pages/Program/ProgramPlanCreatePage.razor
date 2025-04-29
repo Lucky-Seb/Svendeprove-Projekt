@@ -1,7 +1,7 @@
 ﻿@page "/programplan/create"
 @page "/admin/klub/{klubId:guid}/create-program"
 
-@* --- Using Statements --- *@
+@* --- Brug af namespaces --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
@@ -16,7 +16,7 @@
 @inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
-<h3>Create New Program Plan</h3>
+<h3>Opret nyt programplan</h3>
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -28,39 +28,39 @@
     <ValidationSummary />
 
     <div class="mb-3">
-        <label>Program Name:</label>
+        <label>Program Navn:</label>
         <InputText @bind-Value="newProgramPlan.ProgramNavn" class="form-control" />
     </div>
 
     <div class="mb-3">
-        <label>Description:</label>
+        <label>Beskrivelse:</label>
         <InputTextArea @bind-Value="newProgramPlan.Beskrivelse" class="form-control" />
     </div>
 
     <div class="mb-3">
-        <label>Length (in days):</label>
+        <label>Længde (i dage):</label>
         <InputNumber @bind-Value="newProgramPlan.Længde" class="form-control" />
     </div>
 
     <div class="mb-3">
-        <label>Start Date:</label>
+        <label>Startdato:</label>
         <InputDate @bind-Value="newProgramPlan.OprettelseDato" class="form-control" />
     </div>
     <div class="mb-4">
-        <h5>Træning(s) for the Program</h5>
+        <h5>Træning(er) for programmet</h5>
         <ul class="list-group mb-3">
             @foreach (var træning in newProgramPlan.Træninger)
             {
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     Rækkefølge: @træning.TræningRækkefølge (ID: @træning.TræningID)
-                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveTræning(træning.TræningID)">Remove</button>
+                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveTræning(træning.TræningID)">Fjern</button>
                 </li>
             }
         </ul>
 
-        <!-- Add New Træning -->
+        <!-- Tilføj ny Træning -->
         <div class="card p-3 bg-light border">
-            <h6>Add Træning</h6>
+            <h6>Tilføj Træning</h6>
 
             <div class="mb-2">
                 <label>Træning Rækkefølge:</label>
@@ -71,12 +71,12 @@
                 <InputNumber @bind-Value="newTræning.Tid" class="form-control" />
             </div>
 
-            <!-- Dropdowns with Previews -->
+            <!-- Dropdowns med forhandsvisninger -->
 
             <div class="mb-2">
                 <label>Quiz:</label>
                 <select class="form-control" @onchange="OnQuizChanged">
-                    <option value="">-- Select Quiz --</option>
+                    <option value="">-- Vælg Quiz --</option>
                     @foreach (var quiz in quizzes)
                     {
                         <option value="@quiz.QuizID">@quiz.QuizNavn</option>
@@ -94,7 +94,7 @@
             <div class="mb-2">
                 <label>Teori:</label>
                 <select class="form-control" @onchange="OnTeoriChanged">
-                    <option value="">-- Select Teori --</option>
+                    <option value="">-- Vælg Teori --</option>
                     @foreach (var teori in teorier)
                     {
                         <option value="@teori.TeoriID">@teori.TeoriNavn</option>
@@ -112,7 +112,7 @@
             <div class="mb-2">
                 <label>Teknik:</label>
                 <select class="form-control" @onchange="OnTeknikChanged">
-                    <option value="">-- Select Teknik --</option>
+                    <option value="">-- Vælg Teknik --</option>
                     @foreach (var teknik in teknikker)
                     {
                         <option value="@teknik.TeknikID">@teknik.TeknikNavn</option>
@@ -130,7 +130,7 @@
             <div class="mb-2">
                 <label>Øvelse:</label>
                 <select class="form-control" @onchange="OnØvelseChanged">
-                    <option value="">-- Select Øvelse --</option>
+                    <option value="">-- Vælg Øvelse --</option>
                     @foreach (var øvelse in øvelser)
                     {
                         <option value="@øvelse.ØvelseID">@øvelse.ØvelseNavn</option>
@@ -145,16 +145,16 @@
                 }
             </div>
 
-            <button type="button" class="btn btn-primary mt-2" @onclick="AddTræning">Add Træning</button>
+            <button type="button" class="btn btn-primary mt-2" @onclick="AddTræning">Tilføj Træning</button>
         </div>
     </div>
 
-    <button type="submit" class="btn btn-success">Create Program Plan</button>
-    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    <button type="submit" class="btn btn-success">Opret Program Plan</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Annuller</button>
 </EditForm>
 
 @code {
-    [Parameter] public Guid? klubId { get; set; } // Optional: if this comes from admin route
+    [Parameter] public Guid? klubId { get; set; } // Valgfri: hvis dette kommer fra admin-ruten
     private string errorMessage = "";
     private HttpClient _apiClient;
 
@@ -190,7 +190,7 @@
 
         try
         {
-            // Fetch quizzes with a response wrapper
+            // Hent quizzes med en svar-wrapper
             var quizzesResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<QuizDTO>>>("api/quiz");
             if (quizzesResponse?.Success == true && quizzesResponse.Data != null)
             {
@@ -198,10 +198,10 @@
             }
             else
             {
-                errorMessage = "Failed to load quizzes.";
+                errorMessage = "Kunne ikke hente quizzes.";
             }
 
-            // Fetch theories with a response wrapper
+            // Hent teorier med en svar-wrapper
             var teorierResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeoriDTO>>>("api/teori");
             if (teorierResponse?.Success == true && teorierResponse.Data != null)
             {
@@ -209,10 +209,10 @@
             }
             else
             {
-                errorMessage = "Failed to load theories.";
+                errorMessage = "Kunne ikke hente teorier.";
             }
 
-            // Fetch techniques with a response wrapper
+            // Hent teknikker med en svar-wrapper
             var teknikkerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeknikDTO>>>("api/teknik");
             if (teknikkerResponse?.Success == true && teknikkerResponse.Data != null)
             {
@@ -220,10 +220,10 @@
             }
             else
             {
-                errorMessage = "Failed to load techniques.";
+                errorMessage = "Kunne ikke hente teknikker.";
             }
 
-            // Fetch exercises with a response wrapper
+            // Hent øvelser med en svar-wrapper
             var øvelserResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
             if (øvelserResponse?.Success == true && øvelserResponse.Data != null)
             {
@@ -231,13 +231,13 @@
             }
             else
             {
-                errorMessage = "Failed to load exercises.";
+                errorMessage = "Kunne ikke hente øvelser.";
             }
         }
         catch (Exception ex)
         {
-            // Handle general errors
-            errorMessage = $"An error occurred while loading data: {ex.Message}";
+            // Håndter generelle fejl
+            errorMessage = $"Der opstod en fejl under hentning af data: {ex.Message}";
         }
     }
 
@@ -277,17 +277,17 @@
         }
     }
 
-    private string selectedType = ""; // Holds "quiz", "teori", "teknik", or "øvelse"
+    private string selectedType = ""; // Indeholder "quiz", "teori", "teknik", eller "øvelse"
 
     private void AddTræning()
     {
-        // Reset all GUIDs
+        // Nulstil alle GUID'er
         newTræning.QuizID = null;
         newTræning.TeoriID = null;
         newTræning.TeknikID = null;
         newTræning.ØvelseID = null;
 
-        // Set only the selected one
+        // Sæt kun den valgte
         switch (selectedType)
         {
             case "quiz":
@@ -308,19 +308,19 @@
                 break;
         }
 
-        // Basic validation
+        // Grundlæggende validering
         if (newTræning.TræningRækkefølge <= 0 || newTræning.Tid <= 0)
         {
-            errorMessage = "Please provide valid rækkefølge, time.";
+            errorMessage = "Angiv venligst en gyldig rækkefølge og tid.";
             return;
         }
 
-        // Finalize and add
+        // Afslut og tilføj
         newTræning.TræningID = Guid.NewGuid();
         newTræning.ProgramID = newProgramPlan.ProgramID;
         newProgramPlan.Træninger.Add(newTræning);
 
-        // Reset form
+        // Nulstil formular
         newTræning = new TræningDTO
             {
                 ETag = Guid.NewGuid().ToString(),
@@ -334,6 +334,37 @@
         selectedType = "";
     }
 
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            // Hvis klubId er null, er vi på admin-ruten
+            var url = klubId == null
+                ? "api/programplan"
+                : $"api/klub/{klubId}/programplan";
+
+            var result = await _apiClient.PostAsJsonAsync(url, newProgramPlan);
+
+            if (result.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo("/programplan/oversigt");
+            }
+            else
+            {
+                errorMessage = "Der opstod en fejl ved oprettelsen af programplanen.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Der opstod en fejl: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/programplan/oversigt");
+    }
+
     private void RemoveTræning(Guid træningId)
     {
         var træningToRemove = newProgramPlan.Træninger.FirstOrDefault(t => t.TræningID == træningId);
@@ -341,60 +372,5 @@
         {
             newProgramPlan.Træninger.Remove(træningToRemove);
         }
-    }
-
-    private async Task HandleValidSubmit()
-    {
-        try
-        {
-            var token = await AuthenticationService.GetTokenAsync();
-
-            if (klubId.HasValue)
-            {
-                newProgramPlan.KlubID = klubId.Value;
-                newProgramPlan.BrugerID = Guid.Empty;
-            }
-            else
-            {
-                var brugerId = JwtParser.GetUserIdFromJwt(token);
-                newProgramPlan.BrugerID = brugerId;
-                newProgramPlan.KlubID = Guid.Empty;
-            }
-
-            newProgramPlan.ProgramID = Guid.NewGuid();
-
-            foreach (var træning in newProgramPlan.Træninger)
-            {
-                træning.ProgramID = newProgramPlan.ProgramID;
-            }
-
-            var response = await _apiClient.PostAsJsonAsync("api/programplan", newProgramPlan);
-
-            if (response.IsSuccessStatusCode)
-            {
-                if (klubId.HasValue)
-                    NavigationManager.NavigateTo($"/admin/klub/{klubId}");
-                else
-                    NavigationManager.NavigateTo("/account");
-            }
-            else
-            {
-                var responseBody = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Failed to create program plan. Status: {response.StatusCode}\nDetails: {responseBody}";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error creating program plan: {ex.Message}";
-        }
-    }
-
-
-    private void Cancel()
-    {
-        if (klubId.HasValue)
-            NavigationManager.NavigateTo($"/admin/klub/{klubId}");
-        else
-            NavigationManager.NavigateTo("/account");
     }
 }
