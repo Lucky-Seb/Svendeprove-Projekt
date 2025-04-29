@@ -1,5 +1,5 @@
 ﻿@page "/pensum"
-@* --- Using Statements --- *@
+@* --- Brug af namespaces --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
@@ -14,15 +14,15 @@
 @inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
-<h1>Pensum Management</h1>
+<h1>Administrer Pensum</h1>
 
 @if (pensums != null)
 {
     <div class="row mb-3">
         <div class="col-md-4">
-            <label class="form-label">Filter by Pensum Grad:</label>
+            <label class="form-label">Filtrer efter grad:</label>
             <select class="form-select" @bind="selectedPensumGrad" @bind:after="ApplyFilter">
-                <option value="">All</option>
+                <option value="">Alle</option>
                 @foreach (var grad in pensums.Select(p => p.PensumGrad).Distinct())
                 {
                     <option value="@grad">@grad</option>
@@ -31,27 +31,27 @@
         </div>
 
         <div class="col-md-4">
-            <label class="form-label">Search Teknik or Teori:</label>
-            <input class="form-control" type="text" placeholder="Search..." @bind="searchTerm" @bind:event="oninput" />
+            <label class="form-label">Søg i Teknik eller Teori:</label>
+            <input class="form-control" type="text" placeholder="Søg..." @bind="searchTerm" @bind:event="oninput" />
         </div>
     </div>
 }
 
 @if (filteredPensums == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Indlæser...</em></p>
 }
 else if (filteredPensums.Length == 0)
 {
-    <p><em>No pensum data available.</em></p>
+    <p><em>Ingen pensumdata tilgængelig.</em></p>
 }
 else
 {
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Pensum Grad</th>
-                <th>Actions</th>
+                <th>Grad</th>
+                <th>Handlinger</th>
             </tr>
         </thead>
         <tbody>
@@ -61,7 +61,7 @@ else
                     <td>@pensum.PensumGrad</td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary" @onclick="() => ToggleExpand(pensum.PensumID)">
-                            @(expandedPensums.Contains(pensum.PensumID) ? "Hide Details" : "Show Details")
+                            @(expandedPensums.Contains(pensum.PensumID) ? "Skjul detaljer" : "Vis detaljer")
                         </button>
                     </td>
                 </tr>
@@ -80,7 +80,7 @@ else
 
                                 @if (matchingTeknik.Count == 0)
                                 {
-                                    <p><em>No teknik found.</em></p>
+                                    <p><em>Ingen teknik fundet.</em></p>
                                 }
                                 else
                                 {
@@ -96,7 +96,7 @@ else
 
                                             @if (!string.IsNullOrWhiteSpace(teknik.TeknikBillede))
                                             {
-                                                <img src="@teknik.TeknikBillede" alt="Teknik Billede" class="img-thumbnail mb-2" style="max-width: 200px;" />
+                                                <img src="@teknik.TeknikBillede" alt="Billede af teknik" class="img-thumbnail mb-2" style="max-width: 200px;" />
                                             }
                                         </div>
                                     }
@@ -111,7 +111,7 @@ else
 
                                 @if (matchingTeori.Count == 0)
                                 {
-                                    <p><em>No teori found.</em></p>
+                                    <p><em>Ingen teori fundet.</em></p>
                                 }
                                 else
                                 {
@@ -127,7 +127,7 @@ else
 
                                             @if (!string.IsNullOrWhiteSpace(teori.TeoriBillede))
                                             {
-                                                <img src="@teori.TeoriBillede" alt="Teori Billede" class="img-thumbnail mb-2" style="max-width: 200px;" />
+                                                <img src="@teori.TeoriBillede" alt="Billede af teori" class="img-thumbnail mb-2" style="max-width: 200px;" />
                                             }
                                         </div>
                                     }
@@ -144,7 +144,7 @@ else
 @if (errorMessage != null)
 {
     <div class="alert alert-danger">
-        <strong>Error:</strong> @errorMessage
+        <strong>Fejl:</strong> @errorMessage
     </div>
 }
 
@@ -178,14 +178,14 @@ else
             }
             else
             {
-                errorMessage = "Failed to load data.";
+                errorMessage = "Kunne ikke hente data.";
                 if (response?.Errors != null)
-                    errorMessage += " Errors: " + string.Join(", ", response.Errors);
+                    errorMessage += " Fejl: " + string.Join(", ", response.Errors);
             }
         }
         catch (Exception ex)
         {
-            errorMessage = "Error fetching data: " + ex.Message;
+            errorMessage = "Fejl under hentning af data: " + ex.Message;
         }
     }
 
