@@ -13,11 +13,11 @@
 @inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
-<h3>Teori Detail</h3>
+<h3>Teori Detaljer</h3>
 
 @if (teori == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Indlæser...</em></p>
 }
 else
 {
@@ -45,7 +45,7 @@ else
         }
     </div>
 }
-<button class="btn btn-secondary mb-3" @onclick="GoBack">← Back to teorier</button>
+<button class="btn btn-secondary mb-3" @onclick="GoBack">← Tilbage til teorier</button>
 
 @code {
     [Parameter]
@@ -65,9 +65,10 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Failed to load teori: " + ex.Message);
+            Console.WriteLine("Kunne ikke indlæse teori: " + ex.Message);
         }
     }
+
     private void GoBack()
     {
         NavigationManager.NavigateTo("/teori");
