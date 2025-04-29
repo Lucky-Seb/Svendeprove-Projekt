@@ -17,7 +17,7 @@
 
 @if (isLoading)
 {
-    <p><em>Loading program info...</em></p>
+    <p><em>Indlæser programinfo...</em></p>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -25,15 +25,15 @@ else if (!string.IsNullOrEmpty(errorMessage))
 }
 else if (programPlan == null)
 {
-    <p>This program could not be found.</p>
+    <p>Dette program kunne ikke findes.</p>
 }
 else
 {
     <div class="card p-4 shadow-sm mb-4">
         <h4>@programPlan.ProgramNavn</h4>
-        <p><strong>Description:</strong> @programPlan.Beskrivelse</p>
-        <p><strong>Created:</strong> @programPlan.OprettelseDato.ToShortDateString()</p>
-        <p><strong>Length:</strong> @programPlan.Længde minutes</p>
+        <p><strong>Beskrivelse:</strong> @programPlan.Beskrivelse</p>
+        <p><strong>Oprettet:</strong> @programPlan.OprettelseDato.ToShortDateString()</p>
+        <p><strong>Længde:</strong> @programPlan.Længde minutter</p>
     </div>
 
     @if (programPlan.Træninger?.Any() == true)
@@ -44,7 +44,7 @@ else
             {
                 <li class="list-group-item">
                     <div>
-                        <strong>Step @træning.TræningRækkefølge</strong> – <span>@træning.Tid min</span>
+                        <strong>Trin @træning.TræningRækkefølge</strong> – <span>@træning.Tid min</span>
                     </div>
 
                     @if (træning.Quiz != null)
@@ -68,7 +68,7 @@ else
                     }
                     else
                     {
-                        <div><em>No content attached</em></div>
+                        <div><em>Intet indhold vedhæftet</em></div>
                     }
                 </li>
             }
@@ -76,11 +76,11 @@ else
     }
     else
     {
-        <p>No træninger are linked to this program.</p>
+        <p>Ingen træninger er tilknyttet dette program.</p>
     }
 }
 
-<button class="btn btn-secondary mt-4" @onclick="GoBack">← Back to Overview</button>
+<button class="btn btn-secondary mt-4" @onclick="GoBack">← Tilbage til oversigt</button>
 
 @code {
     [Parameter] public Guid programId { get; set; }
@@ -101,12 +101,12 @@ else
             }
             else
             {
-                errorMessage = "Could not load program details.";
+                errorMessage = "Kunne ikke indlæse programdetaljer.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error: {ex.Message}";
+            errorMessage = $"Fejl: {ex.Message}";
         }
         finally
         {

@@ -1,7 +1,7 @@
 ﻿@page "/programplan/update/{Id:guid}"
 @page "/admin/klub/{klubId:guid}/edit-program/{Id:guid}"
 
-@* --- Using Statements --- *@
+@* --- Brugte navneområder --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
@@ -14,11 +14,11 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IAuthenticationService AuthenticationService
 
-<h3>Edit Program Plan</h3>
+<h3>Rediger Programplan</h3>
 
 @if (loading)
 {
-    <p>Loading...</p>
+    <p>Indlæser...</p>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -31,22 +31,22 @@ else
         <ValidationSummary />
 
         <div>
-            <label>Program Name:</label>
+            <label>Programnavn:</label>
             <InputText @bind-Value="editModel.ProgramNavn" class="form-control" />
         </div>
 
         <div>
-            <label>Description:</label>
+            <label>Beskrivelse:</label>
             <InputTextArea @bind-Value="editModel.Beskrivelse" class="form-control" />
         </div>
 
         <div>
-            <label>Length (days):</label>
+            <label>Længde (dage):</label>
             <InputNumber @bind-Value="editModel.Længde" class="form-control" />
         </div>
 
         <div>
-            <label>Start Date:</label>
+            <label>Startdato:</label>
             <InputDate @bind-Value="editModel.OprettelseDato" class="form-control" />
         </div>
 
@@ -64,7 +64,7 @@ else
                     <div>
                         <label>Øvelse:</label>
                         <select @bind="træning.ØvelseID" class="form-control">
-                            <option value="">-- Select Øvelse --</option>
+                            <option value="">-- Vælg Øvelse --</option>
                             @foreach (var ø in exerciseList)
                             {
                                 <option value="@ø.ØvelseID">@ø.ØvelseNavn</option>
@@ -75,7 +75,7 @@ else
                     <div>
                         <label>Quiz (Teori):</label>
                         <select @bind="træning.TeoriID" class="form-control">
-                            <option value="">-- Select Teori --</option>
+                            <option value="">-- Vælg Teori --</option>
                             @foreach (var quiz in quizList)
                             {
                                 <option value="@quiz.TeoriID">@quiz.TeoriTitel</option>
@@ -86,7 +86,7 @@ else
                     <div>
                         <label>Teknik:</label>
                         <select @bind="træning.TeknikID" class="form-control">
-                            <option value="">-- Select Teknik --</option>
+                            <option value="">-- Vælg Teknik --</option>
                             @foreach (var teknik in teknikList)
                             {
                                 <option value="@teknik.TeknikID">@teknik.TeknikNavn</option>
@@ -97,8 +97,8 @@ else
             }
         </ul>
 
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary">Gem</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Annuller</button>
     </EditForm>
 }
 
@@ -124,27 +124,27 @@ else
 
             var token = await AuthenticationService.GetTokenAsync();
             var brugerId = JwtParser.GetUserIdFromJwt(token);
-            Console.WriteLine($"Loaded BrugerID: {brugerId}");
+            Console.WriteLine($"Indlæst BrugerID: {brugerId}");
 
-            // Load Program Plan
+            // Indlæs Programplan
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<ProgramPlanDTO>>($"api/programplan/{Id}");
             if (response?.Success == true && response.Data != null)
             {
                 editModel = response.Data;
-                Console.WriteLine("✅ Program loaded.");
+                Console.WriteLine("✅ Program indlæst.");
             }
             else
             {
-                errorMessage = "Failed to load Program Plan.";
+                errorMessage = "Kunne ikke indlæse Programplan.";
                 return;
             }
 
-            // Load data lists
+            // Indlæs data lister
             await LoadSelectLists();
         }
         catch (Exception ex)
         {
-            errorMessage = $"❌ Error loading Program Plan: {ex.Message}";
+            errorMessage = $"❌ Fejl ved indlæsning af Programplan: {ex.Message}";
         }
         finally
         {
@@ -175,14 +175,14 @@ else
     {
         try
         {
-            Console.WriteLine("📤 Submitting update...");
+            Console.WriteLine("📤 Sender opdatering...");
             editModel.ModifiedBy = "system";
             editModel.ETag ??= Guid.NewGuid().ToString();
             editModel.ChangeHistoryJson ??= "[]";
 
             if (klubId.HasValue)
             {
-                Console.WriteLine("Program Plan owned by Klub.");
+                Console.WriteLine("Programplan ejes af Klub.");
                 editModel.KlubID = klubId.Value;
             }
             else
@@ -198,7 +198,7 @@ else
 
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("✅ Program Plan updated.");
+                Console.WriteLine("✅ Programplan opdateret.");
                 if (klubId.HasValue)
                     NavigationManager.NavigateTo($"/admin/klub/{klubId}");
                 else
@@ -207,12 +207,12 @@ else
             else
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
-                errorMessage = $"❌ Failed to update. Status: {response.StatusCode}\nDetails: {responseBody}";
+                errorMessage = $"❌ Fejl ved opdatering. Status: {response.StatusCode}\nDetaljer: {responseBody}";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"❌ Error updating Program Plan: {ex.Message}";
+            errorMessage = $"❌ Fejl ved opdatering af Programplan: {ex.Message}";
         }
     }
 
@@ -222,23 +222,5 @@ else
             NavigationManager.NavigateTo($"/admin/klub/{klubId}");
         else
             NavigationManager.NavigateTo("/account");
-    }
-
-    public class Pensum
-    {
-        public Guid PensumID { get; set; }
-        public string PensumGrad { get; set; }
-    }
-
-    public class TeoriDTO
-    {
-        public Guid TeoriID { get; set; }
-        public string TeoriTitel { get; set; }
-    }
-
-    public class TeknikDTO
-    {
-        public Guid TeknikID { get; set; }
-        public string TeknikNavn { get; set; }
     }
 }
