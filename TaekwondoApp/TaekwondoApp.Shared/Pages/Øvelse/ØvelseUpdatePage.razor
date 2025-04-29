@@ -13,11 +13,11 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IAuthenticationService AuthenticationService
 
-<h3>Edit Exercise</h3>
+<h3>Rediger Øvelse</h3>
 
 @if (loading)
 {
-    <p>Loading...</p>
+    <p>Indlæser...</p>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -30,17 +30,17 @@ else
         <ValidationSummary />
 
         <div>
-            <label>Name:</label>
+            <label>Navn:</label>
             <InputText @bind-Value="editModel.ØvelseNavn" class="form-control" />
         </div>
 
         <div>
-            <label>Description:</label>
+            <label>Beskrivelse:</label>
             <InputTextArea @bind-Value="editModel.ØvelseBeskrivelse" class="form-control" />
         </div>
 
         <div>
-            <label>Image URL:</label>
+            <label>Billede URL:</label>
             <InputText @bind-Value="editModel.ØvelseBillede" class="form-control" />
         </div>
 
@@ -50,19 +50,19 @@ else
         </div>
 
         <div>
-            <label>Duration (seconds):</label>
+            <label>Varighed (sekunder):</label>
             <InputNumber @bind-Value="editModel.ØvelseTid" class="form-control" />
         </div>
 
         <div>
-            <label>Difficulty:</label>
+            <label>Sværhedsgrad:</label>
             <InputText @bind-Value="editModel.ØvelseSværhed" class="form-control" />
         </div>
 
         <div>
             <label>Pensum:</label>
             <select @bind="editModel.PensumID" class="form-control">
-                <option value="">-- Select Pensum --</option>
+                <option value="">-- Vælg Pensum --</option>
                 @foreach (var pensum in pensumGradList)
                 {
                     <option value="@pensum.PensumID">@pensum.PensumGrad</option>
@@ -70,13 +70,13 @@ else
             </select>
         </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary">Gem</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Annuller</button>
     </EditForm>
 }
 
 @code {
-    [Parameter] public Guid? klubId { get; set; } // Optional parameter for admin route
+    [Parameter] public Guid? klubId { get; set; } // Valgfrit parameter for admin-ruten
     [Parameter] public Guid øvelseId { get; set; }
 
     private ØvelseDTO editModel = new();
@@ -93,35 +93,35 @@ else
 
             var token = await AuthenticationService.GetTokenAsync();
             var brugerId = JwtParser.GetUserIdFromJwt(token);
-            Console.WriteLine($"Loaded BrugerID: {brugerId}");
+            Console.WriteLine($"Indlæst BrugerID: {brugerId}");
 
-            // Fetch exercise
+            // Hent øvelse
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<ØvelseDTO>>($"api/øvelse/{øvelseId}");
             if (response?.Success == true && response.Data != null)
             {
                 editModel = response.Data;
-                Console.WriteLine($"Loaded Øvelse: {JsonSerializer.Serialize(editModel)}");
+                Console.WriteLine($"Indlæst Øvelse: {JsonSerializer.Serialize(editModel)}");
             }
             else
             {
-                errorMessage = "Failed to load exercise.";
+                errorMessage = "Kunne ikke indlæse øvelse.";
             }
 
-            // Fetch Pensum list
+            // Hent Pensum liste
             var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
             if (pensumResponse?.Success == true && pensumResponse.Data != null)
             {
                 pensumGradList = pensumResponse.Data;
-                Console.WriteLine("Pensum list loaded.");
+                Console.WriteLine("Pensum liste indlæst.");
             }
             else
             {
-                errorMessage = "Failed to load PensumGrads.";
+                errorMessage = "Kunne ikke indlæse PensumGrads.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading exercise or PensumGrads: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af øvelse eller PensumGrads: {ex.Message}";
             Console.WriteLine($"Exception: {ex.Message}");
         }
         finally
@@ -134,28 +134,28 @@ else
     {
         try
         {
-            Console.WriteLine("Submitting update...");
+            Console.WriteLine("Sender opdatering...");
             Console.WriteLine($"ØvelseID: {editModel.ØvelseID}");
             Console.WriteLine($"PensumID: {editModel.PensumID}");
 
-            // Add/Update sync fields if needed
+            // Tilføj/Opdater synkroniserede felter, hvis nødvendigt
             editModel.ModifiedBy = "system";
             editModel.ETag ??= Guid.NewGuid().ToString();
             editModel.ChangeHistoryJson ??= "[]";
 
-            // Check if exercise is owned by a klub or a bruger
+            // Tjek om øvelsen tilhører en klub eller bruger
             if (klubId.HasValue)
             {
-                Console.WriteLine("Exercise is owned by a Klub.");
-                // If it's owned by a Klub, make sure the KlubID is in the model or modify accordingly
-                editModel.KlubID = klubId.Value; // Assuming the exercise has a property like KlubId
+                Console.WriteLine("Øvelsen tilhører en Klub.");
+                // Hvis den tilhører en Klub, sørg for at KlubID er i modellen eller ændre det
+                editModel.KlubID = klubId.Value; // Antager at øvelsen har en egenskab som KlubID
             }
             else
             {
-                Console.WriteLine("Exercise is owned by a Bruger.");
-                // If it's owned by a Bruger (user), set the BrugerId in the model (if necessary)
+                Console.WriteLine("Øvelsen tilhører en Bruger.");
+                // Hvis den tilhører en Bruger, sæt BrugerID i modellen (hvis nødvendigt)
                 var brugerId = JwtParser.GetUserIdFromJwt(await AuthenticationService.GetTokenAsync());
-                editModel.BrugerID = brugerId; // Assuming the exercise has a property like BrugerId
+                editModel.BrugerID = brugerId; // Antager at øvelsen har en egenskab som BrugerID
             }
 
             var jsonPayload = JsonSerializer.Serialize(editModel);
@@ -163,13 +163,13 @@ else
 
             var response = await _apiClient.PutAsJsonAsync($"api/øvelse/{editModel.ØvelseID}", editModel);
 
-            Console.WriteLine($"Response Status: {response.StatusCode}");
+            Console.WriteLine($"Respons Status: {response.StatusCode}");
 
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("✔ Exercise updated.");
+                Console.WriteLine("✔ Øvelse opdateret.");
 
-                // Redirect depending on whether it's admin or user
+                // Omdirigér afhængig af om det er admin eller bruger
                 if (klubId.HasValue)
                 {
                     NavigationManager.NavigateTo($"/admin/klub/{klubId}");
@@ -182,15 +182,15 @@ else
             else
             {
                 var body = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("❌ Failed to update exercise.");
-                Console.WriteLine($"Response Body: {body}");
-                errorMessage = $"Failed to update exercise. Status: {response.StatusCode}\nDetails: {body}";
+                Console.WriteLine("❌ Kunne ikke opdatere øvelse.");
+                Console.WriteLine($"Respons Body: {body}");
+                errorMessage = $"Kunne ikke opdatere øvelse. Status: {response.StatusCode}\nDetaljer: {body}";
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Exception: {ex.Message}");
-            errorMessage = $"Error updating exercise: {ex.Message}";
+            errorMessage = $"Fejl ved opdatering af øvelse: {ex.Message}";
         }
     }
 
@@ -207,9 +207,4 @@ else
         }
     }
 
-    public class Pensum
-    {
-        public Guid PensumID { get; set; }
-        public string PensumGrad { get; set; }
-    }
 }

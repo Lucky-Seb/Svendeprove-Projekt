@@ -1,7 +1,7 @@
 ﻿@page "/øvelse/create"
 @page "/admin/klub/{klubId:guid}/create-øvelse"
 
-@* --- Using Statements --- *@
+@* --- Brugte navneområder --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
@@ -16,7 +16,7 @@
 @inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
-<h3>Create New Exercise</h3>
+<h3>Opret Ny Øvelse</h3>
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -28,17 +28,17 @@
     <ValidationSummary />
 
     <div>
-        <label>Name:</label>
+        <label>Navn:</label>
         <InputText @bind-Value="newExercise.ØvelseNavn" class="form-control" />
     </div>
 
     <div>
-        <label>Description:</label>
+        <label>Beskrivelse:</label>
         <InputTextArea @bind-Value="newExercise.ØvelseBeskrivelse" class="form-control" />
     </div>
 
     <div>
-        <label>Image URL:</label>
+        <label>Billede URL:</label>
         <InputText @bind-Value="newExercise.ØvelseBillede" class="form-control" />
     </div>
 
@@ -48,19 +48,19 @@
     </div>
 
     <div>
-        <label>Duration (seconds):</label>
+        <label>Varighed (sekunder):</label>
         <InputNumber @bind-Value="newExercise.ØvelseTid" class="form-control" />
     </div>
 
     <div>
-        <label>Difficulty:</label>
+        <label>Sværhedsgrad:</label>
         <InputText @bind-Value="newExercise.ØvelseSværhed" class="form-control" />
     </div>
 
     <div>
         <label>Pensum:</label>
         <select @bind="newExercise.PensumID" class="form-control">
-            <option value="">-- Select Pensum --</option>
+            <option value="">-- Vælg Pensum --</option>
             @foreach (var pensum in pensumGradList)
             {
                 <option value="@pensum.PensumID">@pensum.PensumGrad</option>
@@ -68,12 +68,12 @@
         </select>
     </div>
 
-    <button type="submit" class="btn btn-success">Create</button>
-    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    <button type="submit" class="btn btn-success">Opret</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Annuller</button>
 </EditForm>
 
 @code {
-    [Parameter] public Guid? klubId { get; set; } // Optional: if this comes from admin route
+    [Parameter] public Guid? klubId { get; set; } // Valgfrit: hvis dette kommer fra admin-ruten
 
     private ØvelseDTO newExercise = new();
     private string errorMessage = "";
@@ -93,13 +93,13 @@
 
             if (klubId.HasValue)
             {
-                Console.WriteLine($"Creating exercise for klub: {klubId.Value}");
+                Console.WriteLine($"Opretter øvelse for klub: {klubId.Value}");
                 newExercise.KlubID = klubId.Value;
             }
             else
             {
                 var brugerId = JwtParser.GetUserIdFromJwt(token);
-                Console.WriteLine($"Creating exercise for bruger: {brugerId}");
+                Console.WriteLine($"Opretter øvelse for bruger: {brugerId}");
                 newExercise.BrugerID = brugerId;
             }
 
@@ -110,12 +110,12 @@
             }
             else
             {
-                errorMessage = "Failed to load PensumGrads.";
+                errorMessage = "Kunne ikke indlæse PensumGrads.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading data: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af data: {ex.Message}";
         }
     }
 
@@ -123,9 +123,9 @@
     {
         try
         {
-            Console.WriteLine("Submitting new exercise...");
+            Console.WriteLine("Sender ny øvelse...");
 
-            // System fields
+            // Systemfelter
             newExercise.ETag = Guid.NewGuid().ToString();
             newExercise.ModifiedBy = "system";
             newExercise.ChangeHistoryJson = "[]";
@@ -139,7 +139,7 @@
 
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("✔ Exercise created successfully.");
+                Console.WriteLine("✔ Øvelse oprettet med succes.");
 
                 if (klubId.HasValue)
                     NavigationManager.NavigateTo($"/admin/klub/{klubId}");
@@ -149,16 +149,16 @@
             else
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("❌ Failed to create exercise.");
+                Console.WriteLine("❌ Kunne ikke oprette øvelse.");
                 Console.WriteLine($"Response Body:\n{responseBody}");
 
-                errorMessage = $"Failed to create exercise. Status: {response.StatusCode}\nDetails: {responseBody}";
+                errorMessage = $"Kunne ikke oprette øvelse. Status: {response.StatusCode}\nDetaljer: {responseBody}";
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exception occurred: {ex.Message}");
-            errorMessage = $"Error: {ex.Message}";
+            Console.WriteLine($"Der opstod en undtagelse: {ex.Message}");
+            errorMessage = $"Fejl: {ex.Message}";
         }
     }
 

@@ -12,35 +12,35 @@
 @inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
-<h1>Øvelse Management</h1>
+<h1>Øvelse Administration</h1>
 
-<!-- Search Filters -->
+<!-- Søgefiltre -->
 <div class="row mb-3">
     <div class="col-md-4">
-        <label>Search by Øvelse Name:</label>
-        <input class="form-control" @bind="searchØvelseName" placeholder="Enter Øvelse name..." />
+        <label>Søg efter Øvelse Navn:</label>
+        <input class="form-control" @bind="searchØvelseName" placeholder="Indtast Øvelse navn..." />
     </div>
     <div class="col-md-4 d-flex align-items-end">
-        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
-        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+        <button class="btn btn-warning" @onclick="ClearFilters">Ryd Filtre</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Anvend Filter</button>
     </div>
 </div>
 
-<!-- Display Table -->
+<!-- Vis Tabel -->
 @if (filteredØvelser == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Indlæser...</em></p>
 }
 else if (filteredØvelser.Count == 0)
 {
-    <p><em>No Øvelse records match your search.</em></p>
+    <p><em>Der findes ingen Øvelser, der matcher din søgning.</em></p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
+                <th>Navn</th>
             </tr>
         </thead>
         <tbody>
@@ -87,18 +87,18 @@ else
 
             if (string.IsNullOrEmpty(token))
             {
-                // If not logged in, fetch Øvelse data that is not owned by any klub or bruger
+                // Hvis ikke logget ind, hent Øvelse data, der ikke tilhører nogen klub eller bruger
                 await LoadØvelserForNonLoggedInUser();
             }
             else
             {
-                // If logged in, fetch Øvelse data that belongs to the user and their clubs
+                // Hvis logget ind, hent Øvelse data, der tilhører brugeren og deres klubber
                 await LoadØvelserForLoggedInUser();
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading Øvelse data: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af Øvelse data: {ex.Message}";
         }
     }
 
@@ -116,13 +116,13 @@ else
             }
             else
             {
-                errorMessage = "Failed to fetch user data.";
+                errorMessage = "Kunne ikke hente brugerdata.";
             }
 
             var klubIds = brugerDTO?.BrugerKlubber.Select(k => k.KlubID).ToList();
             var klubIdsString = klubIds != null ? string.Join(",", klubIds) : string.Empty;
 
-            // Fetching Øvelse data for logged-in user with the necessary query parameters
+            // Henter Øvelse data for logget ind bruger med nødvendige forespørgselsparametre
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>(
                 $"api/øvelse/own/?brugerId={brugerDTO?.BrugerID}&klubIds={klubIdsString}");
 
@@ -133,12 +133,12 @@ else
             }
             else
             {
-                errorMessage = "Failed to fetch Øvelse data.";
+                errorMessage = "Kunne ikke hente Øvelse data.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading user data: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af brugerdata: {ex.Message}";
         }
     }
 
@@ -146,7 +146,7 @@ else
     {
         try
         {
-            // Fetching Øvelse data without any specific parameters for non-logged-in users
+            // Henter Øvelse data uden specifikke parametre for ikke-loggede brugere
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse/own");
 
             if (response?.Success == true && response.Data != null)
@@ -156,12 +156,12 @@ else
             }
             else
             {
-                errorMessage = "Failed to fetch available Øvelse.";
+                errorMessage = "Kunne ikke hente tilgængelige Øvelser.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading Øvelse data: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af Øvelse data: {ex.Message}";
         }
     }
 
