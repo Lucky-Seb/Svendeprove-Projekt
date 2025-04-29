@@ -16,7 +16,7 @@
 @inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
-<h3>Edit Quiz</h3>
+<h3>Rediger Quiz</h3>
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -30,19 +30,19 @@
         <ValidationSummary />
 
         <div class="mb-3">
-            <label>Quiz Name:</label>
+            <label>Quiz Navn:</label>
             <InputText @bind-Value="newQuiz.QuizNavn" class="form-control" />
         </div>
 
         <div class="mb-3">
-            <label>Quiz Description:</label>
+            <label>Quiz Beskrivelse:</label>
             <InputTextArea @bind-Value="newQuiz.QuizBeskrivelse" class="form-control" />
         </div>
 
         <div class="mb-3">
             <label>Pensum:</label>
             <select class="form-control" @bind="newQuiz.PensumID">
-                <option value="">-- Select Pensum --</option>
+                <option value="">-- Vælg Pensum --</option>
                 @foreach (var pensum in pensumGradList)
                 {
                     <option value="@pensum.PensumID">@pensum.PensumGrad</option>
@@ -50,40 +50,40 @@
             </select>
         </div>
 
-        <h5>Questions</h5>
+        <h5>Spørgsmål</h5>
         <ul class="list-group mb-3">
             @foreach (var spørgsmål in newQuiz.Spørgsmål)
             {
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <strong>@spørgsmål.SpørgsmålRækkefølge</strong> - @spørgsmål.SpørgsmålTid sec
-                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveSpørgsmål(spørgsmål.SpørgsmålID)">Remove</button>
+                    <strong>@spørgsmål.SpørgsmålRækkefølge</strong> - @spørgsmål.SpørgsmålTid sek
+                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveSpørgsmål(spørgsmål.SpørgsmålID)">Fjern</button>
                 </li>
             }
         </ul>
 
-        <!-- Add new spørgsmål -->
+        <!-- Tilføj nyt spørgsmål -->
         <div class="card p-3 bg-light border">
-            <h6>Add Spørgsmål</h6>
+            <h6>Tilføj Spørgsmål</h6>
 
             <div class="mb-2">
                 <label>Rækkefølge:</label>
                 <InputNumber @bind-Value="newSpørgsmål.SpørgsmålRækkefølge" class="form-control" />
             </div>
             <div class="mb-2">
-                <label>Tid (sec):</label>
+                <label>Tid (sek):</label>
                 <InputNumber @bind-Value="newSpørgsmål.SpørgsmålTid" class="form-control" />
             </div>
 
-            <button type="button" class="btn btn-primary mt-2" @onclick="AddSpørgsmål">Add</button>
+            <button type="button" class="btn btn-primary mt-2" @onclick="AddSpørgsmål">Tilføj</button>
         </div>
 
-        <button type="submit" class="btn btn-success mt-3">Save Changes</button>
-        <button type="button" class="btn btn-secondary mt-3" @onclick="Cancel">Cancel</button>
+        <button type="submit" class="btn btn-success mt-3">Gem Ændringer</button>
+        <button type="button" class="btn btn-secondary mt-3" @onclick="Cancel">Annuller</button>
     </EditForm>
 }
 else
 {
-    <p>Loading quiz...</p>
+    <p>Indlæser quiz...</p>
 }
 
 @code {
@@ -109,7 +109,7 @@ else
             }
             else
             {
-                errorMessage = "Could not load quiz data.";
+                errorMessage = "Kunne ikke indlæse quiz data.";
             }
 
             var pensumResp = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
@@ -119,12 +119,12 @@ else
             }
             else
             {
-                errorMessage = "Could not load pensum list.";
+                errorMessage = "Kunne ikke indlæse pensum liste.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading data: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af data: {ex.Message}";
         }
 
         newSpørgsmål = CreateNewSpørgsmål();
@@ -136,7 +136,7 @@ else
         {
             if (klubId.HasValue)
             {
-                Console.WriteLine("Program Plan owned by Klub.");
+                Console.WriteLine("Program Plan ejet af Klub.");
                 newQuiz.KlubID = klubId.Value;
             }
             else
@@ -157,12 +157,12 @@ else
             else
             {
                 var details = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Failed to update quiz. Status: {response.StatusCode}\nDetails: {details}";
+                errorMessage = $"Kunne ikke opdatere quiz. Status: {response.StatusCode}\nDetaljer: {details}";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error updating quiz: {ex.Message}";
+            errorMessage = $"Fejl ved opdatering af quiz: {ex.Message}";
         }
     }
 
