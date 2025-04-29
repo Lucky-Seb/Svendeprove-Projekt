@@ -1,6 +1,6 @@
 ﻿@page "/account"
 
-@* --- Using Statements --- *@
+@* --- Brugte navneområder --- *@
 @using TaekwondoApp.Shared.DTO
 @using TaekwondoApp.Shared.Models
 @using TaekwondoApp.Shared.Services
@@ -8,7 +8,7 @@
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
 
-@* --- Dependency Injection --- *@
+@* --- Afhængighedsinjektion --- *@
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
@@ -460,7 +460,7 @@ else
                 var programToRemove = brugerDTO.Programmer.FirstOrDefault(p => p.ProgramID == programId);
                 if (programToRemove != null)
                 {
-                    await _apiClient.DeleteAsync($"api/program/{programId}");
+                    await LoadBruger();
                 }
             }
             else
@@ -498,7 +498,7 @@ else
                 var quizToRemove = brugerDTO.Quizzer.FirstOrDefault(q => q.QuizID == quizId);
                 if (quizToRemove != null)
                 {
-                    await _apiClient.DeleteAsync($"api/quiz/{quizId}");
+                    await LoadBruger();
                 }
             }
             else
@@ -517,62 +517,51 @@ else
         NavigationManager.NavigateTo("/quiz/create");
     }
 
+    private void NavigateToKlubAdminPage(Guid klubId)
+    {
+        NavigationManager.NavigateTo($"/klub/admin/{klubId}");
+    }
+
     private async Task JoinClub()
     {
-        if (selectedClubId == Guid.Empty || string.IsNullOrEmpty(selectedRole))
+        if (selectedClubId != Guid.Empty)
         {
-            // Ensure both club and role are selected before proceeding
-            errorMessage = "Vælg både en klub og en rolle.";
-            return;
-        }
-
-        var brugerKlubDto = new BrugerKlubDTO
+            try
             {
-                BrugerID = brugerDTO.BrugerID, // This should come from the logged-in user
-                KlubID = selectedClubId,
-                KlubRole = selectedRole // Add the selected role here
-            };
-
-        // Send a POST request to join the club with the role
-        var response = await _apiClient.PostAsJsonAsync("api/brugerklub", brugerKlubDto);
-
-        if (response.IsSuccessStatusCode)
-        {
-            // Update the UI after the user has joined the club
-            var joinedClub = await response.Content.ReadFromJsonAsync<BrugerKlubDTO>();
-            LoadBruger();
-        }
-        else
-        {
-            // Handle errors here (e.g., show an error message)
-            errorMessage = "Kunne ikke slutte dig til klubben. Prøv venligst igen.";
+                var response = await _apiClient.PostAsJsonAsync("api/klub/join", new { ClubId = selectedClubId, Role = selectedRole });
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadBruger(); // Reload user data
+                }
+                else
+                {
+                    errorMessage = "Kunne ikke tilslutte klubben. Prøv igen.";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Fejl ved tilslutning af klub: {ex.Message}";
+            }
         }
     }
-    private async Task LeaveClub(Guid klubId)
+
+    private async Task LeaveClub(Guid clubId)
     {
         try
         {
-            // Create a DTO to represent the user's club membership to be deleted
-            var response = await _apiClient.DeleteAsync($"api/brugerklub/{brugerDTO.BrugerID}/{klubId}");
-
+            var response = await _apiClient.PostAsJsonAsync($"api/klub/leave/{clubId}", new { ClubId = clubId });
             if (response.IsSuccessStatusCode)
             {
-                // After successfully leaving the club, reload user data to reflect the changes
                 await LoadBruger();
             }
             else
             {
-                errorMessage = "Kunne ikke forlade klubben. Prøv venligst igen.";
+                errorMessage = "Kunne ikke forlade klubben. Prøv igen.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Fejl ved at forlade klubben: {ex.Message}";
+            errorMessage = $"Fejl ved forladelse af klub: {ex.Message}";
         }
-    }
-
-    private void NavigateToKlubAdminPage(Guid klubId)
-    {
-        NavigationManager.NavigateTo($"/klub/admin/{klubId}");
     }
 }
