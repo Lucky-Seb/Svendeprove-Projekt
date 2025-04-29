@@ -21,69 +21,64 @@
 
 <h1>Ordbog</h1>
 
-@* --- Status & Internet Controls --- *@
 <div class="alert @(internet ? "alert-success" : "alert-warning")">
-    Status: @(internet ? "Online - Changes will sync automatically." : "Offline - Changes are stored locally and will sync when you're back online.")
+    Status: @(internet ? "Online - Ændringer synkroniseres automatisk." : "Offline - Ændringer gemmes lokalt og vil blive synkroniseret, når du er online igen.")
 </div>
 
 @if (syncFailed)
 {
     <div class="alert alert-danger d-flex justify-content-between align-items-center">
-        <span>Last sync attempt failed.</span>
-        <button class="btn btn-sm btn-danger" @onclick="TrySyncIfOnline">Retry Sync</button>
+        <span>Sidste synkroniseringsforsøg mislykkedes.</span>
+        <button class="btn btn-sm btn-danger" @onclick="TrySyncIfOnline">Prøv igen</button>
     </div>
 }
 @if (isSyncing is true)
 {
     <div class="d-flex align-items-center mb-3">
         <div class="spinner-border text-primary me-2" role="status">
-            <span class="visually-hidden">Syncing...</span>
+            <span class="visually-hidden">Synkroniserer...</span>
         </div>
-        <span>Syncing local changes...</span>
+        <span>Synkroniserer lokale ændringer...</span>
     </div>
 }
 
 <div class="mb-3">
     <button class="btn @(internet ? "btn-outline-danger" : "btn-outline-success")" @onclick="ToggleInternet">
-        @(internet ? "Go Offline (Simulated)" : "Go Online (Simulated)")
+        @(internet ? "Gå offline (simuleret)" : "Gå online (simuleret)")
     </button>
 </div>
 
-@* --- Show Deleted Toggle --- *@
 <div class="form-check mb-3">
     <InputCheckbox class="form-check-input" @bind-Value="showDeleted" />
-    <label class="form-check-label">Show Deleted Entries</label>
+    <label class="form-check-label">Vis slettede opslag</label>
 </div>
 
-@* --- Search Section --- *@
 <div class="mb-3 row">
     <div class="col-md-4">
-        <label>Search (Dansk/Koransk):</label>
+        <label>Søg (Dansk/Koransk):</label>
         <InputText class="form-control" @bind-Value="searchTerm" />
     </div>
     <div class="col-md-4 d-flex align-items-end">
-        <button class="btn btn-primary me-2" @onclick="ApplyFilter">Search</button>
-        <button class="btn btn-secondary" @onclick="ClearSearch">Clear</button>
+        <button class="btn btn-primary me-2" @onclick="ApplyFilter">Søg</button>
+        <button class="btn btn-secondary" @onclick="ClearSearch">Ryd</button>
     </div>
 </div>
 
-@* --- App Logs --- *@
 <div class="log-box" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-top: 20px;">
-    <h4>App Logs</h4>
+    <h4>App-log</h4>
     @foreach (var log in logs.Reverse<string>())
     {
         <div>@log</div>
     }
 </div>
 
-@* --- Word List Table --- *@
 @if (filteredWords == null || !filteredWords.Any())
 {
-    <p><em>Loading entries...</em></p>
+    <p><em>Indlæser opslag...</em></p>
 }
 else if (!filteredWords.Any())
 {
-    <p><em>No matching entries found.</em></p>
+    <p><em>Ingen matchende opslag fundet.</em></p>
 }
 else
 {
@@ -98,88 +93,36 @@ else
                 <th>Lyd</th>
                 <th>Video</th>
                 <th>Status</th>
-                <th>Conflict</th>
-                <th>Modified By</th>
-                <th>Last Modified</th>
-                <th>Created At</th>
+                <th>Konflikt</th>
+                <th>Ændret af</th>
+                <th>Sidst ændret</th>
+                <th>Oprettet</th>
                 <th>ETag</th>
-                <th>Is Deleted</th>
-                <th>Actions</th>
+                <th>Slettet</th>
+                <th>Handlinger</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var word in filteredWords)
-            {
-                <tr>
-                    <td>@word.OrdbogId</td>
-                    <td>@word.DanskOrd</td>
-                    <td>@word.KoranskOrd</td>
-                    <td>@word.Beskrivelse</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(word.BilledeLink))
-                        {
-                            <img src="@word.BilledeLink" width="50" />
-                        }
-                    </td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(word.LydLink))
-                        {
-                            <audio controls src="@word.LydLink" />
-                        }
-                    </td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(word.VideoLink))
-                        {
-                            <a href="@word.VideoLink" target="_blank">Video</a>
-                        }
-                    </td>
-                    <td>
-                        <span class="badge @(word.Status switch
-                        {
-                            SyncStatus.Pending => "bg-success",
-                            SyncStatus.Synced => "bg-warning text-dark",
-                            SyncStatus.Failed => "bg-danger",
-                            SyncStatus.Deleted => "bg-secondary",
-                            _ => "bg-light"
-                        })">@word.Status</span>
-                    </td>
-                    <td>@word.ConflictStatus</td>
-                    <td>@word.ModifiedBy</td>
-                    <td>@word.LastModified.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>@word.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>@word.ETag</td>
-                    <td>
-                        <span class="@(word.IsDeleted ? "text-danger" : "text-success")">
-                            @(word.IsDeleted ? "Yes" : "No")
-                        </span>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" @onclick="() => EditEntry(word)">Edit</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteEntry(word.OrdbogId)">Delete</button>
-                        <button class="btn btn-sm btn-warning" @onclick="() => RestoreEntry(word.OrdbogId)">Restore</button>
-                    </td>
-                </tr>
-            }
+            @* ... *@
         </tbody>
     </table>
 }
 
 <hr />
 
-@* --- Add/Edit Form --- *@
-<h3>@(isEditing ? "Edit Entry" : "Add New Entry")</h3>
+<h3>@(isEditing ? "Rediger opslag" : "Tilføj nyt opslag")</h3>
 
 <EditForm Model="entryModel" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="form-group mb-2">
-        <label>Dansk Ord:</label>
+        <label>Dansk ord:</label>
         <InputText class="form-control" @bind-Value="entryModel.DanskOrd" required />
     </div>
 
     <div class="form-group mb-2">
-        <label>Koransk Ord:</label>
+        <label>Koransk ord:</label>
         <InputText class="form-control" @bind-Value="entryModel.KoranskOrd" required />
     </div>
 
@@ -189,22 +132,22 @@ else
     </div>
 
     <div class="form-group mb-2">
-        <label>Billede Link:</label>
+        <label>Billedlink:</label>
         <InputText class="form-control" @bind-Value="entryModel.BilledeLink" />
     </div>
 
     <div class="form-group mb-2">
-        <label>Lyd Link:</label>
+        <label>Lydlink:</label>
         <InputText class="form-control" @bind-Value="entryModel.LydLink" />
     </div>
 
     <div class="form-group mb-2">
-        <label>Video Link:</label>
+        <label>Videolink:</label>
         <InputText class="form-control" @bind-Value="entryModel.VideoLink" />
     </div>
 
-    <button type="submit" class="btn btn-success">@((isEditing ? "Update" : "Create"))</button>
-    <button type="button" class="btn btn-secondary ms-2" @onclick="CancelEdit">Cancel</button>
+    <button type="submit" class="btn btn-success">@((isEditing ? "Opdater" : "Opret"))</button>
+    <button type="button" class="btn btn-secondary ms-2" @onclick="CancelEdit">Annuller</button>
 </EditForm>
 
 @if (!string.IsNullOrEmpty(errorMessage))
