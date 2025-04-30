@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Maui.Storage;
 using System.Security.Claims;
+using TaekwondoApp.Shared.ServiceInterfaces;
 using TaekwondoApp.Shared.Services;
 
 public class AuthStateProvider : AuthenticationStateProvider
 {
     public event Action? OnChange;
+
+    private readonly ITokenStorage _tokenStorage;
 
     private string? _token;
     private string? _role;
@@ -14,14 +16,15 @@ public class AuthStateProvider : AuthenticationStateProvider
     public string? Role => _role;
     public bool IsAuthenticated => !string.IsNullOrEmpty(_token);
 
-    public AuthStateProvider()
+    public AuthStateProvider(ITokenStorage tokenStorage)
     {
-        _ = InitializeAsync(); // Fire and forget initialization
+        _tokenStorage = tokenStorage;
+        _ = InitializeAsync(); // Fire and forget
     }
 
     private async Task InitializeAsync()
     {
-        var token = await SecureStorage.GetAsync("jwt_token");
+        var token = await _tokenStorage.GetAsync("jwt_token");
 
         if (!string.IsNullOrEmpty(token))
         {
@@ -35,7 +38,7 @@ public class AuthStateProvider : AuthenticationStateProvider
     {
         _token = token;
         _role = JwtParser.GetRole(token);
-        await SecureStorage.SetAsync("jwt_token", token);
+        await _tokenStorage.SetAsync("jwt_token", token);
         NotifyStateChanged();
     }
 
@@ -43,11 +46,11 @@ public class AuthStateProvider : AuthenticationStateProvider
     {
         _token = null;
         _role = null;
-        await SecureStorage.SetAsync("jwt_token", string.Empty);
+        _tokenStorage.Remove("jwt_token");
         NotifyStateChanged();
     }
 
-    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var identity = IsAuthenticated
             ? new ClaimsIdentity(new[]
@@ -57,7 +60,7 @@ public class AuthStateProvider : AuthenticationStateProvider
             }, "jwt")
             : new ClaimsIdentity();
 
-        return await Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
+        return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
     }
 
     private void NotifyStateChanged()
