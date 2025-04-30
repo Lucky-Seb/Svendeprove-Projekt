@@ -23,6 +23,7 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<JwtAuthMessageHandler>();
 
 // Auth state provider for Blazor
+builder.Services.AddSingleton<ITokenStorage, ServerTokenStorage>();
 builder.Services.AddScoped<AuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
 
