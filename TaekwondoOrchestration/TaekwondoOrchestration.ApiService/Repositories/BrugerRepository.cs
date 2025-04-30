@@ -106,9 +106,6 @@ namespace TaekwondoOrchestration.ApiService.Repositories
         }
         public async Task<Bruger> CreateBrugerAsync(Bruger bruger)
         {
-            // Hash the password before storing it in the database
-            bruger.Brugerkode = BCrypt.Net.BCrypt.HashPassword(bruger.Brugerkode);
-
             _context.Brugere.Add(bruger);
             await _context.SaveChangesAsync();
             return bruger;

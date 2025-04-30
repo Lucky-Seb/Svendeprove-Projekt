@@ -75,6 +75,8 @@ namespace TaekwondoOrchestration.ApiService.Services
         {
             var brugerEntity = _mapper.Map<Bruger>(brugerDto);
             EntityHelper.InitializeEntity(brugerEntity, brugerDto.ModifiedBy, "Created new Bruger.");
+            // Hash the password before storing it in the database
+            brugerEntity.Brugerkode = BCrypt.Net.BCrypt.HashPassword(brugerEntity.Brugerkode);
             var created = await _brugerRepository.CreateBrugerAsync(brugerEntity);
 
             // Check if creation failed (created is null)

@@ -88,7 +88,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         {
             var result = await _brugerService.CreateBrugerAsync(brugerDTO);
             if (result.Success)
-                await _hubContext.Clients.All.SendAsync("BrugerUpdated");
+                await _hubContext.Clients.All.SendAsync("BrugerCreated");
 
             return result.ToApiResponse();
         }
