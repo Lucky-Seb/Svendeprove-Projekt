@@ -35,8 +35,10 @@ namespace TaekwondoApp
             builder.Services.AddSingleton<ITokenStorage, MauiTokenStorage>();
 
             // Scoped auth service
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             builder.Services.AddScoped<IAuthStateProvider, AuthStateProvider>();
             builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
+
 
             // Register JWT Auth message handler
             builder.Services.AddScoped<JwtAuthMessageHandler>();
