@@ -32,6 +32,8 @@ namespace TaekwondoApp
             builder.Services.AddValidatorsFromAssemblyContaining<RegisterDTO>();
 
             // Scoped auth service
+            builder.Services.AddSingleton<ITokenStorage, MauiTokenStorage>();
+
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             // Register JWT Auth message handler
