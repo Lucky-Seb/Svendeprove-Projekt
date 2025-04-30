@@ -1,74 +1,54 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
-using TaekwondoApp.Web.Components;
-using TaekwondoApp.Web.Services;
 using TaekwondoApp.Shared.Services;
-using TaekwondoApp.Shared.Mapping;
-using TaekwondoApp.Shared.DTO;
-using FluentValidation;
-using System.Net.Http;
+using TaekwondoApp.Web.Components;
 using TaekwondoApp.Shared.ServiceInterfaces;
-using Microsoft.AspNetCore.Components.Forms; // Required for forms and antiforgery
+using TaekwondoApp.Shared.DTO;
+using TaekwondoApp.Shared.Mapping;
+using FluentValidation;
+using TaekwondoApp.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ========== SERVICES REGISTRATION ==========
+// Add Razor components
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
 
-// Scoped auth service
+// Shared services
+builder.Services.AddSingleton<IFormFactor, FormFactor>();
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterDTO>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddSingleton<ITokenStorage, ServerTokenStorage>(); // Implement WebTokenStorage for browser use
 
-// JWT auth message handler
+// JWT handler (optional on server side)
 builder.Services.AddScoped<JwtAuthMessageHandler>();
 
-// Register ITokenStorage for Server-side storage
-builder.Services.AddSingleton<ITokenStorage, ServerTokenStorage>();
-
-// Auth state provider for Blazor
-builder.Services.AddScoped<AuthStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
-builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
-
-// Register HttpClient with JWT handler
+// HttpClient for API
 builder.Services.AddHttpClient("ApiClient", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7478/");
-})
-.AddHttpMessageHandler<JwtAuthMessageHandler>();
+}).AddHttpMessageHandler<JwtAuthMessageHandler>();
 
-// AutoMapper configuration
+// AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-// FluentValidation for shared DTOs
-builder.Services.AddValidatorsFromAssemblyContaining<RegisterDTO>();
-
-// SignalR service (optional if used in shared logic)
+// SignalR (optional if used on server)
 builder.Services.AddSingleton(sp =>
 {
     var hubUrl = "https://localhost:7478/ordboghub";
     return new SignalRService(hubUrl);
 });
 
-// Device-specific abstraction (if applicable in shared UI)
-builder.Services.AddSingleton<IFormFactor, FormFactor>();
+// SQLite is not relevant server-side – skip or implement a server-side DB
 
-// Add Blazor server services (this includes the AntiforgeryStateProvider and PersistentComponentState automatically)
-builder.Services.AddServerSideBlazor()
-    .AddCircuitOptions(options => options.DetailedErrors = true);
-
-// Register antiforgery services (default behavior)
-builder.Services.AddAntiforgery(options =>
-{
-    // Customize antiforgery options if needed
-});
-
-// ========== BUILD AND CONFIGURE PIPELINE ==========
+// Sync services
+builder.Services.AddSingleton<IGenericSyncService, GenericSyncService>();
+builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.Logger.LogInformation("Running in Development");
+    app.UseWebAssemblyDebugging();
 }
 else
 {
@@ -76,20 +56,15 @@ else
     app.UseHsts();
 }
 
-builder.Services.AddLogging(logging =>
-{
-    logging.AddConsole(); // Logs to the console
-    logging.AddDebug();   // Logs to the debug output
-    logging.AddEventSourceLogger(); // Logs to event source
-});
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseAntiforgery();  // Enables antiforgery protection globally
-app.MapStaticAssets();
+app.UseAntiforgery();
 
-// Map Blazor server components
-app.MapBlazorHub(); // This is necessary for Blazor Server-side
-app.MapFallbackToPage("/_Host");
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(
+        typeof(TaekwondoApp.Shared._Imports).Assembly,
+        typeof(TaekwondoApp.Web.Client._Imports).Assembly);
 
 app.Run();
