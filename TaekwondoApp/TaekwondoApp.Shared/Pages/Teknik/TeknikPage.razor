@@ -12,35 +12,35 @@
 @inject AuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
-<h1>Teknik Management</h1>
+<h1>Teknikstyring</h1>
 
-<!-- Search Filters -->
+<!-- Søg Filtre -->
 <div class="row mb-3">
     <div class="col-md-4">
-        <label>Search by Teknik Name:</label>
-        <input class="form-control" @bind="searchTeknikName" placeholder="Enter Teknik name..." />
+        <label>Søg efter Tekniknavn:</label>
+        <input class="form-control" @bind="searchTeknikName" placeholder="Indtast tekniknavn..." />
     </div>
     <div class="col-md-4 d-flex align-items-end">
-        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
-        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+        <button class="btn btn-warning" @onclick="ClearFilters">Ryd filtre</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Anvend filter</button>
     </div>
 </div>
 
-<!-- Display Table -->
+<!-- Vis Tabel -->
 @if (filteredTeknikker == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Indlæser...</em></p>
 }
 else if (filteredTeknikker.Count == 0)
 {
-    <p><em>No Teknik records match your search.</em></p>
+    <p><em>Ingen teknikker matcher din søgning.</em></p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
+                <th>Navn</th>
             </tr>
         </thead>
         <tbody>
@@ -93,12 +93,12 @@ else
             }
             else
             {
-                errorMessage = "Failed to fetch teknik data.";
+                errorMessage = "Kunne ikke hente teknikdata.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading teknik data: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af teknikdata: {ex.Message}";
         }
     }
 

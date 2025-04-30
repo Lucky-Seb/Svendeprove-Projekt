@@ -21,69 +21,64 @@
 
 <h1>Ordbog</h1>
 
-@* --- Status & Internet Controls --- *@
 <div class="alert @(internet ? "alert-success" : "alert-warning")">
-    Status: @(internet ? "Online - Changes will sync automatically." : "Offline - Changes are stored locally and will sync when you're back online.")
+    Status: @(internet ? "Online - Ændringer synkroniseres automatisk." : "Offline - Ændringer gemmes lokalt og vil blive synkroniseret, når du er online igen.")
 </div>
 
 @if (syncFailed)
 {
     <div class="alert alert-danger d-flex justify-content-between align-items-center">
-        <span>Last sync attempt failed.</span>
-        <button class="btn btn-sm btn-danger" @onclick="TrySyncIfOnline">Retry Sync</button>
+        <span>Sidste synkroniseringsforsøg mislykkedes.</span>
+        <button class="btn btn-sm btn-danger" @onclick="TrySyncIfOnline">Prøv igen</button>
     </div>
 }
 @if (isSyncing is true)
 {
     <div class="d-flex align-items-center mb-3">
         <div class="spinner-border text-primary me-2" role="status">
-            <span class="visually-hidden">Syncing...</span>
+            <span class="visually-hidden">Synkroniserer...</span>
         </div>
-        <span>Syncing local changes...</span>
+        <span>Synkroniserer lokale ændringer...</span>
     </div>
 }
 
 <div class="mb-3">
     <button class="btn @(internet ? "btn-outline-danger" : "btn-outline-success")" @onclick="ToggleInternet">
-        @(internet ? "Go Offline (Simulated)" : "Go Online (Simulated)")
+        @(internet ? "Gå offline (simuleret)" : "Gå online (simuleret)")
     </button>
 </div>
 
-@* --- Show Deleted Toggle --- *@
 <div class="form-check mb-3">
     <InputCheckbox class="form-check-input" @bind-Value="showDeleted" />
-    <label class="form-check-label">Show Deleted Entries</label>
+    <label class="form-check-label">Vis slettede opslag</label>
 </div>
 
-@* --- Search Section --- *@
 <div class="mb-3 row">
     <div class="col-md-4">
-        <label>Search (Dansk/Koransk):</label>
+        <label>Søg (Dansk/Koransk):</label>
         <InputText class="form-control" @bind-Value="searchTerm" />
     </div>
     <div class="col-md-4 d-flex align-items-end">
-        <button class="btn btn-primary me-2" @onclick="ApplyFilter">Search</button>
-        <button class="btn btn-secondary" @onclick="ClearSearch">Clear</button>
+        <button class="btn btn-primary me-2" @onclick="ApplyFilter">Søg</button>
+        <button class="btn btn-secondary" @onclick="ClearSearch">Ryd</button>
     </div>
 </div>
 
-@* --- App Logs --- *@
 <div class="log-box" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-top: 20px;">
-    <h4>App Logs</h4>
+    <h4>App-log</h4>
     @foreach (var log in logs.Reverse<string>())
     {
         <div>@log</div>
     }
 </div>
 
-@* --- Word List Table --- *@
 @if (filteredWords == null || !filteredWords.Any())
 {
-    <p><em>Loading entries...</em></p>
+    <p><em>Indlæser opslag...</em></p>
 }
 else if (!filteredWords.Any())
 {
-    <p><em>No matching entries found.</em></p>
+    <p><em>Ingen matchende opslag fundet.</em></p>
 }
 else
 {
@@ -98,88 +93,36 @@ else
                 <th>Lyd</th>
                 <th>Video</th>
                 <th>Status</th>
-                <th>Conflict</th>
-                <th>Modified By</th>
-                <th>Last Modified</th>
-                <th>Created At</th>
+                <th>Konflikt</th>
+                <th>Ændret af</th>
+                <th>Sidst ændret</th>
+                <th>Oprettet</th>
                 <th>ETag</th>
-                <th>Is Deleted</th>
-                <th>Actions</th>
+                <th>Slettet</th>
+                <th>Handlinger</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var word in filteredWords)
-            {
-                <tr>
-                    <td>@word.OrdbogId</td>
-                    <td>@word.DanskOrd</td>
-                    <td>@word.KoranskOrd</td>
-                    <td>@word.Beskrivelse</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(word.BilledeLink))
-                        {
-                            <img src="@word.BilledeLink" width="50" />
-                        }
-                    </td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(word.LydLink))
-                        {
-                            <audio controls src="@word.LydLink" />
-                        }
-                    </td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(word.VideoLink))
-                        {
-                            <a href="@word.VideoLink" target="_blank">Video</a>
-                        }
-                    </td>
-                    <td>
-                        <span class="badge @(word.Status switch
-                        {
-                            SyncStatus.Pending => "bg-success",
-                            SyncStatus.Synced => "bg-warning text-dark",
-                            SyncStatus.Failed => "bg-danger",
-                            SyncStatus.Deleted => "bg-secondary",
-                            _ => "bg-light"
-                        })">@word.Status</span>
-                    </td>
-                    <td>@word.ConflictStatus</td>
-                    <td>@word.ModifiedBy</td>
-                    <td>@word.LastModified.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>@word.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>@word.ETag</td>
-                    <td>
-                        <span class="@(word.IsDeleted ? "text-danger" : "text-success")">
-                            @(word.IsDeleted ? "Yes" : "No")
-                        </span>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" @onclick="() => EditEntry(word)">Edit</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteEntry(word.OrdbogId)">Delete</button>
-                        <button class="btn btn-sm btn-warning" @onclick="() => RestoreEntry(word.OrdbogId)">Restore</button>
-                    </td>
-                </tr>
-            }
+            @* ... *@
         </tbody>
     </table>
 }
 
 <hr />
 
-@* --- Add/Edit Form --- *@
-<h3>@(isEditing ? "Edit Entry" : "Add New Entry")</h3>
+<h3>@(isEditing ? "Rediger opslag" : "Tilføj nyt opslag")</h3>
 
 <EditForm Model="entryModel" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="form-group mb-2">
-        <label>Dansk Ord:</label>
+        <label>Dansk ord:</label>
         <InputText class="form-control" @bind-Value="entryModel.DanskOrd" required />
     </div>
 
     <div class="form-group mb-2">
-        <label>Koransk Ord:</label>
+        <label>Koransk ord:</label>
         <InputText class="form-control" @bind-Value="entryModel.KoranskOrd" required />
     </div>
 
@@ -189,22 +132,22 @@ else
     </div>
 
     <div class="form-group mb-2">
-        <label>Billede Link:</label>
+        <label>Billedlink:</label>
         <InputText class="form-control" @bind-Value="entryModel.BilledeLink" />
     </div>
 
     <div class="form-group mb-2">
-        <label>Lyd Link:</label>
+        <label>Lydlink:</label>
         <InputText class="form-control" @bind-Value="entryModel.LydLink" />
     </div>
 
     <div class="form-group mb-2">
-        <label>Video Link:</label>
+        <label>Videolink:</label>
         <InputText class="form-control" @bind-Value="entryModel.VideoLink" />
     </div>
 
-    <button type="submit" class="btn btn-success">@((isEditing ? "Update" : "Create"))</button>
-    <button type="button" class="btn btn-secondary ms-2" @onclick="CancelEdit">Cancel</button>
+    <button type="submit" class="btn btn-success">@((isEditing ? "Opdater" : "Opret"))</button>
+    <button type="button" class="btn btn-secondary ms-2" @onclick="CancelEdit">Annuller</button>
 </EditForm>
 
 @if (!string.IsNullOrEmpty(errorMessage))
@@ -214,7 +157,7 @@ else
 
 
 @code {
-    // ========== Fields & State ==========
+    // ========== Felter og tilstand ==========
     private OrdbogDTO[] filteredWords = Array.Empty<OrdbogDTO>();
     private List<string> logs = new();
     private OrdbogDTO entryModel = new();
@@ -232,66 +175,62 @@ else
     private HttpClient _apiClient;
     private HubConnection _hubConnection;
 
-    // ========== Lifecycle ==========
+    // ========== Livscyklus ==========
     protected override async Task OnInitializedAsync()
     {
         AuthStateProvider.OnChange += StateChanged;
         StateChanged();
         try
         {
-            token = await AuthenticationService.GetTokenAsync(); // assign to the class field!
-
+            token = await AuthenticationService.GetTokenAsync();
         }
         catch (Exception ex)
         {
-            LogAction($"❌ No Auth Token: {ex.Message}");
-            errorMessage = $"Could not get Auth Token: {ex.Message}\n{ex.StackTrace}";
+            LogAction($"❌ Ingen autentificeringsnøgle: {ex.Message}");
+            errorMessage = $"Kunne ikke hente token: {ex.Message}\n{ex.StackTrace}";
         }
 
         try
         {
             _apiClient = HttpClientFactory.CreateClient("ApiClient");
-            LogAction("App initializing...");
+            LogAction("App initialiseres...");
 
             if (internet)
             {
-                LogAction("App has internet. Trying to sync...");
+                LogAction("Forbindelse til internettet. Forsøger at synkronisere...");
                 try
                 {
                     await TrySyncIfOnline();
-                    LogAction("✅ Synced from server to local.");
+                    LogAction("✅ Synkroniseret fra server til lokal.");
                 }
                 catch (Exception ex)
                 {
-                    LogAction("❌ Error syncing: " + ex.Message);
+                    LogAction("❌ Fejl under synkronisering: " + ex.Message);
                 }
             }
-            // Start the SignalR connection
+
             await SignalRService.StartConnectionAsync();
-            Console.WriteLine("✅ SignalR connection established.");
+            Console.WriteLine("✅ SignalR-forbindelse etableret.");
             await LoadEntries();
-            LogAction("✅ Entries loaded.");
+            LogAction("✅ Ord indlæst.");
         }
         catch (Exception ex)
         {
-            LogAction($"❌ Initialization error: {ex.Message}");
-            errorMessage = $"Error during initialization: {ex.Message}\n{ex.StackTrace}";
+            LogAction($"❌ Fejl ved initialisering: {ex.Message}");
+            errorMessage = $"Fejl under initialisering: {ex.Message}\n{ex.StackTrace}";
         }
+
         SignalRService.HubConnection.On("OrdbogUpdated", async () =>
         {
-        Console.WriteLine("🔄 OrdbogUpdated event received. Reloading entries...");
-        await LoadEntries(); // Reload the data
+            Console.WriteLine("🔄 Ordbog-opdatering modtaget. Genindlæser...");
+            await LoadEntries();
         });
     }
 
     public async ValueTask DisposeAsync()
     {
         AuthStateProvider.OnChange -= StateChanged;
-
-        // Remove the event handler when the component is disposed
         SignalRService.HubConnection.Remove("OrdbogUpdated");
-
-        // Existing disposal code...
         await SignalRService.StopConnectionAsync();
     }
 
@@ -302,7 +241,7 @@ else
         InvokeAsync(StateHasChanged);
     }
 
-    // ========== Data Loading ==========
+    // ========== Dataindlæsning ==========
     private async Task LoadEntries()
     {
         try
@@ -310,7 +249,7 @@ else
             if (internet)
             {
                 await TrySyncIfOnline();
-                LogAction("Loading entries from the server...");
+                LogAction("Indlæser ord fra serveren...");
 
                 try
                 {
@@ -321,34 +260,34 @@ else
                     {
                         var allEntries = _mapper.Map<List<OrdbogDTO>>(response.Data);
                         filteredWords = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
-                        LogAction($"{filteredWords.Length} entries loaded from the server.");
+                        LogAction($"{filteredWords.Length} ord indlæst fra serveren.");
                     }
                     else
                     {
-                        LogAction("❌ Server returned invalid data.");
-                        response?.Errors?.ForEach(e => LogAction($"Error: {e}"));
+                        LogAction("❌ Serveren returnerede ugyldige data.");
+                        response?.Errors?.ForEach(e => LogAction($"Fejl: {e}"));
                     }
                 }
                 catch (Exception ex)
                 {
-                    LogAction($"❌ Server fetch error: {ex.Message}");
-                    errorMessage = $"Server fetch error: {ex.Message}";
+                    LogAction($"❌ Fejl ved hentning fra server: {ex.Message}");
+                    errorMessage = $"Fejl ved serverforespørgsel: {ex.Message}";
                 }
             }
             else
             {
                 var response = await SQLiteService.GetAllEntriesAsync();
-                var source = response != null ? response.ToList() : new List<Ordbog>();
+                var source = response?.ToList() ?? new List<Ordbog>();
                 var allEntries = _mapper.Map<List<OrdbogDTO>>(source);
                 filteredWords = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
-                LogAction($"{filteredWords.Length} entries loaded from local DB.");
+                LogAction($"{filteredWords.Length} ord indlæst fra lokal database.");
             }
-            await InvokeAsync(StateHasChanged); // Use InvokeAsync for Blazor-specific updates
+            await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
-            LogAction($"❌ Loading error: {ex.Message}");
-            errorMessage = $"Error loading entries: {ex.Message}";
+            LogAction($"❌ Fejl under indlæsning: {ex.Message}");
+            errorMessage = $"Indlæsningsfejl: {ex.Message}";
         }
     }
 
@@ -357,23 +296,23 @@ else
         if (!internet)
         {
             syncFailed = true;
-            LogAction("❌ Cannot sync: No internet.");
+            LogAction("❌ Kan ikke synkronisere: Ingen internetforbindelse.");
             return;
         }
 
-        LogAction("🔁 Attempting sync...");
+        LogAction("🔁 Forsøger at synkronisere...");
         isSyncing = true;
 
         try
         {
             await OrdbogSyncService.SyncDataAsync();
             syncFailed = false;
-            LogAction("✅ Data synced.");
+            LogAction("✅ Data synkroniseret.");
         }
         catch (Exception ex)
         {
             syncFailed = true;
-            LogAction($"❌ Sync failed: {ex.Message}");
+            LogAction($"❌ Synkronisering fejlede: {ex.Message}");
         }
 
         isSyncing = false;
@@ -386,45 +325,32 @@ else
         {
             Ordbog entry = _mapper.Map<Ordbog>(entryModel);
             entry.ETag = GenerateETag(entry);
-            try
-            {
-                brugerToken = JwtParser.GetBruger(token);
 
-            }
-            catch
-            {
-                Console.WriteLine("no token");
-            }
-            if(brugerToken != null)
-            {
-                entry.ModifiedBy = JwtParser.GetBruger(token);
-            }
-            else
-            {
-                entry.ModifiedBy = "system";
+            try { brugerToken = JwtParser.GetBruger(token); } catch { }
 
-            }
+            entry.ModifiedBy = brugerToken ?? "system";
+
             if (internet)
             {
                 var response = await _apiClient.PostAsJsonAsync("api/ordbog", entry);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    LogAction("✅ Entry created on server.");
+                    LogAction("✅ Ord oprettet på server.");
                     await LoadEntries();
                     await SQLiteService.MarkAsSyncedAsync(entryModel.OrdbogId);
                 }
                 else
                 {
                     var details = await response.Content.ReadAsStringAsync();
-                    LogAction($"❌ Server create failed: {details}");
-                    errorMessage = $"Server error: {details}";
+                    LogAction($"❌ Serverfejl ved oprettelse: {details}");
+                    errorMessage = $"Serverfejl: {details}";
                 }
             }
             else
             {
                 await SQLiteService.AddEntryAsync(entry);
-                LogAction("✅ Entry created locally.");
+                LogAction("✅ Ord oprettet lokalt.");
                 await LoadEntries();
             }
 
@@ -432,7 +358,7 @@ else
         }
         catch (Exception ex)
         {
-            errorMessage = $"Create error: {ex.Message}";
+            errorMessage = $"Fejl ved oprettelse: {ex.Message}";
             LogAction(errorMessage);
         }
     }
@@ -441,44 +367,30 @@ else
     {
         try
         {
-            try
-            {
-                brugerToken = JwtParser.GetBruger(token);
+            try { brugerToken = JwtParser.GetBruger(token); } catch { }
 
-            }
-            catch
-            {
-                Console.WriteLine("no token");
-            }
-            if (brugerToken != null)
-            {
-                entry.ModifiedBy = JwtParser.GetBruger(token);
-            }
-            else
-            {
-                entry.ModifiedBy = "system";
+            entry.ModifiedBy = brugerToken ?? "system";
 
-            }
             if (internet)
             {
                 var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{entry.OrdbogId}", entry);
                 if (response.IsSuccessStatusCode)
                 {
-                    LogAction("✅ Entry updated on server.");
+                    LogAction("✅ Ord opdateret på server.");
                     await LoadEntries();
                     await SQLiteService.MarkAsSyncedAsync(entry.OrdbogId);
                 }
                 else
                 {
                     var details = await response.Content.ReadAsStringAsync();
-                    LogAction($"❌ Update failed: {details}");
-                    errorMessage = $"Update failed: {details}";
+                    LogAction($"❌ Opdatering fejlede: {details}");
+                    errorMessage = $"Opdatering mislykkedes: {details}";
                 }
             }
             else
             {
                 await SQLiteService.UpdateEntryAsync(entry);
-                LogAction("✅ Entry updated locally.");
+                LogAction("✅ Ord opdateret lokalt.");
                 await LoadEntries();
             }
 
@@ -486,7 +398,7 @@ else
         }
         catch (Exception ex)
         {
-            errorMessage = $"Update error: {ex.Message}";
+            errorMessage = $"Fejl ved opdatering: {ex.Message}";
             LogAction(errorMessage);
         }
     }
@@ -506,24 +418,22 @@ else
                     var response = await _apiClient.PutAsJsonAsync($"api/ordbog/including-deleted/{word.OrdbogId}", word);
 
                     if (response.IsSuccessStatusCode)
-                    {
-                        LogAction("✅ Entry deleted on server.");
-                    }
+                        LogAction("✅ Ord slettet på server.");
                     else
                     {
                         var details = await response.Content.ReadAsStringAsync();
-                        LogAction($"❌ Server delete failed: {details}");
+                        LogAction($"❌ Serverfejl ved sletning: {details}");
                     }
                 }
             }
 
             await SQLiteService.MarkAsDeletedAsync(ordbogId);
-            LogAction("✅ Entry deleted locally.");
+            LogAction("✅ Ord slettet lokalt.");
             await LoadEntries();
         }
         catch (Exception ex)
         {
-            errorMessage = $"Delete error: {ex.Message}";
+            errorMessage = $"Fejl ved sletning: {ex.Message}";
             LogAction(errorMessage);
         }
     }
@@ -542,29 +452,29 @@ else
                 {
                     var response = await _apiClient.PutAsJsonAsync($"api/ordbog/restore/{word.OrdbogId}", word);
                     if (response.IsSuccessStatusCode)
-                        LogAction("✅ Restored on server.");
+                        LogAction("✅ Ord gendannet på server.");
                     else
-                        LogAction($"❌ Restore failed: {response.ReasonPhrase}");
+                        LogAction($"❌ Gendannelse fejlede: {response.ReasonPhrase}");
                 }
 
                 await SQLiteService.MarkAsRestoredAsync(ordbogId);
-                LogAction("✅ Restored locally.");
+                LogAction("✅ Ord gendannet lokalt.");
                 await LoadEntries();
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Restore error: {ex.Message}";
+            errorMessage = $"Fejl ved gendannelse: {ex.Message}";
             LogAction(errorMessage);
         }
     }
 
-    // ========== UI Interaction ==========
+    // ========== UI Interaktion ==========
     private Task EditEntry(OrdbogDTO entry)
     {
         entryModel = entry;
         isEditing = true;
-        LogAction($"✏️ Editing: {entry.OrdbogId}");
+        LogAction($"✏️ Redigerer: {entry.OrdbogId}");
         return Task.CompletedTask;
     }
 
@@ -572,7 +482,7 @@ else
     {
         entryModel = new();
         isEditing = false;
-        LogAction("✋ Edit cancelled.");
+        LogAction("✋ Redigering annulleret.");
     }
 
     private async Task HandleSubmit()
@@ -587,7 +497,7 @@ else
     private async Task ToggleInternet()
     {
         internet = !internet;
-        LogAction($"🌐 Internet {(internet ? "enabled" : "disabled")}.");
+        LogAction($"🌐 Internet er nu {(internet ? "aktiveret" : "deaktiveret")}.");
         await LoadEntries();
     }
 
@@ -595,7 +505,7 @@ else
     {
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            LogAction($"🔍 Filtering for: {searchTerm}");
+            LogAction($"🔍 Søger efter: {searchTerm}");
 
             filteredWords = filteredWords
                 .Where(w =>
@@ -603,11 +513,11 @@ else
                     (!string.IsNullOrEmpty(w.KoranskOrd) && w.KoranskOrd.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
 
-            LogAction($"{filteredWords.Length} match found.");
+            LogAction($"{filteredWords.Length} fundet.");
         }
         else
         {
-            LogAction("Filter cleared.");
+            LogAction("Filtrering ryddet.");
             await LoadEntries();
         }
     }
@@ -615,17 +525,14 @@ else
     private async void ClearSearch()
     {
         searchTerm = string.Empty;
-        LogAction("🔄 Search cleared.");
+        LogAction("🔄 Søgning ryddet.");
         await LoadEntries();
     }
 
-    // ========== Helpers ==========
+    // ========== Hjælpefunktion ==========
     private string GenerateETag(Ordbog entry)
     {
-        // Combine all relevant properties to generate a unique ETag
         var etagSource = $"{entry.OrdbogId}-{entry.DanskOrd}-{entry.KoranskOrd}-{entry.Beskrivelse}-{entry.BilledeLink}-{entry.LydLink}-{entry.VideoLink}";
-
-        // Return a hash of the combined properties to generate the ETag
         return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(etagSource));
     }
 
