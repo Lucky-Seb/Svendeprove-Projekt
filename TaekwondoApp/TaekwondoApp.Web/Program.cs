@@ -5,6 +5,7 @@ using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Mapping;
 using FluentValidation;
 using TaekwondoApp.Web.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,8 @@ builder.Services.AddRazorComponents()
 // Shared services
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterDTO>();
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IAuthStateProvider, AuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 builder.Services.AddSingleton<ITokenStorage, ServerTokenStorage>(); // Implement WebTokenStorage for browser use
 
 // JWT handler (optional on server side)
@@ -37,12 +39,6 @@ builder.Services.AddSingleton(sp =>
     var hubUrl = "https://localhost:7478/ordboghub";
     return new SignalRService(hubUrl);
 });
-
-// SQLite is not relevant server-side – skip or implement a server-side DB
-
-// Sync services
-builder.Services.AddSingleton<IGenericSyncService, GenericSyncService>();
-builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
 
 var app = builder.Build();
 
