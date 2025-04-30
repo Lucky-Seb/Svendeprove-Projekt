@@ -1,56 +1,72 @@
 using Microsoft.Extensions.DependencyInjection;
-using TaekwondoApp.Shared.Services;
-using TaekwondoApp.Web.Components;
-using TaekwondoApp.Web.Services;
-using TaekwondoApp.Shared.Mapping;
-using System.Net.Http;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using TaekwondoApp.Web.Components;
+using TaekwondoApp.Web.Services;
+using TaekwondoApp.Shared.Services;
+using TaekwondoApp.Shared.Mapping;
+using TaekwondoApp.Shared.DTO;
+using FluentValidation;
+using System.Net.Http;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ========== SERVICES REGISTRATION ==========
+
 // Scoped auth service
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-// Register JWT Auth message handler
+
+// JWT auth message handler
 builder.Services.AddScoped<JwtAuthMessageHandler>();
 
-// Auth state provider (if using CascadingAuthenticationState)
+// Auth state provider for Blazor
 builder.Services.AddScoped<AuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
 
-// Update the HttpClient registration to pass the required IAuthenticationService to JwtAuthMessageHandler
-// Register a named HttpClient with JwtAuthMessageHandler
+// Register HttpClient with JWT handler
 builder.Services.AddHttpClient("ApiClient", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7478/"); // Set the API base URL here
-});
-//.AddHttpMessageHandler<JwtAuthMessageHandler>();
+    client.BaseAddress = new Uri("https://localhost:7478/");
+})
+.AddHttpMessageHandler<JwtAuthMessageHandler>();
 
-// Register AutoMapper
+// AutoMapper configuration
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-// Add service defaults & Redis cache
+// FluentValidation for shared DTOs
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterDTO>();
+
+// SignalR service (optional if used in shared logic)
+builder.Services.AddSingleton(sp =>
+{
+    var hubUrl = "https://localhost:7478/ordboghub";
+    return new SignalRService(hubUrl);
+});
+
+// Device-specific abstraction (if applicable in shared UI)
+builder.Services.AddSingleton<IFormFactor, FormFactor>();
+
+// Add Blazor server services
 builder.AddServiceDefaults();
 builder.AddRedisOutputCache("cache");
+
 builder.Services.AddServerSideBlazor()
     .AddCircuitOptions(options => options.DetailedErrors = true);
 
-// Register Razor components
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-// Device-specific service
-builder.Services.AddSingleton<IFormFactor, FormFactor>();
+// ========== BUILD AND CONFIGURE PIPELINE ==========
 
 var app = builder.Build();
-// Register AuthStateProvider as both AuthenticationStateProvider and itself
-
 
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
+    app.Logger.LogInformation("Running in Development");
 }
 else
 {
