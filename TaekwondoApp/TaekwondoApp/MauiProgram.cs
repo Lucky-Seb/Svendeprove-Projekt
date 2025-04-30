@@ -7,7 +7,6 @@ using TaekwondoApp.Shared.Models;
 using FluentValidation;
 using TaekwondoApp.Shared.ServiceInterfaces;
 
-
 namespace TaekwondoApp
 {
     public static class MauiProgram
@@ -31,9 +30,10 @@ namespace TaekwondoApp
 
             builder.Services.AddValidatorsFromAssemblyContaining<RegisterDTO>();
 
-            // Scoped auth service
+            // Register ITokenStorage for Maui-specific storage (e.g., use SecureStorage in Maui)
             builder.Services.AddSingleton<ITokenStorage, MauiTokenStorage>();
 
+            // Scoped auth service
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             // Register JWT Auth message handler
