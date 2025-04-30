@@ -1,6 +1,7 @@
 ﻿@using TaekwondoApp.Shared.Services
+@using TaekwondoApp.Shared.ServiceInterfaces
 @using Microsoft.AspNetCore.Components.Authorization
-@inject AuthStateProvider AuthStateProvider
+@inject IAuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @implements IDisposable
 
@@ -129,7 +130,6 @@
 
     protected override void OnInitialized()
     {
-
         AuthStateProvider.OnChange += StateChanged;
         StateChanged(); // Initialize state
     }
@@ -150,5 +150,4 @@
     {
         AuthStateProvider.OnChange -= StateChanged;
     }
-
 }

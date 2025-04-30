@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace TaekwondoApp.Shared.ServiceInterfaces
@@ -11,6 +8,7 @@ namespace TaekwondoApp.Shared.ServiceInterfaces
         string? Token { get; }
         string? Role { get; }
         bool IsAuthenticated { get; }
+        event Action? OnChange;  // Add the event definition
 
         Task SetAuth(string token);
         Task ClearAuth();
