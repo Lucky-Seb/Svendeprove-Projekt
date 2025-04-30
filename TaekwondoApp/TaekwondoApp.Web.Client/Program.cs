@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Mapping;
 using TaekwondoApp.Shared.ServiceInterfaces;
@@ -12,8 +13,10 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 // Shared services
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterDTO>();
-builder.Services.AddScoped<IAuthStateProvider, AuthStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
+builder.Services.TryAddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.TryAddScoped<IAuthStateProvider, AuthStateProvider>();
+builder.Services.TryAddScoped<AuthenticationStateProvider, AuthStateProvider>();
+builder.Services.AddScoped<JwtAuthMessageHandler>();
 builder.Services.AddSingleton<ITokenStorage, WebTokenStorage>(); // Web-compatible storage (localStorage/sessionStorage)
 
 // JWT handler
