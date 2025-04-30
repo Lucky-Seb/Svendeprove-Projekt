@@ -1,8 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using TaekwondoApp.Web.Components;
 using TaekwondoApp.Web.Services;
 using TaekwondoApp.Shared.Services;
@@ -11,6 +9,7 @@ using TaekwondoApp.Shared.DTO;
 using FluentValidation;
 using System.Net.Http;
 using TaekwondoApp.Shared.ServiceInterfaces;
+using Microsoft.AspNetCore.Components.Forms; // Required for forms and antiforgery
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +27,7 @@ builder.Services.AddSingleton<ITokenStorage, ServerTokenStorage>();
 // Auth state provider for Blazor
 builder.Services.AddScoped<AuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
+builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
 
 // Register HttpClient with JWT handler
 builder.Services.AddHttpClient("ApiClient", client =>
@@ -52,16 +52,15 @@ builder.Services.AddSingleton(sp =>
 // Device-specific abstraction (if applicable in shared UI)
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
 
-// Add Blazor server services
-builder.AddServiceDefaults();
-builder.AddRedisOutputCache("cache");
-
+// Add Blazor server services (this includes the AntiforgeryStateProvider and PersistentComponentState automatically)
 builder.Services.AddServerSideBlazor()
     .AddCircuitOptions(options => options.DetailedErrors = true);
 
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
+// Register antiforgery services (default behavior)
+builder.Services.AddAntiforgery(options =>
+{
+    // Customize antiforgery options if needed
+});
 
 // ========== BUILD AND CONFIGURE PIPELINE ==========
 
@@ -69,7 +68,6 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseWebAssemblyDebugging();
     app.Logger.LogInformation("Running in Development");
 }
 else
@@ -78,16 +76,20 @@ else
     app.UseHsts();
 }
 
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole(); // Logs to the console
+    logging.AddDebug();   // Logs to the debug output
+    logging.AddEventSourceLogger(); // Logs to event source
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseAntiforgery();
+app.UseAntiforgery();  // Enables antiforgery protection globally
 app.MapStaticAssets();
 
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(
-        typeof(TaekwondoApp.Shared._Imports).Assembly,
-        typeof(TaekwondoApp.Web.Client._Imports).Assembly);
+// Map Blazor server components
+app.MapBlazorHub(); // This is necessary for Blazor Server-side
+app.MapFallbackToPage("/_Host");
 
 app.Run();
