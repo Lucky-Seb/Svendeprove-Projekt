@@ -8,12 +8,12 @@ namespace TaekwondoApp.Shared.Services
     public class AuthenticationService : IAuthenticationService
     {
         private readonly NavigationManager _navigationManager;
-        private readonly AuthStateProvider _authStateProvider;
+        private readonly IAuthStateProvider _authStateProvider;  // Changed from AuthStateProvider to IAuthStateProvider
         private readonly ITokenStorage _tokenStorage;
 
         public AuthenticationService(
             NavigationManager navigationManager,
-            AuthStateProvider authStateProvider,
+            IAuthStateProvider authStateProvider,  // Changed from AuthStateProvider to IAuthStateProvider
             ITokenStorage tokenStorage)
         {
             _navigationManager = navigationManager;

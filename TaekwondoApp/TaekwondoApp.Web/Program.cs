@@ -19,6 +19,9 @@ builder.Services.AddSingleton<IFormFactor, FormFactor>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterDTO>();
 builder.Services.AddScoped<IAuthStateProvider, AuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
+builder.Services.AddSingleton<ITokenStorage, ServerTokenStorage>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<JwtAuthMessageHandler>();
 builder.Services.AddSingleton<ITokenStorage, ServerTokenStorage>(); // Implement WebTokenStorage for browser use
 
 // JWT handler (optional on server side)
