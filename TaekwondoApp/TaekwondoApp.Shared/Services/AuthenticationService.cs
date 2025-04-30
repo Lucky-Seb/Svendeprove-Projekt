@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Maui.Storage; // <-- Make sure this is included
 using System.Net.Http.Headers;
-using TaekwondoApp.Shared.Services;
+using TaekwondoApp.Shared.ServiceInterfaces;
 
 namespace TaekwondoApp.Shared.Services
 {

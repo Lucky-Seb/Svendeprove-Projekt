@@ -1,11 +1,12 @@
 ﻿@page "/quiz/{quizId:guid}"
 
-@using TaekwondoApp.Shared.DTO
-@using TaekwondoApp.Shared.Models
-@using TaekwondoApp.Shared.Services
-@using TaekwondoApp.Shared.Helper
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Helper
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.ServiceInterfaces
+@using TaekwondoApp.Shared.Services
 
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper

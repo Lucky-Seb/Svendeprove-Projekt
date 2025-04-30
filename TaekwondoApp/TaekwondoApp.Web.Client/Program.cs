@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using TaekwondoApp.Shared.Services;
+using TaekwondoApp.Shared.ServiceInterfaces;
 using TaekwondoApp.Web.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

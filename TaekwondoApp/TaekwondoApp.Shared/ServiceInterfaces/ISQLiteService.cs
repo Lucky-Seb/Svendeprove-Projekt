@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using TaekwondoApp.Shared.Models;  // Make sure to include the namespace for Ordbog
+using TaekwondoApp.Shared.Models;
 
-namespace TaekwondoApp.Shared.Services
+namespace TaekwondoApp.Shared.ServiceInterfaces
 {
     public interface ISQLiteService
     {

@@ -2,12 +2,13 @@
 @page "/admin/klub/{klubId:guid}/edit-quiz/{quizId:guid}"
 
 @* --- Using Statements --- *@
-@using TaekwondoApp.Shared.DTO
-@using TaekwondoApp.Shared.Models
-@using TaekwondoApp.Shared.Services
-@using TaekwondoApp.Shared.Helper
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Helper
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.ServiceInterfaces
+@using TaekwondoApp.Shared.Services
 
 @* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager

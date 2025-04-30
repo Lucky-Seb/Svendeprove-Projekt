@@ -10,6 +10,7 @@ using TaekwondoApp.Shared.Mapping;
 using TaekwondoApp.Shared.DTO;
 using FluentValidation;
 using System.Net.Http;
+using TaekwondoApp.Shared.ServiceInterfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +78,9 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.UseStaticFiles();
+app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

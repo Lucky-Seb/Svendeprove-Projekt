@@ -1,4 +1,4 @@
-namespace TaekwondoApp.Shared.Services
+namespace TaekwondoApp.Shared.ServiceInterfaces
 {
     public interface IFormFactor
     {

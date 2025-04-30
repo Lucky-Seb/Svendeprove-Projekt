@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TaekwondoApp.Shared.Models;
 
-namespace TaekwondoApp.Shared.Services
+namespace TaekwondoApp.Shared.ServiceInterfaces
 {
     public interface IGenericSyncService
     {

@@ -2,13 +2,14 @@
 @page "/admin/klub/{klubId:guid}/edit-program/{Id:guid}"
 
 @* --- Using Statements --- *@
-@using TaekwondoApp.Shared.DTO
-@using TaekwondoApp.Shared.Models
-@using TaekwondoApp.Shared.Services
-@using TaekwondoApp.Shared.Helper
+@using System.Text.Json
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
-@using System.Text.Json
+@using TaekwondoApp.Shared.DTO
+@using TaekwondoApp.Shared.Helper
+@using TaekwondoApp.Shared.Models
+@using TaekwondoApp.Shared.ServiceInterfaces
+@using TaekwondoApp.Shared.Services
 
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory HttpClientFactory
