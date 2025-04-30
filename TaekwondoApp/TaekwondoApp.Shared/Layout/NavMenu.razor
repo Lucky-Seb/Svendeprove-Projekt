@@ -88,6 +88,12 @@
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Tokens
             </NavLink>
         </div>
+        @if (role != null)
+        {
+            <div class="nav-item px-3">
+                <a class="nav-link" href="" @onclick="Logout">Logout</a>
+            </div>
+        }
 @*         @if (role == "Admin")
         {
             <NavLink href="/admin" Match="NavLinkMatch.All">Admin Panel</NavLink>
@@ -143,4 +149,5 @@
     {
         AuthStateProvider.OnChange -= StateChanged;
     }
+
 }

@@ -79,8 +79,6 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
-
-app.UseStaticFiles();
 app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
