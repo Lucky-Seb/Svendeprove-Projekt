@@ -13,43 +13,43 @@
 @inject IAuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
-<h1>Øvelse Management</h1>
+<h1>Øvelsesadministration</h1>
 
-<!-- Search Filters -->
+<!-- Søgefiltre -->
 <div class="row mb-3">
     <div class="col-md-4">
-        <label>Search by Øvelse Name:</label>
-        <input class="form-control" @bind="searchØvelseName" placeholder="Enter Øvelse name..." />
+        <label>Søg efter øvelsesnavn:</label>
+        <input class="form-control" @bind="søgeØvelseNavn" placeholder="Indtast øvelsesnavn..." />
     </div>
     <div class="col-md-4 d-flex align-items-end">
-        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
-        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+        <button class="btn btn-warning" @onclick="RydFiltre">Ryd filtre</button>
+        <button class="btn btn-primary ml-2" @onclick="AnvendFiltre">Anvend filter</button>
     </div>
 </div>
 
-<!-- Display Table -->
-@if (filteredØvelser == null)
+<!-- Vis tabel -->
+@if (filtreredeØvelser == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Indlæser...</em></p>
 }
-else if (filteredØvelser.Count == 0)
+else if (filtreredeØvelser.Count == 0)
 {
-    <p><em>No Øvelse records match your search.</em></p>
+    <p><em>Ingen øvelser matcher din søgning.</em></p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
+                <th>Navn</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var øvelse in filteredØvelser)
+            @foreach (var øvelse in filtreredeØvelser)
             {
                 <tr>
                     <td>
-                        <a @onclick="() => NavigateToØvelse(øvelse.ØvelseID)" style="cursor:pointer; text-decoration: underline;">
+                        <a @onclick="() => NavigerTilØvelse(øvelse.ØvelseID)" style="cursor:pointer; text-decoration: underline;">
                             @øvelse.ØvelseNavn
                         </a>
                     </td>
@@ -60,27 +60,27 @@ else
 }
 
 <hr />
-@if (errorMessage != null)
+@if (fejlbesked != null)
 {
-    <div class="alert alert-danger">@errorMessage</div>
+    <div class="alert alert-danger">@fejlbesked</div>
 }
 
 @code {
-    private List<ØvelseDTO> availableØvelser = new();
-    private List<ØvelseDTO> filteredØvelser = new();
-    private string? errorMessage;
-    private HttpClient _apiClient;
+    private List<ØvelseDTO> tilgængeligeØvelser = new();
+    private List<ØvelseDTO> filtreredeØvelser = new();
+    private string? fejlbesked;
+    private HttpClient _apiKlient;
     private string token = string.Empty;
-    private string searchØvelseName = "";
+    private string søgeØvelseNavn = "";
     private BrugerDTO? brugerDTO = null;
 
     protected override async Task OnInitializedAsync()
     {
-        _apiClient = HttpClientFactory.CreateClient("ApiClient");
-        await LoadØvelser();
+        _apiKlient = HttpClientFactory.CreateClient("ApiClient");
+        await HentØvelser();
     }
 
-    private async Task LoadØvelser()
+    private async Task HentØvelser()
     {
         try
         {
@@ -88,28 +88,26 @@ else
 
             if (string.IsNullOrEmpty(token))
             {
-                // If not logged in, fetch Øvelse data that is not owned by any klub or bruger
-                await LoadØvelserForNonLoggedInUser();
+                await HentØvelserForIkkeLoggetInd();
             }
             else
             {
-                // If logged in, fetch Øvelse data that belongs to the user and their clubs
-                await LoadØvelserForLoggedInUser();
+                await HentØvelserForLoggetInd();
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading Øvelse data: {ex.Message}";
+            fejlbesked = $"Fejl ved indlæsning af øvelsesdata: {ex.Message}";
         }
     }
 
-    private async Task LoadØvelserForLoggedInUser()
+    private async Task HentØvelserForLoggetInd()
     {
         var brugerId = JwtParser.GetUserIdFromJwt(token);
 
         try
         {
-            var brugerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
+            var brugerResponse = await _apiKlient.GetFromJsonAsync<ApiResponse<BrugerDTO>>($"api/bruger/details/{brugerId}");
             if (brugerResponse?.Success == true && brugerResponse.Data != null)
             {
                 brugerDTO = brugerResponse.Data;
@@ -117,69 +115,67 @@ else
             }
             else
             {
-                errorMessage = "Failed to fetch user data.";
+                fejlbesked = "Kunne ikke hente brugerdata.";
             }
 
             var klubIds = brugerDTO?.BrugerKlubber.Select(k => k.KlubID).ToList();
             var klubIdsString = klubIds != null ? string.Join(",", klubIds) : string.Empty;
 
-            // Fetching Øvelse data for logged-in user with the necessary query parameters
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>(
+            var response = await _apiKlient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>(
                 $"api/øvelse/own/?brugerId={brugerDTO?.BrugerID}&klubIds={klubIdsString}");
 
             if (response?.Success == true && response.Data != null)
             {
-                availableØvelser = _mapper.Map<List<ØvelseDTO>>(response.Data);
-                ApplyFilters();
+                tilgængeligeØvelser = _mapper.Map<List<ØvelseDTO>>(response.Data);
+                AnvendFiltre();
             }
             else
             {
-                errorMessage = "Failed to fetch Øvelse data.";
+                fejlbesked = "Kunne ikke hente øvelsesdata.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading user data: {ex.Message}";
+            fejlbesked = $"Fejl ved indlæsning af brugerdata: {ex.Message}";
         }
     }
 
-    private async Task LoadØvelserForNonLoggedInUser()
+    private async Task HentØvelserForIkkeLoggetInd()
     {
         try
         {
-            // Fetching Øvelse data without any specific parameters for non-logged-in users
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse/own");
+            var response = await _apiKlient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse/own");
 
             if (response?.Success == true && response.Data != null)
             {
-                availableØvelser = _mapper.Map<List<ØvelseDTO>>(response.Data);
-                ApplyFilters();
+                tilgængeligeØvelser = _mapper.Map<List<ØvelseDTO>>(response.Data);
+                AnvendFiltre();
             }
             else
             {
-                errorMessage = "Failed to fetch available Øvelse.";
+                fejlbesked = "Kunne ikke hente tilgængelige øvelser.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading Øvelse data: {ex.Message}";
+            fejlbesked = $"Fejl ved indlæsning af øvelsesdata: {ex.Message}";
         }
     }
 
-    private void ApplyFilters()
+    private void AnvendFiltre()
     {
-        filteredØvelser = availableØvelser
-            .Where(o => string.IsNullOrEmpty(searchØvelseName) || o.ØvelseNavn.Contains(searchØvelseName, StringComparison.OrdinalIgnoreCase))
+        filtreredeØvelser = tilgængeligeØvelser
+            .Where(o => string.IsNullOrEmpty(søgeØvelseNavn) || o.ØvelseNavn.Contains(søgeØvelseNavn, StringComparison.OrdinalIgnoreCase))
             .ToList();
     }
 
-    private void ClearFilters()
+    private void RydFiltre()
     {
-        searchØvelseName = "";
-        ApplyFilters();
+        søgeØvelseNavn = "";
+        AnvendFiltre();
     }
 
-    private void NavigateToØvelse(Guid øvelseId)
+    private void NavigerTilØvelse(Guid øvelseId)
     {
         NavigationManager.NavigateTo($"/øvelse/{øvelseId}");
     }
