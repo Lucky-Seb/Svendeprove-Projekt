@@ -1,11 +1,16 @@
 ﻿@page "/testpage"
-@using TaekwondoApp.Shared.Services
 @using System.Text.Json
+@using TaekwondoApp.Shared.ServiceInterfaces
+@using TaekwondoApp.Shared.Services
 @inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory HttpClientFactory
 
 <h3>Secure Page</h3>
+@if (AuthenticationService == null)
+{
+    <p style="color:red;">ERROR: AuthenticationService is not available. Check DI configuration.</p>
+}
 
 @if (!isAuthenticated)
 {
@@ -51,6 +56,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (AuthenticationService == null)
+        {
+            Console.WriteLine("ERROR: AuthenticationService is null. Check DI registration.");
+            isAuthenticated = false;
+            return;
+        }
+
         fronttoken = await AuthenticationService.GetTokenAsync();
         isAuthenticated = !string.IsNullOrEmpty(fronttoken);
 
@@ -61,6 +73,7 @@ else
         }
 
         frontendRole = JwtParser.GetRole(fronttoken);  // Make sure this is set correctly
+
         try
         {
             var client = HttpClientFactory.CreateClient("ApiClient");
@@ -74,12 +87,17 @@ else
                         PropertyNameCaseInsensitive = true
                     });
             }
+            else
+            {
+                Console.WriteLine($"Failed to fetch debug info: {response.StatusCode}");
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Failed to fetch debug info: {ex.Message}");
         }
     }
+
 
     private async Task Logout()
     {

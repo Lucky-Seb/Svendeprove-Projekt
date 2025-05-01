@@ -5,7 +5,8 @@ using TaekwondoApp.Shared.Mapping;
 using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
 using FluentValidation;
-
+using TaekwondoApp.Shared.ServiceInterfaces;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace TaekwondoApp
 {
@@ -30,8 +31,14 @@ namespace TaekwondoApp
 
             builder.Services.AddValidatorsFromAssemblyContaining<RegisterDTO>();
 
+            // Register ITokenStorage for Maui-specific storage (e.g., use SecureStorage in Maui)
+            builder.Services.AddSingleton<ITokenStorage, MauiTokenStorage>();
+
             // Scoped auth service
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddScoped<IAuthStateProvider, AuthStateProvider>();
+            builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
+
 
             // Register JWT Auth message handler
             builder.Services.AddScoped<JwtAuthMessageHandler>();
