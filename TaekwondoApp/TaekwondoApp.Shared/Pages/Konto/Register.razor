@@ -5,7 +5,7 @@
 @using TaekwondoApp.Shared.Mapping
 @using AutoMapper
 @inject NavigationManager NavigationManager
-@inject HttpClient HttpClient
+@inject IHttpClientFactory HttpClientFactory
 @inject IMapper Mapper
 
 <h3>Registrering</h3>
@@ -109,6 +109,12 @@
     private List<string> logs = new();
     private string PasswordStrengthText = string.Empty;
     private string PasswordStrengthColor = "black";
+    private HttpClient _apiClient;
+    protected override async Task OnInitializedAsync()
+    {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+    }
+
 
     private async Task HandleRegister()
     {
@@ -140,7 +146,7 @@
             brugerDTO.ModifiedBy = "system";
             brugerDTO.ChangeHistoryJson = "[]";
 
-            var response = await HttpClient.PostAsJsonAsync("https://localhost:7478/api/bruger", brugerDTO);
+            var response = await _apiClient.PostAsJsonAsync("https://localhost:7478/api/bruger", brugerDTO);
             LogAction($"Response status code: {response.StatusCode}");
 
             if (response.IsSuccessStatusCode)

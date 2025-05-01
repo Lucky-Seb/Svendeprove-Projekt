@@ -23,6 +23,10 @@
     <p>Du er ikke logget ind. Log ind først.</p>
     <button @onclick="NavigateToLogin">Gå til login</button>
 }
+else if (brugerDTO == null)
+{
+    <p>Indlæser brugerdata...</p>
+}
 else
 {
     <div class="account-details">
