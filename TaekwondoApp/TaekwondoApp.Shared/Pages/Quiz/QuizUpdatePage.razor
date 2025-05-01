@@ -24,7 +24,7 @@
     <div class="alert alert-danger">@errorMessage</div>
 }
 
-@if (newQuiz is not null)
+@if (newQuiz != null)
 {
     <EditForm Model="newQuiz" OnValidSubmit="HandleValidSubmit">
         <DataAnnotationsValidator />
@@ -75,7 +75,61 @@
                 <InputNumber @bind-Value="newSpørgsmål.SpørgsmålTid" class="form-control" />
             </div>
 
-            <button type="button" class="btn btn-primary mt-2" @onclick="AddSpørgsmål">Tilføj</button>
+            <div class="mb-2">
+                <label>Teori:</label>
+                <select class="form-control" @onchange="OnTeoriChanged">
+                    <option value="">-- Vælg Teori --</option>
+                    @foreach (var teori in teorier)
+                    {
+                        <option value="@teori.TeoriID">@teori.TeoriNavn</option>
+                    }
+                </select>
+                @if (selectedTeori != null)
+                {
+                    <div class="mt-1 p-2 border rounded bg-white">
+                        <strong>@selectedTeori.TeoriNavn</strong><br />
+                        <small>@selectedTeori.TeoriBeskrivelse</small>
+                    </div>
+                }
+            </div>
+
+            <div class="mb-2">
+                <label>Teknik:</label>
+                <select class="form-control" @onchange="OnTeknikChanged">
+                    <option value="">-- Vælg Teknik --</option>
+                    @foreach (var teknik in teknikker)
+                    {
+                        <option value="@teknik.TeknikID">@teknik.TeknikNavn</option>
+                    }
+                </select>
+                @if (selectedTeknik != null)
+                {
+                    <div class="mt-1 p-2 border rounded bg-white">
+                        <strong>@selectedTeknik.TeknikNavn</strong><br />
+                        <small>@selectedTeknik.TeknikBeskrivelse</small>
+                    </div>
+                }
+            </div>
+
+            <div class="mb-2">
+                <label>Øvelse:</label>
+                <select class="form-control" @onchange="OnØvelseChanged">
+                    <option value="">-- Vælg Øvelse --</option>
+                    @foreach (var øvelse in øvelser)
+                    {
+                        <option value="@øvelse.ØvelseID">@øvelse.ØvelseNavn</option>
+                    }
+                </select>
+                @if (selectedØvelse != null)
+                {
+                    <div class="mt-1 p-2 border rounded bg-white">
+                        <strong>@selectedØvelse.ØvelseNavn</strong><br />
+                        <small>@selectedØvelse.ØvelseBeskrivelse</small>
+                    </div>
+                }
+            </div>
+
+            <button type="button" class="btn btn-primary mt-2" @onclick="AddSpørgsmål">Tilføj Spørgsmål</button>
         </div>
 
         <button type="submit" class="btn btn-success mt-3">Gem Ændringer</button>
@@ -94,6 +148,12 @@ else
     private QuizDTO newQuiz = new();
     private SpørgsmålDTO newSpørgsmål = new();
     private List<Pensum> pensumGradList = new();
+    private List<TeoriDTO> teorier = new();
+    private List<TeknikDTO> teknikker = new();
+    private List<ØvelseDTO> øvelser = new();
+    private TeoriDTO? selectedTeori;
+    private TeknikDTO? selectedTeknik;
+    private ØvelseDTO? selectedØvelse;
     private string errorMessage = "";
     private HttpClient _apiClient;
 
@@ -122,13 +182,87 @@ else
             {
                 errorMessage = "Kunne ikke indlæse pensum liste.";
             }
+
+            var teoriResp = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeoriDTO>>>("api/teori");
+            if (teoriResp?.Success == true && teoriResp.Data is not null)
+            {
+                teorier = teoriResp.Data;
+            }
+            else
+            {
+                errorMessage = "Kunne ikke indlæse teorier.";
+            }
+
+            var teknikResp = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeknikDTO>>>("api/teknik");
+            if (teknikResp?.Success == true && teknikResp.Data is not null)
+            {
+                teknikker = teknikResp.Data;
+            }
+            else
+            {
+                errorMessage = "Kunne ikke indlæse teknikker.";
+            }
+
+            var øvelseResp = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
+            if (øvelseResp?.Success == true && øvelseResp.Data is not null)
+            {
+                øvelser = øvelseResp.Data;
+            }
+            else
+            {
+                errorMessage = "Kunne ikke indlæse øvelser.";
+            }
         }
         catch (Exception ex)
         {
             errorMessage = $"Fejl ved indlæsning af data: {ex.Message}";
         }
+    }
 
-        newSpørgsmål = CreateNewSpørgsmål();
+    private void OnTeoriChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var id))
+        {
+            selectedTeori = teorier.FirstOrDefault(t => t.TeoriID == id);
+            newSpørgsmål.TeoriID = id;
+        }
+    }
+
+    private void OnTeknikChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var id))
+        {
+            selectedTeknik = teknikker.FirstOrDefault(t => t.TeknikID == id);
+            newSpørgsmål.TeknikID = id;
+        }
+    }
+
+    private void OnØvelseChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var id))
+        {
+            selectedØvelse = øvelser.FirstOrDefault(o => o.ØvelseID == id);
+            newSpørgsmål.ØvelseID = id;
+        }
+    }
+
+    private void AddSpørgsmål()
+    {
+        newSpørgsmål.SpørgsmålID = Guid.NewGuid();
+        newQuiz.Spørgsmål.Add(newSpørgsmål);
+        newSpørgsmål = new SpørgsmålDTO();
+        selectedTeori = null;
+        selectedTeknik = null;
+        selectedØvelse = null;
+    }
+
+    private void RemoveSpørgsmål(Guid id)
+    {
+        var match = newQuiz.Spørgsmål.FirstOrDefault(s => s.SpørgsmålID == id);
+        if (match != null)
+        {
+            newQuiz.Spørgsmål.Remove(match);
+        }
     }
 
     private async Task HandleValidSubmit()
@@ -137,7 +271,6 @@ else
         {
             if (klubId.HasValue)
             {
-                Console.WriteLine("Programplan ejer Klub.");
                 newQuiz.KlubID = klubId.Value;
             }
             else
@@ -163,34 +296,9 @@ else
         }
         catch (Exception ex)
         {
-            errorMessage = $"Fejl ved opdatering af quiz: {ex.Message}";
+            errorMessage = $"Fejl ved opdatering: {ex.Message}";
         }
     }
-
-    private void AddSpørgsmål()
-    {
-        newSpørgsmål.SpørgsmålID = Guid.NewGuid();
-        newSpørgsmål.QuizID = newQuiz.QuizID;
-        newQuiz.Spørgsmål.Add(newSpørgsmål);
-        newSpørgsmål = CreateNewSpørgsmål();
-    }
-
-    private void RemoveSpørgsmål(Guid id)
-    {
-        var match = newQuiz.Spørgsmål.FirstOrDefault(s => s.SpørgsmålID == id);
-        if (match != null)
-        {
-            newQuiz.Spørgsmål.Remove(match);
-        }
-    }
-
-    private SpørgsmålDTO CreateNewSpørgsmål() => new()
-        {
-            ETag = "some-etag",
-            ModifiedBy = "user-id",
-            ChangeHistoryJson = "[]"
-        };
-
 
     private void Cancel()
     {

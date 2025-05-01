@@ -430,6 +430,7 @@ else
             {
                 errorMessage = "Kunne ikke slette øvelsen. Prøv igen.";
             }
+            await LoadBruger();
         }
         catch (Exception ex)
         {
@@ -468,6 +469,7 @@ else
             {
                 errorMessage = "Kunne ikke slette programmet. Prøv igen.";
             }
+            await LoadBruger();
         }
         catch (Exception ex)
         {
@@ -506,6 +508,7 @@ else
             {
                 errorMessage = "Kunne ikke slette quizzen. Prøv igen.";
             }
+            await LoadBruger();
         }
         catch (Exception ex)
         {

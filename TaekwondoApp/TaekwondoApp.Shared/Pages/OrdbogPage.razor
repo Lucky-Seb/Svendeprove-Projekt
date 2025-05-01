@@ -104,7 +104,36 @@ else
             </tr>
         </thead>
         <tbody>
-            @* ... *@
+            @foreach (var word in filteredWords)
+            {
+                <tr>
+                    <td>@word.OrdbogId</td>
+                    <td>@word.DanskOrd</td>
+                    <td>@word.KoranskOrd</td>
+                    <td>@word.Beskrivelse</td>
+                    <td><a href="@word.BilledeLink" target="_blank">Billede</a></td>
+                    <td><a href="@word.LydLink" target="_blank">Lyd</a></td>
+                    <td><a href="@word.VideoLink" target="_blank">Video</a></td>
+                    <td>@word.Status</td>
+                    <td>@word.ConflictStatus</td>
+                    <td>@word.ModifiedBy</td>
+                    <td>@word.LastModified.ToString("g")</td>
+                    <td>@word.CreatedAt.ToString("g")</td>
+                    <td>@word.ETag</td>
+                    <td>@(word.IsDeleted ? "Ja" : "Nej")</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" @onclick="() => EditEntry(word)">Rediger</button>
+                        @if (!word.IsDeleted)
+                        {
+                            <button class="btn btn-sm btn-danger ms-1" @onclick="() => DeleteEntry(word.OrdbogId)">Slet</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-sm btn-success ms-1" @onclick="() => RestoreEntry(word.OrdbogId)">Gendan</button>
+                        }
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 }
