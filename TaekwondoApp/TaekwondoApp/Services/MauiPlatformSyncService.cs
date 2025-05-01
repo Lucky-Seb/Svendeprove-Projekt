@@ -5,7 +5,7 @@ using TaekwondoApp.Shared.DTO;
 using TaekwondoApp.Shared.Models;
 using TaekwondoApp.Shared.ServiceInterfaces;
 
-namespace TaekwondoApp.PlatformServices
+namespace TaekwondoApp
 {
     public class MauiPlatformSyncService : IPlatformSyncService
     {

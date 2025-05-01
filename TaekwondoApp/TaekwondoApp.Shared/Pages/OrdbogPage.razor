@@ -10,51 +10,49 @@
 @using TaekwondoApp.Shared.Services
 
 @* --- Dependency Injection --- *@
-
+@inject IPlatformSyncService PlatformSyncService
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
 @inject IAuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
+@inject ISQLiteService SQLiteService
 @inject SignalRService SignalRService
 @implements IAsyncDisposable
 
 <h1>Ordbog</h1>
 
-@if (!isBrowser)
+<div class="alert @(internet ? "alert-success" : "alert-warning")">
+    Status: @(internet ? "Online - Ændringer synkroniseres automatisk." : "Offline - Ændringer gemmes lokalt og vil blive synkroniseret, når du er online igen.")
+</div>
+
+@if (syncFailed)
 {
-    <div class="alert @(internet ? "alert-success" : "alert-warning")">
-        Status: @(internet ? "Online - Ændringer synkroniseres automatisk." : "Offline - Ændringer gemmes lokalt og vil blive synkroniseret, når du er online igen.")
-    </div>
-
-    @if (syncFailed)
-    {
-        <div class="alert alert-danger d-flex justify-content-between align-items-center">
-            <span>Sidste synkroniseringsforsøg mislykkedes.</span>
-            <button class="btn btn-sm btn-danger" @onclick="TrySyncIfOnline">Prøv igen</button>
-        </div>
-    }
-    @if (isSyncing is true)
-    {
-        <div class="d-flex align-items-center mb-3">
-            <div class="spinner-border text-primary me-2" role="status">
-                <span class="visually-hidden">Synkroniserer...</span>
-            </div>
-            <span>Synkroniserer lokale ændringer...</span>
-        </div>
-    }
-
-    <div class="mb-3">
-        <button class="btn @(internet ? "btn-outline-danger" : "btn-outline-success")" @onclick="ToggleInternet">
-            @(internet ? "Gå offline (simuleret)" : "Gå online (simuleret)")
-        </button>
-    </div>
-
-    <div class="form-check mb-3">
-        <InputCheckbox class="form-check-input" @bind-Value="showDeleted" />
-        <label class="form-check-label">Vis slettede opslag</label>
+    <div class="alert alert-danger d-flex justify-content-between align-items-center">
+        <span>Sidste synkroniseringsforsøg mislykkedes.</span>
+        <button class="btn btn-sm btn-danger" @onclick="TrySyncIfOnline">Prøv igen</button>
     </div>
 }
+@if (isSyncing is true)
+{
+    <div class="d-flex align-items-center mb-3">
+        <div class="spinner-border text-primary me-2" role="status">
+            <span class="visually-hidden">Synkroniserer...</span>
+        </div>
+        <span>Synkroniserer lokale ændringer...</span>
+    </div>
+}
+
+<div class="mb-3">
+    <button class="btn @(internet ? "btn-outline-danger" : "btn-outline-success")" @onclick="ToggleInternet">
+        @(internet ? "Gå offline (simuleret)" : "Gå online (simuleret)")
+    </button>
+</div>
+
+<div class="form-check mb-3">
+    <InputCheckbox class="form-check-input" @bind-Value="showDeleted" />
+    <label class="form-check-label">Vis slettede opslag</label>
+</div>
 
 <div class="mb-3 row">
     <div class="col-md-4">
@@ -189,13 +187,6 @@ else
 
 
 @code {
-    // ========== DI ==========
-
-#if ANDROID || IOS || WINDOWS
-    [Inject] private IOrdbogSyncService OrdbogSyncService { get; set; } = default!;
-    [Inject] private ISQLiteService SQLiteService { get; set; } = default!;
-#endif
-
     // ========== Felter og tilstand ==========
     private OrdbogDTO[] filteredWords = Array.Empty<OrdbogDTO>();
     private List<string> logs = new();
@@ -213,16 +204,11 @@ else
     private string brugerToken = "";
     private HttpClient _apiClient;
     private HubConnection _hubConnection;
-    private bool isBrowser = true;
 
     // ========== Livscyklus ==========
     protected override async Task OnInitializedAsync()
     {
-            #if ANDROID || IOS || WINDOWS
-            isBrowser = false;
 
-            #endif
-        LogAction($"{isBrowser}");
         
         AuthStateProvider.OnChange += StateChanged;
         StateChanged();
@@ -320,15 +306,13 @@ else
                     errorMessage = $"Fejl ved serverforespørgsel: {ex.Message}";
                 }
             }
-            else if (!isBrowser)
+            else
             {
-                            #if ANDROID || IOS || WINDOWS
                 var response = await SQLiteService.GetAllEntriesAsync();
                 var source = response?.ToList() ?? new List<Ordbog>();
                 var allEntries = _mapper.Map<List<OrdbogDTO>>(source);
                 filteredWords = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
                 LogAction($"{filteredWords.Length} ord indlæst fra lokal database.");
-                #endif
             }
             await InvokeAsync(StateHasChanged);
         }
@@ -341,7 +325,7 @@ else
 
     private async Task TrySyncIfOnline()
     {
-        if (!internet || isBrowser)
+        if (!internet)
         {
             syncFailed = true;
             LogAction("❌ Kan ikke synkronisere: Ingen internetforbindelse.");
@@ -353,9 +337,7 @@ else
 
         try
         {
-            #if ANDROID || IOS || WINDOWS
-            await OrdbogSyncService.SyncDataAsync();
-            #endif
+            await PlatformSyncService.SyncOrdbogAsync();
 
             syncFailed = false;
             LogAction("✅ Data synkroniseret.");
@@ -389,9 +371,7 @@ else
                 {
                     LogAction("✅ Ord oprettet på server.");
                     await LoadEntries();
-                #if ANDROID || IOS || WINDOWS
                     await SQLiteService.MarkAsSyncedAsync(entryModel.OrdbogId);
-                #endif
                 }
                 else
                 {
@@ -400,11 +380,10 @@ else
                     errorMessage = $"Serverfejl: {details}";
                 }
             }
-            else if (!isBrowser)
+            else
             {
-                #if ANDROID || IOS || WINDOWS
+                
                 await SQLiteService.AddEntryAsync(entry);
-                #endif
                 LogAction("✅ Ord oprettet lokalt.");
                 await LoadEntries();
             }
@@ -433,10 +412,8 @@ else
                 {
                     LogAction("✅ Ord opdateret på server.");
                     await LoadEntries();
-                                                #if ANDROID || IOS || WINDOWS
-                        await SQLiteService.MarkAsSyncedAsync(entryModel.OrdbogId);
+                    await SQLiteService.MarkAsSyncedAsync(entryModel.OrdbogId);
 
-                #endif
                 }
                 else
                 {
@@ -445,12 +422,9 @@ else
                     errorMessage = $"Opdatering mislykkedes: {details}";
                 }
             }
-            else if (!isBrowser)
+            else
             {
-                                                                #if ANDROID || IOS || WINDOWS
                 await SQLiteService.UpdateEntryAsync(entry);
-
-                #endif
                 LogAction("✅ Ord opdateret lokalt.");
                 await LoadEntries();
             }
@@ -488,14 +462,8 @@ else
                 }
             }
 
-            if (!isBrowser)
-            {
-                                                                                #if ANDROID || IOS || WINDOWS
-                await SQLiteService.MarkAsDeletedAsync(ordbogId);
-
-                #endif
-                LogAction("✅ Ord slettet lokalt.");
-            }
+            await SQLiteService.MarkAsDeletedAsync(ordbogId);
+            LogAction("✅ Ord slettet lokalt.");
             await LoadEntries();
         }
         catch (Exception ex)
@@ -523,14 +491,9 @@ else
                     else
                         LogAction($"❌ Gendannelse fejlede: {response.ReasonPhrase}");
                 }
-                if (!isBrowser)
-                {
-                                                                                                    #if ANDROID || IOS || WINDOWS
-                    await SQLiteService.MarkAsRestoredAsync(ordbogId);
 
-                #endif
-                    LogAction("✅ Ord gendannet lokalt.");
-                }
+                await SQLiteService.MarkAsRestoredAsync(ordbogId);
+                LogAction("✅ Ord gendannet lokalt.");
                 await LoadEntries();
             }
         }

@@ -94,7 +94,7 @@ namespace TaekwondoApp
             // Sync services
             builder.Services.AddSingleton<IGenericSyncService, GenericSyncService>();
             builder.Services.AddSingleton<IOrdbogSyncService, OrdbogSyncService>();
-            builder.Services.AddSingleton<IPlatformSyncService, MauiPlatformService>();
+            builder.Services.AddSingleton<IPlatformSyncService, MauiPlatformSyncService>();
 
             // Blazor
             builder.Services.AddMauiBlazorWebView();

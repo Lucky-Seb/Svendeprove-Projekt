@@ -29,6 +29,7 @@ builder.Services.TryAddScoped<IAuthenticationService, AuthenticationService>();
 
 //handle crossplatform sync
 builder.Services.AddSingleton<IPlatformSyncService, WebPlatformService>();
+builder.Services.AddSingleton<ISQLiteService, DummySQLiteService>();
 
 // Check if services are registered correctly
 CheckServiceRegistration(builder.Services);
