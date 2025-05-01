@@ -1,8 +1,7 @@
 ﻿@page "/programplan/update/{Id:guid}"
 @page "/admin/klub/{klubId:guid}/edit-program/{Id:guid}"
 
-@* --- Using Statements --- *@
-@using System.Text.Json
+@* --- Brugerdefinerede namespaces --- *@
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
 @using TaekwondoApp.Shared.DTO
@@ -11,190 +10,222 @@
 @using TaekwondoApp.Shared.ServiceInterfaces
 @using TaekwondoApp.Shared.Services
 
+@* --- Dependency Injection --- *@
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory HttpClientFactory
 @inject IAuthenticationService AuthenticationService
 
 <h3>Rediger Programplan</h3>
 
-@if (loading)
-{
-    <p>Indlæser...</p>
-}
-else if (!string.IsNullOrEmpty(errorMessage))
+@if (!string.IsNullOrEmpty(errorMessage))
 {
     <div class="alert alert-danger">@errorMessage</div>
 }
-else
+
+@if (editModel != null)
 {
     <EditForm Model="editModel" OnValidSubmit="HandleValidSubmit">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <div>
+        <div class="mb-3">
             <label>Programnavn:</label>
             <InputText @bind-Value="editModel.ProgramNavn" class="form-control" />
         </div>
 
-        <div>
+        <div class="mb-3">
             <label>Beskrivelse:</label>
             <InputTextArea @bind-Value="editModel.Beskrivelse" class="form-control" />
         </div>
 
-        <div>
+        <div class="mb-3">
             <label>Længde (dage):</label>
             <InputNumber @bind-Value="editModel.Længde" class="form-control" />
         </div>
 
-        <div>
+        <div class="mb-3">
             <label>Startdato:</label>
             <InputDate @bind-Value="editModel.OprettelseDato" class="form-control" />
         </div>
 
-        <hr />
         <h5>Træninger</h5>
-        <ul class="list-unstyled">
-            @foreach (var træning in editModel.Træninger)
-            {
-                <li class="border rounded p-3 mb-3">
-                    <div>
-                        <label>Træning Rækkefølge:</label>
-                        <InputNumber @bind-Value="træning.TræningRækkefølge" class="form-control" />
-                    </div>
+        @if (editModel.Træninger == null)
+        {
+            <p>Ingen træninger tilføjet.</p>
+        }
+        else
+        {
+            <ul class="list-group mb-3">
+                @foreach (var træning in editModel.Træninger)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>@træning.TræningRækkefølge</strong>
+                        </div>
+                        <div>
+                            <strong>Quiz:</strong> @træning.Quiz?.QuizNavn
+                        </div>
+                        <div>
+                            <strong>Teori:</strong> @træning.Teori?.TeoriNavn
+                        </div>
+                        <div>
+                            <strong>Teknik:</strong> @træning.Teknik?.TeknikNavn
+                        </div>
+                        <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveTræning(træning.TræningID)">Fjern</button>
+                    </li>
+                }
+            </ul>
+        }
+        <!-- Tilføj ny Træning -->
+        <div class="card p-3 bg-light border">
+            <h6>Tilføj Træning</h6>
 
-                    <div>
-                        <label>Øvelse:</label>
-                        <select @bind="træning.ØvelseID" class="form-control">
-                            <option value="">-- Vælg Øvelse --</option>
-                            @foreach (var ø in exerciseList)
-                            {
-                                <option value="@ø.ØvelseID">@ø.ØvelseNavn</option>
-                            }
-                        </select>
-                    </div>
+            <div class="mb-2">
+                <label>Træning Rækkefølge:</label>
+                <InputNumber @bind-Value="newTræning.TræningRækkefølge" class="form-control" />
+            </div>
+            <div class="mb-2">
+                <label>Øvelse:</label>
+                <select class="form-control" @bind="newTræning.ØvelseID">
+                    <option value="">-- Vælg Øvelse --</option>
+                    @foreach (var øvelse in exerciseList)
+                    {
+                        <option value="@øvelse.ØvelseID">@øvelse.ØvelseNavn</option>
+                    }
+                </select>
+            </div>
+            <div class="mb-2">
+                <label>Quiz (Teori):</label>
+                <select class="form-control" @bind="newTræning.TeoriID">
+                    <option value="">-- Vælg Teori --</option>
+                    @foreach (var quiz in quizList)
+                    {
+                        <option value="@quiz.TeoriID">@quiz.TeoriNavn</option>
+                    }
+                </select>
+            </div>
+            <div class="mb-2">
+                <label>Teknik:</label>
+                <select class="form-control" @bind="newTræning.TeknikID">
+                    <option value="">-- Vælg Teknik --</option>
+                    @foreach (var teknik in teknikList)
+                    {
+                        <option value="@teknik.TeknikID">@teknik.TeknikNavn</option>
+                    }
+                </select>
+            </div>
 
-                    <div>
-                        <label>Quiz (Teori):</label>
-                        <select @bind="træning.TeoriID" class="form-control">
-                            <option value="">-- Vælg Teori --</option>
-                            @foreach (var quiz in quizList)
-                            {
-                                <option value="@quiz.TeoriID">@quiz.TeoriNavn</option>
-                            }
-                        </select>
-                    </div>
+            <button type="button" class="btn btn-primary mt-2" @onclick="AddTræning">Tilføj</button>
+        </div>
 
-                    <div>
-                        <label>Teknik:</label>
-                        <select @bind="træning.TeknikID" class="form-control">
-                            <option value="">-- Vælg Teknik --</option>
-                            @foreach (var teknik in teknikList)
-                            {
-                                <option value="@teknik.TeknikID">@teknik.TeknikNavn</option>
-                            }
-                        </select>
-                    </div>
-                </li>
-            }
-        </ul>
-
-        <button type="submit" class="btn btn-primary">Gem</button>
-        <button type="button" class="btn btn-secondary" @onclick="Cancel">Annuller</button>
+        <button type="submit" class="btn btn-success mt-3">Gem Ændringer</button>
+        <button type="button" class="btn btn-secondary mt-3" @onclick="Cancel">Annuller</button>
     </EditForm>
+}
+else
+{
+    <p>Indlæser programplan...</p>
 }
 
 @code {
     [Parameter] public Guid Id { get; set; }
     [Parameter] public Guid? klubId { get; set; }
 
-    private ProgramPlanDTO editModel = new();
+    private ProgramPlanDTO editModel = new ProgramPlanDTO();
     private List<ØvelseDTO> exerciseList = new();
     private List<TeoriDTO> quizList = new();
     private List<TeknikDTO> teknikList = new();
-    private List<Pensum> pensumGradList = new();
-
-    private HttpClient _apiClient;
-    private bool loading = true;
     private string errorMessage = "";
+    private HttpClient _apiClient;
+    private TræningDTO newTræning = new();
 
     protected override async Task OnInitializedAsync()
     {
+        _apiClient = HttpClientFactory.CreateClient("ApiClient");
+
         try
         {
-            _apiClient = HttpClientFactory.CreateClient("ApiClient");
-
-            var token = await AuthenticationService.GetTokenAsync();
-            var brugerId = JwtParser.GetUserIdFromJwt(token);
-            Console.WriteLine($"Indlæst BrugerID: {brugerId}");
-
-            // Indlæs Programplan
-            var response = await _apiClient.GetFromJsonAsync<ApiResponse<ProgramPlanDTO>>($"api/programplan/{Id}");
+            // Load program plan
+            var response = await _apiClient.GetFromJsonAsync<ApiResponse<ProgramPlanDTO>>($"api/programplan/details/{Id}");
             if (response?.Success == true && response.Data != null)
             {
                 editModel = response.Data;
-                Console.WriteLine("✅ Program indlæst.");
             }
             else
             {
                 errorMessage = "Fejl ved indlæsning af programplan.";
-                return;
             }
 
-            // Indlæs datalister
+            // Load data for exercise, quiz, and technique
             await LoadSelectLists();
         }
         catch (Exception ex)
         {
-            errorMessage = $"❌ Fejl ved indlæsning af programplan: {ex.Message}";
-        }
-        finally
-        {
-            loading = false;
+            errorMessage = $"Fejl ved indlæsning af data: {ex.Message}";
         }
     }
 
     private async Task LoadSelectLists()
     {
-        var øResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
-        if (øResponse?.Success == true)
-            exerciseList = øResponse.Data;
+        var exerciseResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
+        if (exerciseResponse?.Success == true) exerciseList = exerciseResponse.Data;
 
-        var teoriResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeoriDTO>>>("api/teori");
-        if (teoriResponse?.Success == true)
-            quizList = teoriResponse.Data;
+        var quizResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeoriDTO>>>("api/teori");
+        if (quizResponse?.Success == true) quizList = quizResponse.Data;
 
         var teknikResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeknikDTO>>>("api/teknik");
-        if (teknikResponse?.Success == true)
-            teknikList = teknikResponse.Data;
+        if (teknikResponse?.Success == true) teknikList = teknikResponse.Data;
+    }
 
-        var pensumResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<Pensum>>>("api/pensum");
-        if (pensumResponse?.Success == true)
-            pensumGradList = pensumResponse.Data;
+    private void AddTræning()
+    {
+        if (newTræning.ØvelseID == Guid.Empty || newTræning.TeoriID == Guid.Empty || newTræning.TeknikID == Guid.Empty)
+        {
+            errorMessage = "Angiv venligst Øvelse, Teori og Teknik.";
+            return;
+        }
+
+        newTræning.ProgramID = editModel.ProgramID;
+
+        // Add new training to the list
+        editModel.Træninger.Add(newTræning);
+        newTræning = new TræningDTO(); // Reset new training entry
+    }
+
+    private void RemoveTræning(Guid træningId)
+    {
+        var træning = editModel.Træninger.FirstOrDefault(t => t.TræningID == træningId);
+        if (træning != null)
+        {
+            editModel.Træninger.Remove(træning);
+        }
     }
 
     private async Task HandleValidSubmit()
     {
         try
         {
-            Console.WriteLine("📤 Indsender opdatering...");
-            editModel.ModifiedBy = "system";
-            editModel.ETag ??= Guid.NewGuid().ToString();
-            editModel.ChangeHistoryJson ??= "[]";
+            // Ensure the ModifiedBy field is populated for all Træninger
+            var token = await AuthenticationService.GetTokenAsync();
+            var brugerId = JwtParser.GetUserIdFromJwt(token);
 
-            if (klubId.HasValue)
+            // Set the ModifiedBy field for all træninger
+            foreach (var træning in editModel.Træninger)
             {
-                Console.WriteLine("Programplan ejet af Klub.");
-                editModel.KlubID = klubId.Value;
-            }
-            else
-            {
-                var brugerId = JwtParser.GetUserIdFromJwt(await AuthenticationService.GetTokenAsync());
-                editModel.BrugerID = brugerId;
+                if (string.IsNullOrEmpty(træning.ETag))
+                {
+                    træning.ETag = "some-etag"; // Set the correct ETag value if available.
+                }
+
+                if (string.IsNullOrEmpty(træning.ModifiedBy))
+                {
+                    træning.ModifiedBy = brugerId.ToString(); // Ensure the user making the change is set.
+                }
+                træning.ChangeHistoryJson = "[]";
+
             }
 
-            var jsonPayload = JsonSerializer.Serialize(editModel);
-            Console.WriteLine($"Payload: {jsonPayload}");
-
+            // Now send the updated program plan with the required fields populated
             var response = await _apiClient.PutAsJsonAsync($"api/programplan/{editModel.ProgramID}", editModel);
 
             if (response.IsSuccessStatusCode)
