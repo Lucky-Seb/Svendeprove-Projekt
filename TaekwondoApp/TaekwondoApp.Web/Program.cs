@@ -27,6 +27,9 @@ builder.Services.TryAddScoped<AuthenticationStateProvider, AuthStateProvider>();
 builder.Services.TryAddScoped<IAuthStateProvider, AuthStateProvider>();
 builder.Services.TryAddScoped<IAuthenticationService, AuthenticationService>();
 
+//handle crossplatform sync
+builder.Services.AddSingleton<IPlatformSyncService, WebPlatformService>();
+
 // Check if services are registered correctly
 CheckServiceRegistration(builder.Services);
 
