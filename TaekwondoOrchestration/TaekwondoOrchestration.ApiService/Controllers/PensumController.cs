@@ -7,6 +7,7 @@ using TaekwondoOrchestration.ApiService.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -61,6 +62,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         // PUT: api/Pensum/5
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPensum(Guid id, [FromBody] PensumDTO pensumDto)
         {
@@ -74,6 +76,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         // DELETE: api/Pensum/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePensum(Guid id)
         {

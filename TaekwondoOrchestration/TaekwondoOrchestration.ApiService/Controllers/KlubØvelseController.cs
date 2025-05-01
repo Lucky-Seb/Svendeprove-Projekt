@@ -7,6 +7,7 @@ using TaekwondoOrchestration.ApiService.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -55,6 +56,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Delete a specific KlubØvelse by its composite keys (KlubID, ØvelseID)
         [HttpDelete("{klubId}/{øvelseId}")]
+        [Authorize]
         public async Task<IActionResult> DeleteKlubØvelse(Guid klubId, Guid øvelseId)
         {
             var result = await _klubØvelseService.DeleteKlubØvelseAsync(klubId, øvelseId);

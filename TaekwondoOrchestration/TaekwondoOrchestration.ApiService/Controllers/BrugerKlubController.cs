@@ -31,6 +31,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("{brugerId}/{klubId}")]
+        [Authorize]
         public async Task<IActionResult> GetBrugerKlubById(Guid brugerId, Guid klubId)
         {
             var result = await _brugerKlubService.GetBrugerKlubByIdAsync(brugerId, klubId);
@@ -50,6 +51,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpDelete("{brugerId}/{klubId}")]
+        [Authorize]
         public async Task<IActionResult> DeleteBrugerKlub(Guid brugerId, Guid klubId)
         {
             var result = await _brugerKlubService.DeleteBrugerKlubAsync(brugerId, klubId);

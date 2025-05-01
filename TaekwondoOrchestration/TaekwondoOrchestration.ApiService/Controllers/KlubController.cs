@@ -4,6 +4,7 @@ using TaekwondoApp.Shared.DTO;
 using TaekwondoOrchestration.ApiService.NotificationHubs;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 using TaekwondoOrchestration.ApiService.Helpers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -62,6 +63,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateKlub(Guid id, KlubDTO klubDto)
         {
             var result = await _klubService.UpdateKlubAsync(id, klubDto);
@@ -74,6 +76,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteKlub(Guid id)
         {
             var result = await _klubService.DeleteKlubAsync(id);

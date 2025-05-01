@@ -4,6 +4,7 @@ using TaekwondoApp.Shared.DTO;
 using TaekwondoOrchestration.ApiService.NotificationHubs;
 using TaekwondoOrchestration.ApiService.ServiceInterfaces;
 using TaekwondoOrchestration.ApiService.Helpers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -51,6 +52,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // Delete a BrugerProgram
         [HttpDelete("{brugerId}/{programId}")]
+        [Authorize]
         public async Task<IActionResult> DeleteBrugerProgram(Guid brugerId, Guid programId)
         {
             var result = await _brugerProgramService.DeleteBrugerProgramAsync(brugerId, programId);

@@ -7,6 +7,7 @@ using TaekwondoOrchestration.ApiService.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -75,6 +76,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // DELETE: api/teori/{id}
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteTeori(Guid id)
         {
             var result = await _teoriService.DeleteTeoriAsync(id);
@@ -88,6 +90,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // PUT: api/teori/restore/{id}
         [HttpPut("restore/{id}")]
+        [Authorize]
         public async Task<IActionResult> RestoreTeori(Guid id, [FromBody] TeoriDTO teoriDTO)
         {
             var result = await _teoriService.RestoreTeoriAsync(id, teoriDTO);

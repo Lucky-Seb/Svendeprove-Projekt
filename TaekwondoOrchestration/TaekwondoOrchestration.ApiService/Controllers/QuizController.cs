@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TaekwondoOrchestration.ApiService.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -34,6 +35,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("own")]
+        [Authorize]
         public async Task<IActionResult> GetQuizzes([FromQuery] Guid? brugerId = null, [FromQuery] string klubIds = "")
         {
             // Parse the klubIds query parameter into a list of GUIDs
@@ -86,6 +88,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // PUT: api/quiz/5
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> PutQuiz(Guid id, [FromBody] QuizDTO quizDto)
         {
             var result = await _quizService.UpdateQuizAsync(id, quizDto);
@@ -99,6 +102,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // DELETE: api/quiz/5
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteQuiz(Guid id)
         {
             var result = await _quizService.DeleteQuizAsync(id);

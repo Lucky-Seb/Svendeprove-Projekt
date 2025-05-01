@@ -7,6 +7,7 @@ using TaekwondoOrchestration.ApiService.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -32,6 +33,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("own")]
+        [Authorize]
         public async Task<IActionResult> GetProgramPlans([FromQuery] Guid? brugerId = null, [FromQuery] string klubIds = "")
         {
             // Parse the klubIds query parameter into a list of GUIDs
@@ -62,6 +64,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         // POST: api/programplan
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> PostProgramPlan([FromBody] ProgramPlanDTO programPlanDTO)
         {
@@ -80,6 +83,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         // PUT: api/programplan/5
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProgramPlan(Guid id, [FromBody] ProgramPlanDTO programPlanDto)
         {
@@ -93,6 +97,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         // DELETE: api/programplan/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProgramPlan(Guid id)
         {
@@ -106,6 +111,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         // PUT: api/programplan/træning/5
+        [Authorize]
         [HttpPut("træning/{id}")]
         public async Task<IActionResult> PutProgramPlanWithTræning(Guid id, [FromBody] ProgramPlanDTO programPlanDto)
         {

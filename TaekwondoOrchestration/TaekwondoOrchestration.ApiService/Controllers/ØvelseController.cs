@@ -31,7 +31,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             var result = await _øvelseService.GetAllØvelserAsync();
             return result.ToApiResponse();
         }
-
+        [Authorize]
         [HttpGet("own")]
         public async Task<IActionResult> GetØvelser([FromQuery] Guid? brugerId = null, [FromQuery] string klubIds = "")
         {
@@ -84,6 +84,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         // POST: api/Øvelse
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> PostØvelse(ØvelseDTO øvelseDto)
         {
@@ -95,6 +96,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
             return result.ToApiResponse();
         }
+        [Authorize]
         // PUT: api/Øvelse/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutØvelse(Guid id, [FromBody] ØvelseDTO updatedØvelseDto)
@@ -114,6 +116,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return result.ToApiResponse();
         }
         // DELETE: api/Øvelse/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteØvelse(Guid id)
         {

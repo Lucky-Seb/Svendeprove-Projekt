@@ -7,6 +7,7 @@ using TaekwondoOrchestration.ApiService.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -59,6 +60,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // PUT: api/spørgsmål/5
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> PutSpørgsmål(Guid id, [FromBody] SpørgsmålDTO spørgsmålDto)
         {
             var result = await _spørgsmålService.UpdateSpørgsmålAsync(id, spørgsmålDto);
@@ -72,6 +74,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // DELETE: api/spørgsmål/5
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteSpørgsmål(Guid id)
         {
             var result = await _spørgsmålService.DeleteSpørgsmålAsync(id);
@@ -85,6 +88,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // PUT: api/spørgsmål/restore/5
         [HttpPut("restore/{id}")]
+        [Authorize]
         public async Task<IActionResult> RestoreSpørgsmål(Guid id, [FromBody] SpørgsmålDTO spørgsmålDto)
         {
             var result = await _spørgsmålService.RestoreSpørgsmålAsync(id, spørgsmålDto);

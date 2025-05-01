@@ -7,6 +7,7 @@ using TaekwondoOrchestration.ApiService.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaekwondoOrchestration.ApiService.Controllers
 {
@@ -57,6 +58,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // POST: api/teknik
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PostTeknik([FromBody] TeknikDTO teknikDto)
         {
             if (teknikDto == null)
@@ -75,6 +77,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // DELETE: api/teknik/{id}
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteTeknik(Guid id)
         {
             var result = await _teknikService.DeleteTeknikAsync(id);
@@ -88,6 +91,7 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
         // PUT: api/teknik/restore/{id}
         [HttpPut("restore/{id}")]
+        [Authorize]
         public async Task<IActionResult> RestoreTeknik(Guid id, [FromBody] TeknikDTO teknikDto)
         {
             var result = await _teknikService.RestoreTeknikAsync(id, teknikDto);
