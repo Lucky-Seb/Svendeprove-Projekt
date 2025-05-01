@@ -13,38 +13,38 @@
 @inject IAuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
-<h1>Program Plan Management</h1>
+<h1>Håndtering af Programplaner</h1>
 
-<!-- Search Filters -->
+<!-- Søgefiltre -->
 <div class="row mb-3">
     <div class="col-md-4">
-        <label>Search by Program Plan Name:</label>
-        <input class="form-control" @bind="searchProgramPlanName" placeholder="Enter Program Plan name..." />
+        <label>Søg efter Programplanens Navn:</label>
+        <input class="form-control" @bind="searchProgramPlanName" placeholder="Indtast navn på programplan..." />
     </div>
     <div class="col-md-4 d-flex align-items-end">
-        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
-        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+        <button class="btn btn-warning" @onclick="ClearFilters">Ryd Filtre</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Anvend Filter</button>
     </div>
 </div>
 
-<!-- Display Table -->
+<!-- Visningstabel -->
 @if (filteredProgramPlans == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Indlæser...</em></p>
 }
 else if (filteredProgramPlans.Count == 0)
 {
-    <p><em>No Program Plan records match your search.</em></p>
+    <p><em>Ingen programplaner matcher din søgning.</em></p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Length</th>
-                <th>Description</th>
-                <th>Actions</th>
+                <th>Navn</th>
+                <th>Længde</th>
+                <th>Beskrivelse</th>
+                <th>Handlinger</th>
             </tr>
         </thead>
         <tbody>
@@ -56,10 +56,10 @@ else
                             @program.ProgramNavn
                         </a>
                     </td>
-                    <td>@program.Længde minutes</td>
+                    <td>@program.Længde minutter</td>
                     <td>@program.Beskrivelse</td>
                     <td>
-                        <button class="btn btn-link" @onclick="() => NavigateToProgram(program.ProgramID)">View</button>
+                        <button class="btn btn-link" @onclick="() => NavigateToProgram(program.ProgramID)">Vis</button>
                     </td>
                 </tr>
             }
@@ -97,18 +97,16 @@ else
 
             if (string.IsNullOrEmpty(token))
             {
-                // If not logged in, fetch program plans that are not owned by any club or bruger
                 await LoadProgramPlansForNonLoggedInUser();
             }
             else
             {
-                // If logged in, fetch program plans that belong to the user and their clubs
                 await LoadProgramPlansForLoggedInUser();
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading program plans: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af programplaner: {ex.Message}";
         }
     }
 
@@ -126,13 +124,12 @@ else
             }
             else
             {
-                errorMessage = "Failed to fetch user data.";
+                errorMessage = "Kunne ikke hente brugerdata.";
             }
 
             var klubIds = brugerDTO?.BrugerKlubber.Select(k => k.KlubID).ToList();
             var klubIdsString = klubIds != null ? string.Join(",", klubIds) : string.Empty;
 
-            // Fetching Program Plan data for logged-in user with the necessary query parameters
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>(
                 $"api/programplan/own/?brugerId={brugerDTO?.BrugerID}&klubIds={klubIdsString}");
 
@@ -143,12 +140,12 @@ else
             }
             else
             {
-                errorMessage = "Failed to fetch program plans.";
+                errorMessage = "Kunne ikke hente programplaner.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading user data: {ex.Message}";
+            errorMessage = $"Fejl ved hentning af brugerdata: {ex.Message}";
         }
     }
 
@@ -156,7 +153,6 @@ else
     {
         try
         {
-            // Fetching Program Plan data without any specific parameters for non-logged-in users
             var response = await _apiClient.GetFromJsonAsync<ApiResponse<List<ProgramPlanDTO>>>("api/programplan/own");
 
             if (response?.Success == true && response.Data != null)
@@ -166,12 +162,12 @@ else
             }
             else
             {
-                errorMessage = "Failed to fetch available program plans.";
+                errorMessage = "Kunne ikke hente tilgængelige programplaner.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading program plans: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af programplaner: {ex.Message}";
         }
     }
 
