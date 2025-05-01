@@ -55,7 +55,12 @@
 
     <div>
         <label>Sværhedsgrad:</label>
-        <InputText @bind-Value="newExercise.ØvelseSværhed" class="form-control" />
+        <select @bind="newExercise.ØvelseSværhed" class="form-control">
+            <option value="">-- Vælg sværhedsgrad --</option>
+            <option value="Let">Let</option>
+            <option value="Moderat">Moderat</option>
+            <option value="Svær">Svær</option>
+        </select>
     </div>
 
     <div>
