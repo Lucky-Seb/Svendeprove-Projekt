@@ -213,11 +213,17 @@ else
     private string brugerToken = "";
     private HttpClient _apiClient;
     private HubConnection _hubConnection;
-    private bool isBrowser => OperatingSystem.IsBrowser();
+    private bool isBrowser = true;
 
     // ========== Livscyklus ==========
     protected override async Task OnInitializedAsync()
     {
+            #if ANDROID || IOS || WINDOWS
+            isBrowser = false;
+
+            #endif
+        LogAction($"{isBrowser}");
+        
         AuthStateProvider.OnChange += StateChanged;
         StateChanged();
         try
