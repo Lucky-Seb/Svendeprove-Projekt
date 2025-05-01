@@ -13,35 +13,35 @@
 @inject IAuthStateProvider AuthStateProvider
 @inject IAuthenticationService AuthenticationService
 
-<h1>Klub Management</h1>
+<h1>Kluber</h1>
 
-<!-- Search Filters -->
+<!-- Søgefiltre -->
 <div class="row mb-3">
     <div class="col-md-4">
-        <label>Search by Klub Name:</label>
-        <input class="form-control" @bind="searchKlubName" placeholder="Enter Klub name..." />
+        <label>Søg efter klubnavn:</label>
+        <input class="form-control" @bind="searchKlubName" placeholder="Indtast klubnavn..." />
     </div>
     <div class="col-md-4 d-flex align-items-end">
-        <button class="btn btn-warning" @onclick="ClearFilters">Clear Filters</button>
-        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Apply Filter</button>
+        <button class="btn btn-warning" @onclick="ClearFilters">Nulstil filtre</button>
+        <button class="btn btn-primary ml-2" @onclick="ApplyFilters">Anvend filter</button>
     </div>
 </div>
 
-<!-- Display Table -->
+<!-- Visningstabel -->
 @if (filteredKlubber == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Indlæser...</em></p>
 }
 else if (filteredKlubber.Count == 0)
 {
-    <p><em>No Klub records match your search.</em></p>
+    <p><em>Ingen klubber matcher din søgning.</em></p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
+                <th>Navn</th>
             </tr>
         </thead>
         <tbody>
@@ -94,12 +94,12 @@ else
             }
             else
             {
-                errorMessage = "Failed to fetch klub data.";
+                errorMessage = "Kunne ikke hente klubdata.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading klub data: {ex.Message}";
+            errorMessage = $"Fejl under indlæsning af klubdata: {ex.Message}";
         }
     }
 
