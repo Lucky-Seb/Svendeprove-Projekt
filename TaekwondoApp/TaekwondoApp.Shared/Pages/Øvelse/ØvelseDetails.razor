@@ -18,7 +18,7 @@
 
 @if (isLoading)
 {
-    <p><em>Loading øvelse info...</em></p>
+    <p><em>Indlæser øvelsesinformation...</em></p>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -26,18 +26,18 @@ else if (!string.IsNullOrEmpty(errorMessage))
 }
 else if (øvelse == null)
 {
-    <p>This øvelse could not be found.</p>
+    <p>Denne øvelse kunne ikke findes.</p>
 }
 else
 {
     <div class="card p-4 shadow-sm mb-4">
-        <h4>Welcome to @øvelse.ØvelseNavn!</h4>
+        <h4>Velkommen til @øvelse.ØvelseNavn!</h4>
         <p>@øvelse.ØvelseBeskrivelse</p>
         <div class="row">
             <div class="col-md-6">
                 @if (!string.IsNullOrEmpty(øvelse.ØvelseBillede))
                 {
-                    <img src="@øvelse.ØvelseBillede" class="img-fluid" alt="Øvelse Image" />
+                    <img src="@øvelse.ØvelseBillede" class="img-fluid" alt="Øvelse billede" />
                 }
             </div>
             <div class="col-md-6">
@@ -45,17 +45,17 @@ else
                 {
                     <video width="100%" controls>
                         <source src="@øvelse.ØvelseVideo" type="video/mp4">
-                        Your browser does not support the video tag.
+                        Din browser understøtter ikke videoafspilning.
                     </video>
                 }
             </div>
         </div>
-        <p><strong>Duration:</strong> @øvelse.ØvelseTid minutes</p>
-        <p><strong>Difficulty:</strong> @øvelse.ØvelseSværhed</p>
+        <p><strong>Varighed:</strong> @øvelse.ØvelseTid minutter</p>
+        <p><strong>Sværhedsgrad:</strong> @øvelse.ØvelseSværhed</p>
     </div>
 }
 
-<button class="btn btn-secondary mb-3" @onclick="GoBack">← Back to Øvelser</button>
+<button class="btn btn-secondary mb-3" @onclick="GoBack">← Tilbage til Øvelser</button>
 
 @code {
     [Parameter] public Guid øvelseId { get; set; }
@@ -79,12 +79,12 @@ else
             }
             else
             {
-                errorMessage = "Could not load øvelse details.";
+                errorMessage = "Kunne ikke indlæse øvelsesdetaljer.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error: {ex.Message}";
+            errorMessage = $"Fejl: {ex.Message}";
         }
         finally
         {

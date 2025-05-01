@@ -18,7 +18,7 @@
 
 @if (isLoading)
 {
-    <p><em>Loading klub info...</em></p>
+    <p><em>Indlæser klubinformation...</em></p>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -26,18 +26,18 @@ else if (!string.IsNullOrEmpty(errorMessage))
 }
 else if (klub == null)
 {
-    <p>This klub could not be found.</p>
+    <p>Klubben kunne ikke findes.</p>
 }
 else
 {
     <div class="card p-4 shadow-sm mb-4">
-        <h4>Welcome to @klub.KlubNavn!</h4>
-        <p>This klub offers a variety of activities and resources for members.</p>
+        <h4>Velkommen til @klub.KlubNavn!</h4>
+        <p>Denne klub tilbyder en række aktiviteter og ressourcer for medlemmer.</p>
     </div>
 
     @if (klub.Programmer?.Any() == true)
     {
-        <h5>Programs</h5>
+        <h5>Programmer</h5>
         <ul>
             @foreach (var program in klub.Programmer)
             {
@@ -48,7 +48,7 @@ else
 
     @if (klub.Øvelser?.Any() == true)
     {
-        <h5>Exercises</h5>
+        <h5>Øvelser</h5>
         <ul>
             @foreach (var øvelse in klub.Øvelser)
             {
@@ -59,7 +59,7 @@ else
 
     @if (klub.Quizzer?.Any() == true)
     {
-        <h5>Quizzes</h5>
+        <h5>Quizzer</h5>
         <ul>
             @foreach (var quiz in klub.Quizzer)
             {
@@ -68,7 +68,7 @@ else
         </ul>
     }
 }
-<button class="btn btn-secondary mb-3" @onclick="GoBack">← Back to tekniker</button>
+<button class="btn btn-secondary mb-3" @onclick="GoBack">← Tilbage til tekniker</button>
 
 @code {
     [Parameter] public Guid klubId { get; set; }
@@ -92,18 +92,19 @@ else
             }
             else
             {
-                errorMessage = "Could not load klub details.";
+                errorMessage = "Kunne ikke hente klubbens detaljer.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error: {ex.Message}";
+            errorMessage = $"Fejl: {ex.Message}";
         }
         finally
         {
             isLoading = false;
         }
     }
+
     private void GoBack()
     {
         NavigationManager.NavigateTo("/klub");

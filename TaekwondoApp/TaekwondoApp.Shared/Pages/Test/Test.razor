@@ -6,33 +6,33 @@
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory HttpClientFactory
 
-<h3>Secure Page</h3>
+<h3>Sikker Side</h3>
 @if (AuthenticationService == null)
 {
-    <p style="color:red;">ERROR: AuthenticationService is not available. Check DI configuration.</p>
+    <p style="color:red;">FEJL: AuthenticationService er ikke tilgængelig. Tjek DI-konfigurationen.</p>
 }
 
 @if (!isAuthenticated)
 {
-    <p>You need to be logged in to view this page.</p>
+    <p>Du skal være logget ind for at se denne side.</p>
 }
 else
 {
-    <p>You are logged in and can view this page!</p>
-    <button @onclick="Logout" class="btn btn-danger">Log Out</button>
+    <p>Du er logget ind og kan se denne side!</p>
+    <button @onclick="Logout" class="btn btn-danger">Log ud</button>
 
-    <h4>Frontend (JWT Parsed)</h4>
-    <p><strong>Role:</strong> @frontendRole</p>
+    <h4>Frontend (JWT Parse)</h4>
+    <p><strong>Rolle:</strong> @frontendRole</p>
     <p><strong>Token:</strong> @fronttoken</p>
 
-    <h4>Backend (Claims from /debug)</h4>
+    <h4>Backend (Claims fra /debug)</h4>
     @if (debugInfo != null)
     {
         <ul>
-            <li><strong>Name:</strong> @debugInfo.Name</li>
-            <li><strong>Is Authenticated:</strong> @debugInfo.IsAuthenticated</li>
+            <li><strong>Navn:</strong> @debugInfo.Name</li>
+            <li><strong>Er Authentificeret:</strong> @debugInfo.IsAuthenticated</li>
             <li>
-                <strong>Roles:</strong>
+                <strong>Roller:</strong>
                 <ul>
                     @foreach (var role in debugInfo.Roles)
                     {
@@ -44,7 +44,7 @@ else
     }
     else
     {
-        <p>Loading user info...</p>
+        <p>Indlæser brugerinfo...</p>
     }
 }
 
@@ -58,7 +58,7 @@ else
     {
         if (AuthenticationService == null)
         {
-            Console.WriteLine("ERROR: AuthenticationService is null. Check DI registration.");
+            Console.WriteLine("FEJL: AuthenticationService er null. Tjek DI-registreringen.");
             isAuthenticated = false;
             return;
         }
@@ -72,7 +72,7 @@ else
             return;
         }
 
-        frontendRole = JwtParser.GetRole(fronttoken);  // Make sure this is set correctly
+        frontendRole = JwtParser.GetRole(fronttoken);  // Sørg for at dette er sat korrekt
 
         try
         {
@@ -89,12 +89,12 @@ else
             }
             else
             {
-                Console.WriteLine($"Failed to fetch debug info: {response.StatusCode}");
+                Console.WriteLine($"Kunne ikke hente debug-info: {response.StatusCode}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to fetch debug info: {ex.Message}");
+            Console.WriteLine($"Kunne ikke hente debug-info: {ex.Message}");
         }
     }
 

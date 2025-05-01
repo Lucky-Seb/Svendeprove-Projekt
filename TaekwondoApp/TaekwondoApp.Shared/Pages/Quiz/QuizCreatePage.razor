@@ -1,7 +1,7 @@
 ﻿@page "/quiz/create"
 @page "/admin/klub/{klubId:guid}/create-quiz"
 
-@* --- Using Statements --- *@
+@* --- Brug af Navneområder --- *@
 @using AutoMapper
 @using Microsoft.AspNetCore.SignalR.Client
 @using TaekwondoApp.Shared.DTO
@@ -10,7 +10,7 @@
 @using TaekwondoApp.Shared.ServiceInterfaces
 @using TaekwondoApp.Shared.Services
 
-@* --- Dependency Injection --- *@
+@* --- Afhængighedsinjektion --- *@
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
@@ -18,7 +18,7 @@
 @inject IAuthenticationService AuthenticationService
 
 
-<h3>Create New Quiz</h3>
+<h3>Opret Ny Quiz</h3>
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -30,18 +30,18 @@
     <ValidationSummary />
 
     <div class="mb-3">
-        <label>Quiz Name:</label>
+        <label>Quiz Navn:</label>
         <InputText @bind-Value="newQuiz.QuizNavn" class="form-control" />
     </div>
 
     <div class="mb-3">
-        <label>Quiz Description:</label>
+        <label>Quiz Beskrivelse:</label>
         <InputTextArea @bind-Value="newQuiz.QuizBeskrivelse" class="form-control" />
     </div>
     <div class="mb-3">
         <label>Pensum:</label>
         <select class="form-control" @bind="newQuiz.PensumID">
-            <option value="">-- Select Pensum --</option>
+            <option value="">-- Vælg Pensum --</option>
             @foreach (var pensum in pensumGradList)
             {
                 <option value="@pensum.PensumID">@pensum.PensumGrad</option>
@@ -50,36 +50,36 @@
     </div>
 
     <div class="mb-4">
-        <h5>Questions for the Quiz</h5>
+        <h5>Spørgsmål til Quiz</h5>
         <ul class="list-group mb-3">
             @foreach (var spørgsmål in newQuiz.Spørgsmål)
             {
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <strong>@spørgsmål.SpørgsmålRækkefølge</strong> - @spørgsmål.SpørgsmålTid sec
-                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveSpørgsmål(spørgsmål.SpørgsmålID)">Remove</button>
+                    <strong>@spørgsmål.SpørgsmålRækkefølge</strong> - @spørgsmål.SpørgsmålTid sek
+                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveSpørgsmål(spørgsmål.SpørgsmålID)">Fjern</button>
                 </li>
             }
         </ul>
 
-        <!-- Add New Spørgsmål -->
+        <!-- Tilføj Nyt Spørgsmål -->
         <div class="card p-3 bg-light border">
-            <h6>Add Spørgsmål</h6>
+            <h6>Tilføj Spørgsmål</h6>
 
             <div class="mb-2">
-                <label>Question Rækkefølge:</label>
+                <label>Spørgsmål Rækkefølge:</label>
                 <InputNumber @bind-Value="newSpørgsmål.SpørgsmålRækkefølge" class="form-control" />
             </div>
             <div class="mb-2">
-                <label>Question Time (in seconds):</label>
+                <label>Spørgsmål Tid (i sekunder):</label>
                 <InputNumber @bind-Value="newSpørgsmål.SpørgsmålTid" class="form-control" />
             </div>
 
-            <!-- Dropdowns with Previews -->
+            <!-- Dropdowns med Forhåndsvisninger -->
 
             <div class="mb-2">
                 <label>Teori:</label>
                 <select class="form-control" @onchange="OnTeoriChanged">
-                    <option value="">-- Select Teori --</option>
+                    <option value="">-- Vælg Teori --</option>
                     @foreach (var teori in teorier)
                     {
                         <option value="@teori.TeoriID">@teori.TeoriNavn</option>
@@ -97,7 +97,7 @@
             <div class="mb-2">
                 <label>Teknik:</label>
                 <select class="form-control" @onchange="OnTeknikChanged">
-                    <option value="">-- Select Teknik --</option>
+                    <option value="">-- Vælg Teknik --</option>
                     @foreach (var teknik in teknikker)
                     {
                         <option value="@teknik.TeknikID">@teknik.TeknikNavn</option>
@@ -115,7 +115,7 @@
             <div class="mb-2">
                 <label>Øvelse:</label>
                 <select class="form-control" @onchange="OnØvelseChanged">
-                    <option value="">-- Select Øvelse --</option>
+                    <option value="">-- Vælg Øvelse --</option>
                     @foreach (var øvelse in øvelser)
                     {
                         <option value="@øvelse.ØvelseID">@øvelse.ØvelseNavn</option>
@@ -130,19 +130,19 @@
                 }
             </div>
 
-            <button type="button" class="btn btn-primary mt-2" @onclick="AddSpørgsmål">Add Spørgsmål</button>
+            <button type="button" class="btn btn-primary mt-2" @onclick="AddSpørgsmål">Tilføj Spørgsmål</button>
         </div>
     </div>
 
-    <button type="submit" class="btn btn-success">Create Quiz</button>
-    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    <button type="submit" class="btn btn-success">Opret Quiz</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Annuller</button>
 </EditForm>
 @if (!string.IsNullOrEmpty(errorMessage))
 {
     <div class="alert alert-danger">@errorMessage</div>
 }
 @code {
-    [Parameter] public Guid? klubId { get; set; } // Optional: if this comes from admin route
+    [Parameter] public Guid? klubId { get; set; } // Valgfri: hvis dette kommer fra admin rute
 
     private string errorMessage = "";
     private HttpClient _apiClient;
@@ -150,15 +150,15 @@
     private QuizDTO newQuiz = new()
         {
             Spørgsmål = new List<SpørgsmålDTO>(),
-            ETag = "some-etag-value",    // You need to generate or provide a valid ETag
-            ModifiedBy = "user-id",      // The user who is making the changes (this can be set dynamically)
+            ETag = "some-etag-value",    // Du skal generere eller give en gyldig ETag
+            ModifiedBy = "user-id",      // Brugeren der foretager ændringerne (kan sættes dynamisk)
             ChangeHistoryJson = "[]"
         };
 
     private SpørgsmålDTO newSpørgsmål = new()
         {
-            ETag = "some-etag-value",    // Set for each question
-            ModifiedBy = "user-id",      // The user making the change
+            ETag = "some-etag-value",    // Sættes for hvert spørgsmål
+            ModifiedBy = "user-id",      // Brugeren der laver ændringen
             ChangeHistoryJson = "[]"
         };
 
@@ -184,12 +184,12 @@
             }
             else
             {
-                errorMessage = "Failed to load PensumGrads.";
+                errorMessage = "Fejl ved indlæsning af PensumGrads.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading PensumGrads: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af PensumGrads: {ex.Message}";
         }
         var token = await AuthenticationService.GetTokenAsync();
         try
@@ -201,7 +201,7 @@
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine("Response: " + content);
+                    Console.WriteLine("Respons: " + content);
 
                     var teorierResponse = await response.Content.ReadFromJsonAsync<ApiResponse<List<TeoriDTO>>>();
                     if (teorierResponse?.Success == true && teorierResponse.Data != null)
@@ -210,20 +210,20 @@
                     }
                     else
                     {
-                        errorMessage = "Failed to load theories. Response data is invalid.";
+                        errorMessage = "Fejl ved indlæsning af teorier. Responsdata er ugyldigt.";
                     }
                 }
                 else
                 {
-                    errorMessage = $"API call failed with status code {response.StatusCode}";
+                    errorMessage = $"API-opkald fejlede med statuskode {response.StatusCode}";
                 }
             }
             catch (Exception ex)
             {
-                errorMessage = $"An error occurred while fetching theories: {ex.Message}";
+                errorMessage = $"En fejl opstod ved hentning af teorier: {ex.Message}";
             }
 
-            // Fetch techniques
+            // Hent teknikker
             var teknikkerResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<TeknikDTO>>>("api/teknik");
             if (teknikkerResponse?.Success == true && teknikkerResponse.Data != null)
             {
@@ -231,10 +231,10 @@
             }
             else
             {
-                errorMessage = "Failed to load techniques.";
+                errorMessage = "Fejl ved indlæsning af teknikker.";
             }
 
-            // Fetch exercises
+            // Hent øvelser
             var øvelserResponse = await _apiClient.GetFromJsonAsync<ApiResponse<List<ØvelseDTO>>>("api/øvelse");
             if (øvelserResponse?.Success == true && øvelserResponse.Data != null)
             {
@@ -242,12 +242,12 @@
             }
             else
             {
-                errorMessage = "Failed to load exercises.";
+                errorMessage = "Fejl ved indlæsning af øvelser.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"An error occurred while loading data: {ex.Message}";
+            errorMessage = $"En fejl opstod ved indlæsning af data: {ex.Message}";
         }
     }
 
@@ -283,7 +283,7 @@
         newSpørgsmål.SpørgsmålID = Guid.NewGuid();
         newQuiz.Spørgsmål.Add(newSpørgsmål);
 
-        // Reset form
+        // Nulstil formularen
         newSpørgsmål = CreateNewSpørgsmål();
         selectedTeori = null;
         selectedTeknik = null;
@@ -332,12 +332,12 @@
             else
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Failed to create quiz. Status: {response.StatusCode}\nDetails: {responseBody}";
+                errorMessage = $"Fejled at oprette quiz. Status: {response.StatusCode}\nDetails: {responseBody}";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error creating quiz: {ex.Message}";
+            errorMessage = $"Fejl ved oprettelse af quiz: {ex.Message}";
         }
     }
     private SpørgsmålDTO CreateNewSpørgsmål()
