@@ -10,8 +10,7 @@
 @using TaekwondoApp.Shared.Services
 
 @* --- Dependency Injection --- *@
-@inject IOrdbogSyncService OrdbogSyncService
-@inject ISQLiteService SQLiteService
+
 @inject NavigationManager NavigationManager
 @inject IMapper _mapper
 @inject IHttpClientFactory HttpClientFactory
@@ -190,6 +189,13 @@ else
 
 
 @code {
+    // ========== DI ==========
+
+#if ANDROID || IOS || WINDOWS
+    [Inject] private IOrdbogSyncService OrdbogSyncService { get; set; } = default!;
+    [Inject] private ISQLiteService SQLiteService { get; set; } = default!;
+#endif
+
     // ========== Felter og tilstand ==========
     private OrdbogDTO[] filteredWords = Array.Empty<OrdbogDTO>();
     private List<string> logs = new();
@@ -310,11 +316,13 @@ else
             }
             else if (!isBrowser)
             {
+                            #if ANDROID || IOS || WINDOWS
                 var response = await SQLiteService.GetAllEntriesAsync();
                 var source = response?.ToList() ?? new List<Ordbog>();
                 var allEntries = _mapper.Map<List<OrdbogDTO>>(source);
                 filteredWords = allEntries.Where(e => showDeleted || !e.IsDeleted).ToArray();
                 LogAction($"{filteredWords.Length} ord indlæst fra lokal database.");
+                #endif
             }
             await InvokeAsync(StateHasChanged);
         }
@@ -339,7 +347,10 @@ else
 
         try
         {
+            #if ANDROID || IOS || WINDOWS
             await OrdbogSyncService.SyncDataAsync();
+            #endif
+
             syncFailed = false;
             LogAction("✅ Data synkroniseret.");
         }
@@ -372,10 +383,9 @@ else
                 {
                     LogAction("✅ Ord oprettet på server.");
                     await LoadEntries();
-                    if (!isBrowser)
-                    {
-                        await SQLiteService.MarkAsSyncedAsync(entryModel.OrdbogId);
-                    }
+                #if ANDROID || IOS || WINDOWS
+                    await SQLiteService.MarkAsSyncedAsync(entryModel.OrdbogId);
+                #endif
                 }
                 else
                 {
@@ -386,7 +396,9 @@ else
             }
             else if (!isBrowser)
             {
+                #if ANDROID || IOS || WINDOWS
                 await SQLiteService.AddEntryAsync(entry);
+                #endif
                 LogAction("✅ Ord oprettet lokalt.");
                 await LoadEntries();
             }
@@ -415,10 +427,10 @@ else
                 {
                     LogAction("✅ Ord opdateret på server.");
                     await LoadEntries();
-                    if (!isBrowser)
-                    {
+                                                #if ANDROID || IOS || WINDOWS
                         await SQLiteService.MarkAsSyncedAsync(entryModel.OrdbogId);
-                    }
+
+                #endif
                 }
                 else
                 {
@@ -429,7 +441,10 @@ else
             }
             else if (!isBrowser)
             {
+                                                                #if ANDROID || IOS || WINDOWS
                 await SQLiteService.UpdateEntryAsync(entry);
+
+                #endif
                 LogAction("✅ Ord opdateret lokalt.");
                 await LoadEntries();
             }
@@ -469,7 +484,10 @@ else
 
             if (!isBrowser)
             {
+                                                                                #if ANDROID || IOS || WINDOWS
                 await SQLiteService.MarkAsDeletedAsync(ordbogId);
+
+                #endif
                 LogAction("✅ Ord slettet lokalt.");
             }
             await LoadEntries();
@@ -501,7 +519,10 @@ else
                 }
                 if (!isBrowser)
                 {
+                                                                                                    #if ANDROID || IOS || WINDOWS
                     await SQLiteService.MarkAsRestoredAsync(ordbogId);
+
+                #endif
                     LogAction("✅ Ord gendannet lokalt.");
                 }
                 await LoadEntries();
