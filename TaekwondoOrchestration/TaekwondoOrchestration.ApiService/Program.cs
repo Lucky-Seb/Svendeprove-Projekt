@@ -41,6 +41,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             )
         };
     });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhostFrontend", builder =>
+    {
+        builder.WithOrigins("http://localhost:7072") // Or your frontend's URL
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials(); // Only if you're sending cookies/auth headers
+    });
+});
 
 builder.Services.AddAuthorization(); // Add custom policies here if needed
 
@@ -167,7 +177,7 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Taekwondo Orchestration API V1");
         c.RoutePrefix = string.Empty;
     });
-
+    app.UseCors("AllowLocalhostFrontend");
     app.MapHub<OrdbogHub>("/ordbogHub");
     app.MapHub<BrugerHub>("/brugerhub");
 }
@@ -178,29 +188,3 @@ if (app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-// ---------------------
-// 🌤 Test Endpoint
-// ---------------------
-string[] summaries = { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast(
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
