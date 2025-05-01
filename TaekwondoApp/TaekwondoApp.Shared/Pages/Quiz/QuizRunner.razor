@@ -18,7 +18,7 @@
 
 @if (isLoading)
 {
-    <p><em>Loading quiz...</em></p>
+    <p><em>Indlæser quiz...</em></p>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -26,15 +26,15 @@ else if (!string.IsNullOrEmpty(errorMessage))
 }
 else if (quiz == null)
 {
-    <p>Quiz not found.</p>
+    <p>Quiz ikke fundet.</p>
 }
 else if (currentQuestionIndex < flatQuestions.Count)
 {
     var question = flatQuestions[currentQuestionIndex];
 
     <div class="card shadow-sm p-4 mb-4">
-        <h4>Question @(@currentQuestionIndex + 1) of @flatQuestions.Count</h4>
-        <p><strong>Time remaining:</strong> @timeRemaining seconds</p>
+        <h4>Spørgsmål @(@currentQuestionIndex + 1) af @flatQuestions.Count</h4>
+        <p><strong>Tid tilbage:</strong> @timeRemaining sekunder</p>
 
         <p><strong>@question.Type:</strong> @question.QuestionText</p>
         <p>@question.Description</p>
@@ -48,7 +48,7 @@ else if (currentQuestionIndex < flatQuestions.Count)
         {
             <video controls class="w-100 my-2 rounded shadow">
                 <source src="@question.Video" type="video/mp4" />
-                Your browser does not support the video tag.
+                Din browser understøtter ikke video tag'en.
             </video>
         }
 
@@ -56,7 +56,7 @@ else if (currentQuestionIndex < flatQuestions.Count)
         {
             <audio controls class="my-2">
                 <source src="@question.Lyd" type="audio/mpeg" />
-                Your browser does not support the audio element.
+                Din browser understøtter ikke lyd elementet.
             </audio>
         }
 
@@ -71,25 +71,25 @@ else if (currentQuestionIndex < flatQuestions.Count)
 else
 {
     <div class="alert alert-success">
-        <h4>Quiz complete!</h4>
-        <p><strong>Correct answers:</strong> @correctAnswerCount / @flatQuestions.Count</p>
+        <h4>Quiz afsluttet!</h4>
+        <p><strong>Korrekte svar:</strong> @correctAnswerCount / @flatQuestions.Count</p>
 
         <ul class="list-group mt-3">
             @foreach (var ua in userAnswers)
             {
                 <li class="list-group-item @(ua.IsCorrect ? "list-group-item-success" : "list-group-item-danger")">
                     <strong>@ua.Question:</strong><br />
-                    Your answer: @ua.SelectedAnswer<br />
-                    Correct answer: @ua.CorrectAnswer
+                    Dit svar: @ua.SelectedAnswer<br />
+                    Korrekt svar: @ua.CorrectAnswer
                 </li>
             }
         </ul>
 
-        <button class="btn btn-primary mt-3" @onclick="RetryQuiz">Retry</button>
+        <button class="btn btn-primary mt-3" @onclick="RetryQuiz">Prøv igen</button>
     </div>
 }
 
-<button class="btn btn-secondary mt-3" @onclick="GoBack">← Back to Quizzes</button>
+<button class="btn btn-secondary mt-3" @onclick="GoBack">← Tilbage til Quizzes</button>
 
 @code {
     [Parameter] public Guid quizId { get; set; }
@@ -143,12 +143,12 @@ else
             }
             else
             {
-                errorMessage = "Could not load quiz.";
+                errorMessage = "Kunne ikke hente quiz.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error: {ex.Message}";
+            errorMessage = $"Fejl: {ex.Message}";
         }
         finally
         {
@@ -195,7 +195,7 @@ else
                     spm.Øvelse.ØvelseID,
                     spm.Øvelse.ØvelseBillede,
                     spm.Øvelse.ØvelseVideo,
-                    null // Øvelse doesn't have lyd
+                    null // Øvelse har ikke lyd
                 ));
         }
     }
@@ -289,7 +289,7 @@ else
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading øvelse data: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af øvelse data: {ex.Message}";
         }
     }
 
@@ -303,7 +303,7 @@ else
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading teknik data: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af teknik data: {ex.Message}";
         }
     }
 
@@ -317,7 +317,7 @@ else
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading teori data: {ex.Message}";
+            errorMessage = $"Fejl ved indlæsning af teori data: {ex.Message}";
         }
     }
 
