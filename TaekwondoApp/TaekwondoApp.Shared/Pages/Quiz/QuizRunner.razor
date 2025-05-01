@@ -41,12 +41,12 @@ else if (currentQuestionIndex < flatQuestions.Count)
 
         @if (!string.IsNullOrWhiteSpace(question.Billede))
         {
-            <img src="@question.Billede" alt="Billede" class="img-fluid my-2 rounded shadow" />
+            <img src="@question.Billede" alt="Billede" class="img-fluid my-2 rounded shadow" style="max-width: 400px; max-height: 300px;" />
         }
 
         @if (!string.IsNullOrWhiteSpace(question.Video))
         {
-            <video controls class="w-100 my-2 rounded shadow">
+            <video controls class="my-2 rounded shadow" style="max-width: 400px; max-height: 300px; width: 100%;">
                 <source src="@question.Video" type="video/mp4" />
                 Din browser understøtter ikke video tag'en.
             </video>
