@@ -163,7 +163,18 @@ namespace TaekwondoOrchestration.ApiService.Services
             var mapped = _mapper.Map<IEnumerable<OrdbogDTO>>(ordboger);
             return Result<IEnumerable<OrdbogDTO>>.Ok(mapped);
         }
+        public async Task<Result<OrdbogDTO>> GetOrdbogByIdIncludingDeletedAsync(Guid id)
+        {
+            var ordbog = await _ordbogRepository.GetOrdbogByIdIncludingDeletedAsync(id);
 
+            if (ordbog == null)
+            {
+                return Result<OrdbogDTO>.Fail("Ordbog not found.");
+            }
+
+            var mapped = _mapper.Map<OrdbogDTO>(ordbog);
+            return Result<OrdbogDTO>.Ok(mapped);
+        }
         #endregion
     }
 }

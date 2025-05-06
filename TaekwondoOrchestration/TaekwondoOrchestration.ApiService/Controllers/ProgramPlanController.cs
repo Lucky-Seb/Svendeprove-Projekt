@@ -33,7 +33,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
         }
 
         [HttpGet("own")]
-        [Authorize]
         public async Task<IActionResult> GetProgramPlans([FromQuery] Guid? brugerId = null, [FromQuery] string klubIds = "")
         {
             // Parse the klubIds query parameter into a list of GUIDs

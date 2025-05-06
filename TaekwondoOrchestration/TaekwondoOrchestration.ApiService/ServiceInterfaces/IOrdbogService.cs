@@ -18,5 +18,6 @@ namespace TaekwondoOrchestration.ApiService.ServiceInterfaces
         Task<Result<OrdbogDTO>> GetOrdbogByDanskOrdAsync(string danskOrd);
         Task<Result<OrdbogDTO>> GetOrdbogByKoranOrdAsync(string koranOrd);
         Task<Result<IEnumerable<OrdbogDTO>>> GetAllOrdbogIncludingDeletedAsync();
+        Task<Result<OrdbogDTO>> GetOrdbogByIdIncludingDeletedAsync(Guid id);
     }
 }

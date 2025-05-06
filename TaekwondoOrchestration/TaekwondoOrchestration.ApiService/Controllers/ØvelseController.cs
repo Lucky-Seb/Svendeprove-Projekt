@@ -31,7 +31,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             var result = await _øvelseService.GetAllØvelserAsync();
             return result.ToApiResponse();
         }
-        [Authorize]
         [HttpGet("own")]
         public async Task<IActionResult> GetØvelser([FromQuery] Guid? brugerId = null, [FromQuery] string klubIds = "")
         {
