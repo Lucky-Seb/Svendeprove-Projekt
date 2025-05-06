@@ -42,14 +42,12 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return result.ToApiResponse();
         }
 
-        //[Authorize(Roles = "Admin")]
         [HttpPut("restore/{id}")]
         public async Task<IActionResult> Restore(Guid id, [FromBody] OrdbogDTO dto)
         {
             var result = await _ordbogService.RestoreOrdbogAsync(id, dto);
             return result.ToApiResponse();
         }
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> PostOrdbog(OrdbogDTO dto)
         {
@@ -59,7 +57,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
             return result.ToApiResponse();
         }
-        [Authorize]
         [HttpPut("including-deleted/{id}")]
         public async Task<IActionResult> UpdateOrdbogIncludingDeleted(Guid id, OrdbogDTO dto)
         {
@@ -69,7 +66,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
 
             return result.ToApiResponse();
         }
-        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateOrdbog(Guid id, OrdbogDTO dto)
         {
@@ -80,7 +76,6 @@ namespace TaekwondoOrchestration.ApiService.Controllers
             return result.ToApiResponse();
         }
 
-        //[Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrdbog(Guid id)
         {

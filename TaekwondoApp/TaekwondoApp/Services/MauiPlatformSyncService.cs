@@ -106,6 +106,7 @@ namespace TaekwondoApp
                 {
                     try
                     {
+                        // Check if the entry has been deleted
                         var response = await _httpClient.GetAsync($"https://localhost:7478/api/ordbog/including-deleted/{entry.OrdbogId}");
 
                         if (entry.IsDeleted)
